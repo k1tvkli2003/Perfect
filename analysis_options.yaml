@@ -1,0 +1,8 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    # Preserved only in the local working folder while the legacy project is
+    # intentionally excluded from the new Perfect repository.
+    - lib/src/**
+    - lib/unused/**

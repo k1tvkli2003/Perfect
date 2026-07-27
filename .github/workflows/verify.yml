@@ -1,0 +1,58 @@
+name: Verify Flutter targets
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality-and-android-web:
+    name: Quality, Android and web
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Set up Java 17
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
+        with:
+          flutter-version: 3.44.0
+          channel: stable
+          cache: true
+      - name: Resolve locked dependencies
+        run: flutter pub get
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+      - name: Analyze
+        run: flutter analyze
+      - name: Test
+        run: flutter test
+      - name: Build private Android debug APK
+        run: flutter build apk --debug
+      - name: Build web
+        run: flutter build web
+
+  windows:
+    name: Windows desktop build
+    runs-on: windows-2025
+    steps:
+      - name: Check out source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Set up Flutter
+        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
+        with:
+          flutter-version: 3.44.0
+          channel: stable
+          cache: true
+      - name: Resolve locked dependencies
+        run: flutter pub get
+      - name: Build Windows debug executable
+        run: flutter build windows --debug
