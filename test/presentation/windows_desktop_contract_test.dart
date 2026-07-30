@@ -95,6 +95,16 @@ void main() {
     expect(workflow, contains('-Recurse'));
     expect(workflow, contains('v145'));
     expect(workflow, isNot(contains(r'[version]$_.Name')));
+    expect(workflow, contains(r'Cert:\CurrentUser\TrustedPeople'));
+    expect(workflow, contains(r'Cert:\CurrentUser\Root'));
+    expect(
+      workflow.indexOf(r'Cert:\CurrentUser\Root'),
+      lessThan(workflow.indexOf('dart run msix:create')),
+    );
+    expect(
+      RegExp(r'Cert:\\CurrentUser\\Root').allMatches(workflow).length,
+      greaterThanOrEqualTo(2),
+    );
     expect(workflow, contains('SHA256SUMS.txt'));
     expect(workflow, contains('-windows-x64-portable-'));
     expect(

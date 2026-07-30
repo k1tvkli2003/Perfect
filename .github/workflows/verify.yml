@@ -426,6 +426,7 @@ jobs:
 
           $certificate = $null
           $trustedCertificate = $null
+          $trustedRootCertificate = $null
           $securePfxPassword = $null
           $signingCertificatePath = $null
           try {
@@ -473,6 +474,28 @@ jobs:
               throw "The Windows certificate is not valid for code signing."
             }
 
+            [IO.File]::WriteAllBytes(
+              $cerPath,
+              $certificate.Export(
+                [Security.Cryptography.X509Certificates.X509ContentType]::Cert
+              )
+            )
+            $trustedCertificate = Import-Certificate `
+              -FilePath $cerPath `
+              -CertStoreLocation "Cert:\CurrentUser\TrustedPeople"
+            # SignTool's policy verifier requires a self-signed private
+            # publisher to terminate in a trusted root. This extra trust exists
+            # only inside the ephemeral runner and is removed in `finally`.
+            $trustedRootCertificate = Import-Certificate `
+              -FilePath $cerPath `
+              -CertStoreLocation "Cert:\CurrentUser\Root"
+            if (
+              $trustedCertificate.Thumbprint -ne $expectedThumbprint -or
+              $trustedRootCertificate.Thumbprint -ne $expectedThumbprint
+            ) {
+              throw "The ephemeral Windows trust stores received the wrong certificate."
+            }
+
             # The PFX password never enters process argv. msix invokes SignTool
             # against the exact, pinned certificate in the ephemeral runner's
             # CurrentUser store.
@@ -488,13 +511,6 @@ jobs:
             if ($LASTEXITCODE -ne 0) {
               throw "Private MSIX packaging failed with exit code $LASTEXITCODE."
             }
-
-            [IO.File]::WriteAllBytes(
-              $cerPath,
-              $certificate.Export(
-                [Security.Cryptography.X509Certificates.X509ContentType]::Cert
-              )
-            )
 
             $packages = @(Get-ChildItem -LiteralPath $msixOutput -Filter "*.msix")
             if ($packages.Count -ne 1) {
@@ -557,9 +573,6 @@ jobs:
               $archive.Dispose()
             }
 
-            $trustedCertificate = Import-Certificate `
-              -FilePath $cerPath `
-              -CertStoreLocation "Cert:\CurrentUser\TrustedPeople"
             $signTool = Get-ChildItem `
               -Path "${env:ProgramFiles(x86)}\Windows Kits\10\bin" `
               -Filter "signtool.exe" `
@@ -599,6 +612,11 @@ jobs:
             if ($trustedCertificate) {
               Remove-Item `
                 -LiteralPath "Cert:\CurrentUser\TrustedPeople\$($trustedCertificate.Thumbprint)" `
+                -Force
+            }
+            if ($trustedRootCertificate) {
+              Remove-Item `
+                -LiteralPath "Cert:\CurrentUser\Root\$($trustedRootCertificate.Thumbprint)" `
                 -Force
             }
             if ($certificate) {
