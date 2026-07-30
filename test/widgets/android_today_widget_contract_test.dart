@@ -9,7 +9,7 @@ void main() {
       final provider = File(
         'android/app/src/main/kotlin/com/k1tvkli2003/perfect/'
         'PerfectTodayWidgetProvider.kt',
-      ).readAsStringSync();
+      ).readAsStringSync().replaceAll('\r\n', '\n').replaceAll('\r', '\n');
       final manifest = File(
         'android/app/src/main/AndroidManifest.xml',
       ).readAsStringSync();

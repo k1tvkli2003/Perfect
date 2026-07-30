@@ -27,25 +27,18 @@ Perfect یک planner شخصیِ Flutter برای **Android و Windows** است؛
 
 ## راه‌اندازی Supabase خصوصی
 
-این مراحل عمداً روی پروژهٔ واقعی تو به‌صورت خودکار اجرا نمی‌شوند.
+checkout اصلی Perfect از قبل به پروژهٔ شخصی `evyjrbwibwrdkjakooor` متصل است. چهار migration زیر با history هم‌نسخه روی همان پروژه اعمال شده‌اند:
 
-1. یک Supabase project خصوصی بساز یا از پروژهٔ خصوصی خودت استفاده کن. در **Auth > Providers** فقط Email/Password را فعال کن و **Allow new users to sign up** را خاموش نگه دار.
-2. migrationها را به ترتیب زمانی در SQL Editor اجرا کن:
+- [`20260730053612_create_perfect_items.sql`](supabase/migrations/20260730053612_create_perfect_items.sql)
+- [`20260730053626_add_private_planner_v2.sql`](supabase/migrations/20260730053626_add_private_planner_v2.sql)
+- [`20260730054603_harden_perfect_legacy_anon_access.sql`](supabase/migrations/20260730054603_harden_perfect_legacy_anon_access.sql)
+- [`20260730054708_minimize_perfect_authenticated_grants.sql`](supabase/migrations/20260730054708_minimize_perfect_authenticated_grants.sql)
 
-   - [`20260727193000_create_perfect_items.sql`](supabase/migrations/20260727193000_create_perfect_items.sql) برای سازگاری با پایهٔ قبلی
-   - [`20260727210000_add_private_planner_v2.sql`](supabase/migrations/20260727210000_add_private_planner_v2.sql) برای مدل local-first، RPC، RLS و sync v2
+owner خصوصی دقیقاً یک‌بار از کاربر Auth متناظر با حساب مدیریت پروژه ثبت شده است؛ `perfect://login-callback` بدون حذف redirectهای موجود به allowlist افزوده شده و GitHub Actions نیز `PERFECT_SUPABASE_URL` و `PERFECT_SUPABASE_PUBLISHABLE_KEY` را دارد. buildهای CI بنابراین صفحهٔ configuration اولیه را نشان نمی‌دهند و مستقیم به ورود همان پروژه می‌روند. هیچ service-role/secret key داخل repository یا artifact قرار نمی‌گیرد.
 
-3. کاربر خصوصی خودت را در Supabase Auth ایجاد کن. سپس UUID همان کاربر را یک‌بار به‌عنوان owner ثبت کن:
+اگر روزی این اپ را به پروژهٔ Supabase دیگری منتقل کردی، همین migrationها را به ترتیب با Supabase CLI اعمال کن، فقط یک Auth user را در `planner_owner_profiles` ثبت کن، callback بالا را به redirect allowlist اضافه کن و دو secret عمومی client را در repository مقصد تنظیم کن. مدل دیتابیس عمداً بیش از یک owner را نمی‌پذیرد.
 
-   ```sql
-   insert into public.planner_owner_profiles (owner_id)
-   values ('YOUR_PRIVATE_AUTH_USER_UUID');
-   ```
-
-   این migration عمداً فقط یک owner را می‌پذیرد. اگر قصد چندمالک/تیم داری، این مدل محصول مناسب آن نیست.
-
-4. `perfect://login-callback` را در Auth Redirect URLs allowlist کن. Android handler در manifest حاضر است و MSIX خصوصی Windows نیز protocol `perfect` را ثبت می‌کند.
-5. تنها **Project URL** و **publishable/anon key** را استفاده کن—نه service-role key.
+Android handler در manifest حاضر است و MSIX خصوصی Windows نیز protocol `perfect` را ثبت می‌کند. در client تنها **Project URL** و **publishable/anon key** مجاز است—نه service-role key.
 
 ## اجرای محلی
 

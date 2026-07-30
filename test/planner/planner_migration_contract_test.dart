@@ -7,7 +7,7 @@ void main() {
 
   setUpAll(() async {
     migration = await File(
-      'supabase/migrations/20260727210000_add_private_planner_v2.sql',
+      'supabase/migrations/20260730053626_add_private_planner_v2.sql',
     ).readAsString();
   });
 

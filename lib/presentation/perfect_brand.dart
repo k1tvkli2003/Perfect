@@ -1,10 +1,7 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 
-/// Live Flutter reconstruction of the selected lower-right board icon: a
-/// dark center, three pastel orbital fragments, and an assertive check.
+/// The approved Perfect! mark, shared verbatim with Android and Windows.
 class PerfectMark extends StatelessWidget {
   const PerfectMark({super.key, this.size = 44, this.label = 'Perfect!'})
     : assert(size > 0);
@@ -13,19 +10,21 @@ class PerfectMark extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    return Semantics(
-      image: true,
-      label: label,
-      child: ExcludeSemantics(
-        child: SizedBox.square(
-          dimension: size,
-          child: CustomPaint(painter: _PerfectMarkPainter(dark: dark)),
+  Widget build(BuildContext context) => Semantics(
+    image: true,
+    label: label,
+    child: ExcludeSemantics(
+      child: SizedBox.square(
+        dimension: size,
+        child: Image.asset(
+          'assets/brand/perfect-launcher.png',
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+          gaplessPlayback: true,
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 class PerfectWordmark extends StatelessWidget {
@@ -97,57 +96,4 @@ class PerfectWordmark extends StatelessWidget {
       ),
     );
   }
-}
-
-class _PerfectMarkPainter extends CustomPainter {
-  const _PerfectMarkPainter({required this.dark});
-
-  final bool dark;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final shortest = math.min(size.width, size.height);
-    final scale = shortest / 100;
-    final center = Offset(size.width / 2, size.height / 2);
-    final tile = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      Radius.circular(28 * scale),
-    );
-    final tilePaint = Paint()
-      ..color = dark ? const Color(0xff2d3041) : PerfectColors.creamElevated;
-    canvas.drawRRect(tile, tilePaint);
-    final ringPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 11 * scale
-      ..strokeCap = StrokeCap.round;
-    final rect = Rect.fromCircle(center: center, radius: 31 * scale);
-    ringPaint.color = PerfectColors.apricot;
-    canvas.drawArc(rect, -2.75, .92, false, ringPaint);
-    ringPaint.color = PerfectColors.mint;
-    canvas.drawArc(rect, 1.65, .86, false, ringPaint);
-    ringPaint.color = PerfectColors.lilac;
-    canvas.drawArc(rect, .52, .9, false, ringPaint);
-    canvas.drawCircle(
-      center,
-      10.5 * scale,
-      Paint()..color = dark ? const Color(0xfffcf8f2) : PerfectColors.ink,
-    );
-    final check = Path()
-      ..moveTo(61 * scale, 42 * scale)
-      ..lineTo(68 * scale, 49 * scale)
-      ..lineTo(83 * scale, 33 * scale);
-    canvas.drawPath(
-      check,
-      Paint()
-        ..color = dark ? const Color(0xfffcf8f2) : PerfectColors.ink
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..strokeWidth = 8 * scale,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _PerfectMarkPainter oldDelegate) =>
-      oldDelegate.dark != dark;
 }

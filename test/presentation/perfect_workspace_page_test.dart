@@ -94,6 +94,7 @@ void main() {
         matchesGoldenFile('../goldens/perfect_compact.png'),
       );
     },
+    tags: 'windows-golden',
   );
 
   testWidgets(
@@ -205,7 +206,7 @@ void main() {
       find.byType(PerfectWorkspacePage),
       matchesGoldenFile('../goldens/perfect_expanded.png'),
     );
-  });
+  }, tags: 'windows-golden');
 
   testWidgets('desktop inspector duplicates and selects an independent item', (
     tester,

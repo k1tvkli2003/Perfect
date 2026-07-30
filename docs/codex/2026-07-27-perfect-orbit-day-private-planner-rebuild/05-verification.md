@@ -2,12 +2,12 @@
 
 ## Summary
 
-- Result: passed locally with explicit environment limits
-- Last verified: 2026-07-30T04:40:00+03:30
+- Result: passed locally and against the private backend, with explicit environment limits
+- Last verified: 2026-07-30T09:45:00+03:30
 - Final Android artifact under test: `build/app/outputs/flutter-apk/app-release.apk`
-- APK SHA-256: `174DF8AB753D40F1ED4CD693723212703952F55AE186E642D61D786ECDE24A89`
+- Configured APK SHA-256: `4282AA5A07585F1FBD34910389D83FDC5655D2CF3548FDE9382276393A9329CD`
 
-این سند بین «اثبات اجرا»، «بررسی ایستا» و «بررسی مسدودشده» فرق می‌گذارد. اپ روی Android و میزبان واقعی launcher اجرا شده است؛ اجرای محلی Windows و همگرایی زندهٔ Supabase به‌ترتیب به‌علت نبود Visual Studio C++ و credential خصوصی ممکن نبودند و به‌عنوان pass گزارش نمی‌شوند.
+این سند بین «اثبات اجرا»، «بررسی ایستا» و «بررسی مسدودشده» فرق می‌گذارد. build متصل به Supabase روی Android و میزبان واقعی launcher اجرا شده است؛ اجرای محلی Windows به‌علت نبود Visual Studio C++ ممکن نبود. در مقابل، migration/RLS/RPC/Auth روی Supabase خصوصی به‌صورت زنده اثبات شد؛ convergence نهایی همچنان به دو نصب واقعی نیاز دارد.
 
 ## Automated checks
 
@@ -18,7 +18,7 @@
 | Full test suite | `flutter test --no-pub -r expanded` | passed | ۱۶۲ تست؛ domain/data/sync/UI/editor/accessibility/golden/widget/privacy/recovery/reminder capacity |
 | Workspace interaction suite | `flutter test --no-pub -r expanded test/presentation/perfect_workspace_page_test.dart` | passed | ۳۴ تست؛ 320dp، text 200%، RTL، landscape کوتاه، desktop shortcut/context، recurrence/habit/recovery |
 | Adaptive secondary surfaces | `flutter test --no-pub -r expanded test/presentation/planner_secondary_surfaces_adaptive_test.dart` | passed | dialog ویندوز و bottom sheet موبایل، Escape و lifecycle |
-| Android release compile | `flutter build apk --release --no-pub` | passed | APK نهایی 63.0MB؛ Gradle `assembleRelease` موفق |
+| Android configured release compile | `flutter build apk --release --no-pub` با سه define خصوصی client | passed | APK نهایی 63.6MB؛ Gradle `assembleRelease` موفق؛ مقدار secret چاپ یا ذخیره نشد |
 | Dependency currency | `flutter pub outdated --no-dev-dependencies` | passed with caveat | تمام dependencyهای مستقیم up-to-date؛ چند transitive نسخهٔ جدیدتر ولی غیرقابل resolve با graph فعلی |
 | Diff hygiene | `git diff --check` | passed | فقط هشدار line-ending ویندوز؛ whitespace error ندارد |
 
@@ -31,7 +31,8 @@
 | Install/cold start | `adb install -r` + `am start -W` on `emulator-5554` API 35 | passed | cold launch موفق؛ `MainActivity` focused؛ crash یا `E/flutter` در logcat نبود |
 | Release state | `dumpsys package` after reinstall | passed | `pkgFlags` فاقد `DEBUGGABLE`؛ نسخه `1.0.0+1` |
 | Portrait/landscape | چرخش host و screenshot | passed | configuration surface بدون overlap؛ محتوای landscape با swipe تا انتها قابل دسترسی |
-| Launcher identity | Pixel Launcher app drawer | passed | نام `Perfect!` و آیکون انتخاب‌شدهٔ orbit/check در host واقعی |
+| Launcher identity | Pixel Launcher API 35 پس از uninstall/reinstall | passed | نام `Perfect!`، سه قوس پاستلی هم‌مرکز، نقطه و تیک دقیق؛ tile اجباری Android عمداً هلویی `#FFE5CC` است، نه fallback سفید/مشکی |
+| Preconfigured connection | fresh app data + cold start | passed | build مستقیم روی AuthPage پروژهٔ خصوصی باز شد و ConfigurationPage را نشان نداد |
 | Widget discovery | Pixel Launcher widget picker | passed | `Perfect! Today` با توضیح private/resizable و اندازهٔ اولیهٔ 2×2 |
 | Widget resize classes | host resize 2×2 → expanded | passed | نسخهٔ compact و expanded متفاوت؛ expanded اکشن `Open Today` را اضافه می‌کند |
 | Widget collection scrolling | ۹ ردیف مصنوعی local-only روی debug verification install | passed | اسکرول native از `Focus deep work` تا آخرین `Inbox cleanup` در host واقعی |
@@ -47,6 +48,8 @@
 - `assets/perfect-runtime-landscape.png`
 - `assets/perfect-runtime-landscape-scrolled.png`
 - `assets/perfect-launcher-icon.png`
+- `assets/perfect-launcher-pastel-final.png`
+- `assets/perfect-auth-configured-final.png`
 - `assets/perfect-widget-picker.png`
 - `assets/perfect-widget-home-2x2.png`
 - `assets/perfect-widget-home-resized.png`
@@ -68,11 +71,12 @@
 - سقف ۹۶ reminder دیگر silent نیست: نزدیک‌ترین موارد با ترتیب deterministic انتخاب و تعداد باقی‌مانده همراه capacity در UI گزارش می‌شود.
 - صف native ویجت eviction خاموش ندارد؛ stateهای مطلق هر owner/entity/day compact، actionهای اعمال‌شده با ack side-channel پاک و overflow قبل از تغییر snapshot رد و ثبت می‌شود.
 - هشت PNG موقت failure-golden پیش از stage به‌صورت دقیق پاک شدند.
+- source نهایی آیکون ۵۱۲×۵۱۲ RGBA، گوشه‌های شفاف و alpha bounds برابر `504×442` دارد؛ همان asset در UI و Windows ICO استفاده می‌شود. Android stock الزام mask دارد: adaptive شفاف به مشکی و legacy شفاف به صفحهٔ سفید normalize شد، بنابراین tile هلوییِ پاستلی به‌صورت عمدی و تست‌شده انتخاب شد.
 
 ## Explicit limits
 
 - اجرای محلی Windows مسدود است چون این میزبان Visual Studio و workload «Desktop development with C++» ندارد. source/runner/shortcut/DPI contracts و تست‌های Flutter پوشش دارند؛ artifact نهایی باید در hosted Windows CI ساخته شود.
-- migration/RLS/RPC روی Supabase خصوصی اجرا نشد چون URL/key/account مالک در محیط موجود نیست. تست‌های local store، outbox، conflict، replay، owner isolation و sync gateway پاس‌اند، اما cross-device convergence زنده هنوز اثبات محیطی ندارد.
+- پروژهٔ `evyjrbwibwrdkjakooor` سالم بود و چهار migration هم‌نسخهٔ local/remote را پذیرفت؛ replay هر چهار SQL پاس شد. anon هیچ دسترسی به legacy/profile/RPC ندارد؛ owner RPC را با session واقعی اجرا کرد، mutation مثبت revision 1 گرفت، replay همان mutation نتیجهٔ یکسان داد و cursor همان change را دید. دادهٔ مصنوعی دقیقاً پاک شد و شمار entity/operation/change/conflict دوباره صفر بود. callback نیز از ۱۱ به ۱۲ redirect افزایش یافت و همهٔ redirectهای قبلی حفظ شدند. تنها convergence واقعی Android↔Windows هنوز اثبات نشده است.
 - تست Android روی emulator API 35 انجام شد، نه گوشی فیزیکی.
 - local release عمداً بدون secret با debug certificate امضا شد. workflow برای secret-backed private signing آماده است؛ نبود secrets نباید با امضای production اشتباه گرفته شود.
 - Flutter 3.44 دربارهٔ مهاجرت آیندهٔ Kotlin plugin در `home_widget` و `flutter_timezone` هشدار می‌دهد. هر دو dependency مستقیم در آخرین نسخهٔ قابل resolve هستند؛ این هشدار شکست فعلی نیست و مالکیت fix در upstream است.

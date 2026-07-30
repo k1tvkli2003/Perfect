@@ -1,51 +1,206 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Android and Windows expose the approved Perfect! name and icon', () {
-    final manifest = File(
-      'android/app/src/main/AndroidManifest.xml',
-    ).readAsStringSync();
-    final androidStrings = File(
-      'android/app/src/main/res/values/strings.xml',
-    ).readAsStringSync();
-    final windowsMain = File('windows/runner/main.cpp').readAsStringSync();
-    final windowsResources = File(
-      'windows/runner/Runner.rc',
-    ).readAsStringSync();
-    final flutterMetadata = File('.metadata').readAsStringSync();
-    final selectedSource = File('assets/brand/perfect-launcher.png');
-    final androidIcon = File(
-      'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png',
-    );
-    final windowsIcon = File('windows/runner/resources/app_icon.ico');
-    final adaptiveIcon = File(
-      'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',
-    ).readAsStringSync();
-    final themedIcon = File(
-      'android/app/src/main/res/mipmap-anydpi-v33/ic_launcher.xml',
-    ).readAsStringSync();
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-    expect(manifest, contains('android:label="@string/app_name"'));
-    expect(manifest, contains('android:roundIcon="@mipmap/ic_launcher_round"'));
-    expect(
-      androidStrings,
-      contains('<string name="app_name">Perfect!</string>'),
-    );
-    expect(adaptiveIcon, contains('@drawable/perfect_launcher_foreground'));
-    expect(themedIcon, contains('@drawable/perfect_launcher_monochrome'));
-    expect(windowsMain, contains('window.Create(L"Perfect!"'));
-    expect(windowsResources, contains('VALUE "ProductName", "Perfect!"'));
-    expect(windowsResources, contains('VALUE "FileDescription", "Perfect!"'));
-    expect(selectedSource.lengthSync(), greaterThan(1000));
-    expect(androidIcon.lengthSync(), greaterThan(1000));
-    expect(windowsIcon.lengthSync(), greaterThan(1000));
-    expect(flutterMetadata, isNot(contains('platform: web')));
-    expect(flutterMetadata, isNot(contains('platform: ios')));
-    expect(flutterMetadata, isNot(contains('platform: linux')));
-    expect(flutterMetadata, isNot(contains('platform: macos')));
-  });
+  test(
+    'Android and Windows expose the approved Perfect! name and icon',
+    () async {
+      final manifest = File(
+        'android/app/src/main/AndroidManifest.xml',
+      ).readAsStringSync();
+      final androidStrings = File(
+        'android/app/src/main/res/values/strings.xml',
+      ).readAsStringSync();
+      final windowsMain = File('windows/runner/main.cpp').readAsStringSync();
+      final windowsResources = File(
+        'windows/runner/Runner.rc',
+      ).readAsStringSync();
+      final flutterMetadata = File('.metadata').readAsStringSync();
+      final launcherConfig = File('pubspec.yaml').readAsStringSync();
+      final selectedSource = File('assets/brand/perfect-launcher.png');
+      final androidIcon = File(
+        'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png',
+      );
+      final windowsIcon = File('windows/runner/resources/app_icon.ico');
+      final adaptiveIcon = File(
+        'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',
+      ).readAsStringSync();
+      final launcherColors = File(
+        'android/app/src/main/res/values/colors.xml',
+      ).readAsStringSync();
+      const legacyIcons = <String, int>{
+        'mdpi': 48,
+        'hdpi': 72,
+        'xhdpi': 96,
+        'xxhdpi': 144,
+        'xxxhdpi': 192,
+      };
+      const adaptiveForegrounds = <String, int>{
+        'mdpi': 108,
+        'hdpi': 162,
+        'xhdpi': 216,
+        'xxhdpi': 324,
+        'xxxhdpi': 432,
+      };
+      const forbiddenLauncherResources = <String>[
+        'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml',
+        'android/app/src/main/res/mipmap-anydpi-v33/ic_launcher.xml',
+        'android/app/src/main/res/mipmap-anydpi-v33/ic_launcher_round.xml',
+      ];
+
+      expect(manifest, contains('android:label="@string/app_name"'));
+      expect(manifest, contains('android:icon="@mipmap/ic_launcher"'));
+      expect(
+        manifest,
+        isNot(contains('android:roundIcon')),
+        reason:
+            'One adaptive icon contract is enough; a separate round override '
+            'can drift from the approved mark.',
+      );
+      expect(
+        androidStrings,
+        contains('<string name="app_name">Perfect!</string>'),
+      );
+      expect(
+        adaptiveIcon,
+        allOf(
+          contains('@color/ic_launcher_background'),
+          contains('@drawable/ic_launcher_foreground'),
+          contains('android:inset="18%"'),
+          isNot(contains('monochrome')),
+        ),
+      );
+      expect(
+        launcherColors,
+        contains('<color name="ic_launcher_background">#FFE5CC</color>'),
+      );
+      for (final forbidden in <String>[
+        '#FFFFFF',
+        '#FFFFFFFF',
+        '#000000',
+        '#FF000000',
+        '#00000000',
+        '#00FFFFFF',
+      ]) {
+        expect(
+          launcherColors.toUpperCase(),
+          isNot(contains(forbidden)),
+          reason:
+              'Android must use the intentional warm pastel brand tile, not '
+              'a white, black, or transparent launcher fallback.',
+        );
+      }
+      expect(launcherConfig, contains('adaptive_icon_background: "#FFE5CC"'));
+      expect(
+        launcherConfig,
+        contains('adaptive_icon_foreground: assets/brand/perfect-launcher.png'),
+      );
+      expect(launcherConfig, contains('adaptive_icon_foreground_inset: 18'));
+      expect(
+        RegExp(
+          r'assets/brand/perfect-launcher\.png',
+        ).allMatches(launcherConfig).length,
+        greaterThanOrEqualTo(3),
+        reason:
+            'Legacy Android, adaptive Android, and Windows must all derive '
+            'from the same approved source mark.',
+      );
+      for (final path in forbiddenLauncherResources) {
+        expect(
+          File(path).existsSync(),
+          isFalse,
+          reason:
+              '$path is an unnecessary duplicate launcher override that can '
+              'drift from the generated adaptive contract.',
+        );
+      }
+      for (final icon in legacyIcons.entries) {
+        final bitmap = File(
+          'android/app/src/main/res/mipmap-${icon.key}/ic_launcher.png',
+        );
+        expect(bitmap.existsSync(), isTrue);
+        expect(bitmap.lengthSync(), greaterThan(1000));
+
+        final codec = await ui.instantiateImageCodec(
+          await bitmap.readAsBytes(),
+        );
+        final frame = await codec.getNextFrame();
+        final image = frame.image;
+        final pixels = await image.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
+        final rgba = pixels!.buffer.asUint8List();
+
+        expect(image.width, icon.value);
+        expect(image.height, icon.value);
+        expect(
+          <int>[
+            rgba[3],
+            rgba[((image.width - 1) * 4) + 3],
+            rgba[(((image.height - 1) * image.width) * 4) + 3],
+            rgba[((image.width * image.height) - 1) * 4 + 3],
+          ],
+          everyElement(0),
+          reason:
+              '${icon.key} launcher corners must remain transparent; a baked '
+              'black or white tile is forbidden.',
+        );
+
+        image.dispose();
+        codec.dispose();
+      }
+      for (final foreground in adaptiveForegrounds.entries) {
+        final bitmap = File(
+          'android/app/src/main/res/drawable-${foreground.key}/'
+          'ic_launcher_foreground.png',
+        );
+        expect(bitmap.existsSync(), isTrue);
+        expect(bitmap.lengthSync(), greaterThan(1000));
+
+        final codec = await ui.instantiateImageCodec(
+          await bitmap.readAsBytes(),
+        );
+        final frame = await codec.getNextFrame();
+        final image = frame.image;
+        final pixels = await image.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
+        final rgba = pixels!.buffer.asUint8List();
+
+        expect(image.width, foreground.value);
+        expect(image.height, foreground.value);
+        expect(
+          <int>[
+            rgba[3],
+            rgba[((image.width - 1) * 4) + 3],
+            rgba[(((image.height - 1) * image.width) * 4) + 3],
+            rgba[((image.width * image.height) - 1) * 4 + 3],
+          ],
+          everyElement(0),
+          reason:
+              '${foreground.key} foreground must preserve the exact mark '
+              'without a baked black or white tile.',
+        );
+
+        image.dispose();
+        codec.dispose();
+      }
+      expect(windowsMain, contains('window.Create(L"Perfect!"'));
+      expect(windowsResources, contains('VALUE "ProductName", "Perfect!"'));
+      expect(windowsResources, contains('VALUE "FileDescription", "Perfect!"'));
+      expect(selectedSource.lengthSync(), greaterThan(1000));
+      expect(androidIcon.lengthSync(), greaterThan(1000));
+      expect(windowsIcon.lengthSync(), greaterThan(1000));
+      expect(flutterMetadata, isNot(contains('platform: web')));
+      expect(flutterMetadata, isNot(contains('platform: ios')));
+      expect(flutterMetadata, isNot(contains('platform: linux')));
+      expect(flutterMetadata, isNot(contains('platform: macos')));
+    },
+  );
 
   test('private release identities stay external to source and CI-aware', () {
     final pubspec = File('pubspec.yaml').readAsStringSync();

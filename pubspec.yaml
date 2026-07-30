@@ -52,6 +52,9 @@ flutter_launcher_icons:
   android: true
   image_path: assets/brand/perfect-launcher.png
   min_sdk_android: 24
+  adaptive_icon_background: "#FFE5CC"
+  adaptive_icon_foreground: assets/brand/perfect-launcher.png
+  adaptive_icon_foreground_inset: 18
   windows:
     generate: true
     image_path: assets/brand/perfect-launcher.png

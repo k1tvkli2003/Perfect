@@ -7,7 +7,8 @@ Mock previews, fake states, and generated assets are labeled as previews until v
 | Name | Type | Source | Verified? | Asset/Link | Notes |
 |---|---|---|---|---|---|
 | Orbit Day Today | Mock Preview | built-in image generation; chosen by user | no | [asset](assets/orbit-day-today-mock-preview.png) | Composition reference only; generated English text and static visuals are not production UI. |
-| Launcher icon board | Mock Preview | built-in image generation; bottom-right selected by user | no | [asset](assets/launcher-icon-options-mock-preview.png) | Final icon must be redrawn as adaptive/vector platform assets. |
+| Launcher icon board | Mock Preview | built-in image generation; bottom-right selected by user | no | [asset](assets/launcher-icon-options-mock-preview.png) | Selection reference only; final approved 512 transparent master is `assets/brand/perfect-launcher.png`. |
+| Final launcher runtime | Verified | approved ImageGen reconstruction + platform adaptation | yes | [Pixel evidence](assets/perfect-launcher-pastel-final.png) | Exact three-arc mark; transparent Windows/source, pastel Android mask required by Pixel Launcher. |
 | Typography board | Mock Preview | built-in image generation; bottom-left selected by user | no | [asset](assets/typography-options-mock-preview.png) | Reference only; final wordmark/type must be live/vector and optical-spacing tested. |
 
 ## Mock Preview: Orbit Day
@@ -23,7 +24,7 @@ Implementation intent: keep the orbit as a live semantic/status component. In co
 ## Mock Preview: Selected identity
 - Label: Mock Preview
 - Source: built-in image generation, selections confirmed by the user.
-- Assumptions: the orbital-tick icon and soft compact wordmark can be converted into a coherent vector system.
+- Assumptions: the orbital-tick icon master and soft compact live wordmark can share one coherent identity system.
 - Limitations: generated geometry and text are not suitable as final source; no Android/Windows platform safe-zone, icon mask, font license or tiny-size test exists yet.
 - Verified: no
 - Asset: [assets/launcher-icon-options-mock-preview.png](assets/launcher-icon-options-mock-preview.png), [assets/typography-options-mock-preview.png](assets/typography-options-mock-preview.png)

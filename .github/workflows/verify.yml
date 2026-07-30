@@ -44,7 +44,10 @@ jobs:
       - name: Analyze
         run: flutter analyze
       - name: Test
-        run: flutter test
+        # The approved PNG baselines were frozen on Windows. Skia/font
+        # rasterization differs by host OS, so Linux verifies every behavioral
+        # test while the Windows job owns exact pixel comparison.
+        run: flutter test --exclude-tags windows-golden
       - name: Restore private Android signing identity
         id: android-signing
         shell: bash
@@ -112,6 +115,8 @@ jobs:
           cache: true
       - name: Resolve locked dependencies
         run: flutter pub get
+      - name: Verify Windows golden baselines
+        run: flutter test --tags windows-golden
       - name: Build Windows desktop
         id: windows-build
         shell: pwsh

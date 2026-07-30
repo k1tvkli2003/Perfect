@@ -7,14 +7,14 @@
 
 | ID | Requirement | Source | Evidence needed | Owner | Status |
 |---|---|---|---|---|---|
-| R1 | Flutter Android/Windows | user | build + runtime/screenshot matrix | multi-os | in progress — Android artifact verified; Windows local toolchain missing |
-| R2 | private local-first cross-device Supabase sync | user | schema/RLS + offline/conflict tests | backend/function | in progress — local/outbox contract verified; live project not authorized |
+| R1 | Flutter Android/Windows | user | build + runtime/screenshot matrix | multi-os | in progress — configured Android artifact verified; final hosted Windows artifact remains |
+| R2 | private local-first cross-device Supabase sync | user | schema/RLS + offline/conflict tests | backend/function | complete except two-install convergence — live migration/RLS/RPC/Auth and local/offline contracts pass |
 | R3 | complete personal planner options/scenarios | user | feature/state matrix + journeys | anatomy/function | complete locally — 162-test suite covers core and hostile paths |
-| R4 | Orbit Day branding and selected icon/type | user selection | vector assets + runtime screenshot | modernize/style | complete locally |
+| R4 | Orbit Day branding and selected icon/type | user selection | final assets + runtime screenshot | modernize/style | complete — transparent 512 source/Windows and Pixel-verified pastel Android adaptation |
 | R5 | dedicated portrait and landscape experiences | user | screenshots and layout rules at each class | anatomy/style | complete locally |
-| R6 | precise prewritten plan and durable record | user | this task record + validation | work-docs/orchestrator | active |
-| R7 | preserve current data/auth/contracts | rebuild | preservation/migration evidence | rebuild/integrity | complete in source/tests — live migration intentionally unapplied |
-| R8 | high quality, resilience and performance | named skills | critic audit + measurements/tests | critics/perfect/performance | in progress — independent findings fixed; final rendered Critics verification report pending |
+| R6 | precise prewritten plan and durable record | user | this task record + validation | work-docs/orchestrator | complete through implementation; final CI evidence remains |
+| R7 | preserve current data/auth/contracts | rebuild | preservation/migration evidence | rebuild/integrity | complete — additive/idempotent live migrations and compatibility tests pass |
+| R8 | high quality, resilience and performance | named skills | critic audit + measurements/tests | critics/perfect/performance | complete — all actionable findings fixed; frozen 8-page Critics PDF visually verified |
 
 ### Preservation contract
 
@@ -22,11 +22,11 @@
 |---|---|---|---|---|---|---|
 | Existing app source and Git history | Git `main`, current root commit | compatible-migration | clean `git status`; tracked-file inventory | additive/reversible commits | `git revert` of owned commits | old core behavior still covered by regression tests |
 | Local persisted simple items | `PersonalItemsStore` key and `PersonalItem` adapter, to be audited | compatible-migration | store schema/key and round-trip test | read legacy then project into new model | keep legacy adapter until successful projection | legacy item loads and appears in Today/Inbox |
-| Supabase `perfect_items` schema/history | `supabase/migrations/20260727193000_create_perfect_items.sql` | compatible-migration | migration inventory; no live DB evidence | append-only migrations and views/adapters | migration rollback document, no destructive edit | migration SQL inspection + compatible consumer tests |
+| Supabase `perfect_items` schema/history | `supabase/migrations/20260730053612_create_perfect_items.sql` | compatible-migration | four aligned remote/local migration versions plus live replay/RLS/RPC evidence | append-only migrations and views/adapters | migration rollback document, no destructive edit | migration SQL replay + anon/owner Data API smoke |
 | Supabase Auth / owner privacy | `main.dart`, auth UI, RLS policies | compatible-migration | auth state and policy inventory | owner-scoped new tables/policies only | retain existing auth flow and policy history | user A cannot read/write user B in contract tests/live validation when configured |
 | Public/deep-link routes | current app has no named router/deep links | unresolved | source route inventory | add canonical routes only; no removal | route table and fallback shell | route/back/unauthorized tests after routing is introduced |
 | Secrets/configuration references | `AppConfig` dart-defines; no values in repository | immutable | key names only | additive documentation/wiring | restore prior define mapping | unconfigured app state and configured startup path |
-| Native launcher/splash assets | Android mipmaps and Windows `.ico` | derived/rebuildable | current asset inventory | replace after generated vector export and platform masks | keep original assets until each platform artifact proves new assets | Android/Windows launcher/splash inspection |
+| Native launcher/splash assets | Android mipmaps and Windows `.ico` | derived/rebuildable | current asset inventory | derive from the approved transparent 512 master with platform-safe masks | keep original assets until each platform artifact proves new assets | Android/Windows launcher/splash inspection |
 
 ## Steps
 | Step | Status | Notes |
@@ -34,7 +34,7 @@
 | 1 | complete | Baseline, preservation contract, requirement ledger and source/platform audits recorded. |
 | 2 | complete | Product, sync, native and responsive constraints reconciled before mutation. |
 | 3 | complete | Canonical planner entities, occurrence/focus history, tombstones and idempotent outbox are implemented. |
-| 4 | in progress | Local persistence, migration/RLS and contract tests exist; live Supabase proof remains user-owned. |
+| 4 | complete | Local persistence and contract tests pass; migrations, owner gate, RLS, RPC replay/idempotency, cursor pull and GitHub client configuration were proven live on the private project. |
 | 5 | complete | Compact, medium and expanded responsive shell is implemented. |
 | 6 | complete | Orbit Day, Inbox/filters, editor, project/area and time plan are functional; drag/reorder is deliberately deferred. |
 | 7 | complete locally | Habits, focus, insight, archive, reminders and diagnostics are implemented and tested; exact alarm/reboot notification proof remains device-specific. |
@@ -96,7 +96,7 @@ Perfect is not a fixed checklist. Each object has a small, clear default and an 
 - Every mutation works offline, survives restart, retries safely, reconciles from remote and exposes a comprehensible sync/error state.
 - A user can capture, schedule, complete, postpone, delete/undo, edit and find a task; log a habit; start/finish focus; and see data persist locally.
 - Portrait, landscape and expanded windows each have deliberate composition, visible next action, keyboard/focus path and no overlap/clipping under RTL/long text.
-- Selected brand identity is rendered with workspace-owned vector/live assets across app, Android and Windows surfaces.
+- Selected brand identity is rendered from one workspace-owned transparent raster master plus live wordmark typography across app, Android and Windows surfaces.
 - `dart analyze`, focused tests and Android debug build pass; Windows build/runtime is attempted and any environment-only blocker recorded.
 
 ### Locked implementation decisions

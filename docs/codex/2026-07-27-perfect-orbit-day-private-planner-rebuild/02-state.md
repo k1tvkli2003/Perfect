@@ -1,11 +1,11 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-07-30T04:40:00+03:30
+- Last updated: 2026-07-30T09:45:00+03:30
 - Owner: Codex
 
 ## Current State
-بازسازی local-first و تجربهٔ Orbit Day در source کامل و گیت محلی سبز است. Android release روی emulator API 35 و Pixel Launcher واقعی اجرا شده و ویجت resize/scroll/four-state را گذرانده است. هیچ migration زنده، حذف داده یا تغییر Supabase خارجی انجام نشده است. Windows artifact به hosted CI سپرده می‌شود چون میزبان فعلی Visual Studio C++ ندارد.
+بازسازی local-first و تجربهٔ Orbit Day در source کامل و گیت محلی سبز است. Android release متصل روی emulator API 35 و Pixel Launcher واقعی اجرا شده و ویجت resize/scroll/four-state را گذرانده است. چهار migration خصوصی، owner gate، RLS/RPC/Auth و callback زنده اثبات شده‌اند و دادهٔ smoke پاک شده است. Windows artifact به hosted CI سپرده می‌شود چون میزبان فعلی Visual Studio C++ ندارد.
 
 ## Decisions
 | Date | Decision | Reason | Source |
@@ -23,11 +23,12 @@
 | 2026-07-27 | هر mutation در یک transaction محلی همراه با outbox idempotent ثبت می‌شود. | UI همیشه local-first می‌ماند و retry نباید mutation تکراری بسازد. | audit sync |
 | 2026-07-27 | Android build با override سازگار `path_provider_android: 2.2.22` تثبیت شد. | نسخهٔ transitive جدید `jni` با Gradle فعلی سازگار نبود؛ APK debug پس از override ساخته شد. | build evidence |
 | 2026-07-30 | ویجت باید چهار outcome را مستقیم و پایدار در host native بچرخاند. | آزمایش Pixel Launcher چرخه، scroll و native replay queue را اثبات کرد. | runtime evidence در `05-verification.md` |
+| 2026-07-30 | source برند و Windows شفاف می‌مانند؛ Android از tile هلویی پاستلی استفاده می‌کند. | Pixel Launcher شفافیت adaptive را مشکی و legacy را سفید normalize می‌کند؛ `#FFE5CC` نزدیک‌ترین نتیجهٔ صادقانه و برندمحور است. | سه runtime screenshot مقایسه‌ای + contract test |
 
 ## Blockers
 - هیچ blocker برای source، تست یا Android runtime وجود ندارد.
 - Windows local build به‌علت نبود Visual Studio و workload C++ مسدود است؛ hosted CI مسیر اثبات artifact است.
-- برای اثبات واقعی RLS/realtime و اجرای migration، پروژه و credential خصوصی مالک لازم است؛ این محدودیت جلوی local-first runtime نمی‌گیرد.
+- اثبات migration/RLS/RPC/Auth بسته شده است؛ فقط convergence end-to-end روی دو نصب واقعی باقی مانده و جلوی local-first runtime را نمی‌گیرد.
 
 ## Done
 - مخزن پایه، CI و اپ Flutter اولیه در وضعیت clean ثبت شده‌اند.
@@ -36,10 +37,10 @@
 - audit sync: ریسک race، overwriteِ dirty local، LWW سراسری، delete resurrection و owner/session leakage ثبت شد.
 - audit UX: قرارداد compact / medium / expanded، fallback large-text و asset decomposition ثبت شد.
 - audit native: Android debug build موفق شد؛ Windows host prerequisiteها هنوز کامل نیستند.
-- migration افزایشی v2، Drift/outbox، UI کامل و native widget پیاده‌سازی شده‌اند؛ migration زنده اعمال نشده است.
+- چهار migration افزایشی و سخت‌سازی‌شده روی پروژهٔ خصوصی اعمال و با history محلی هم‌نسخه شده‌اند؛ owner gate، RLS، RPC idempotency/cursor و پاک‌سازی smoke زنده پاس‌اند.
 - analyzer، ۱۶۲ تست، Android release build/install، portrait/landscape، launcher identity و widget host runtime پاس‌اند.
+- گزارش frozen هشت‌صفحه‌ای Critics رندر و صفحه‌به‌صفحه بازبینی شد؛ همهٔ یافته‌های actionable آن بسته شدند و بدهی P3 فایل‌های presentation به‌صورت شفاف باقی مانده است.
 
 ## Remaining
-- دریافت و بازبینی گزارش frozen Critics.
 - commit/fast-forward main/push و مشاهدهٔ CI همان SHA.
-- hosted Windows artifact و در آینده live Supabase/two-device convergence با credential مالک.
+- hosted Windows artifact و convergence واقعی روی دو نصب نهایی با همان حساب owner.

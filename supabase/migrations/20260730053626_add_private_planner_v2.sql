@@ -116,25 +116,50 @@ alter table public.planner_operations enable row level security;
 alter table public.planner_changes enable row level security;
 alter table public.planner_sync_conflicts enable row level security;
 
-create policy "private owner reads own profile"
-  on public.planner_owner_profiles for select to authenticated
-  using (owner_id = auth.uid());
+do $$
+begin
+  create policy "private owner reads own profile"
+    on public.planner_owner_profiles for select to authenticated
+    using (owner_id = auth.uid());
+exception when duplicate_object then null;
+end;
+$$;
 
-create policy "private owner reads own planner entities"
-  on public.planner_entities for select to authenticated
-  using (owner_id = auth.uid());
+do $$
+begin
+  create policy "private owner reads own planner entities"
+    on public.planner_entities for select to authenticated
+    using (owner_id = auth.uid());
+exception when duplicate_object then null;
+end;
+$$;
 
-create policy "private owner reads own planner operations"
-  on public.planner_operations for select to authenticated
-  using (owner_id = auth.uid());
+do $$
+begin
+  create policy "private owner reads own planner operations"
+    on public.planner_operations for select to authenticated
+    using (owner_id = auth.uid());
+exception when duplicate_object then null;
+end;
+$$;
 
-create policy "private owner reads own planner changes"
-  on public.planner_changes for select to authenticated
-  using (owner_id = auth.uid());
+do $$
+begin
+  create policy "private owner reads own planner changes"
+    on public.planner_changes for select to authenticated
+    using (owner_id = auth.uid());
+exception when duplicate_object then null;
+end;
+$$;
 
-create policy "private owner reads own planner conflicts"
-  on public.planner_sync_conflicts for select to authenticated
-  using (owner_id = auth.uid());
+do $$
+begin
+  create policy "private owner reads own planner conflicts"
+    on public.planner_sync_conflicts for select to authenticated
+    using (owner_id = auth.uid());
+exception when duplicate_object then null;
+end;
+$$;
 
 -- The client receives no direct v2 mutation privilege. The tightly scoped RPC
 -- below is the only mutation boundary and validates auth, ownership,
