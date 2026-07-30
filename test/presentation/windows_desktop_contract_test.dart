@@ -97,6 +97,7 @@ void main() {
     expect(workflow, isNot(contains(r'[version]$_.Name')));
     expect(workflow, contains(r'Cert:\CurrentUser\TrustedPeople'));
     expect(workflow, contains(r'Cert:\CurrentUser\Root'));
+    expect(workflow, contains('certutil.exe -user -f -addstore Root'));
     expect(
       workflow.indexOf(r'Cert:\CurrentUser\Root'),
       lessThan(workflow.indexOf('dart run msix:create')),

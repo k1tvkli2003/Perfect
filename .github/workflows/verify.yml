@@ -486,9 +486,14 @@ jobs:
             # SignTool's policy verifier requires a self-signed private
             # publisher to terminate in a trusted root. This extra trust exists
             # only inside the ephemeral runner and is removed in `finally`.
-            $trustedRootCertificate = Import-Certificate `
-              -FilePath $cerPath `
-              -CertStoreLocation "Cert:\CurrentUser\Root"
+            # `Import-Certificate` can prompt when targeting Root, so use the
+            # documented non-interactive certutil force path for CI.
+            & certutil.exe -user -f -addstore Root $cerPath | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+              throw "The pinned Windows publisher could not be trusted for CI verification."
+            }
+            $trustedRootCertificate = Get-Item `
+              -LiteralPath "Cert:\CurrentUser\Root\$expectedThumbprint"
             if (
               $trustedCertificate.Thumbprint -ne $expectedThumbprint -or
               $trustedRootCertificate.Thumbprint -ne $expectedThumbprint
