@@ -13,9 +13,9 @@
 class Win32Window {
  public:
   struct Point {
-    unsigned int x;
-    unsigned int y;
-    Point(unsigned int x, unsigned int y) : x(x), y(y) {}
+    int x;
+    int y;
+    Point(int x, int y) : x(x), y(y) {}
   };
 
   struct Size {
@@ -51,6 +51,16 @@ class Win32Window {
 
   // If true, closing this window will quit the application.
   void SetQuitOnClose(bool quit_on_close);
+
+  // Restores the last owner-selected window bounds when they remain valid on
+  // a connected display. Returns false on first launch or corrupt state.
+  static bool ReadSavedPlacement(Point* origin,
+                                 Size* size,
+                                 bool* maximized);
+
+  // The first Flutter frame shows the native host. Remember whether it should
+  // enter maximized state instead of flashing in a restored normal window.
+  void SetInitialMaximized(bool maximized);
 
   // Return a RECT representing the bounds of the current client area.
   RECT GetClientArea();
@@ -90,7 +100,11 @@ class Win32Window {
   // Update the window frame's theme to match the system theme.
   static void UpdateTheme(HWND const window);
 
+  static void SavePlacement(HWND const window);
+
   bool quit_on_close_ = false;
+  bool initial_maximized_ = false;
+  bool has_shown_ = false;
 
   // window handle for top level window.
   HWND window_handle_ = nullptr;

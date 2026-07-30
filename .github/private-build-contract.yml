@@ -1,0 +1,45 @@
+# Perfect is deliberately a personal, private workspace. This document is the
+# source-of-truth for GitHub Actions build transport; it is not a public
+# release manifest and it must not be treated as a distribution promise.
+product:
+  display_name: "Perfect!"
+  slug: perfect
+  version_source: pubspec.yaml
+  channel: private GitHub Actions artifacts only
+  public_releases: false
+
+targets:
+  android:
+    application_id: com.k1tvkli2003.perfect
+    architectures: [universal-release-apk]
+    artifact: app-release.apk
+    signing: stable private JKS supplied only through GitHub Actions secrets
+  windows:
+    architecture: x64
+    artifacts: [unpackaged-release-runner, signed-private-msix, public-install-certificate]
+    identity: com.k1tvkli2003.perfect
+    publisher: CN=K1 Perfect Private
+    signing: stable private PFX supplied only through GitHub Actions secrets
+
+workflow:
+  default_branch: main
+  triggers: [pull_request, push-to-main, workflow_dispatch]
+  artifact_retention_days: 14
+  optional_runtime_secrets:
+    - PERFECT_SUPABASE_URL
+    - PERFECT_SUPABASE_PUBLISHABLE_KEY
+  windows_signing_secrets:
+    - PERFECT_WINDOWS_PFX_BASE64
+    - PERFECT_WINDOWS_PFX_PASSWORD
+  android_signing_secrets:
+    - PERFECT_ANDROID_KEYSTORE_BASE64
+    - PERFECT_ANDROID_KEYSTORE_PASSWORD
+    - PERFECT_ANDROID_KEY_ALIAS
+    - PERFECT_ANDROID_KEY_PASSWORD
+  publication: disabled
+
+constraints:
+  - Do not put Supabase credentials, Android keystores, PFX files, or passwords in this repository or workflow.
+  - The MSIX certificate is trusted only on the user's own Windows devices; no store or public trust is implied.
+  - The public CER may travel with the private artifact, but its matching PFX must remain a repository secret.
+  - If signing secrets are absent, CI keeps compilation verifiable but labels the resulting artifacts as non-durable fallbacks.

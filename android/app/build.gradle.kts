@@ -4,12 +4,30 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val privateKeystorePath =
+    providers.environmentVariable("PERFECT_ANDROID_KEYSTORE_PATH").orNull
+val privateKeystorePassword =
+    providers.environmentVariable("PERFECT_ANDROID_KEYSTORE_PASSWORD").orNull
+val privateKeyAlias =
+    providers.environmentVariable("PERFECT_ANDROID_KEY_ALIAS").orNull
+val privateKeyPassword =
+    providers.environmentVariable("PERFECT_ANDROID_KEY_PASSWORD").orNull
+val hasPrivateReleaseSigning =
+    listOf(
+        privateKeystorePath,
+        privateKeystorePassword,
+        privateKeyAlias,
+        privateKeyPassword,
+    ).all { !it.isNullOrBlank() }
+
 android {
     namespace = "com.k1tvkli2003.perfect"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // Scheduled reminders use java.time through flutter_local_notifications.
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -20,15 +38,37 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
+    }
+
+    signingConfigs {
+        if (hasPrivateReleaseSigning) {
+            create("privateRelease") {
+                storeFile = file(privateKeystorePath!!)
+                storePassword = privateKeystorePassword
+                keyAlias = privateKeyAlias
+                keyPassword = privateKeyPassword
+            }
+        }
     }
 
     buildTypes {
         release {
-            // Private local builds use the debug key. No signing material is
-            // committed; configure a private signing config only if needed.
-            signingConfig = signingConfigs.getByName("debug")
+            // CI supplies a stable private key through environment-backed
+            // GitHub secrets. Local verification remains buildable with the
+            // debug key and never requires committing signing material.
+            signingConfig =
+                if (hasPrivateReleaseSigning) {
+                    signingConfigs.getByName("privateRelease")
+                } else {
+                    signingConfigs.getByName("debug")
+                }
         }
     }
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 kotlin {

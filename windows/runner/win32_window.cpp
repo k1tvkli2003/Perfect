@@ -1,5 +1,6 @@
 #include "win32_window.h"
 
+#include <algorithm>
 #include <dwmapi.h>
 #include <flutter_windows.h>
 
@@ -25,6 +26,20 @@ constexpr const wchar_t kWindowClassName[] = L"FLUTTER_RUNNER_WIN32_WINDOW";
 constexpr const wchar_t kGetPreferredBrightnessRegKey[] =
   L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
 constexpr const wchar_t kGetPreferredBrightnessRegValue[] = L"AppsUseLightTheme";
+constexpr const wchar_t kWindowPlacementRegKey[] =
+    L"Software\\Perfect\\Window";
+constexpr DWORD kWindowPlacementVersion = 1;
+constexpr int kMinimumWindowWidth = 760;
+constexpr int kMinimumWindowHeight = 560;
+
+struct SavedWindowPlacement {
+  DWORD version;
+  LONG left;
+  LONG top;
+  LONG width;
+  LONG height;
+  DWORD maximized;
+};
 
 // The number of Win32Window objects that currently exist.
 static int g_active_window_count = 0;
@@ -133,11 +148,33 @@ bool Win32Window::Create(const std::wstring& title,
   HMONITOR monitor = MonitorFromPoint(target_point, MONITOR_DEFAULTTONEAREST);
   UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
   double scale_factor = dpi / 96.0;
+  MONITORINFO monitor_info{};
+  monitor_info.cbSize = sizeof(monitor_info);
+  GetMonitorInfo(monitor, &monitor_info);
+  const RECT work = monitor_info.rcWork;
+  const int requested_width =
+      Scale(static_cast<int>(size.width), scale_factor);
+  const int requested_height =
+      Scale(static_cast<int>(size.height), scale_factor);
+  const int width =
+      std::min(requested_width, static_cast<int>(work.right - work.left));
+  const int height =
+      std::min(requested_height, static_cast<int>(work.bottom - work.top));
+  // Desktop coordinates themselves are already expressed in the virtual
+  // screen's physical coordinate space. Scale only the offset within the
+  // selected monitor; scaling the absolute coordinate breaks restored windows
+  // on high-DPI and negative-coordinate secondary displays.
+  const int scaled_x =
+      work.left + Scale(origin.x - static_cast<int>(work.left), scale_factor);
+  const int scaled_y =
+      work.top + Scale(origin.y - static_cast<int>(work.top), scale_factor);
+  const int x = std::clamp(scaled_x, static_cast<int>(work.left),
+                           static_cast<int>(work.right - width));
+  const int y = std::clamp(scaled_y, static_cast<int>(work.top),
+                           static_cast<int>(work.bottom - height));
 
   HWND window = CreateWindow(
-      window_class, title.c_str(), WS_OVERLAPPEDWINDOW,
-      Scale(origin.x, scale_factor), Scale(origin.y, scale_factor),
-      Scale(size.width, scale_factor), Scale(size.height, scale_factor),
+      window_class, title.c_str(), WS_OVERLAPPEDWINDOW, x, y, width, height,
       nullptr, nullptr, GetModuleHandle(nullptr), this);
 
   if (!window) {
@@ -150,7 +187,10 @@ bool Win32Window::Create(const std::wstring& title,
 }
 
 bool Win32Window::Show() {
-  return ShowWindow(window_handle_, SW_SHOWNORMAL);
+  const int command =
+      !has_shown_ && initial_maximized_ ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL;
+  has_shown_ = true;
+  return ShowWindow(window_handle_, command);
 }
 
 // static
@@ -179,6 +219,10 @@ Win32Window::MessageHandler(HWND hwnd,
                             WPARAM const wparam,
                             LPARAM const lparam) noexcept {
   switch (message) {
+    case WM_CLOSE:
+      SavePlacement(hwnd);
+      break;
+
     case WM_DESTROY:
       window_handle_ = nullptr;
       Destroy();
@@ -204,6 +248,17 @@ Win32Window::MessageHandler(HWND hwnd,
         MoveWindow(child_content_, rect.left, rect.top, rect.right - rect.left,
                    rect.bottom - rect.top, TRUE);
       }
+      return 0;
+    }
+
+    case WM_GETMINMAXINFO: {
+      auto min_max = reinterpret_cast<MINMAXINFO*>(lparam);
+      const UINT dpi = GetDpiForWindow(hwnd);
+      const double scale_factor = dpi / 96.0;
+      min_max->ptMinTrackSize.x =
+          Scale(kMinimumWindowWidth, scale_factor);
+      min_max->ptMinTrackSize.y =
+          Scale(kMinimumWindowHeight, scale_factor);
       return 0;
     }
 
@@ -261,6 +316,82 @@ HWND Win32Window::GetHandle() {
 
 void Win32Window::SetQuitOnClose(bool quit_on_close) {
   quit_on_close_ = quit_on_close;
+}
+
+bool Win32Window::ReadSavedPlacement(Point* origin,
+                                     Size* size,
+                                     bool* maximized) {
+  if (origin == nullptr || size == nullptr || maximized == nullptr) {
+    return false;
+  }
+  SavedWindowPlacement saved{};
+  DWORD saved_size = sizeof(saved);
+  const LSTATUS result =
+      RegGetValue(HKEY_CURRENT_USER, kWindowPlacementRegKey, L"Placement",
+                  RRF_RT_REG_BINARY, nullptr, &saved, &saved_size);
+  if (result != ERROR_SUCCESS || saved_size != sizeof(saved) ||
+      saved.version != kWindowPlacementVersion || saved.width <= 0 ||
+      saved.height <= 0) {
+    return false;
+  }
+  RECT bounds{saved.left, saved.top, saved.left + saved.width,
+              saved.top + saved.height};
+  HMONITOR monitor = MonitorFromRect(&bounds, MONITOR_DEFAULTTONULL);
+  if (monitor == nullptr) {
+    return false;
+  }
+  MONITORINFO monitor_info{};
+  monitor_info.cbSize = sizeof(monitor_info);
+  if (!GetMonitorInfo(monitor, &monitor_info)) {
+    return false;
+  }
+  const UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
+  const double scale_factor = dpi / 96.0;
+  const int logical_width = static_cast<int>(saved.width / scale_factor);
+  const int logical_height = static_cast<int>(saved.height / scale_factor);
+  if (logical_width < kMinimumWindowWidth ||
+      logical_height < kMinimumWindowHeight) {
+    return false;
+  }
+  const RECT work = monitor_info.rcWork;
+  const int logical_x =
+      work.left + static_cast<int>((saved.left - work.left) / scale_factor);
+  const int logical_y =
+      work.top + static_cast<int>((saved.top - work.top) / scale_factor);
+  *origin = Point(logical_x, logical_y);
+  *size = Size(static_cast<unsigned int>(logical_width),
+               static_cast<unsigned int>(logical_height));
+  *maximized = saved.maximized != 0;
+  return true;
+}
+
+void Win32Window::SetInitialMaximized(bool maximized) {
+  initial_maximized_ = maximized;
+}
+
+void Win32Window::SavePlacement(HWND const window) {
+  WINDOWPLACEMENT placement{};
+  placement.length = sizeof(placement);
+  if (!GetWindowPlacement(window, &placement)) {
+    return;
+  }
+  const RECT normal = placement.rcNormalPosition;
+  SavedWindowPlacement saved{
+      kWindowPlacementVersion,
+      normal.left,
+      normal.top,
+      normal.right - normal.left,
+      normal.bottom - normal.top,
+      placement.showCmd == SW_SHOWMAXIMIZED ? 1u : 0u,
+  };
+  HKEY key = nullptr;
+  if (RegCreateKeyEx(HKEY_CURRENT_USER, kWindowPlacementRegKey, 0, nullptr, 0,
+                     KEY_SET_VALUE, nullptr, &key, nullptr) != ERROR_SUCCESS) {
+    return;
+  }
+  RegSetValueEx(key, L"Placement", 0, REG_BINARY,
+                reinterpret_cast<const BYTE*>(&saved), sizeof(saved));
+  RegCloseKey(key);
 }
 
 bool Win32Window::OnCreate() {

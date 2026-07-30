@@ -1,4 +1,6 @@
-name: Verify Flutter targets
+name: Perfect private CI
+
+run-name: "Private CI · ${{ github.event_name }} · ${{ github.ref_name }} · #${{ github.run_number }}"
 
 on:
   pull_request:
@@ -9,10 +11,18 @@ on:
 permissions:
   contents: read
 
+# This is a verification/build transport workflow, not a public release
+# channel. Cancelling obsolete CI on the same ref is safe because no version,
+# signing asset, tag, or release is allocated here.
+concurrency:
+  group: perfect-private-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  quality-and-android-web:
-    name: Quality, Android and web
+  quality-and-android:
+    name: Quality and Android
     runs-on: ubuntu-24.04
+    timeout-minutes: 25
     steps:
       - name: Check out source
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -35,14 +45,62 @@ jobs:
         run: flutter analyze
       - name: Test
         run: flutter test
-      - name: Build private Android debug APK
-        run: flutter build apk --debug
-      - name: Build web
-        run: flutter build web
+      - name: Restore private Android signing identity
+        id: android-signing
+        shell: bash
+        env:
+          PERFECT_ANDROID_KEYSTORE_BASE64: ${{ secrets.PERFECT_ANDROID_KEYSTORE_BASE64 }}
+          PERFECT_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.PERFECT_ANDROID_KEYSTORE_PASSWORD }}
+          PERFECT_ANDROID_KEY_ALIAS: ${{ secrets.PERFECT_ANDROID_KEY_ALIAS }}
+          PERFECT_ANDROID_KEY_PASSWORD: ${{ secrets.PERFECT_ANDROID_KEY_PASSWORD }}
+        run: |
+          if [[ -n "$PERFECT_ANDROID_KEYSTORE_BASE64" \
+            && -n "$PERFECT_ANDROID_KEYSTORE_PASSWORD" \
+            && -n "$PERFECT_ANDROID_KEY_ALIAS" \
+            && -n "$PERFECT_ANDROID_KEY_PASSWORD" ]]; then
+            key_path="$RUNNER_TEMP/perfect-private.jks"
+            printf '%s' "$PERFECT_ANDROID_KEYSTORE_BASE64" | base64 --decode > "$key_path"
+            {
+              echo "PERFECT_ANDROID_KEYSTORE_PATH=$key_path"
+              echo "PERFECT_ANDROID_KEYSTORE_PASSWORD=$PERFECT_ANDROID_KEYSTORE_PASSWORD"
+              echo "PERFECT_ANDROID_KEY_ALIAS=$PERFECT_ANDROID_KEY_ALIAS"
+              echo "PERFECT_ANDROID_KEY_PASSWORD=$PERFECT_ANDROID_KEY_PASSWORD"
+            } >> "$GITHUB_ENV"
+            echo "mode=stable-private" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=debug-fallback" >> "$GITHUB_OUTPUT"
+            echo "::warning::Private Android signing secrets are absent. The APK compiles, but it does not have a durable update identity."
+          fi
+      - name: Build private Android APK
+        id: android-build
+        shell: bash
+        env:
+          PERFECT_SUPABASE_URL: ${{ secrets.PERFECT_SUPABASE_URL }}
+          PERFECT_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.PERFECT_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [[ -n "$PERFECT_SUPABASE_URL" && -n "$PERFECT_SUPABASE_PUBLISHABLE_KEY" ]]; then
+            flutter build apk --release \
+              --dart-define="SUPABASE_URL=$PERFECT_SUPABASE_URL" \
+              --dart-define="SUPABASE_PUBLISHABLE_KEY=$PERFECT_SUPABASE_PUBLISHABLE_KEY" \
+              --dart-define="SUPABASE_AUTH_REDIRECT_URI=perfect://login-callback"
+            echo "mode=configured-private" >> "$GITHUB_OUTPUT"
+          else
+            flutter build apk --release
+            echo "mode=verification-only-unconfigured" >> "$GITHUB_OUTPUT"
+            echo "::warning::Supabase repository secrets are absent. This artifact verifies compilation but opens the configuration screen and is not a sync-ready install."
+          fi
+      - name: Preserve private Android build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: perfect-android-${{ steps.android-signing.outputs.mode }}-${{ steps.android-build.outputs.mode }}-${{ github.run_id }}
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
 
   windows:
     name: Windows desktop build
     runs-on: windows-2025
+    timeout-minutes: 25
     steps:
       - name: Check out source
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -54,5 +112,80 @@ jobs:
           cache: true
       - name: Resolve locked dependencies
         run: flutter pub get
-      - name: Build Windows debug executable
-        run: flutter build windows --debug
+      - name: Build Windows desktop
+        id: windows-build
+        shell: pwsh
+        env:
+          PERFECT_SUPABASE_URL: ${{ secrets.PERFECT_SUPABASE_URL }}
+          PERFECT_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.PERFECT_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if ($env:PERFECT_SUPABASE_URL -and $env:PERFECT_SUPABASE_PUBLISHABLE_KEY) {
+            flutter build windows --release `
+              --dart-define="SUPABASE_URL=$env:PERFECT_SUPABASE_URL" `
+              --dart-define="SUPABASE_PUBLISHABLE_KEY=$env:PERFECT_SUPABASE_PUBLISHABLE_KEY" `
+              --dart-define="SUPABASE_AUTH_REDIRECT_URI=perfect://login-callback"
+            "mode=configured-private" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } else {
+            flutter build windows --release
+            "mode=verification-only-unconfigured" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Write-Warning "Supabase repository secrets are absent. This artifact verifies compilation but opens the configuration screen and is not a sync-ready install."
+          }
+      - name: Package signed private MSIX
+        id: windows-msix
+        shell: pwsh
+        env:
+          PERFECT_WINDOWS_PFX_BASE64: ${{ secrets.PERFECT_WINDOWS_PFX_BASE64 }}
+          PERFECT_WINDOWS_PFX_PASSWORD: ${{ secrets.PERFECT_WINDOWS_PFX_PASSWORD }}
+        run: |
+          if (-not $env:PERFECT_WINDOWS_PFX_BASE64 -or -not $env:PERFECT_WINDOWS_PFX_PASSWORD) {
+            "mode=unavailable-no-signing-secret" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            Write-Warning "Private Windows signing secrets are absent. The unpackaged runner remains available, but notification identity and in-place MSIX upgrades cannot be verified."
+            exit 0
+          }
+
+          $pfxPath = Join-Path $env:RUNNER_TEMP "perfect-private.pfx"
+          $msixOutput = Join-Path $env:GITHUB_WORKSPACE "build/windows/x64/msix"
+          New-Item -ItemType Directory -Force -Path $msixOutput | Out-Null
+          [IO.File]::WriteAllBytes(
+            $pfxPath,
+            [Convert]::FromBase64String($env:PERFECT_WINDOWS_PFX_BASE64)
+          )
+
+          dart run msix:create `
+            --build-windows false `
+            --certificate-path $pfxPath `
+            --certificate-password $env:PERFECT_WINDOWS_PFX_PASSWORD `
+            --install-certificate false
+          if ($LASTEXITCODE -ne 0) {
+            throw "Private MSIX packaging failed with exit code $LASTEXITCODE."
+          }
+
+          $certificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
+            $pfxPath,
+            $env:PERFECT_WINDOWS_PFX_PASSWORD,
+            [Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet
+          )
+          [IO.File]::WriteAllBytes(
+            (Join-Path $msixOutput "Perfect-private.cer"),
+            $certificate.Export(
+              [Security.Cryptography.X509Certificates.X509ContentType]::Cert
+            )
+          )
+          "mode=signed-private" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+      - name: Preserve private Windows build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: perfect-windows-x64-${{ steps.windows-build.outputs.mode }}-${{ github.run_id }}
+          path: build/windows/x64/runner/Release
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve signed private Windows installer
+        if: steps.windows-msix.outputs.mode == 'signed-private'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: perfect-windows-msix-${{ steps.windows-build.outputs.mode }}-${{ github.run_id }}
+          path: |
+            build/windows/x64/msix/*.msix
+            build/windows/x64/msix/Perfect-private.cer
+          if-no-files-found: error
+          retention-days: 14

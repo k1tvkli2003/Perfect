@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Perfect orbital check mark</title>
+  <rect width="1024" height="1024" rx="248" fill="#FFFDF9"/>
+  <g fill="none" stroke-linecap="round" stroke-width="112">
+    <path d="M300 404A268 268 0 0 1 547 250" stroke="#FFA64C"/>
+    <path d="M342 687A268 268 0 0 1 254 518" stroke="#80C99A"/>
+    <path d="M696 701A268 268 0 0 1 520 779" stroke="#A99ADE"/>
+  </g>
+  <circle cx="512" cy="525" r="94" fill="#1D2030"/>
+  <path d="m617 468 58 58 135-142" fill="none" stroke="#1D2030" stroke-linecap="round" stroke-linejoin="round" stroke-width="78"/>
+</svg>

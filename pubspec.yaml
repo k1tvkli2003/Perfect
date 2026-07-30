@@ -7,17 +7,70 @@ environment:
   sdk: ^3.12.0
 
 dependencies:
-  cupertino_icons: ^1.0.8
   flutter:
     sdk: flutter
   uuid: ^4.3.3
   shared_preferences: ^2.5.4
   supabase_flutter: ^2.12.0
+  drift: ^2.34.3
+  drift_flutter: ^0.3.1
+  flutter_local_notifications: ^22.2.0
+  flutter_timezone: ^5.1.0
+  timezone: ^0.11.1
+  # Provides the background-isolate bridge for Android widget actions. The
+  # widget UI itself remains native RemoteViews so it can scroll and resize.
+  home_widget: ^0.9.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  build_runner: ^2.15.1
+  drift_dev: ^2.34.5
+  flutter_launcher_icons: ^0.14.4
+  msix: ^3.18.0
+
+# `path_provider_android` 2.3.x pulls JNI, whose current Android Gradle setup
+# is incompatible with Flutter's AGP 9 template on this project. Keep this
+# narrow, compatible implementation until the upstream JNI/AGP path is proven.
+dependency_overrides:
+  path_provider_android: 2.2.22
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/brand/
+  fonts:
+    - family: PlusJakarta
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-Variable.ttf
+    - family: Vazirmatn
+      fonts:
+        - asset: assets/fonts/Vazirmatn-Variable.ttf
+
+flutter_launcher_icons:
+  android: true
+  image_path: assets/brand/perfect-launcher.png
+  min_sdk_android: 24
+  windows:
+    generate: true
+    image_path: assets/brand/perfect-launcher.png
+    icon_size: 256
+
+# Perfect! is installed privately, but an MSIX identity is still important:
+# Windows notification replacement/cancellation and reliable upgrades require
+# package identity. The signing key is supplied only through GitHub secrets.
+msix_config:
+  display_name: Perfect!
+  publisher_display_name: K1
+  identity_name: com.k1tvkli2003.perfect
+  publisher: CN=K1 Perfect Private
+  msix_version: 1.0.0.0
+  logo_path: assets/brand/perfect-launcher.png
+  architecture: x64
+  build_windows: false
+  output_path: build/windows/x64/msix
+  output_name: Perfect-private
+  capabilities: internetClient
+  protocol_activation: perfect
+  install_certificate: false

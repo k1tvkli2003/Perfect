@@ -6,9 +6,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 class PersonalItemsStore {
   static const _keyPrefix = 'perfect.personal_items.v1.';
 
-  Future<List<PersonalItem>> read(String userId) async {
+  /// Exposes the immutable legacy payload for one-time v2 projection. Callers
+  /// must never clear or rewrite this key; it remains the recovery source for
+  /// the original application contract.
+  Future<String?> readRaw(String userId) async {
     final preferences = await SharedPreferences.getInstance();
-    final raw = preferences.getString('$_keyPrefix$userId');
+    return preferences.getString('$_keyPrefix$userId');
+  }
+
+  Future<List<PersonalItem>> read(String userId) async {
+    final raw = await readRaw(userId);
     if (raw == null) return const [];
 
     final decoded = jsonDecode(raw) as List<dynamic>;

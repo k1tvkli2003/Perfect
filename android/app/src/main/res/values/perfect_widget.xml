@@ -1,0 +1,12 @@
+<resources>
+    <color name="perfect_widget_surface">#FFFFFCF7</color>
+    <color name="perfect_widget_ink">#FF1D2030</color>
+    <color name="perfect_widget_muted">#FF686579</color>
+    <color name="perfect_widget_stroke">#FFECE5DC</color>
+    <color name="perfect_widget_apricot">#FFFFA34D</color>
+    <color name="perfect_widget_mint">#FF7EC99B</color>
+    <color name="perfect_widget_lilac">#FFA79ADD</color>
+    <color name="perfect_widget_danger">#FFC8505A</color>
+    <string name="perfect_today_widget_name">Perfect! Today</string>
+    <string name="perfect_today_widget_description">A private, resizable daily task list from Perfect.</string>
+</resources>
