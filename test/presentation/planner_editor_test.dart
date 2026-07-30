@@ -302,6 +302,62 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'editor remains usable across phone tablet desktop and short landscape',
+    (tester) async {
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final cases = <({Size size, double textScale, String name})>[
+        (size: const Size(360, 780), textScale: 1, name: 'narrow phone'),
+        (size: const Size(800, 1280), textScale: 1.3, name: 'portrait tablet'),
+        (
+          size: const Size(1024, 600),
+          textScale: 1,
+          name: 'short tablet landscape',
+        ),
+        (
+          size: const Size(1280, 720),
+          textScale: 2,
+          name: 'desktop at 200% text',
+        ),
+      ];
+
+      for (final testCase in cases) {
+        await tester.binding.setSurfaceSize(testCase.size);
+        final controller = _RecordingPlannerController();
+        try {
+          await tester.pumpWidget(
+            MaterialApp(
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(testCase.textScale),
+                  disableAnimations: true,
+                ),
+                child: child ?? const SizedBox.shrink(),
+              ),
+              home: Scaffold(body: PlannerEditor(controller: controller)),
+            ),
+          );
+          await tester.pump();
+
+          expect(tester.takeException(), isNull, reason: testCase.name);
+          expect(find.text('Make it yours'), findsOneWidget);
+          expect(find.text('Save to Perfect'), findsOneWidget);
+          expect(
+            tester.getRect(find.text('Save to Perfect')).bottom,
+            lessThanOrEqualTo(testCase.size.height),
+            reason: testCase.name,
+          );
+          expect(
+            find.byKey(const ValueKey<String>('planner-editor-scroll')),
+            findsOneWidget,
+          );
+        } finally {
+          await controller.disposeAsync();
+        }
+      }
+    },
+  );
 }
 
 class _RecordingPlannerController extends PlannerWorkspaceController {

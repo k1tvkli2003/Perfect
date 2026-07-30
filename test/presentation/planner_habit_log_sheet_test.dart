@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,6 +27,7 @@ void main() {
           _DisconnectedGateway(),
           ownerId: 'habit-log-owner',
           deviceId: '11111111-1111-4111-8111-111111111111',
+          retryTimerFactory: (_, _) => _NoopTimer(),
         ),
         ownerId: 'habit-log-owner',
         now: () => DateTime.utc(2026, 7, 27, 9),
@@ -87,6 +90,17 @@ void main() {
     },
     timeout: const Timeout(Duration(seconds: 20)),
   );
+}
+
+class _NoopTimer implements Timer {
+  @override
+  bool get isActive => false;
+
+  @override
+  int get tick => 0;
+
+  @override
+  void cancel() {}
 }
 
 class _DisconnectedGateway implements PlannerRemoteGateway {

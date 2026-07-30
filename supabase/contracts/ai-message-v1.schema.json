@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://perfect.local/contracts/ai-message-v1.schema.json",
+  "title": "Perfect Private AI Message",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "message_id",
+    "conversation_id",
+    "role",
+    "status",
+    "content"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "message_id": {
+      "$ref": "#/$defs/nonNilUuid"
+    },
+    "conversation_id": {
+      "$ref": "#/$defs/nonNilUuid"
+    },
+    "role": {
+      "enum": [
+        "user",
+        "assistant",
+        "tool"
+      ]
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "content": {
+      "type": "string",
+      "maxLength": 32000
+    },
+    "proposal": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "prompt_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "request_id": {
+      "$ref": "#/$defs/nonNilUuid"
+    },
+    "latency_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3600000
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input_tokens": {
+          "$ref": "#/$defs/tokenCount"
+        },
+        "output_tokens": {
+          "$ref": "#/$defs/tokenCount"
+        },
+        "cached_tokens": {
+          "$ref": "#/$defs/tokenCount"
+        },
+        "total_tokens": {
+          "$ref": "#/$defs/tokenCount"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "nonNilUuid": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^(?!00000000-0000-0000-0000-000000000000$)[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "tokenCount": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000000
+    }
+  }
+}

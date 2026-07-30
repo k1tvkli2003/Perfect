@@ -11,16 +11,99 @@ on:
 permissions:
   contents: read
 
-# This is a verification/build transport workflow, not a public release
-# channel. Cancelling obsolete CI on the same ref is safe because no version,
-# signing asset, tag, or release is allocated here.
+# This is a private, installable build transport workflow, not a public
+# release channel. Main/manual-main builds carry monotonic platform versions,
+# so they must queue instead of cancelling one another.
 concurrency:
   group: perfect-private-ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
+  queue: max
 
 jobs:
+  prepare:
+    name: Allocate private build identity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      semantic_version: ${{ steps.version.outputs.semantic_version }}
+      android_version_code: ${{ steps.version.outputs.android_version_code }}
+      msix_version: ${{ steps.version.outputs.msix_version }}
+      artifact_version: ${{ steps.version.outputs.artifact_version }}
+      trusted_build: ${{ steps.version.outputs.trusted_build }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+      - name: Calculate deterministic platform versions
+        id: version
+        shell: bash
+        env:
+          PERFECT_RUN_NUMBER: ${{ github.run_number }}
+          PERFECT_TRUSTED_BUILD: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' }}
+          PERFECT_BASE_SHA: ${{ github.event.before || github.event.pull_request.base.sha || '' }}
+        run: |
+          version_line="$(grep -E '^version:[[:space:]]*[0-9]+\.[0-9]+\.[0-9]+(\+[0-9]+)?[[:space:]]*$' pubspec.yaml | head -n 1 || true)"
+          if [[ ! "$version_line" =~ ^version:[[:space:]]*([0-9]+)\.([0-9]+)\.([0-9]+)(\+([0-9]+))?[[:space:]]*$ ]]; then
+            echo "::error::pubspec.yaml must contain version MAJOR.MINOR.PATCH+BUILD."
+            exit 1
+          fi
+
+          major="${BASH_REMATCH[1]}"
+          minor="${BASH_REMATCH[2]}"
+          patch="${BASH_REMATCH[3]}"
+          # BUILD is a checked-in Android epoch/base, not the final package
+          # number. Adding the deterministic workflow run keeps reruns stable
+          # while allowing a deliberate epoch bump above any private/local
+          # artifacts already installed on the owner's devices.
+          android_epoch="${BASH_REMATCH[5]:-0}"
+          run_number="$PERFECT_RUN_NUMBER"
+
+          comparison_ref="${PERFECT_BASE_SHA:-HEAD^}"
+          previous_version_line="$(git show "$comparison_ref":pubspec.yaml 2>/dev/null | grep -E '^version:[[:space:]]*[0-9]+\.[0-9]+\.[0-9]+(\+[0-9]+)?[[:space:]]*$' | head -n 1 || true)"
+          if [[ -n "$previous_version_line" && "$previous_version_line" =~ ^version:[[:space:]]*([0-9]+)\.([0-9]+)\.([0-9]+)(\+([0-9]+))? ]]; then
+            previous_major="${BASH_REMATCH[1]}"
+            previous_minor="${BASH_REMATCH[2]}"
+            previous_patch="${BASH_REMATCH[3]}"
+            previous_android_epoch="${BASH_REMATCH[5]:-0}"
+            if (( major < previous_major \
+              || (major == previous_major && minor < previous_minor) \
+              || (major == previous_major && minor == previous_minor && patch < previous_patch) )); then
+              echo "::error::pubspec semantic version $major.$minor.$patch regresses from $previous_major.$previous_minor.$previous_patch and would break MSIX install-over continuity."
+              exit 1
+            fi
+            if (( android_epoch < previous_android_epoch )); then
+              echo "::error::pubspec Android epoch $android_epoch regresses from $previous_android_epoch and would break APK install-over continuity."
+              exit 1
+            fi
+          fi
+
+          if (( android_epoch < 1 || run_number < 1 || run_number > 65535 )); then
+            echo "::error::The Android epoch and GitHub run number must be positive; the run number must fit the MSIX revision."
+            exit 1
+          fi
+          android_version_code=$((android_epoch + run_number))
+          if (( android_version_code <= android_epoch || android_version_code > 2100000000 )); then
+            echo "::error::Computed Android versionCode $android_version_code is outside the safe monotonic range."
+            exit 1
+          fi
+          if (( major > 65535 || minor > 65535 || patch > 65535 )); then
+            echo "::error::The computed MSIX version exceeds a 16-bit component."
+            exit 1
+          fi
+
+          semantic_version="$major.$minor.$patch"
+          {
+            echo "semantic_version=$semantic_version"
+            echo "android_version_code=$android_version_code"
+            echo "msix_version=$semantic_version.$run_number"
+            echo "artifact_version=$semantic_version-build.$android_version_code"
+            echo "trusted_build=${PERFECT_TRUSTED_BUILD,,}"
+          } >> "$GITHUB_OUTPUT"
+
   quality-and-android:
     name: Quality and Android
+    needs: prepare
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -32,13 +115,13 @@ jobs:
           distribution: temurin
           java-version: '17'
       - name: Set up Flutter
-        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: 3.44.0
           channel: stable
           cache: true
       - name: Resolve locked dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed lib test
       - name: Analyze
@@ -52,145 +135,488 @@ jobs:
         id: android-signing
         shell: bash
         env:
-          PERFECT_ANDROID_KEYSTORE_BASE64: ${{ secrets.PERFECT_ANDROID_KEYSTORE_BASE64 }}
-          PERFECT_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.PERFECT_ANDROID_KEYSTORE_PASSWORD }}
-          PERFECT_ANDROID_KEY_ALIAS: ${{ secrets.PERFECT_ANDROID_KEY_ALIAS }}
-          PERFECT_ANDROID_KEY_PASSWORD: ${{ secrets.PERFECT_ANDROID_KEY_PASSWORD }}
+          PERFECT_TRUSTED_BUILD: ${{ needs.prepare.outputs.trusted_build }}
+          PERFECT_ANDROID_KEYSTORE_BASE64: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_ANDROID_KEYSTORE_BASE64 || '' }}
+          PERFECT_ANDROID_KEYSTORE_PASSWORD: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_ANDROID_KEYSTORE_PASSWORD || '' }}
+          PERFECT_ANDROID_KEY_ALIAS: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_ANDROID_KEY_ALIAS || '' }}
+          PERFECT_ANDROID_KEY_PASSWORD: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_ANDROID_KEY_PASSWORD || '' }}
+          PERFECT_ANDROID_CERT_SHA256: ${{ needs.prepare.outputs.trusted_build == 'true' && vars.PERFECT_ANDROID_CERT_SHA256 || '' }}
         run: |
-          if [[ -n "$PERFECT_ANDROID_KEYSTORE_BASE64" \
-            && -n "$PERFECT_ANDROID_KEYSTORE_PASSWORD" \
-            && -n "$PERFECT_ANDROID_KEY_ALIAS" \
-            && -n "$PERFECT_ANDROID_KEY_PASSWORD" ]]; then
-            key_path="$RUNNER_TEMP/perfect-private.jks"
-            printf '%s' "$PERFECT_ANDROID_KEYSTORE_BASE64" | base64 --decode > "$key_path"
-            {
-              echo "PERFECT_ANDROID_KEYSTORE_PATH=$key_path"
-              echo "PERFECT_ANDROID_KEYSTORE_PASSWORD=$PERFECT_ANDROID_KEYSTORE_PASSWORD"
-              echo "PERFECT_ANDROID_KEY_ALIAS=$PERFECT_ANDROID_KEY_ALIAS"
-              echo "PERFECT_ANDROID_KEY_PASSWORD=$PERFECT_ANDROID_KEY_PASSWORD"
-            } >> "$GITHUB_ENV"
-            echo "mode=stable-private" >> "$GITHUB_OUTPUT"
-          else
+          if [[ "$PERFECT_TRUSTED_BUILD" != "true" ]]; then
             echo "mode=debug-fallback" >> "$GITHUB_OUTPUT"
-            echo "::warning::Private Android signing secrets are absent. The APK compiles, but it does not have a durable update identity."
+            echo "::notice::Untrusted/PR build: Android signing secrets were not exposed."
+            exit 0
           fi
+
+          missing=()
+          for name in \
+            PERFECT_ANDROID_KEYSTORE_BASE64 \
+            PERFECT_ANDROID_KEYSTORE_PASSWORD \
+            PERFECT_ANDROID_KEY_ALIAS \
+            PERFECT_ANDROID_KEY_PASSWORD \
+            PERFECT_ANDROID_CERT_SHA256; do
+            if [[ -z "${!name}" ]]; then
+              missing+=("$name")
+            fi
+          done
+          if (( ${#missing[@]} > 0 )); then
+            echo "::error::Trusted Android builds require the complete stable signing contract. Missing: ${missing[*]}"
+            exit 1
+          fi
+
+          key_path="$RUNNER_TEMP/perfect-private.jks"
+          cert_path="$RUNNER_TEMP/perfect-private-android.cer"
+          printf '%s' "$PERFECT_ANDROID_KEYSTORE_BASE64" | base64 --decode > "$key_path"
+          chmod 600 "$key_path"
+          export PERFECT_ANDROID_KEYSTORE_PASSWORD
+          keytool -exportcert \
+            -keystore "$key_path" \
+            -storepass:env PERFECT_ANDROID_KEYSTORE_PASSWORD \
+            -alias "$PERFECT_ANDROID_KEY_ALIAS" \
+            -file "$cert_path"
+
+          actual_fingerprint="$(sha256sum "$cert_path" | awk '{print toupper($1)}')"
+          expected_fingerprint="$(printf '%s' "$PERFECT_ANDROID_CERT_SHA256" | tr -d '[:space:]:' | tr '[:lower:]' '[:upper:]')"
+          if [[ "$actual_fingerprint" != "$expected_fingerprint" ]]; then
+            echo "::error::The Android signing certificate does not match PERFECT_ANDROID_CERT_SHA256."
+            exit 1
+          fi
+          echo "mode=stable-private" >> "$GITHUB_OUTPUT"
       - name: Build private Android APK
         id: android-build
         shell: bash
         env:
-          PERFECT_SUPABASE_URL: ${{ secrets.PERFECT_SUPABASE_URL }}
-          PERFECT_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.PERFECT_SUPABASE_PUBLISHABLE_KEY }}
+          PERFECT_SUPABASE_URL: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_SUPABASE_URL || '' }}
+          PERFECT_SUPABASE_PUBLISHABLE_KEY: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_SUPABASE_PUBLISHABLE_KEY || '' }}
+          PERFECT_SEMANTIC_VERSION: ${{ needs.prepare.outputs.semantic_version }}
+          PERFECT_ANDROID_VERSION_CODE: ${{ needs.prepare.outputs.android_version_code }}
+          PERFECT_ANDROID_KEYSTORE_PATH: ${{ needs.prepare.outputs.trusted_build == 'true' && format('{0}/perfect-private.jks', runner.temp) || '' }}
+          PERFECT_ANDROID_KEYSTORE_PASSWORD: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_ANDROID_KEYSTORE_PASSWORD || '' }}
+          PERFECT_ANDROID_KEY_ALIAS: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_ANDROID_KEY_ALIAS || '' }}
+          PERFECT_ANDROID_KEY_PASSWORD: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_ANDROID_KEY_PASSWORD || '' }}
         run: |
           if [[ -n "$PERFECT_SUPABASE_URL" && -n "$PERFECT_SUPABASE_PUBLISHABLE_KEY" ]]; then
             flutter build apk --release \
+              --build-name="$PERFECT_SEMANTIC_VERSION" \
+              --build-number="$PERFECT_ANDROID_VERSION_CODE" \
               --dart-define="SUPABASE_URL=$PERFECT_SUPABASE_URL" \
               --dart-define="SUPABASE_PUBLISHABLE_KEY=$PERFECT_SUPABASE_PUBLISHABLE_KEY" \
               --dart-define="SUPABASE_AUTH_REDIRECT_URI=perfect://login-callback"
             echo "mode=configured-private" >> "$GITHUB_OUTPUT"
           else
-            flutter build apk --release
+            flutter build apk --release \
+              --build-name="$PERFECT_SEMANTIC_VERSION" \
+              --build-number="$PERFECT_ANDROID_VERSION_CODE"
             echo "mode=verification-only-unconfigured" >> "$GITHUB_OUTPUT"
             echo "::warning::Supabase repository secrets are absent. This artifact verifies compilation but opens the configuration screen and is not a sync-ready install."
           fi
+      - name: Verify and checksum Android package
+        id: android-package
+        shell: bash
+        env:
+          PERFECT_TRUSTED_BUILD: ${{ needs.prepare.outputs.trusted_build }}
+          PERFECT_SEMANTIC_VERSION: ${{ needs.prepare.outputs.semantic_version }}
+          PERFECT_ANDROID_VERSION_CODE: ${{ needs.prepare.outputs.android_version_code }}
+          PERFECT_ARTIFACT_VERSION: ${{ needs.prepare.outputs.artifact_version }}
+          PERFECT_ANDROID_CERT_SHA256: ${{ needs.prepare.outputs.trusted_build == 'true' && vars.PERFECT_ANDROID_CERT_SHA256 || '' }}
+        run: |
+          source_apk="build/app/outputs/flutter-apk/app-release.apk"
+          package_dir="build/private-artifacts/android"
+          package_apk="$package_dir/perfect-$PERFECT_ARTIFACT_VERSION-android-universal.apk"
+          mkdir -p "$package_dir"
+
+          build_tools="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
+          if [[ -z "$build_tools" ]]; then
+            echo "::error::Android SDK build-tools were not found."
+            exit 1
+          fi
+          "$build_tools/zipalign" -c -P 16 -v 4 "$source_apk"
+          signer_output="$("$build_tools/apksigner" verify --verbose --print-certs "$source_apk")"
+          printf '%s\n' "$signer_output"
+
+          badging="$("$build_tools/aapt2" dump badging "$source_apk" | sed -n '1p')"
+          if [[ "$badging" != *"package: name='com.k1tvkli2003.perfect'"* \
+            || "$badging" != *"versionCode='$PERFECT_ANDROID_VERSION_CODE'"* \
+            || "$badging" != *"versionName='$PERFECT_SEMANTIC_VERSION'"* ]]; then
+            echo "::error::Android package identity or version drifted: $badging"
+            exit 1
+          fi
+
+          unzip -Z1 "$source_apk" > "$RUNNER_TEMP/perfect-apk-contents.txt"
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            if ! grep -q "^lib/$abi/libapp\\.so$" "$RUNNER_TEMP/perfect-apk-contents.txt"; then
+              echo "::error::The universal APK is missing Flutter runtime $abi."
+              exit 1
+            fi
+          done
+
+          if [[ "$PERFECT_TRUSTED_BUILD" == "true" ]]; then
+            actual_fingerprint="$(printf '%s\n' "$signer_output" | sed -n 's/^.*certificate SHA-256 digest: //p' | head -n 1 | tr -d '[:space:]:' | tr '[:lower:]' '[:upper:]')"
+            expected_fingerprint="$(printf '%s' "$PERFECT_ANDROID_CERT_SHA256" | tr -d '[:space:]:' | tr '[:lower:]' '[:upper:]')"
+            if [[ -z "$actual_fingerprint" || "$actual_fingerprint" != "$expected_fingerprint" ]]; then
+              echo "::error::The final APK does not carry the pinned Android signing certificate."
+              exit 1
+            fi
+          fi
+
+          cp "$source_apk" "$package_apk"
+          (
+            cd "$package_dir"
+            sha256sum "$(basename "$package_apk")" > SHA256SUMS.txt
+            sha256sum --check SHA256SUMS.txt
+          )
+          echo "artifact_dir=$package_dir" >> "$GITHUB_OUTPUT"
       - name: Preserve private Android build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: perfect-android-${{ steps.android-signing.outputs.mode }}-${{ steps.android-build.outputs.mode }}-${{ github.run_id }}
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: perfect-${{ needs.prepare.outputs.artifact_version }}-android-${{ steps.android-signing.outputs.mode }}-${{ steps.android-build.outputs.mode }}
+          path: ${{ steps.android-package.outputs.artifact_dir }}
           if-no-files-found: error
           retention-days: 14
+      - name: Remove restored Android signing files
+        if: always()
+        shell: bash
+        run: |
+          rm -f \
+            "$RUNNER_TEMP/perfect-private.jks" \
+            "$RUNNER_TEMP/perfect-private-android.cer"
 
   windows:
     name: Windows desktop build
+    needs: prepare
     runs-on: windows-2025
     timeout-minutes: 25
     steps:
       - name: Check out source
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - name: Set up Flutter
-        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: 3.44.0
           channel: stable
           cache: true
       - name: Resolve locked dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
       - name: Verify Windows golden baselines
         run: flutter test --tags windows-golden
       - name: Build Windows desktop
         id: windows-build
         shell: pwsh
         env:
-          PERFECT_SUPABASE_URL: ${{ secrets.PERFECT_SUPABASE_URL }}
-          PERFECT_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.PERFECT_SUPABASE_PUBLISHABLE_KEY }}
+          PERFECT_SUPABASE_URL: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_SUPABASE_URL || '' }}
+          PERFECT_SUPABASE_PUBLISHABLE_KEY: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_SUPABASE_PUBLISHABLE_KEY || '' }}
+          PERFECT_SEMANTIC_VERSION: ${{ needs.prepare.outputs.semantic_version }}
+          PERFECT_WINDOWS_BUILD_NUMBER: ${{ needs.prepare.outputs.android_version_code }}
         run: |
           if ($env:PERFECT_SUPABASE_URL -and $env:PERFECT_SUPABASE_PUBLISHABLE_KEY) {
             flutter build windows --release `
+              --build-name="$env:PERFECT_SEMANTIC_VERSION" `
+              --build-number="$env:PERFECT_WINDOWS_BUILD_NUMBER" `
               --dart-define="SUPABASE_URL=$env:PERFECT_SUPABASE_URL" `
               --dart-define="SUPABASE_PUBLISHABLE_KEY=$env:PERFECT_SUPABASE_PUBLISHABLE_KEY" `
               --dart-define="SUPABASE_AUTH_REDIRECT_URI=perfect://login-callback"
             "mode=configured-private" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } else {
-            flutter build windows --release
+            flutter build windows --release `
+              --build-name="$env:PERFECT_SEMANTIC_VERSION" `
+              --build-number="$env:PERFECT_WINDOWS_BUILD_NUMBER"
             "mode=verification-only-unconfigured" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             Write-Warning "Supabase repository secrets are absent. This artifact verifies compilation but opens the configuration screen and is not a sync-ready install."
           }
+      - name: Complete and checksum the portable Windows bundle
+        shell: pwsh
+        run: |
+          $release = Join-Path $env:GITHUB_WORKSPACE "build/windows/x64/runner/Release"
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} `
+            "Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path -LiteralPath $vswhere)) {
+            throw "Visual Studio discovery tool was not found."
+          }
+          $visualStudio = (& $vswhere `
+            -latest `
+            -products * `
+            -property installationPath).Trim()
+          if (-not $visualStudio) {
+            throw "Visual Studio installation was not found."
+          }
+          $redistRoot = Join-Path $visualStudio "VC\Redist\MSVC"
+          $crtFolder = Get-ChildItem -LiteralPath $redistRoot -Directory |
+            Sort-Object { [version]$_.Name } -Descending |
+            ForEach-Object {
+              Get-ChildItem `
+                -Path (Join-Path $_.FullName "x64") `
+                -Directory `
+                -Filter "Microsoft.VC*.CRT" `
+                -ErrorAction SilentlyContinue |
+                Sort-Object Name -Descending |
+                Select-Object -First 1
+            } |
+            Select-Object -First 1
+          if (-not $crtFolder) {
+            throw "The x64 Visual C++ application-local runtime was not found."
+          }
+          foreach ($runtimeName in @(
+            "msvcp140.dll",
+            "vcruntime140.dll",
+            "vcruntime140_1.dll"
+          )) {
+            $source = Join-Path $crtFolder.FullName $runtimeName
+            if (-not (Test-Path -LiteralPath $source)) {
+              throw "Required portable runtime is missing: $runtimeName"
+            }
+            Copy-Item -LiteralPath $source -Destination $release -Force
+          }
+
+          $checksumPath = Join-Path $release "SHA256SUMS.txt"
+          $checksumLines = Get-ChildItem -LiteralPath $release -Recurse -File |
+            Where-Object { $_.FullName -ne $checksumPath } |
+            Sort-Object FullName |
+            ForEach-Object {
+              $relative = [IO.Path]::GetRelativePath(
+                $release,
+                $_.FullName
+              ).Replace("\", "/")
+              "$((Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash) *$relative"
+            }
+          [IO.File]::WriteAllLines(
+            $checksumPath,
+            $checksumLines,
+            [Text.UTF8Encoding]::new($false)
+          )
+          if ($checksumLines.Count -lt 10) {
+            throw "Portable bundle checksum coverage is unexpectedly incomplete."
+          }
       - name: Package signed private MSIX
         id: windows-msix
+        if: needs.prepare.outputs.trusted_build == 'true'
         shell: pwsh
         env:
           PERFECT_WINDOWS_PFX_BASE64: ${{ secrets.PERFECT_WINDOWS_PFX_BASE64 }}
           PERFECT_WINDOWS_PFX_PASSWORD: ${{ secrets.PERFECT_WINDOWS_PFX_PASSWORD }}
+          PERFECT_WINDOWS_CERT_THUMBPRINT: ${{ vars.PERFECT_WINDOWS_CERT_THUMBPRINT }}
+          PERFECT_MSIX_VERSION: ${{ needs.prepare.outputs.msix_version }}
+          PERFECT_ARTIFACT_VERSION: ${{ needs.prepare.outputs.artifact_version }}
         run: |
-          if (-not $env:PERFECT_WINDOWS_PFX_BASE64 -or -not $env:PERFECT_WINDOWS_PFX_PASSWORD) {
-            "mode=unavailable-no-signing-secret" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            Write-Warning "Private Windows signing secrets are absent. The unpackaged runner remains available, but notification identity and in-place MSIX upgrades cannot be verified."
-            exit 0
+          $missing = @(
+            "PERFECT_WINDOWS_PFX_BASE64",
+            "PERFECT_WINDOWS_PFX_PASSWORD",
+            "PERFECT_WINDOWS_CERT_THUMBPRINT"
+          ) | Where-Object { -not [Environment]::GetEnvironmentVariable($_) }
+          if ($missing.Count -gt 0) {
+            throw "Trusted Windows builds require the complete stable signing contract. Missing: $($missing -join ', ')"
           }
 
           $pfxPath = Join-Path $env:RUNNER_TEMP "perfect-private.pfx"
+          $cerPath = Join-Path $env:RUNNER_TEMP "perfect-private.cer"
           $msixOutput = Join-Path $env:GITHUB_WORKSPACE "build/windows/x64/msix"
           New-Item -ItemType Directory -Force -Path $msixOutput | Out-Null
-          [IO.File]::WriteAllBytes(
-            $pfxPath,
-            [Convert]::FromBase64String($env:PERFECT_WINDOWS_PFX_BASE64)
-          )
+          $msixVersion = $env:PERFECT_MSIX_VERSION
 
-          dart run msix:create `
-            --build-windows false `
-            --certificate-path $pfxPath `
-            --certificate-password $env:PERFECT_WINDOWS_PFX_PASSWORD `
-            --install-certificate false
-          if ($LASTEXITCODE -ne 0) {
-            throw "Private MSIX packaging failed with exit code $LASTEXITCODE."
-          }
-
-          $certificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
-            $pfxPath,
-            $env:PERFECT_WINDOWS_PFX_PASSWORD,
-            [Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet
-          )
-          [IO.File]::WriteAllBytes(
-            (Join-Path $msixOutput "Perfect-private.cer"),
-            $certificate.Export(
-              [Security.Cryptography.X509Certificates.X509ContentType]::Cert
+          $certificate = $null
+          $trustedCertificate = $null
+          $securePfxPassword = $null
+          $signingCertificatePath = $null
+          try {
+            [IO.File]::WriteAllBytes(
+              $pfxPath,
+              [Convert]::FromBase64String($env:PERFECT_WINDOWS_PFX_BASE64)
             )
-          )
-          "mode=signed-private" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            $env:PERFECT_WINDOWS_PFX_BASE64 = $null
+            $securePfxPassword = ConvertTo-SecureString `
+              $env:PERFECT_WINDOWS_PFX_PASSWORD `
+              -AsPlainText `
+              -Force
+            $env:PERFECT_WINDOWS_PFX_PASSWORD = $null
+            $importedCertificates = @(
+              Import-PfxCertificate `
+                -FilePath $pfxPath `
+                -Password $securePfxPassword `
+                -CertStoreLocation "Cert:\CurrentUser\My"
+            )
+            if ($importedCertificates.Count -ne 1) {
+              throw "The Windows PFX must contain exactly one signing certificate."
+            }
+            $certificate = $importedCertificates[0]
+            $signingCertificatePath = `
+              "Cert:\CurrentUser\My\$($certificate.Thumbprint)"
+            $expectedThumbprint = $env:PERFECT_WINDOWS_CERT_THUMBPRINT `
+              -replace "[^0-9A-Fa-f]", ""
+            if (
+              $certificate.Subject -ne "CN=K1 Perfect Private" -or
+              -not $certificate.HasPrivateKey -or
+              $certificate.Thumbprint -ne $expectedThumbprint -or
+              $certificate.NotBefore.ToUniversalTime() -gt [DateTime]::UtcNow -or
+              $certificate.NotAfter.ToUniversalTime() -lt [DateTime]::UtcNow.AddDays(30)
+            ) {
+              throw "The Windows certificate publisher, private key, fingerprint, or validity window does not match the pinned package identity."
+            }
+            $codeSigningOid = "1.3.6.1.5.5.7.3.3"
+            $hasCodeSigningEku = $certificate.Extensions |
+              Where-Object {
+                $_ -is [Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]
+              } |
+              ForEach-Object { $_.EnhancedKeyUsages } |
+              Where-Object { $_.Value -eq $codeSigningOid }
+            if (-not $hasCodeSigningEku) {
+              throw "The Windows certificate is not valid for code signing."
+            }
+
+            # The PFX password never enters process argv. msix invokes SignTool
+            # against the exact, pinned certificate in the ephemeral runner's
+            # CurrentUser store.
+            $signToolOptions = (
+              "/fd SHA256 /td SHA256 /tr " +
+              "http://timestamp.digicert.com /sha1 $expectedThumbprint"
+            )
+            dart run msix:create `
+              --build-windows false `
+              --version $msixVersion `
+              --signtool-options $signToolOptions `
+              --install-certificate false
+            if ($LASTEXITCODE -ne 0) {
+              throw "Private MSIX packaging failed with exit code $LASTEXITCODE."
+            }
+
+            [IO.File]::WriteAllBytes(
+              $cerPath,
+              $certificate.Export(
+                [Security.Cryptography.X509Certificates.X509ContentType]::Cert
+              )
+            )
+
+            $packages = @(Get-ChildItem -LiteralPath $msixOutput -Filter "*.msix")
+            if ($packages.Count -ne 1) {
+              throw "Expected exactly one MSIX package, found $($packages.Count)."
+            }
+            $package = $packages[0]
+            $finalPackageName = "Perfect-$env:PERFECT_ARTIFACT_VERSION-windows-x64.msix"
+            $finalPackagePath = Join-Path $msixOutput $finalPackageName
+            Move-Item -LiteralPath $package.FullName -Destination $finalPackagePath
+            $package = Get-Item -LiteralPath $finalPackagePath
+
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            $archive = [IO.Compression.ZipFile]::OpenRead($package.FullName)
+            try {
+              $manifestEntry = $archive.GetEntry("AppxManifest.xml")
+              if (-not $manifestEntry -or -not $archive.GetEntry("AppxSignature.p7x")) {
+                throw "MSIX is missing its manifest or package signature."
+              }
+              $reader = [IO.StreamReader]::new($manifestEntry.Open())
+              try {
+                [xml]$manifest = $reader.ReadToEnd()
+              } finally {
+                $reader.Dispose()
+              }
+
+              $namespaces = [Xml.XmlNamespaceManager]::new($manifest.NameTable)
+              $namespaces.AddNamespace(
+                "f",
+                "http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+              )
+              $namespaces.AddNamespace(
+                "uap",
+                "http://schemas.microsoft.com/appx/manifest/uap/windows10"
+              )
+              $identity = $manifest.SelectSingleNode(
+                "/f:Package/f:Identity",
+                $namespaces
+              )
+              $displayName = $manifest.SelectSingleNode(
+                "/f:Package/f:Properties/f:DisplayName",
+                $namespaces
+              )
+              $protocol = $manifest.SelectSingleNode(
+                "//uap:Protocol[@Name='perfect']",
+                $namespaces
+              )
+              if (
+                -not $identity -or
+                $identity.GetAttribute("Name") -ne "com.k1tvkli2003.perfect" -or
+                $identity.GetAttribute("Publisher") -ne "CN=K1 Perfect Private" -or
+                $identity.GetAttribute("ProcessorArchitecture") -ne "x64" -or
+                $identity.GetAttribute("Version") -ne $msixVersion -or
+                -not $displayName -or
+                $displayName.InnerText -ne "Perfect!" -or
+                -not $protocol
+              ) {
+                throw "MSIX identity, version, display name, architecture, or protocol drifted."
+              }
+            } finally {
+              $archive.Dispose()
+            }
+
+            $trustedCertificate = Import-Certificate `
+              -FilePath $cerPath `
+              -CertStoreLocation "Cert:\CurrentUser\TrustedPeople"
+            $signTool = Get-ChildItem `
+              -Path "${env:ProgramFiles(x86)}\Windows Kits\10\bin" `
+              -Filter "signtool.exe" `
+              -Recurse |
+              Where-Object { $_.FullName -match '\\x64\\signtool\.exe$' } |
+              Sort-Object FullName -Descending |
+              Select-Object -First 1
+            if (-not $signTool) {
+              throw "The Windows SDK signing verifier was not found."
+            }
+            & $signTool.FullName verify /pa /all /v $package.FullName
+            if ($LASTEXITCODE -ne 0) {
+              throw "MSIX signature verification failed with exit code $LASTEXITCODE."
+            }
+
+            Copy-Item `
+              -LiteralPath $cerPath `
+              -Destination (Join-Path $msixOutput "Perfect-private.cer")
+            $checksumPath = Join-Path $msixOutput "SHA256SUMS.txt"
+            $checksumLines = Get-ChildItem -LiteralPath $msixOutput -File |
+              Where-Object { $_.FullName -ne $checksumPath } |
+              Sort-Object Name |
+              ForEach-Object {
+                "$((Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash) *$($_.Name)"
+              }
+            [IO.File]::WriteAllLines(
+              $checksumPath,
+              $checksumLines,
+              [Text.UTF8Encoding]::new($false)
+            )
+            if ($checksumLines.Count -ne 2) {
+              throw "Signed MSIX checksum coverage must include exactly the package and public certificate."
+            }
+            "mode=signed-private" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "version=$msixVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } finally {
+            if ($trustedCertificate) {
+              Remove-Item `
+                -LiteralPath "Cert:\CurrentUser\TrustedPeople\$($trustedCertificate.Thumbprint)" `
+                -Force
+            }
+            if ($certificate) {
+              $certificate.Dispose()
+            }
+            if ($signingCertificatePath -and (
+              Test-Path -LiteralPath $signingCertificatePath
+            )) {
+              Remove-Item -LiteralPath $signingCertificatePath -Force
+            }
+            if ($securePfxPassword) {
+              $securePfxPassword.Dispose()
+            }
+            Remove-Item -LiteralPath $pfxPath,$cerPath -Force -ErrorAction SilentlyContinue
+          }
       - name: Preserve private Windows build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: perfect-windows-x64-${{ steps.windows-build.outputs.mode }}-${{ github.run_id }}
+          name: perfect-${{ needs.prepare.outputs.artifact_version }}-windows-x64-portable-${{ steps.windows-build.outputs.mode }}
           path: build/windows/x64/runner/Release
           if-no-files-found: error
           retention-days: 14
       - name: Preserve signed private Windows installer
         if: steps.windows-msix.outputs.mode == 'signed-private'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: perfect-windows-msix-${{ steps.windows-build.outputs.mode }}-${{ github.run_id }}
+          name: perfect-${{ needs.prepare.outputs.artifact_version }}-windows-x64-msix-${{ steps.windows-build.outputs.mode }}
           path: |
-            build/windows/x64/msix/*.msix
+            build/windows/x64/msix/Perfect-*-windows-x64.msix
             build/windows/x64/msix/Perfect-private.cer
+            build/windows/x64/msix/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 14

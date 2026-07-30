@@ -9,15 +9,14 @@
     android:paddingStart="4dp"
     android:paddingEnd="4dp">
 
-    <TextView
+    <ImageView
         android:id="@+id/widget_item_check"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:gravity="center"
-        android:text="○"
-        android:textColor="@color/perfect_widget_apricot"
-        android:textDirection="locale"
-        android:textSize="24sp" />
+        android:contentDescription="Task outcome. Tap to cycle."
+        android:padding="10dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/perfect_widget_status_pending" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -32,7 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:maxLines="2"
             android:textColor="@color/perfect_widget_ink"
             android:textDirection="locale"
             android:textSize="14sp"
@@ -51,10 +50,10 @@
 
     <TextView
         android:id="@+id/widget_item_state"
-        android:layout_width="42dp"
+        android:layout_width="64dp"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:maxLines="1"
+        android:maxLines="2"
         android:textColor="@color/perfect_widget_muted"
         android:textDirection="locale"
         android:textSize="10sp" />

@@ -174,6 +174,36 @@ class PlannerImportMarkers extends Table {
   Set<Column> get primaryKey => <Column>{ownerId, source, sourceId};
 }
 
+/// Local-only ordering clock for Android widget task outcomes.
+///
+/// This table is deliberately not part of the Supabase data model or outbox.
+/// It serializes background and foreground executors that may open independent
+/// SQLite connections to the same private planner database.
+@DataClassName('PlannerWidgetActionSequenceRow')
+class PlannerWidgetActionSequences extends Table {
+  @override
+  String get tableName => 'planner_widget_action_sequences';
+
+  TextColumn get ownerId => text()();
+  TextColumn get entityId => text()();
+  TextColumn get localDay => text()();
+  IntColumn get sequenceDomain => integer()();
+  IntColumn get queueSequence => integer()();
+  IntColumn get occurredAtMicros => integer()();
+  TextColumn get actionId => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => <Column>{ownerId, entityId, localDay};
+
+  @override
+  List<String> get customConstraints => <String>[
+    'CHECK (sequence_domain IN (0, 1))',
+    'CHECK (queue_sequence >= 0)',
+    'CHECK (occurred_at_micros >= 0)',
+  ];
+}
+
 @DriftDatabase(
   tables: <Type>[
     PlannerEntities,
@@ -183,6 +213,7 @@ class PlannerImportMarkers extends Table {
     PlannerSyncMetadata,
     PlannerConflicts,
     PlannerImportMarkers,
+    PlannerWidgetActionSequences,
   ],
 )
 class PlannerDatabase extends _$PlannerDatabase {
@@ -190,7 +221,7 @@ class PlannerDatabase extends _$PlannerDatabase {
     : super(executor ?? driftDatabase(name: 'perfect_planner'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -212,6 +243,17 @@ class PlannerDatabase extends _$PlannerDatabase {
         'CREATE INDEX planner_conflicts_owner_status_idx '
         'ON planner_conflicts(owner_id, status, created_at DESC)',
       );
+    },
+    onUpgrade: (Migrator migrator, int from, int to) async {
+      if (from < 2) {
+        await migrator.createTable(plannerWidgetActionSequences);
+      }
+    },
+    beforeOpen: (OpeningDetails details) async {
+      // Android widget and foreground engines can briefly contend for the
+      // same local file. Wait for the active transaction instead of surfacing
+      // SQLITE_BUSY and dropping an otherwise valid widget tap.
+      await customStatement('PRAGMA busy_timeout = 5000');
     },
   );
 }

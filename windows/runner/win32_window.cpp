@@ -29,8 +29,12 @@ constexpr const wchar_t kGetPreferredBrightnessRegValue[] = L"AppsUseLightTheme"
 constexpr const wchar_t kWindowPlacementRegKey[] =
     L"Software\\Perfect\\Window";
 constexpr DWORD kWindowPlacementVersion = 1;
-constexpr int kMinimumWindowWidth = 760;
-constexpr int kMinimumWindowHeight = 560;
+// Keep the host itself narrow enough to expose Flutter's compact workspace
+// (<640 logical px) and short-landscape workspace (<520 logical px). The
+// previous 760x560 floor made both responsive states unreachable on a normal
+// 100% DPI desktop.
+constexpr int kMinimumWindowWidth = 520;
+constexpr int kMinimumWindowHeight = 420;
 
 struct SavedWindowPlacement {
   DWORD version;
@@ -50,6 +54,30 @@ using EnableNonClientDpiScaling = BOOL __stdcall(HWND hwnd);
 // scale factor
 int Scale(int source, double scale_factor) {
   return static_cast<int>(source * scale_factor);
+}
+
+POINT MinimumTrackSizeForWindow(HWND window) {
+  const UINT dpi = GetDpiForWindow(window);
+  const double scale_factor = dpi / 96.0;
+  POINT minimum{
+      Scale(kMinimumWindowWidth, scale_factor),
+      Scale(kMinimumWindowHeight, scale_factor),
+  };
+
+  // A logical minimum must never make the physical window larger than the
+  // monitor's usable work area. This matters on compact displays and when
+  // Windows scaling is 150–200%.
+  HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST);
+  MONITORINFO monitor_info{};
+  monitor_info.cbSize = sizeof(monitor_info);
+  if (GetMonitorInfo(monitor, &monitor_info)) {
+    const RECT work = monitor_info.rcWork;
+    minimum.x = std::min(
+        minimum.x, static_cast<LONG>(work.right - work.left));
+    minimum.y = std::min(
+        minimum.y, static_cast<LONG>(work.bottom - work.top));
+  }
+  return minimum;
 }
 
 // Dynamically loads the |EnableNonClientDpiScaling| from the User32 module.
@@ -253,12 +281,7 @@ Win32Window::MessageHandler(HWND hwnd,
 
     case WM_GETMINMAXINFO: {
       auto min_max = reinterpret_cast<MINMAXINFO*>(lparam);
-      const UINT dpi = GetDpiForWindow(hwnd);
-      const double scale_factor = dpi / 96.0;
-      min_max->ptMinTrackSize.x =
-          Scale(kMinimumWindowWidth, scale_factor);
-      min_max->ptMinTrackSize.y =
-          Scale(kMinimumWindowHeight, scale_factor);
+      min_max->ptMinTrackSize = MinimumTrackSizeForWindow(hwnd);
       return 0;
     }
 
@@ -347,13 +370,19 @@ bool Win32Window::ReadSavedPlacement(Point* origin,
   }
   const UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
   const double scale_factor = dpi / 96.0;
-  const int logical_width = static_cast<int>(saved.width / scale_factor);
-  const int logical_height = static_cast<int>(saved.height / scale_factor);
-  if (logical_width < kMinimumWindowWidth ||
-      logical_height < kMinimumWindowHeight) {
+  const RECT work = monitor_info.rcWork;
+  const int minimum_physical_width =
+      std::min(Scale(kMinimumWindowWidth, scale_factor),
+               static_cast<int>(work.right - work.left));
+  const int minimum_physical_height =
+      std::min(Scale(kMinimumWindowHeight, scale_factor),
+               static_cast<int>(work.bottom - work.top));
+  if (saved.width < minimum_physical_width ||
+      saved.height < minimum_physical_height) {
     return false;
   }
-  const RECT work = monitor_info.rcWork;
+  const int logical_width = static_cast<int>(saved.width / scale_factor);
+  const int logical_height = static_cast<int>(saved.height / scale_factor);
   const int logical_x =
       work.left + static_cast<int>((saved.left - work.left) / scale_factor);
   const int logical_y =

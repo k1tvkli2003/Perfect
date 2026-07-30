@@ -658,6 +658,40 @@ void main() {
     expect(widgetBridge.publishCalls, 0);
     await controller.disposeAsync();
   });
+
+  test('resume performs a full remote sync before refreshing today', () async {
+    final database = PlannerDatabase(NativeDatabase.memory());
+    final local = PlannerLocalStore(database);
+    final remote = _CountingGateway();
+    final controller = PlannerWorkspaceController(
+      local,
+      PlannerSyncRepository(
+        local,
+        remote,
+        ownerId: 'resume-owner',
+        deviceId: '11111111-1111-4111-8111-111111111111',
+      ),
+      ownerId: 'resume-owner',
+    );
+    addTearDown(controller.disposeAsync);
+    await controller.start();
+    await controller.refresh();
+    final pullsBeforeResume = remote.pullCalls;
+    final projectionBeforeResume = controller.todayProjectionRevision;
+
+    await controller.resume();
+
+    expect(
+      remote.pullCalls,
+      pullsBeforeResume + 2,
+      reason:
+          'A complete sync pulls once before and once after pending pushes.',
+    );
+    expect(
+      controller.todayProjectionRevision,
+      greaterThan(projectionBeforeResume),
+    );
+  });
 }
 
 class _RecordingReminderScheduler implements PlannerReminderScheduler {
@@ -716,6 +750,36 @@ class _DisconnectedGateway implements PlannerRemoteGateway {
     changes: const <PlannerRemoteChange>[],
     requestedLimit: limit,
   );
+
+  @override
+  Future<List<Map<String, dynamic>>> readLegacyItems() async =>
+      const <Map<String, dynamic>>[];
+
+  @override
+  Future<void> subscribe(void Function() onChangeHint) async {}
+}
+
+class _CountingGateway implements PlannerRemoteGateway {
+  int pullCalls = 0;
+
+  @override
+  Future<PlannerRemoteMutationResult> apply(PlannerRemoteMutation mutation) =>
+      throw StateError('No mutation was expected.');
+
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  Future<PlannerRemoteChangePage> pull({
+    required int afterChangeId,
+    required int limit,
+  }) async {
+    pullCalls++;
+    return PlannerRemoteChangePage(
+      changes: const <PlannerRemoteChange>[],
+      requestedLimit: limit,
+    );
+  }
 
   @override
   Future<List<Map<String, dynamic>>> readLegacyItems() async =>

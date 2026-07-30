@@ -20,20 +20,60 @@ void main() {
         'android/app/src/main/res/layout/'
         'perfect_today_widget_item_compact.xml',
       ).readAsStringSync();
+      final regularItem = File(
+        'android/app/src/main/res/layout/perfect_today_widget_item.xml',
+      ).readAsStringSync();
+      final quickAddActivity = File(
+        'android/app/src/main/kotlin/com/k1tvkli2003/perfect/'
+        'PerfectWidgetQuickAddActivity.kt',
+      ).readAsStringSync();
+      final quickAddLayout = File(
+        'android/app/src/main/res/layout/perfect_widget_quick_add.xml',
+      ).readAsStringSync();
       final layouts = <String>[
-        for (final size in <String>['small', 'wide', 'large'])
+        for (final size in <String>['small', 'tall', 'wide', 'large'])
           File(
             'android/app/src/main/res/layout/perfect_today_widget_$size.xml',
           ).readAsStringSync(),
       ];
 
       expect(layouts.every((layout) => layout.contains('<ListView')), isTrue);
+      expect(
+        layouts.every(
+          (layout) => layout.contains('android:id="@+id/widget_quick_add"'),
+        ),
+        isTrue,
+      );
       expect(provider, contains('onAppWidgetOptionsChanged'));
       expect(provider, contains('perfect_today_widget_small'));
+      expect(provider, contains('perfect_today_widget_tall'));
+      expect(
+        provider,
+        contains('Build.VERSION.SDK_INT >= Build.VERSION_CODES.S'),
+      );
+      expect(provider, contains('RemoteViews('));
+      expect(provider, contains('linkedMapOf('));
+      expect(provider, contains('SizeF(110f, 110f)'));
+      expect(provider, contains('SizeF(110f, 180f)'));
+      expect(provider, contains('SizeF(220f, 110f)'));
+      expect(provider, contains('SizeF(260f, 220f)'));
       expect(provider, contains('PerfectTodayWidgetRefreshReceiver'));
+      expect(provider, contains('setImageViewResource'));
+      expect(provider, contains('perfect_widget_status_completed'));
+      expect(provider, isNot(contains('"completed" -> "✓"')));
       expect(provider, contains('setAndAllowWhileIdle'));
       expect(provider, contains('dateKey != LocalDate.now().toString()'));
       expect(provider, contains('PendingIntent.FLAG_MUTABLE'));
+      expect(provider, contains('PerfectWidgetQuickAddActivity::class.java'));
+      expect(
+        provider,
+        contains('setOnClickPendingIntent(R.id.widget_quick_add'),
+      );
+      expect(provider, contains('PENDING_QUICK_ADDS_KEY'));
+      expect(provider, contains('ACKNOWLEDGED_QUICK_ADDS_KEY'));
+      expect(provider, contains('private const val MAX_QUICK_ADDS = 256'));
+      expect(provider, contains('fun enqueueQuickAdd('));
+      expect(provider, isNot(contains('.appendQueryParameter("title"')));
       expect(provider, contains('EXTRA_COMPACT_LAYOUT'));
       expect(provider, contains('perfect_today_widget_item_compact'));
       expect(provider, contains('ACTION_SEQUENCE_KEY'));
@@ -48,8 +88,15 @@ void main() {
       expect(compactItem, contains('android:minHeight="48dp"'));
       expect(compactItem, contains('android:layout_width="48dp"'));
       expect(compactItem, contains('android:id="@+id/widget_item_title"'));
+      expect(compactItem, contains('<ImageView'));
+      expect(compactItem, isNot(contains('android:text="○"')));
       expect(compactItem, isNot(contains('widget_item_state')));
       expect(compactItem, contains('android:textDirection="locale"'));
+      expect(regularItem, contains('android:layout_width="64dp"'));
+      expect(
+        RegExp('android:maxLines="2"').allMatches(regularItem),
+        hasLength(greaterThanOrEqualTo(2)),
+      );
       expect(
         provider,
         contains(
@@ -59,6 +106,8 @@ void main() {
         ),
       );
       expect(info, contains('android:resizeMode="horizontal|vertical"'));
+      expect(info, contains('android:minResizeWidth="110dp"'));
+      expect(info, contains('android:minResizeHeight="110dp"'));
       expect(info, contains('android:updatePeriodMillis="1800000"'));
       expect(
         manifest,
@@ -67,6 +116,28 @@ void main() {
       expect(
         manifest,
         contains('android:permission="android.permission.BIND_REMOTEVIEWS"'),
+      );
+      expect(
+        manifest,
+        contains('android:name=".PerfectWidgetQuickAddActivity"'),
+      );
+      expect(manifest, contains('android:excludeFromRecents="true"'));
+      expect(manifest, contains('android:noHistory="true"'));
+      expect(
+        quickAddActivity,
+        contains('PerfectTodayWidgetStore.enqueueQuickAdd'),
+      );
+      expect(
+        quickAddActivity,
+        contains('HomeWidgetBackgroundIntent.getBroadcast'),
+      );
+      expect(quickAddActivity, isNot(contains('PlannerDatabase')));
+      expect(quickAddActivity, isNot(contains('PlannerLocalStore')));
+      expect(quickAddLayout, contains('android:maxLength="160"'));
+      expect(quickAddLayout, contains('android:imeOptions="actionDone"'));
+      expect(
+        quickAddLayout,
+        contains('android:accessibilityLiveRegion="polite"'),
       );
       expect(manifest, contains('android:supportsRtl="true"'));
       expect(

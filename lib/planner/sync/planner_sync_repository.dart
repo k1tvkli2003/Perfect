@@ -10,6 +10,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+typedef PlannerSyncRetryTimerFactory =
+    Timer Function(Duration delay, void Function() callback);
+
+Timer _createPlannerSyncRetryTimer(Duration delay, void Function() callback) =>
+    Timer(delay, callback);
+
 /// UI-visible state for an asynchronous, local-first sync attempt. A page
 /// reads its projection from Drift and never waits on this state to render.
 enum PlannerSyncPhase { idle, syncing, offline, needsAttention }
@@ -159,9 +165,11 @@ class PlannerSyncRepository {
     PersonalItemsStore? legacyStore,
     Duration retryBaseDelay = const Duration(seconds: 5),
     Duration retryMaxDelay = const Duration(minutes: 5),
+    PlannerSyncRetryTimerFactory? retryTimerFactory,
   }) : _legacyStore = legacyStore ?? PersonalItemsStore(),
        _retryBaseDelay = retryBaseDelay,
-       _retryMaxDelay = retryMaxDelay {
+       _retryMaxDelay = retryMaxDelay,
+       _retryTimerFactory = retryTimerFactory ?? _createPlannerSyncRetryTimer {
     if (retryBaseDelay <= Duration.zero || retryMaxDelay < retryBaseDelay) {
       throw ArgumentError(
         'Sync retry delays must be positive and max must not be below base.',
@@ -176,6 +184,7 @@ class PlannerSyncRepository {
   final PersonalItemsStore _legacyStore;
   final Duration _retryBaseDelay;
   final Duration _retryMaxDelay;
+  final PlannerSyncRetryTimerFactory _retryTimerFactory;
   final String ownerId;
   final String deviceId;
   final ValueNotifier<PlannerSyncStatus> syncStatus =
@@ -184,7 +193,7 @@ class PlannerSyncRepository {
   Future<void>? _activeSync;
   Timer? _retryTimer;
   bool _syncRequested = false;
-  int _connectivityFailureCount = 0;
+  int _consecutiveFailureCount = 0;
   bool _started = false;
   bool _disposed = false;
 
@@ -240,7 +249,7 @@ class PlannerSyncRepository {
       await _pullAllChanges();
       if (_disposed) return;
       final metadata = await _localStore.markSyncSuccess(ownerId: ownerId);
-      _connectivityFailureCount = 0;
+      _consecutiveFailureCount = 0;
       _retryTimer?.cancel();
       _retryTimer = null;
       syncStatus.value = PlannerSyncStatus.idle(
@@ -258,18 +267,18 @@ class PlannerSyncRepository {
         message: summary,
         lastSuccessfulSyncAt: syncStatus.value.lastSuccessfulSyncAt,
       );
-      if (connectivityFailure) _scheduleConnectivityRetry();
+      _scheduleRetry();
     }
   }
 
-  void _scheduleConnectivityRetry() {
+  void _scheduleRetry() {
     if (_disposed || _retryTimer?.isActive == true) return;
-    _connectivityFailureCount++;
-    final exponent = (_connectivityFailureCount - 1).clamp(0, 20).toInt();
+    _consecutiveFailureCount++;
+    final exponent = (_consecutiveFailureCount - 1).clamp(0, 20).toInt();
     final multiplier = 1 << exponent;
     final calculated = _retryBaseDelay * multiplier;
     final delay = calculated > _retryMaxDelay ? _retryMaxDelay : calculated;
-    _retryTimer = Timer(delay, () {
+    _retryTimer = _retryTimerFactory(delay, () {
       _retryTimer = null;
       if (!_disposed) unawaited(syncNow());
     });

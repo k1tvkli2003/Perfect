@@ -4,7 +4,7 @@
 product:
   display_name: "Perfect!"
   slug: perfect
-  version_source: pubspec.yaml
+  version_source: pubspec semantic version plus Android epoch and the deterministic GitHub Actions run number
   channel: private GitHub Actions artifacts only
   public_releases: false
 
@@ -12,18 +12,26 @@ targets:
   android:
     application_id: com.k1tvkli2003.perfect
     architectures: [universal-release-apk]
-    artifact: app-release.apk
+    version_mapping:
+      version_name: pubspec MAJOR.MINOR.PATCH
+      version_code: pubspec BUILD epoch plus GitHub Actions run number
+    artifact: perfect-MAJOR.MINOR.PATCH-build.VERSION_CODE-android-universal.apk
     signing: stable private JKS supplied only through GitHub Actions secrets
+    signing_certificate_pin: PERFECT_ANDROID_CERT_SHA256 repository variable
   windows:
     architecture: x64
-    artifacts: [unpackaged-release-runner, signed-private-msix, public-install-certificate]
+    artifacts: [checksummed-portable-release-bundle, signed-private-msix, public-install-certificate]
     identity: com.k1tvkli2003.perfect
     publisher: CN=K1 Perfect Private
+    version_mapping:
+      msix_version: MAJOR.MINOR.PATCH.GITHUB_RUN_NUMBER
     signing: stable private PFX supplied only through GitHub Actions secrets
+    signing_certificate_pin: PERFECT_WINDOWS_CERT_THUMBPRINT repository variable
 
 workflow:
   default_branch: main
   triggers: [pull_request, push-to-main, workflow_dispatch]
+  trusted_signing_events: [push-to-main, workflow_dispatch-on-main]
   artifact_retention_days: 14
   optional_runtime_secrets:
     - PERFECT_SUPABASE_URL
@@ -36,10 +44,22 @@ workflow:
     - PERFECT_ANDROID_KEYSTORE_PASSWORD
     - PERFECT_ANDROID_KEY_ALIAS
     - PERFECT_ANDROID_KEY_PASSWORD
+  public_identity_variables:
+    - PERFECT_ANDROID_CERT_SHA256
+    - PERFECT_WINDOWS_CERT_THUMBPRINT
   publication: disabled
 
 constraints:
   - Do not put Supabase credentials, Android keystores, PFX files, or passwords in this repository or workflow.
+  - Pull requests and manual runs outside main never receive Supabase or signing secrets; private signing runs only for trusted push-to-main or workflow_dispatch-on-main builds.
+  - A rerun keeps the same Android versionCode and MSIX version, while each later workflow run receives a larger revision for in-place upgrades.
+  - The checked-in pubspec BUILD value is an Android epoch. It may increase but never decrease, and lets trusted CI remain above private/local artifacts that were installed before the workflow lineage began.
+  - CI rejects a semantic-version regression against the previous commit so the four-part MSIX version remains install-over compatible.
+  - Trusted builds fail closed when a signing secret or public certificate pin is missing; verification-only PR builds use the debug key and are never labeled update-compatible.
+  - Secret values are supplied through protected environment/stdin boundaries and never placed in a child process command line.
+  - The Android application ID, JKS alias/certificate fingerprint, Windows package identity/publisher, and PFX thumbprint are immutable update-lineage fields.
+  - The portable bundle carries the matching application-local Visual C++ runtime and a SHA256SUMS manifest.
+  - The Android APK and signed MSIX artifact each carry a post-signing SHA256SUMS manifest.
   - The MSIX certificate is trusted only on the user's own Windows devices; no store or public trust is implied.
   - The public CER may travel with the private artifact, but its matching PFX must remain a repository secret.
-  - If signing secrets are absent, CI keeps compilation verifiable but labels the resulting artifacts as non-durable fallbacks.
+  - If signing secrets are absent, untrusted CI keeps compilation verifiable but labels the resulting artifacts as non-durable fallbacks; trusted CI stops instead of publishing a misleading replacement identity.

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://perfect.local/contracts/ai-action-result-v1.schema.json",
+  "title": "Perfect Private AI Action Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operation_id",
+    "idempotency_key",
+    "conversation_id",
+    "message_id",
+    "status",
+    "proposal",
+    "result"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "operation_id": {
+      "$ref": "#/$defs/nonNilUuid"
+    },
+    "idempotency_key": {
+      "$ref": "#/$defs/nonNilUuid"
+    },
+    "conversation_id": {
+      "$ref": "#/$defs/nonNilUuid"
+    },
+    "message_id": {
+      "$ref": "#/$defs/nonNilUuid"
+    },
+    "status": {
+      "enum": [
+        "applied",
+        "rejected",
+        "failed"
+      ]
+    },
+    "proposal": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "request_id": {
+      "$ref": "#/$defs/nonNilUuid"
+    },
+    "applied_submission_id": {
+      "$ref": "#/$defs/nonNilUuid"
+    },
+    "error_code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    }
+  },
+  "$defs": {
+    "nonNilUuid": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^(?!00000000-0000-0000-0000-000000000000$)[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    }
+  }
+}

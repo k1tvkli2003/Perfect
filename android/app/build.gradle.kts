@@ -12,13 +12,23 @@ val privateKeyAlias =
     providers.environmentVariable("PERFECT_ANDROID_KEY_ALIAS").orNull
 val privateKeyPassword =
     providers.environmentVariable("PERFECT_ANDROID_KEY_PASSWORD").orNull
-val hasPrivateReleaseSigning =
+val privateSigningValues =
     listOf(
         privateKeystorePath,
         privateKeystorePassword,
         privateKeyAlias,
         privateKeyPassword,
-    ).all { !it.isNullOrBlank() }
+    )
+val hasAnyPrivateReleaseSigning =
+    privateSigningValues.any { !it.isNullOrBlank() }
+val hasPrivateReleaseSigning =
+    privateSigningValues.all { !it.isNullOrBlank() }
+
+require(!hasAnyPrivateReleaseSigning || hasPrivateReleaseSigning) {
+    "Perfect private Android signing is only partially configured. " +
+        "Provide the complete stable JKS path/password/alias/key-password set " +
+        "or remove all four values for a local verification-only build."
+}
 
 android {
     namespace = "com.k1tvkli2003.perfect"

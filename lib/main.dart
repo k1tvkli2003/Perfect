@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:perfect/ai/perfect_ai_client.dart';
 import 'package:perfect/app/app_config.dart';
 import 'package:perfect/app/perfect_preferences.dart';
 import 'package:perfect/auth/auth_page.dart';
@@ -9,6 +10,7 @@ import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/notifications/planner_reminder_scheduler.dart';
 import 'package:perfect/planner/sync/planner_sync_repository.dart';
+import 'package:perfect/presentation/perfect_brand.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 import 'package:perfect/presentation/perfect_workspace_page.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
@@ -16,58 +18,128 @@ import 'package:perfect/widgets/perfect_today_widget_background.dart';
 import 'package:perfect/widgets/perfect_today_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  runApp(const PerfectApp());
+}
 
-  await AppConfig.load();
+typedef PerfectAppBootstrapper = Future<PerfectAppBootstrapResult> Function();
+typedef PerfectWidgetBackgroundRegistrar = Future<void> Function();
+
+@immutable
+class PerfectAppBootstrapResult {
+  const PerfectAppBootstrapResult({
+    required this.themeMode,
+    required this.supabaseReady,
+    this.configurationError,
+  });
+
+  final ThemeMode themeMode;
+  final bool supabaseReady;
+  final Object? configurationError;
+}
+
+Future<PerfectAppBootstrapResult> _bootstrapPerfectApp() async {
+  final themeModeFuture = _readThemeModeSafely();
   var supabaseReady = false;
   Object? configurationError;
-  if (AppConfig.isConfigured) {
-    try {
+  try {
+    await AppConfig.load();
+    if (AppConfig.isConfigured) {
       await Supabase.initialize(
         url: AppConfig.supabaseUrl,
         publishableKey: AppConfig.supabasePublishableKey,
       );
       supabaseReady = true;
-    } on Object catch (error) {
-      configurationError = error;
     }
+  } on Object catch (error) {
+    configurationError = error;
   }
-
-  // Android registers a background callback for direct home-screen task
-  // actions. The helper is no-op-safe on Windows and never blocks startup.
-  await registerPerfectTodayWidgetBackgroundCallback();
-
-  final themeMode = await PerfectPreferences.readThemeMode();
-  runApp(
-    PerfectApp(
-      initialThemeMode: themeMode,
-      initialSupabaseReady: supabaseReady,
-      initialConfigurationError: configurationError,
-    ),
+  return PerfectAppBootstrapResult(
+    themeMode: await themeModeFuture,
+    supabaseReady: supabaseReady,
+    configurationError: configurationError,
   );
+}
+
+Future<ThemeMode> _readThemeModeSafely() async {
+  try {
+    return await PerfectPreferences.readThemeMode();
+  } on Object {
+    return ThemeMode.system;
+  }
 }
 
 class PerfectApp extends StatefulWidget {
   const PerfectApp({
     super.key,
-    this.initialThemeMode = ThemeMode.system,
-    this.initialSupabaseReady = false,
-    this.initialConfigurationError,
+    this.bootstrapper,
+    this.widgetBackgroundRegistrar,
   });
 
-  final ThemeMode initialThemeMode;
-  final bool initialSupabaseReady;
-  final Object? initialConfigurationError;
+  final PerfectAppBootstrapper? bootstrapper;
+  final PerfectWidgetBackgroundRegistrar? widgetBackgroundRegistrar;
 
   @override
   State<PerfectApp> createState() => _PerfectAppState();
 }
 
 class _PerfectAppState extends State<PerfectApp> {
-  late ThemeMode _themeMode = widget.initialThemeMode;
-  late bool _supabaseReady = widget.initialSupabaseReady;
-  late Object? _configurationError = widget.initialConfigurationError;
+  ThemeMode _themeMode = ThemeMode.system;
+  bool _bootstrapComplete = false;
+  bool _supabaseReady = false;
+  Object? _configurationError;
+
+  @override
+  void initState() {
+    super.initState();
+    // Paint the owned Perfect surface first. Storage, platform channels,
+    // Supabase session recovery, and widget registration begin only after that
+    // first frame, so a slow plugin cannot hold Android's first frame hostage.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_registerWidgetBackground());
+      unawaited(_bootstrap());
+    });
+  }
+
+  Future<void> _registerWidgetBackground() async {
+    try {
+      await (widget.widgetBackgroundRegistrar ??
+          registerPerfectTodayWidgetBackgroundCallback)();
+    } on Object catch (error, stackTrace) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'Perfect widget bootstrap',
+          context: ErrorDescription(
+            'while registering non-blocking home widget interactivity',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _bootstrap() async {
+    PerfectAppBootstrapResult result;
+    try {
+      result = await (widget.bootstrapper ?? _bootstrapPerfectApp)();
+    } on Object catch (error) {
+      result = PerfectAppBootstrapResult(
+        themeMode: ThemeMode.system,
+        supabaseReady: false,
+        configurationError: error,
+      );
+    }
+    if (!mounted) return;
+    setState(() {
+      _themeMode = result.themeMode;
+      _supabaseReady = result.supabaseReady;
+      _configurationError = result.configurationError;
+      _bootstrapComplete = true;
+    });
+  }
 
   void _changeThemeMode(ThemeMode value) {
     if (_themeMode == value) return;
@@ -119,7 +191,9 @@ class _PerfectAppState extends State<PerfectApp> {
     theme: PerfectTheme.light(),
     darkTheme: PerfectTheme.dark(),
     themeMode: _themeMode,
-    home: _supabaseReady
+    home: !_bootstrapComplete
+        ? const _PerfectBootstrapSurface()
+        : _supabaseReady
         ? _AuthenticatedApp(
             themeMode: _themeMode,
             onThemeModeChanged: _changeThemeMode,
@@ -130,6 +204,85 @@ class _PerfectAppState extends State<PerfectApp> {
             initialError: _configurationError,
           ),
   );
+}
+
+class _PerfectBootstrapSurface extends StatelessWidget {
+  const _PerfectBootstrapSurface();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Scaffold(
+      key: const ValueKey<String>('perfect-bootstrap'),
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: <Color>[
+              colors.surface,
+              colors.primaryContainer.withValues(alpha: .48),
+              colors.secondaryContainer.withValues(alpha: .42),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(PerfectSpace.xl),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 360),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: colors.surface.withValues(alpha: .88),
+                        borderRadius: BorderRadius.circular(32),
+                        border: Border.all(color: colors.outlineVariant),
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                            color: colors.shadow.withValues(alpha: .08),
+                            blurRadius: 28,
+                            offset: const Offset(0, 14),
+                          ),
+                        ],
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(18),
+                        child: PerfectMark(size: 82),
+                      ),
+                    ),
+                    const SizedBox(height: PerfectSpace.lg),
+                    const PerfectWordmark(fontSize: 36),
+                    const SizedBox(height: PerfectSpace.sm),
+                    Text(
+                      'Opening your day',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: PerfectSpace.xl),
+                    SizedBox(
+                      width: 92,
+                      child: LinearProgressIndicator(
+                        minHeight: 5,
+                        borderRadius: BorderRadius.circular(999),
+                        color: colors.primary,
+                        backgroundColor: colors.surfaceContainerHighest,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _AuthenticatedApp extends StatefulWidget {
@@ -346,9 +499,7 @@ class _PlannerWorkspaceScopeState extends State<_PlannerWorkspaceScope>
   Future<void> _refreshAfterResume() async {
     final controller = _controller;
     if (controller == null || _isDisposed) return;
-    await controller.reconcileTodayWidgetActions();
-    if (_isDisposed) return;
-    await controller.refreshTodayProjection();
+    await controller.resume();
   }
 
   Future<void> _signOut() async {
@@ -372,6 +523,7 @@ class _PlannerWorkspaceScopeState extends State<_PlannerWorkspaceScope>
           }
           return PerfectWorkspacePage(
             controller: controller,
+            aiClient: SupabasePerfectAiClient(Supabase.instance.client),
             themeMode: widget.themeMode,
             onThemeModeChanged: widget.onThemeModeChanged,
             onSignOut: _signOut,

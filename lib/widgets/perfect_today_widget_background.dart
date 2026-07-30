@@ -19,9 +19,11 @@ Future<void> perfectTodayWidgetBackgroundCallback(Uri? uri) async {
   DartPluginRegistrant.ensureInitialized();
 
   final action = PerfectTodayWidgetBridge.actionFromBackgroundUri(uri);
+  final quickAddRequest =
+      PerfectTodayWidgetBridge.quickAddRequestFromBackgroundUri(uri);
   final refresh = PerfectTodayWidgetBridge.refreshRequestFromBackgroundUri(uri);
   final candidateToken = uri?.queryParameters['token'];
-  if ((action == null && refresh == null) ||
+  if ((action == null && quickAddRequest == null && refresh == null) ||
       candidateToken == null ||
       candidateToken.isEmpty) {
     return;
@@ -30,7 +32,8 @@ Future<void> perfectTodayWidgetBackgroundCallback(Uri? uri) async {
   final bridge = const PerfectTodayWidgetBridge();
   final security = await bridge.readSecurityContext();
   if (security == null ||
-      security.ownerId != (action?.ownerId ?? refresh?.ownerId) ||
+      security.ownerId !=
+          (action?.ownerId ?? quickAddRequest?.ownerId ?? refresh?.ownerId) ||
       !PerfectTodayWidgetBridge.secretsMatch(security.token, candidateToken)) {
     return;
   }
@@ -38,6 +41,25 @@ Future<void> perfectTodayWidgetBackgroundCallback(Uri? uri) async {
   final database = PlannerDatabase();
   final store = PlannerLocalStore(database);
   try {
+    if (quickAddRequest != null) {
+      final queuedQuickAdds = await bridge.pendingQuickAdds();
+      if (queuedQuickAdds.any(
+        (queued) =>
+            queued.id == quickAddRequest.id &&
+            queued.ownerId == security.ownerId,
+      )) {
+        await replayPerfectTodayWidgetQuickAdds(
+          store: store,
+          ownerId: security.ownerId,
+          requests: queuedQuickAdds,
+        );
+        await bridge.acknowledgeQuickAdds(
+          queuedQuickAdds
+              .where((queued) => queued.ownerId == security.ownerId)
+              .map((queued) => queued.id),
+        );
+      }
+    }
     if (action != null) {
       // home_widget's WorkManager callback can overlap while Dart awaits
       // SQLite. Replaying the entire bounded, time-sorted native queue in every
@@ -72,6 +94,31 @@ Future<void> perfectTodayWidgetBackgroundCallback(Uri? uri) async {
   }
 }
 
+/// Creates quick-captured tasks in a deterministic order. The native request
+/// ID is reused as the outbox mutation ID, making the queue safe to replay
+/// after WorkManager retries or a crash between local commit and acknowledge.
+Future<void> replayPerfectTodayWidgetQuickAdds({
+  required PlannerLocalStore store,
+  required String ownerId,
+  required Iterable<PerfectTodayWidgetQuickAdd> requests,
+}) async {
+  final queuedById = <String, PerfectTodayWidgetQuickAdd>{
+    for (final queued in requests)
+      if (queued.ownerId == ownerId) queued.id: queued,
+  };
+  final queued = queuedById.values.toList()
+    ..sort(comparePerfectTodayWidgetQuickAddOrder);
+  for (final request in queued) {
+    await store.createQuickTask(
+      ownerId: ownerId,
+      title: request.title,
+      scheduledAt: request.scheduledAt,
+      mutationId: request.id,
+      now: request.occurredAt,
+    );
+  }
+}
+
 /// Replays the native queue in event order. A single archived/stale row is a
 /// semantic no-op and must not permanently block newer valid taps behind it;
 /// actual database failures still escape so WorkManager can retry later.
@@ -85,7 +132,7 @@ Future<void> replayPerfectTodayWidgetActions({
       if (queued.ownerId == ownerId) queued.id: queued,
   };
   final queuedActions = queuedById.values.toList()
-    ..sort((first, second) => first.compareReplayOrder(second));
+    ..sort(comparePerfectTodayWidgetReplayOrder);
   for (final queued in queuedActions) {
     try {
       await PlannerTaskProgressService(

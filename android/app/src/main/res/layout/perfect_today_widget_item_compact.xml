@@ -7,15 +7,14 @@
     android:layoutDirection="locale"
     android:orientation="horizontal">
 
-    <TextView
+    <ImageView
         android:id="@+id/widget_item_check"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:gravity="center"
-        android:text="○"
-        android:textColor="@color/perfect_widget_apricot"
-        android:textDirection="locale"
-        android:textSize="22sp" />
+        android:contentDescription="Task outcome. Tap to cycle."
+        android:padding="10dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/perfect_widget_status_pending" />
 
     <TextView
         android:id="@+id/widget_item_title"

@@ -1,7 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_formula.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
+import 'package:perfect/presentation/perfect_motion.dart';
+import 'package:perfect/presentation/perfect_pictogram.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
 import 'package:uuid/uuid.dart';
@@ -28,19 +32,30 @@ class PlannerEditor extends StatefulWidget {
     PlannerEntity? existing,
     PlannerEntityKind initialKind = PlannerEntityKind.oneOffTask,
   }) {
+    final media = MediaQuery.of(context);
+    final geometry = PerfectResponsiveGeometry.fromSize(
+      media.size,
+      textScale: media.textScaler.scale(1),
+    );
     final editor = PlannerEditor(
       controller: controller,
       existing: existing,
       initialKind: initialKind,
       onDismiss: () => Navigator.of(context).maybePop(),
     );
-    if (MediaQuery.sizeOf(context).width >= 680) {
+    if (geometry.prefersDialog) {
       return showDialog<void>(
         context: context,
         builder: (context) => Dialog(
-          insetPadding: const EdgeInsets.all(PerfectSpace.xl),
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: geometry.horizontalGutter,
+            vertical: geometry.verticalGutter,
+          ),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720, maxHeight: 820),
+            constraints: BoxConstraints(
+              maxWidth: geometry.editorMaxWidth,
+              maxHeight: geometry.editorMaxHeight(820),
+            ),
             child: editor,
           ),
         ),
@@ -53,7 +68,10 @@ class PlannerEditor extends StatefulWidget {
       backgroundColor: Theme.of(context).colorScheme.surface,
       builder: (context) => SafeArea(
         top: false,
-        child: FractionallySizedBox(heightFactor: .94, child: editor),
+        child: FractionallySizedBox(
+          heightFactor: geometry.editorSheetHeightFactor,
+          child: editor,
+        ),
       ),
     );
   }
@@ -483,169 +501,186 @@ class _PlannerEditorState extends State<PlannerEditor> {
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Padding(
-        padding: const EdgeInsets.fromLTRB(
-          PerfectSpace.xl,
-          PerfectSpace.lg,
-          PerfectSpace.md,
-          PerfectSpace.sm,
-        ),
-        child: Row(
+  Widget build(BuildContext context) => PerfectGeometryBuilder(
+    builder: (context, geometry) => Align(
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        width: geometry.editorMaxWidth,
+        height: geometry.availableSize.height,
+        child: Column(
           children: [
-            Expanded(
-              child: Text(
-                widget.existing == null ? 'Make it yours' : 'Edit details',
-                style: Theme.of(context).textTheme.headlineSmall,
+            Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(
+                geometry.horizontalGutter,
+                geometry.verticalGutter,
+                math.max(PerfectSpace.sm, geometry.horizontalGutter - 8),
+                PerfectSpace.sm,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.existing == null
+                          ? 'Make it yours'
+                          : 'Edit details',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Close editor',
+                    onPressed: _saving ? null : widget.onDismiss,
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
               ),
             ),
-            IconButton(
-              tooltip: 'Close editor',
-              onPressed: _saving ? null : widget.onDismiss,
-              icon: const Icon(Icons.close_rounded),
+            Expanded(
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  key: const ValueKey<String>('planner-editor-scroll'),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: EdgeInsetsDirectional.fromSTEB(
+                    geometry.horizontalGutter,
+                    PerfectSpace.sm,
+                    geometry.horizontalGutter,
+                    geometry.isShortLandscape
+                        ? PerfectSpace.lg
+                        : PerfectSpace.xxl,
+                  ),
+                  children: [
+                    _kindPicker(context),
+                    const SizedBox(height: PerfectSpace.md),
+                    TextFormField(
+                      controller: _title,
+                      autofocus: widget.existing == null,
+                      maxLength: 160,
+                      textDirection: _directionFor(_title.text),
+                      onChanged: (_) => setState(() {}),
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'What matters?',
+                        hintText: 'e.g. Finish the portfolio case study',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Give this a clear title.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: PerfectSpace.sm),
+                    TextFormField(
+                      controller: _note,
+                      minLines: 2,
+                      maxLines: 5,
+                      textDirection: _directionFor(_note.text),
+                      onChanged: (_) => setState(() {}),
+                      decoration: const InputDecoration(
+                        labelText: 'Note (optional)',
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+                    const SizedBox(height: PerfectSpace.lg),
+                    _section(
+                      context,
+                      title: 'Organization',
+                      subtitle:
+                          'Keep one source task while placing it in an area or project.',
+                      child: _organizationSection(context),
+                    ),
+                    _section(
+                      context,
+                      title: 'Category & identity',
+                      subtitle:
+                          'Use a familiar label; personal categories stay yours.',
+                      child: _categorySection(context),
+                    ),
+                    _section(
+                      context,
+                      title: 'Time & plan',
+                      subtitle: 'Schedule without forcing a deadline.',
+                      child: _timeSection(context),
+                    ),
+                    _section(
+                      context,
+                      title: 'Repeat & recovery',
+                      subtitle:
+                          'Define what should happen when life interrupts.',
+                      child: _recoverySection(context),
+                    ),
+                    if (_isHabit)
+                      _section(
+                        context,
+                        title: 'Habit tracking',
+                        subtitle:
+                            'A check, a number, a duration, or an avoidance goal.',
+                        child: _trackingSection(context),
+                      ),
+                    if (_isTask)
+                      _section(
+                        context,
+                        title: 'Task context',
+                        subtitle: 'Priority, focus intent, and a useful link.',
+                        child: _taskContextSection(context),
+                      ),
+                    if (_kind == PlannerEntityKind.oneOffTask)
+                      _section(
+                        context,
+                        title: 'Task outcome',
+                        subtitle:
+                            'The same four states are available from the app and Perfect Today widget.',
+                        child: _taskOutcomeSection(context),
+                      ),
+                    _section(
+                      context,
+                      title: 'Reminders',
+                      subtitle:
+                          'Local notification setup is requested only when you turn this on.',
+                      child: _reminderSection(context),
+                    ),
+                    _section(
+                      context,
+                      title: 'Custom properties',
+                      subtitle:
+                          'Typed data stays local-first; formulas are declarative, never executable code.',
+                      child: _propertySection(context),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(
+                  geometry.horizontalGutter,
+                  PerfectSpace.sm,
+                  geometry.horizontalGutter,
+                  geometry.verticalGutter,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: _saving ? null : _save,
+                    icon: _saving
+                        ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.check_rounded),
+                    label: Text(
+                      _saving ? 'Saving locally…' : 'Save to Perfect',
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
       ),
-      Expanded(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            key: const ValueKey<String>('planner-editor-scroll'),
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.fromLTRB(
-              PerfectSpace.xl,
-              PerfectSpace.sm,
-              PerfectSpace.xl,
-              PerfectSpace.xxl,
-            ),
-            children: [
-              _kindPicker(context),
-              const SizedBox(height: PerfectSpace.md),
-              TextFormField(
-                controller: _title,
-                autofocus: widget.existing == null,
-                maxLength: 160,
-                textDirection: _directionFor(_title.text),
-                onChanged: (_) => setState(() {}),
-                textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: 'What matters?',
-                  hintText: 'e.g. Finish the portfolio case study',
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Give this a clear title.';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: PerfectSpace.sm),
-              TextFormField(
-                controller: _note,
-                minLines: 2,
-                maxLines: 5,
-                textDirection: _directionFor(_note.text),
-                onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
-                  labelText: 'Note (optional)',
-                  alignLabelWithHint: true,
-                ),
-              ),
-              const SizedBox(height: PerfectSpace.lg),
-              _section(
-                context,
-                title: 'Organization',
-                subtitle:
-                    'Keep one source task while placing it in an area or project.',
-                child: _organizationSection(context),
-              ),
-              _section(
-                context,
-                title: 'Category & identity',
-                subtitle:
-                    'Use a familiar label; personal categories stay yours.',
-                child: _categorySection(context),
-              ),
-              _section(
-                context,
-                title: 'Time & plan',
-                subtitle: 'Schedule without forcing a deadline.',
-                child: _timeSection(context),
-              ),
-              _section(
-                context,
-                title: 'Repeat & recovery',
-                subtitle: 'Define what should happen when life interrupts.',
-                child: _recoverySection(context),
-              ),
-              if (_isHabit)
-                _section(
-                  context,
-                  title: 'Habit tracking',
-                  subtitle:
-                      'A check, a number, a duration, or an avoidance goal.',
-                  child: _trackingSection(context),
-                ),
-              if (_isTask)
-                _section(
-                  context,
-                  title: 'Task context',
-                  subtitle: 'Priority, focus intent, and a useful link.',
-                  child: _taskContextSection(context),
-                ),
-              if (_kind == PlannerEntityKind.oneOffTask)
-                _section(
-                  context,
-                  title: 'Task outcome',
-                  subtitle:
-                      'The same four states are available from the app and Perfect Today widget.',
-                  child: _taskOutcomeSection(context),
-                ),
-              _section(
-                context,
-                title: 'Reminders',
-                subtitle:
-                    'Local notification setup is requested only when you turn this on.',
-                child: _reminderSection(context),
-              ),
-              _section(
-                context,
-                title: 'Custom properties',
-                subtitle:
-                    'Typed data stays local-first; formulas are declarative, never executable code.',
-                child: _propertySection(context),
-              ),
-            ],
-          ),
-        ),
-      ),
-      SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            PerfectSpace.xl,
-            PerfectSpace.sm,
-            PerfectSpace.xl,
-            PerfectSpace.lg,
-          ),
-          child: SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _saving ? null : _save,
-              icon: _saving
-                  ? const SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.check_rounded),
-              label: Text(_saving ? 'Saving locally…' : 'Save to Perfect'),
-            ),
-          ),
-        ),
-      ),
-    ],
+    ),
   );
 
   Widget _kindPicker(BuildContext context) => Column(
@@ -858,7 +893,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
         children: [
           ..._categorySuggestions.map(
             (category) => ChoiceChip(
-              avatar: Icon(_categoryIcon(category), size: 17),
+              avatar: PerfectPictogram(name: category, size: 19, framed: true),
               label: Text(category),
               selected:
                   _category.text.trim().toLowerCase() == category.toLowerCase(),
@@ -919,7 +954,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
         children: _plannerIconOptions
             .map(
               (icon) => ChoiceChip(
-                avatar: Icon(_plannerIconData(icon), size: 18),
+                avatar: PerfectPictogram(name: icon, size: 20, framed: true),
                 label: Text(_plannerIconLabel(icon)),
                 selected: _icon == icon,
                 onSelected: (_) => setState(() => _icon = icon),
@@ -2135,6 +2170,10 @@ class _PlannerEditorState extends State<PlannerEditor> {
   }) => Card(
     margin: const EdgeInsets.only(top: PerfectSpace.md),
     child: ExpansionTile(
+      expansionAnimationStyle: PerfectMotion.style(
+        context,
+        duration: PerfectMotion.emphasized,
+      ),
       tilePadding: const EdgeInsets.symmetric(
         horizontal: PerfectSpace.md,
         vertical: PerfectSpace.xs,
@@ -2790,18 +2829,6 @@ const _plannerColorOptions = <String>[
   'ink',
 ];
 
-IconData _plannerIconData(String icon) => switch (icon) {
-  'task' => Icons.task_alt_rounded,
-  'habit' => Icons.spa_outlined,
-  'work' => Icons.work_outline_rounded,
-  'study' => Icons.school_outlined,
-  'health' => Icons.health_and_safety_outlined,
-  'home' => Icons.home_outlined,
-  'idea' => Icons.lightbulb_outline_rounded,
-  'star' => Icons.star_outline_rounded,
-  _ => Icons.auto_awesome_outlined,
-};
-
 String _plannerIconLabel(String icon) => switch (icon) {
   'task' => 'Task',
   'habit' => 'Habit',
@@ -2829,17 +2856,6 @@ String _plannerColorLabel(String color) => switch (color) {
   'ink' => 'Ink',
   _ => 'Apricot',
 };
-
-IconData _categoryIcon(String category) =>
-    switch (category.trim().toLowerCase()) {
-      'health' => Icons.health_and_safety_outlined,
-      'work' => Icons.work_outline_rounded,
-      'study' => Icons.school_outlined,
-      'home' => Icons.home_outlined,
-      'finance' => Icons.account_balance_wallet_outlined,
-      'personal' => Icons.auto_awesome_outlined,
-      _ => Icons.label_outline_rounded,
-    };
 
 TextDirection _directionFor(String value) {
   final rtl = RegExp(r'[\u0600-\u08ff]').hasMatch(value);

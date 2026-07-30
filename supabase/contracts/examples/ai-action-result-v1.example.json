@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "operation_id": "b8f037b1-3d68-4737-b142-e8fe1ed81262",
+  "idempotency_key": "2876f02f-3984-48a2-9694-500e05ba4a14",
+  "conversation_id": "c156c5a0-1100-4aaa-b007-1a670882f8c8",
+  "message_id": "a8d8af27-3a2f-4696-89d6-e9527de5fb93",
+  "status": "applied",
+  "proposal": {
+    "kind": "agent_plan",
+    "submission_id": "03f85e79-99c9-4a35-8dc8-3596d86883ad",
+    "item_count": 3
+  },
+  "result": {
+    "accepted_items": 3,
+    "review_status": "proposed"
+  },
+  "request_id": "338484b5-765a-447e-9cca-18af0cc8aa8e",
+  "applied_submission_id": "03f85e79-99c9-4a35-8dc8-3596d86883ad"
+}

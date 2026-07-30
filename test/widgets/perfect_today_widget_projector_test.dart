@@ -137,6 +137,42 @@ void main() {
       expect(bridge.items, isEmpty);
     },
   );
+
+  test('projection keeps every eligible task for native scrolling', () async {
+    final database = PlannerDatabase(NativeDatabase.memory());
+    final store = PlannerLocalStore(database);
+    final bridge = _RecordingBridge();
+    addTearDown(store.close);
+    final today = DateTime(2026, 7, 28, 9);
+    final longRtlTitle =
+        'مرور برنامهٔ امروز با توضیح طولانی و متن ترکیبی Perfect 123';
+    final entities = <PlannerEntity>[
+      for (var index = 0; index < 80; index++)
+        _entity(
+          id: 'today-$index',
+          title: index == 79 ? longRtlTitle : 'Task $index',
+          kind: PlannerEntityKind.oneOffTask,
+          createdAt: today,
+          scheduledAt: today.add(Duration(minutes: index)),
+        ),
+    ];
+
+    await PerfectTodayWidgetProjector(
+      store,
+      ownerId: 'private-owner',
+      bridge: bridge,
+      now: () => today,
+    ).publish(
+      entities: entities,
+      settings: const PerfectTodayWidgetSettings(
+        isAvailable: true,
+        showTaskTitles: true,
+      ),
+    );
+
+    expect(bridge.items, hasLength(80));
+    expect(bridge.items.last.title, longRtlTitle);
+  });
 }
 
 PlannerEntity _entity({

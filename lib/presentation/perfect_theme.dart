@@ -43,6 +43,33 @@ abstract final class PerfectSpace {
   static const giant = 64.0;
 }
 
+abstract final class PerfectMotion {
+  static const quick = Duration(milliseconds: 140);
+  static const standard = Duration(milliseconds: 240);
+  static const emphasized = Duration(milliseconds: 320);
+  static const feedback = Duration(milliseconds: 600);
+  static const Curve productive = Curves.easeOutCubic;
+  static const Curve enter = Curves.easeOutCubic;
+  static const Curve exit = Curves.easeInCubic;
+  static const Curve emphasizedCurve = Curves.easeInOutCubicEmphasized;
+
+  static Duration responsive(BuildContext context, Duration duration) =>
+      MediaQuery.disableAnimationsOf(context) ? Duration.zero : duration;
+
+  static AnimationStyle style(
+    BuildContext context, {
+    Duration duration = standard,
+    Duration? reverseDuration,
+    Curve curve = productive,
+    Curve reverseCurve = exit,
+  }) => AnimationStyle(
+    duration: responsive(context, duration),
+    reverseDuration: responsive(context, reverseDuration ?? duration),
+    curve: curve,
+    reverseCurve: reverseCurve,
+  );
+}
+
 abstract final class PerfectTheme {
   static ThemeData light() => _theme(Brightness.light);
   static ThemeData dark() => _theme(Brightness.dark);

@@ -71,10 +71,80 @@ void main() {
         queueSequence: 18,
       );
       final actions = <PlannerWidgetTaskAction>[laterTap, earlierTap]
-        ..sort((first, second) => first.compareReplayOrder(second));
+        ..sort(comparePerfectTodayWidgetReplayOrder);
 
       expect(actions, <PlannerWidgetTaskAction>[earlierTap, laterTap]);
       expect(laterTap.toJson()['queue_sequence'], 18);
+    });
+
+    test('native sequence survives a backwards wall-clock correction', () {
+      final firstTap = PlannerWidgetTaskAction(
+        id: '11111111-2222-4333-8444-555555555555',
+        ownerId: 'private-owner',
+        entityId: 'daily-review',
+        kind: PlannerEntityKind.oneOffTask,
+        progress: const PlannerTaskProgress(
+          state: PlannerTaskProgressState.completed,
+          percent: 100,
+        ),
+        localDay: DateTime(2026, 7, 28),
+        occurredAt: DateTime.utc(2026, 7, 28, 12, 30),
+        queueSequence: 41,
+      );
+      final secondTapAfterClockRollback = PlannerWidgetTaskAction(
+        id: '66666666-7777-4888-8999-aaaaaaaaaaaa',
+        ownerId: 'private-owner',
+        entityId: 'daily-review',
+        kind: PlannerEntityKind.oneOffTask,
+        progress: const PlannerTaskProgress(
+          state: PlannerTaskProgressState.missed,
+          percent: 0,
+        ),
+        localDay: DateTime(2026, 7, 28),
+        occurredAt: DateTime.utc(2026, 7, 28, 11, 30),
+        queueSequence: 42,
+      );
+      final actions = <PlannerWidgetTaskAction>[
+        secondTapAfterClockRollback,
+        firstTap,
+      ]..sort(comparePerfectTodayWidgetReplayOrder);
+
+      expect(actions, <PlannerWidgetTaskAction>[
+        firstTap,
+        secondTapAfterClockRollback,
+      ]);
+    });
+
+    test('legacy actions drain before newer sequenced outcomes', () {
+      final legacy = PlannerWidgetTaskAction(
+        id: 'bbbbbbbb-1111-4222-8333-444444444444',
+        ownerId: 'private-owner',
+        entityId: 'legacy-task',
+        kind: PlannerEntityKind.oneOffTask,
+        progress: const PlannerTaskProgress(
+          state: PlannerTaskProgressState.completed,
+          percent: 100,
+        ),
+        localDay: DateTime(2026, 7, 28),
+        occurredAt: DateTime.utc(2026, 7, 28, 13),
+      );
+      final sequenced = PlannerWidgetTaskAction(
+        id: 'cccccccc-5555-4666-8777-888888888888',
+        ownerId: 'private-owner',
+        entityId: 'new-task',
+        kind: PlannerEntityKind.oneOffTask,
+        progress: const PlannerTaskProgress(
+          state: PlannerTaskProgressState.missed,
+          percent: 0,
+        ),
+        localDay: DateTime(2026, 7, 28),
+        occurredAt: DateTime.utc(2026, 7, 28, 12),
+        queueSequence: 1,
+      );
+      final actions = <PlannerWidgetTaskAction>[sequenced, legacy]
+        ..sort(comparePerfectTodayWidgetReplayOrder);
+
+      expect(actions, <PlannerWidgetTaskAction>[legacy, sequenced]);
     });
 
     test(
@@ -124,6 +194,114 @@ void main() {
       expect(
         PerfectTodayWidgetBridge.refreshRequestFromBackgroundUri(
           Uri.parse('https://widget-refresh?owner_id=private-owner'),
+        ),
+        isNull,
+      );
+    });
+
+    test('parses a scoped, content-free quick-add wake request', () {
+      final request = PerfectTodayWidgetBridge.quickAddRequestFromBackgroundUri(
+        Uri(
+          scheme: 'perfect',
+          host: 'widget-quick-add',
+          queryParameters: <String, String>{
+            'id': 'abababab-abab-4bab-8bab-abababababab',
+            'owner_id': 'private-owner',
+          },
+        ),
+      );
+
+      expect(request, isNotNull);
+      expect(request!.ownerId, 'private-owner');
+      expect(request.id, 'abababab-abab-4bab-8bab-abababababab');
+    });
+
+    test('quick-add wake request rejects malformed identity and scope', () {
+      Uri requestUri({
+        String id = 'abababab-abab-4bab-8bab-abababababab',
+        String ownerId = 'private-owner',
+      }) => Uri(
+        scheme: 'perfect',
+        host: 'widget-quick-add',
+        queryParameters: <String, String>{'id': id, 'owner_id': ownerId},
+      );
+
+      expect(
+        PerfectTodayWidgetBridge.quickAddRequestFromBackgroundUri(
+          requestUri(id: 'not-a-uuid'),
+        ),
+        isNull,
+      );
+      expect(
+        PerfectTodayWidgetBridge.quickAddRequestFromBackgroundUri(
+          requestUri(ownerId: ' '),
+        ),
+        isNull,
+      );
+    });
+
+    test('quick adds use stable chronological replay order', () {
+      final later = PerfectTodayWidgetQuickAdd(
+        id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+        ownerId: 'private-owner',
+        title: 'Second',
+        occurredAt: DateTime.utc(2026, 7, 30, 9),
+      );
+      final earlier = PerfectTodayWidgetQuickAdd(
+        id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        ownerId: 'private-owner',
+        title: 'First',
+        occurredAt: DateTime.utc(2026, 7, 30, 8),
+      );
+      final requests = <PerfectTodayWidgetQuickAdd>[later, earlier]
+        ..sort(comparePerfectTodayWidgetQuickAddOrder);
+
+      expect(requests, <PerfectTodayWidgetQuickAdd>[earlier, later]);
+    });
+
+    test('rejects non-canonical or internally inconsistent action rows', () {
+      Uri actionUri({
+        String state = 'partial',
+        String percent = '50',
+        String localDay = '2026-07-28',
+        String sequence = '8',
+      }) => Uri(
+        scheme: 'perfect',
+        host: 'widget-action',
+        queryParameters: <String, String>{
+          'id': 'dddddddd-1111-4222-8333-eeeeeeeeeeee',
+          'owner_id': 'private-owner',
+          'entity_id': 'daily-review',
+          'kind': PlannerEntityKind.recurringTask.wireValue,
+          'state': state,
+          'progress_percent': percent,
+          'local_day': localDay,
+          'occurred_at': '2026-07-28T08:30:00.000Z',
+          'queue_sequence': sequence,
+        },
+      );
+
+      expect(
+        PerfectTodayWidgetBridge.actionFromBackgroundUri(
+          actionUri(localDay: '2026-02-31'),
+        ),
+        isNull,
+      );
+      expect(
+        PerfectTodayWidgetBridge.actionFromBackgroundUri(
+          actionUri(state: 'unknown'),
+        ),
+        isNull,
+      );
+      expect(
+        PerfectTodayWidgetBridge.actionFromBackgroundUri(
+          actionUri(state: 'completed', percent: '99'),
+        ),
+        isNull,
+      );
+      expect(
+        PerfectTodayWidgetBridge.actionFromBackgroundUri(
+          actionUri(sequence: '-1'),
         ),
         isNull,
       );

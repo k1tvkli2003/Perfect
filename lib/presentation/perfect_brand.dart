@@ -10,21 +10,29 @@ class PerfectMark extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    image: true,
-    label: label,
-    child: ExcludeSemantics(
-      child: SizedBox.square(
-        dimension: size,
-        child: Image.asset(
-          'assets/brand/perfect-launcher.png',
-          fit: BoxFit.contain,
-          filterQuality: FilterQuality.high,
-          gaplessPlayback: true,
+  Widget build(BuildContext context) {
+    final physicalPixels = (size * MediaQuery.devicePixelRatioOf(context))
+        .ceil()
+        .clamp(1, 512)
+        .toInt();
+    return Semantics(
+      image: true,
+      label: label,
+      child: ExcludeSemantics(
+        child: SizedBox.square(
+          dimension: size,
+          child: Image.asset(
+            'assets/brand/perfect-launcher.png',
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
+            gaplessPlayback: true,
+            cacheWidth: physicalPixels,
+            cacheHeight: physicalPixels,
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class PerfectWordmark extends StatelessWidget {

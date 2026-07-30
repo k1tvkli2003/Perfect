@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "message_id": "a8d8af27-3a2f-4696-89d6-e9527de5fb93",
+  "conversation_id": "c156c5a0-1100-4aaa-b007-1a670882f8c8",
+  "role": "assistant",
+  "status": "completed",
+  "content": "یک برنامهٔ سه‌بخشی آماده کردم. قبل از ثبت، می‌توانی جزئیاتش را بازبینی کنی.",
+  "proposal": {
+    "kind": "agent_plan",
+    "schema_version": 1,
+    "submission_id": "03f85e79-99c9-4a35-8dc8-3596d86883ad",
+    "item_count": 3,
+    "review_status": "proposed"
+  },
+  "result": {},
+  "model": "private-provider-model",
+  "prompt_version": "perfect-assistant-v1",
+  "request_id": "338484b5-765a-447e-9cca-18af0cc8aa8e",
+  "latency_ms": 1420,
+  "usage": {
+    "input_tokens": 830,
+    "output_tokens": 412,
+    "cached_tokens": 0,
+    "total_tokens": 1242
+  }
+}

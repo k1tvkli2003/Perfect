@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "submission_id": "03f85e79-99c9-4a35-8dc8-3596d86883ad",
+  "agent_device_id": "91f5ea65-9898-4ea0-857d-b0eb1e8e5d10",
+  "source": {
+    "agent": "codex",
+    "model": "gpt-5",
+    "version": "1",
+    "run_id": "perfect-week-plan-example",
+    "generated_at": "2026-07-30T15:30:00Z"
+  },
+  "plan": {
+    "title": "برنامه هفتگی تمرکز",
+    "summary": "یک پروژه، یک تسک زمان‌دار و یک عادت پیشنهادی؛ همه قبل از پذیرش نهایی نیازمند بازبینی مالک هستند."
+  },
+  "items": [
+    {
+      "id": "a6bf1c25-7831-4d45-b673-2d1f47dba2ad",
+      "kind": "project",
+      "title": "هفتهٔ تمرکز",
+      "payload": {
+        "note": "پیشنهاد ایجنت برای جمع‌کردن کارهای عمیق این هفته",
+        "color": "mint",
+        "icon": "target"
+      }
+    },
+    {
+      "id": "e78ee63c-85b7-4d3e-acbf-29c43fa95b59",
+      "kind": "one_off_task",
+      "title": "مرور برنامهٔ هفته",
+      "payload": {
+        "note": "اولویت‌ها را مرور و زمان‌ها را در اپ نهایی کن.",
+        "priority": "high",
+        "timing": {
+          "scheduled_at": "2026-08-01T06:30:00Z",
+          "due_at": "2026-08-01T07:15:00Z",
+          "all_day": false
+        },
+        "relations": [
+          {
+            "type": "project",
+            "id": "a6bf1c25-7831-4d45-b673-2d1f47dba2ad"
+          }
+        ],
+        "estimate_minutes": 45
+      }
+    },
+    {
+      "id": "7bb14523-552c-4436-9e3b-05ef6da9490d",
+      "kind": "habit",
+      "title": "شروع روز بدون حواس‌پرتی",
+      "payload": {
+        "note": "پیش از پیام‌ها، ده دقیقه برنامهٔ روز را مرور کن.",
+        "timing": {
+          "scheduled_at": "2026-08-01T05:30:00Z",
+          "all_day": false
+        },
+        "recurrence": {
+          "rule": "daily",
+          "interval": 1
+        },
+        "tracking": {
+          "method": "duration",
+          "target": 10,
+          "goal": "at_least",
+          "unit": "minutes"
+        },
+        "recovery": {
+          "on_miss": "ask",
+          "carry_cap": 1
+        }
+      }
+    }
+  ]
+}

@@ -136,6 +136,18 @@ class PlannerWorkspaceController extends ChangeNotifier {
 
   Future<void> refresh() => _syncRepository.syncNow();
 
+  /// Reconciles native work first, then performs a real remote sync before
+  /// rebuilding date-sensitive projections. Resuming therefore recovers from
+  /// a missed realtime hint instead of only repainting stale local data.
+  Future<void> resume() async {
+    if (_disposed || _shutdownRequested) return;
+    await reconcileTodayWidgetActions();
+    if (_disposed || _shutdownRequested) return;
+    await _syncRepository.syncNow();
+    if (_disposed || _shutdownRequested) return;
+    await refreshTodayProjection();
+  }
+
   Future<void> quickCapture(String title) async {
     await _localStore.createQuickTask(ownerId: ownerId, title: title);
     unawaited(_syncRepository.syncNow());
@@ -325,17 +337,41 @@ class PlannerWorkspaceController extends ChangeNotifier {
     _scheduleNextLocalDayRefresh();
   }
 
-  /// Replays native widget actions through the same task-progress service used
-  /// by the Flutter UI. The native queue is intentionally retained and bounded
-  /// rather than destructively acknowledged: mutation IDs make every replay
-  /// safe across worker retry, app restart, and a crash between write/ack.
+  /// Replays native widget outcomes and quick captures through the same local
+  /// planner services used by Flutter. Native queues are retained until a
+  /// separate acknowledgement: mutation IDs make every replay safe across
+  /// worker retry, app restart, and a crash between write/ack.
   Future<void> reconcileTodayWidgetActions() async {
     if (_disposed || _shutdownRequested || !_todayWidgetSettings.isAvailable) {
       return;
     }
-    final actions = await _todayWidgetBridge.pendingActions();
-    if (actions.isEmpty) return;
+    final pending = await Future.wait<Object>(<Future<Object>>[
+      _todayWidgetBridge.pendingActions(),
+      _todayWidgetBridge.pendingQuickAdds(),
+    ]);
+    final actions = pending[0] as List<PlannerWidgetTaskAction>;
+    final quickAdds = pending[1] as List<PerfectTodayWidgetQuickAdd>;
+    if (actions.isEmpty && quickAdds.isEmpty) return;
     var sawCurrentOwnerAction = false;
+    final acknowledgedQuickAddIds = <String>[];
+    for (final request in quickAdds) {
+      if (request.ownerId != ownerId) continue;
+      try {
+        await _localStore.createQuickTask(
+          ownerId: ownerId,
+          title: request.title,
+          scheduledAt: request.scheduledAt,
+          mutationId: request.id,
+          now: request.occurredAt,
+        );
+        sawCurrentOwnerAction = true;
+        acknowledgedQuickAddIds.add(request.id);
+      } on StateError {
+        // A conflicting/corrupt mutation ID remains queued for inspection
+        // instead of silently creating a second task.
+      }
+    }
+    await _todayWidgetBridge.acknowledgeQuickAdds(acknowledgedQuickAddIds);
     final acknowledgedActionIds = <String>[];
     for (final action in actions) {
       if (action.ownerId != ownerId) continue;

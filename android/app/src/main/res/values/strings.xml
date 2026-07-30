@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Perfect!</string>
+    <string name="widget_quick_add_title">Quick add</string>
+    <string name="widget_quick_add_hint">What do you want to get done?</string>
+    <string name="widget_quick_add_time">Add time</string>
+    <string name="widget_quick_add_clear_time">Clear</string>
+    <string name="widget_quick_add_submit">Add to Today</string>
+    <string name="widget_quick_add_cancel">Cancel</string>
+    <string name="widget_quick_add_signed_out">Open Perfect! to sign in before adding a task.</string>
+    <string name="widget_quick_add_open_app">Open Perfect!</string>
 </resources>

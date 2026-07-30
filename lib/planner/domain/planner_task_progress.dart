@@ -379,6 +379,38 @@ class PlannerTaskProgressService {
     if (action.ownerId != ownerId) {
       throw StateError('Widget action belongs to another private owner.');
     }
+    final sequenceScope = action.kind == PlannerEntityKind.recurringTask
+        ? localDateKey(action.localDay)
+        : PlannerLocalStore.oneOffWidgetSequenceScope;
+    final applied = await _store.runGuardedWidgetOutcome<PlannerTaskProgress>(
+      ownerId: ownerId,
+      entityId: action.entityId,
+      localDayKey: sequenceScope,
+      queueSequence: action.queueSequence,
+      occurredAt: action.occurredAt,
+      actionId: action.id,
+      mutation: () async {
+        final entity = await _matchingWidgetEntity(action);
+        return setProgress(
+          entity,
+          progress: action.progress,
+          mutationId: action.id,
+          localDay: action.localDay,
+          source: 'android_widget',
+        );
+      },
+    );
+    if (applied != null) return applied;
+
+    // A stale/equal action is acknowledged without mutating state. Return the
+    // authoritative outcome so foreground and background callers converge.
+    final entity = await _matchingWidgetEntity(action);
+    return readProgress(entity, localDay: action.localDay);
+  }
+
+  Future<PlannerEntity> _matchingWidgetEntity(
+    PlannerWidgetTaskAction action,
+  ) async {
     final entity = await _store.readEntity(
       ownerId: ownerId,
       entityId: action.entityId,
@@ -386,13 +418,7 @@ class PlannerTaskProgressService {
     if (entity == null || entity.kind != action.kind) {
       throw StateError('Widget task no longer matches its local record.');
     }
-    return setProgress(
-      entity,
-      progress: action.progress,
-      mutationId: action.id,
-      localDay: action.localDay,
-      source: 'android_widget',
-    );
+    return entity;
   }
 
   static String recurringOccurrenceId(

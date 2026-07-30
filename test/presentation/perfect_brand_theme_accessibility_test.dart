@@ -97,6 +97,41 @@ void main() {
       expect(node.flagsCollection.isImage, isTrue);
       semantics.dispose();
     });
+
+    testWidgets('mark decodes at its rendered physical size', (tester) async {
+      tester.view.devicePixelRatio = 2.5;
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: PerfectTheme.light(),
+          home: const Scaffold(body: PerfectMark(size: 40)),
+        ),
+      );
+
+      final image = tester.widget<Image>(find.byType(Image));
+      final provider = image.image as ResizeImage;
+      expect(provider.width, 100);
+      expect(provider.height, 100);
+      expect(image.filterQuality, FilterQuality.high);
+    });
+
+    testWidgets('mark decode never upscales beyond its 512px source', (
+      tester,
+    ) async {
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: PerfectTheme.light(),
+          home: const Scaffold(body: PerfectMark(size: 240)),
+        ),
+      );
+
+      final image = tester.widget<Image>(find.byType(Image));
+      final provider = image.image as ResizeImage;
+      expect(provider.width, 512);
+      expect(provider.height, 512);
+    });
   });
 
   group('Perfect theme accessibility contract', () {

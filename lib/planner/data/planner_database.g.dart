@@ -4669,6 +4669,549 @@ class PlannerImportMarkersCompanion
   }
 }
 
+class $PlannerWidgetActionSequencesTable extends PlannerWidgetActionSequences
+    with
+        TableInfo<
+          $PlannerWidgetActionSequencesTable,
+          PlannerWidgetActionSequenceRow
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlannerWidgetActionSequencesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityIdMeta = const VerificationMeta(
+    'entityId',
+  );
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+    'entity_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _localDayMeta = const VerificationMeta(
+    'localDay',
+  );
+  @override
+  late final GeneratedColumn<String> localDay = GeneratedColumn<String>(
+    'local_day',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sequenceDomainMeta = const VerificationMeta(
+    'sequenceDomain',
+  );
+  @override
+  late final GeneratedColumn<int> sequenceDomain = GeneratedColumn<int>(
+    'sequence_domain',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _queueSequenceMeta = const VerificationMeta(
+    'queueSequence',
+  );
+  @override
+  late final GeneratedColumn<int> queueSequence = GeneratedColumn<int>(
+    'queue_sequence',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _occurredAtMicrosMeta = const VerificationMeta(
+    'occurredAtMicros',
+  );
+  @override
+  late final GeneratedColumn<int> occurredAtMicros = GeneratedColumn<int>(
+    'occurred_at_micros',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _actionIdMeta = const VerificationMeta(
+    'actionId',
+  );
+  @override
+  late final GeneratedColumn<String> actionId = GeneratedColumn<String>(
+    'action_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    ownerId,
+    entityId,
+    localDay,
+    sequenceDomain,
+    queueSequence,
+    occurredAtMicros,
+    actionId,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'planner_widget_action_sequences';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlannerWidgetActionSequenceRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(
+        _entityIdMeta,
+        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityIdMeta);
+    }
+    if (data.containsKey('local_day')) {
+      context.handle(
+        _localDayMeta,
+        localDay.isAcceptableOrUnknown(data['local_day']!, _localDayMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localDayMeta);
+    }
+    if (data.containsKey('sequence_domain')) {
+      context.handle(
+        _sequenceDomainMeta,
+        sequenceDomain.isAcceptableOrUnknown(
+          data['sequence_domain']!,
+          _sequenceDomainMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sequenceDomainMeta);
+    }
+    if (data.containsKey('queue_sequence')) {
+      context.handle(
+        _queueSequenceMeta,
+        queueSequence.isAcceptableOrUnknown(
+          data['queue_sequence']!,
+          _queueSequenceMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_queueSequenceMeta);
+    }
+    if (data.containsKey('occurred_at_micros')) {
+      context.handle(
+        _occurredAtMicrosMeta,
+        occurredAtMicros.isAcceptableOrUnknown(
+          data['occurred_at_micros']!,
+          _occurredAtMicrosMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_occurredAtMicrosMeta);
+    }
+    if (data.containsKey('action_id')) {
+      context.handle(
+        _actionIdMeta,
+        actionId.isAcceptableOrUnknown(data['action_id']!, _actionIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_actionIdMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {ownerId, entityId, localDay};
+  @override
+  PlannerWidgetActionSequenceRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlannerWidgetActionSequenceRow(
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      entityId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_id'],
+      )!,
+      localDay: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_day'],
+      )!,
+      sequenceDomain: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sequence_domain'],
+      )!,
+      queueSequence: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}queue_sequence'],
+      )!,
+      occurredAtMicros: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}occurred_at_micros'],
+      )!,
+      actionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}action_id'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PlannerWidgetActionSequencesTable createAlias(String alias) {
+    return $PlannerWidgetActionSequencesTable(attachedDatabase, alias);
+  }
+}
+
+class PlannerWidgetActionSequenceRow extends DataClass
+    implements Insertable<PlannerWidgetActionSequenceRow> {
+  final String ownerId;
+  final String entityId;
+  final String localDay;
+  final int sequenceDomain;
+  final int queueSequence;
+  final int occurredAtMicros;
+  final String actionId;
+  final DateTime updatedAt;
+  const PlannerWidgetActionSequenceRow({
+    required this.ownerId,
+    required this.entityId,
+    required this.localDay,
+    required this.sequenceDomain,
+    required this.queueSequence,
+    required this.occurredAtMicros,
+    required this.actionId,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['owner_id'] = Variable<String>(ownerId);
+    map['entity_id'] = Variable<String>(entityId);
+    map['local_day'] = Variable<String>(localDay);
+    map['sequence_domain'] = Variable<int>(sequenceDomain);
+    map['queue_sequence'] = Variable<int>(queueSequence);
+    map['occurred_at_micros'] = Variable<int>(occurredAtMicros);
+    map['action_id'] = Variable<String>(actionId);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  PlannerWidgetActionSequencesCompanion toCompanion(bool nullToAbsent) {
+    return PlannerWidgetActionSequencesCompanion(
+      ownerId: Value(ownerId),
+      entityId: Value(entityId),
+      localDay: Value(localDay),
+      sequenceDomain: Value(sequenceDomain),
+      queueSequence: Value(queueSequence),
+      occurredAtMicros: Value(occurredAtMicros),
+      actionId: Value(actionId),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory PlannerWidgetActionSequenceRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlannerWidgetActionSequenceRow(
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      entityId: serializer.fromJson<String>(json['entityId']),
+      localDay: serializer.fromJson<String>(json['localDay']),
+      sequenceDomain: serializer.fromJson<int>(json['sequenceDomain']),
+      queueSequence: serializer.fromJson<int>(json['queueSequence']),
+      occurredAtMicros: serializer.fromJson<int>(json['occurredAtMicros']),
+      actionId: serializer.fromJson<String>(json['actionId']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'ownerId': serializer.toJson<String>(ownerId),
+      'entityId': serializer.toJson<String>(entityId),
+      'localDay': serializer.toJson<String>(localDay),
+      'sequenceDomain': serializer.toJson<int>(sequenceDomain),
+      'queueSequence': serializer.toJson<int>(queueSequence),
+      'occurredAtMicros': serializer.toJson<int>(occurredAtMicros),
+      'actionId': serializer.toJson<String>(actionId),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  PlannerWidgetActionSequenceRow copyWith({
+    String? ownerId,
+    String? entityId,
+    String? localDay,
+    int? sequenceDomain,
+    int? queueSequence,
+    int? occurredAtMicros,
+    String? actionId,
+    DateTime? updatedAt,
+  }) => PlannerWidgetActionSequenceRow(
+    ownerId: ownerId ?? this.ownerId,
+    entityId: entityId ?? this.entityId,
+    localDay: localDay ?? this.localDay,
+    sequenceDomain: sequenceDomain ?? this.sequenceDomain,
+    queueSequence: queueSequence ?? this.queueSequence,
+    occurredAtMicros: occurredAtMicros ?? this.occurredAtMicros,
+    actionId: actionId ?? this.actionId,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  PlannerWidgetActionSequenceRow copyWithCompanion(
+    PlannerWidgetActionSequencesCompanion data,
+  ) {
+    return PlannerWidgetActionSequenceRow(
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      localDay: data.localDay.present ? data.localDay.value : this.localDay,
+      sequenceDomain: data.sequenceDomain.present
+          ? data.sequenceDomain.value
+          : this.sequenceDomain,
+      queueSequence: data.queueSequence.present
+          ? data.queueSequence.value
+          : this.queueSequence,
+      occurredAtMicros: data.occurredAtMicros.present
+          ? data.occurredAtMicros.value
+          : this.occurredAtMicros,
+      actionId: data.actionId.present ? data.actionId.value : this.actionId,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlannerWidgetActionSequenceRow(')
+          ..write('ownerId: $ownerId, ')
+          ..write('entityId: $entityId, ')
+          ..write('localDay: $localDay, ')
+          ..write('sequenceDomain: $sequenceDomain, ')
+          ..write('queueSequence: $queueSequence, ')
+          ..write('occurredAtMicros: $occurredAtMicros, ')
+          ..write('actionId: $actionId, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    ownerId,
+    entityId,
+    localDay,
+    sequenceDomain,
+    queueSequence,
+    occurredAtMicros,
+    actionId,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlannerWidgetActionSequenceRow &&
+          other.ownerId == this.ownerId &&
+          other.entityId == this.entityId &&
+          other.localDay == this.localDay &&
+          other.sequenceDomain == this.sequenceDomain &&
+          other.queueSequence == this.queueSequence &&
+          other.occurredAtMicros == this.occurredAtMicros &&
+          other.actionId == this.actionId &&
+          other.updatedAt == this.updatedAt);
+}
+
+class PlannerWidgetActionSequencesCompanion
+    extends UpdateCompanion<PlannerWidgetActionSequenceRow> {
+  final Value<String> ownerId;
+  final Value<String> entityId;
+  final Value<String> localDay;
+  final Value<int> sequenceDomain;
+  final Value<int> queueSequence;
+  final Value<int> occurredAtMicros;
+  final Value<String> actionId;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const PlannerWidgetActionSequencesCompanion({
+    this.ownerId = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.localDay = const Value.absent(),
+    this.sequenceDomain = const Value.absent(),
+    this.queueSequence = const Value.absent(),
+    this.occurredAtMicros = const Value.absent(),
+    this.actionId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PlannerWidgetActionSequencesCompanion.insert({
+    required String ownerId,
+    required String entityId,
+    required String localDay,
+    required int sequenceDomain,
+    required int queueSequence,
+    required int occurredAtMicros,
+    required String actionId,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : ownerId = Value(ownerId),
+       entityId = Value(entityId),
+       localDay = Value(localDay),
+       sequenceDomain = Value(sequenceDomain),
+       queueSequence = Value(queueSequence),
+       occurredAtMicros = Value(occurredAtMicros),
+       actionId = Value(actionId),
+       updatedAt = Value(updatedAt);
+  static Insertable<PlannerWidgetActionSequenceRow> custom({
+    Expression<String>? ownerId,
+    Expression<String>? entityId,
+    Expression<String>? localDay,
+    Expression<int>? sequenceDomain,
+    Expression<int>? queueSequence,
+    Expression<int>? occurredAtMicros,
+    Expression<String>? actionId,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (ownerId != null) 'owner_id': ownerId,
+      if (entityId != null) 'entity_id': entityId,
+      if (localDay != null) 'local_day': localDay,
+      if (sequenceDomain != null) 'sequence_domain': sequenceDomain,
+      if (queueSequence != null) 'queue_sequence': queueSequence,
+      if (occurredAtMicros != null) 'occurred_at_micros': occurredAtMicros,
+      if (actionId != null) 'action_id': actionId,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PlannerWidgetActionSequencesCompanion copyWith({
+    Value<String>? ownerId,
+    Value<String>? entityId,
+    Value<String>? localDay,
+    Value<int>? sequenceDomain,
+    Value<int>? queueSequence,
+    Value<int>? occurredAtMicros,
+    Value<String>? actionId,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return PlannerWidgetActionSequencesCompanion(
+      ownerId: ownerId ?? this.ownerId,
+      entityId: entityId ?? this.entityId,
+      localDay: localDay ?? this.localDay,
+      sequenceDomain: sequenceDomain ?? this.sequenceDomain,
+      queueSequence: queueSequence ?? this.queueSequence,
+      occurredAtMicros: occurredAtMicros ?? this.occurredAtMicros,
+      actionId: actionId ?? this.actionId,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (localDay.present) {
+      map['local_day'] = Variable<String>(localDay.value);
+    }
+    if (sequenceDomain.present) {
+      map['sequence_domain'] = Variable<int>(sequenceDomain.value);
+    }
+    if (queueSequence.present) {
+      map['queue_sequence'] = Variable<int>(queueSequence.value);
+    }
+    if (occurredAtMicros.present) {
+      map['occurred_at_micros'] = Variable<int>(occurredAtMicros.value);
+    }
+    if (actionId.present) {
+      map['action_id'] = Variable<String>(actionId.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlannerWidgetActionSequencesCompanion(')
+          ..write('ownerId: $ownerId, ')
+          ..write('entityId: $entityId, ')
+          ..write('localDay: $localDay, ')
+          ..write('sequenceDomain: $sequenceDomain, ')
+          ..write('queueSequence: $queueSequence, ')
+          ..write('occurredAtMicros: $occurredAtMicros, ')
+          ..write('actionId: $actionId, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$PlannerDatabase extends GeneratedDatabase {
   _$PlannerDatabase(QueryExecutor e) : super(e);
   $PlannerDatabaseManager get managers => $PlannerDatabaseManager(this);
@@ -4688,6 +5231,8 @@ abstract class _$PlannerDatabase extends GeneratedDatabase {
   );
   late final $PlannerImportMarkersTable plannerImportMarkers =
       $PlannerImportMarkersTable(this);
+  late final $PlannerWidgetActionSequencesTable plannerWidgetActionSequences =
+      $PlannerWidgetActionSequencesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4700,6 +5245,7 @@ abstract class _$PlannerDatabase extends GeneratedDatabase {
     plannerSyncMetadata,
     plannerConflicts,
     plannerImportMarkers,
+    plannerWidgetActionSequences,
   ];
 }
 
@@ -7019,6 +7565,288 @@ typedef $$PlannerImportMarkersTableProcessedTableManager =
       PlannerImportMarkerRow,
       PrefetchHooks Function()
     >;
+typedef $$PlannerWidgetActionSequencesTableCreateCompanionBuilder =
+    PlannerWidgetActionSequencesCompanion Function({
+      required String ownerId,
+      required String entityId,
+      required String localDay,
+      required int sequenceDomain,
+      required int queueSequence,
+      required int occurredAtMicros,
+      required String actionId,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$PlannerWidgetActionSequencesTableUpdateCompanionBuilder =
+    PlannerWidgetActionSequencesCompanion Function({
+      Value<String> ownerId,
+      Value<String> entityId,
+      Value<String> localDay,
+      Value<int> sequenceDomain,
+      Value<int> queueSequence,
+      Value<int> occurredAtMicros,
+      Value<String> actionId,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$PlannerWidgetActionSequencesTableFilterComposer
+    extends Composer<_$PlannerDatabase, $PlannerWidgetActionSequencesTable> {
+  $$PlannerWidgetActionSequencesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localDay => $composableBuilder(
+    column: $table.localDay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sequenceDomain => $composableBuilder(
+    column: $table.sequenceDomain,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get queueSequence => $composableBuilder(
+    column: $table.queueSequence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get occurredAtMicros => $composableBuilder(
+    column: $table.occurredAtMicros,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get actionId => $composableBuilder(
+    column: $table.actionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PlannerWidgetActionSequencesTableOrderingComposer
+    extends Composer<_$PlannerDatabase, $PlannerWidgetActionSequencesTable> {
+  $$PlannerWidgetActionSequencesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localDay => $composableBuilder(
+    column: $table.localDay,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sequenceDomain => $composableBuilder(
+    column: $table.sequenceDomain,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get queueSequence => $composableBuilder(
+    column: $table.queueSequence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get occurredAtMicros => $composableBuilder(
+    column: $table.occurredAtMicros,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get actionId => $composableBuilder(
+    column: $table.actionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PlannerWidgetActionSequencesTableAnnotationComposer
+    extends Composer<_$PlannerDatabase, $PlannerWidgetActionSequencesTable> {
+  $$PlannerWidgetActionSequencesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<String> get localDay =>
+      $composableBuilder(column: $table.localDay, builder: (column) => column);
+
+  GeneratedColumn<int> get sequenceDomain => $composableBuilder(
+    column: $table.sequenceDomain,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get queueSequence => $composableBuilder(
+    column: $table.queueSequence,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get occurredAtMicros => $composableBuilder(
+    column: $table.occurredAtMicros,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get actionId =>
+      $composableBuilder(column: $table.actionId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$PlannerWidgetActionSequencesTableTableManager
+    extends
+        RootTableManager<
+          _$PlannerDatabase,
+          $PlannerWidgetActionSequencesTable,
+          PlannerWidgetActionSequenceRow,
+          $$PlannerWidgetActionSequencesTableFilterComposer,
+          $$PlannerWidgetActionSequencesTableOrderingComposer,
+          $$PlannerWidgetActionSequencesTableAnnotationComposer,
+          $$PlannerWidgetActionSequencesTableCreateCompanionBuilder,
+          $$PlannerWidgetActionSequencesTableUpdateCompanionBuilder,
+          (
+            PlannerWidgetActionSequenceRow,
+            BaseReferences<
+              _$PlannerDatabase,
+              $PlannerWidgetActionSequencesTable,
+              PlannerWidgetActionSequenceRow
+            >,
+          ),
+          PlannerWidgetActionSequenceRow,
+          PrefetchHooks Function()
+        > {
+  $$PlannerWidgetActionSequencesTableTableManager(
+    _$PlannerDatabase db,
+    $PlannerWidgetActionSequencesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlannerWidgetActionSequencesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$PlannerWidgetActionSequencesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PlannerWidgetActionSequencesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> ownerId = const Value.absent(),
+                Value<String> entityId = const Value.absent(),
+                Value<String> localDay = const Value.absent(),
+                Value<int> sequenceDomain = const Value.absent(),
+                Value<int> queueSequence = const Value.absent(),
+                Value<int> occurredAtMicros = const Value.absent(),
+                Value<String> actionId = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlannerWidgetActionSequencesCompanion(
+                ownerId: ownerId,
+                entityId: entityId,
+                localDay: localDay,
+                sequenceDomain: sequenceDomain,
+                queueSequence: queueSequence,
+                occurredAtMicros: occurredAtMicros,
+                actionId: actionId,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String ownerId,
+                required String entityId,
+                required String localDay,
+                required int sequenceDomain,
+                required int queueSequence,
+                required int occurredAtMicros,
+                required String actionId,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PlannerWidgetActionSequencesCompanion.insert(
+                ownerId: ownerId,
+                entityId: entityId,
+                localDay: localDay,
+                sequenceDomain: sequenceDomain,
+                queueSequence: queueSequence,
+                occurredAtMicros: occurredAtMicros,
+                actionId: actionId,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PlannerWidgetActionSequencesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PlannerDatabase,
+      $PlannerWidgetActionSequencesTable,
+      PlannerWidgetActionSequenceRow,
+      $$PlannerWidgetActionSequencesTableFilterComposer,
+      $$PlannerWidgetActionSequencesTableOrderingComposer,
+      $$PlannerWidgetActionSequencesTableAnnotationComposer,
+      $$PlannerWidgetActionSequencesTableCreateCompanionBuilder,
+      $$PlannerWidgetActionSequencesTableUpdateCompanionBuilder,
+      (
+        PlannerWidgetActionSequenceRow,
+        BaseReferences<
+          _$PlannerDatabase,
+          $PlannerWidgetActionSequencesTable,
+          PlannerWidgetActionSequenceRow
+        >,
+      ),
+      PlannerWidgetActionSequenceRow,
+      PrefetchHooks Function()
+    >;
 
 class $PlannerDatabaseManager {
   final _$PlannerDatabase _db;
@@ -7040,4 +7868,10 @@ class $PlannerDatabaseManager {
       $$PlannerConflictsTableTableManager(_db, _db.plannerConflicts);
   $$PlannerImportMarkersTableTableManager get plannerImportMarkers =>
       $$PlannerImportMarkersTableTableManager(_db, _db.plannerImportMarkers);
+  $$PlannerWidgetActionSequencesTableTableManager
+  get plannerWidgetActionSequences =>
+      $$PlannerWidgetActionSequencesTableTableManager(
+        _db,
+        _db.plannerWidgetActionSequences,
+      );
 }

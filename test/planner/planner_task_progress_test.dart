@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:perfect/planner/data/planner_database.dart';
@@ -185,13 +188,23 @@ void main() {
         localDay: completed.localDay,
         occurredAt: DateTime.utc(2026, 7, 27, 12, 6),
       );
+      final staleCompleted = PlannerWidgetTaskAction(
+        id: 'eeeeeeee-9999-4999-8999-eeeeeeeeeeee',
+        ownerId: ownerId,
+        entityId: created.id,
+        kind: PlannerEntityKind.recurringTask,
+        progress: completed.progress,
+        localDay: completed.localDay,
+        occurredAt: completed.occurredAt,
+      );
       final service = PlannerTaskProgressService(store, ownerId: ownerId);
 
       // The newer worker drains the ordered native queue.
       await service.applyWidgetAction(completed);
       await service.applyWidgetAction(missed);
-      // An older overlapping worker finishes late with the first mutation ID.
-      await service.applyWidgetAction(completed);
+      // An older overlapping legacy worker finishes late with a fresh
+      // mutation ID, so outbox idempotency cannot be what protects the state.
+      await service.applyWidgetAction(staleCompleted);
 
       final occurrence = await store.readOccurrence(
         ownerId: ownerId,
@@ -258,4 +271,262 @@ void main() {
     );
     expect(PlannerTaskProgress.fromOccurrence(occurrence).isComplete, isTrue);
   });
+
+  test(
+    'two SQLite connections converge one-off and recurring outcomes on the highest native sequence',
+    () async {
+      final previousWarningSetting =
+          driftRuntimeOptions.dontWarnAboutMultipleDatabases;
+      driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+      final tempDirectory = await Directory.systemTemp.createTemp(
+        'perfect-widget-sequence-',
+      );
+      final databaseFile = File(
+        '${tempDirectory.path}${Platform.pathSeparator}planner.sqlite',
+      );
+      final firstDatabase = PlannerDatabase(
+        NativeDatabase.createInBackground(databaseFile),
+      );
+      final firstStore = PlannerLocalStore(firstDatabase);
+      PlannerLocalStore? secondStore;
+
+      try {
+        final oneOff = (await firstStore.createQuickTask(
+          ownerId: ownerId,
+          title: 'Guard the one-off outcome',
+          now: DateTime.utc(2026, 7, 27, 8),
+        )).entity!;
+        final recurring = PlannerEntity(
+          id: 'two-connection-recurring-task',
+          ownerId: ownerId,
+          kind: PlannerEntityKind.recurringTask,
+          payload: <String, dynamic>{
+            ...defaultPlannerPayload(title: 'Guard the daily outcome'),
+            PlannerPayloadKeys.recurrence: const <String, dynamic>{
+              'rule': 'daily',
+            },
+          },
+          createdAt: DateTime.utc(2026, 7, 27, 8),
+          updatedAt: DateTime.utc(2026, 7, 27, 8),
+        );
+        await firstStore.upsertEntity(entity: recurring);
+
+        // Open a genuinely independent Drift/SQLite connection after the
+        // first connection has created and seeded the shared file.
+        secondStore = PlannerLocalStore(
+          PlannerDatabase(NativeDatabase.createInBackground(databaseFile)),
+        );
+        final firstService = PlannerTaskProgressService(
+          firstStore,
+          ownerId: ownerId,
+        );
+        final secondService = PlannerTaskProgressService(
+          secondStore,
+          ownerId: ownerId,
+        );
+        final day = DateTime(2026, 7, 27);
+
+        PlannerWidgetTaskAction action({
+          required String id,
+          required PlannerEntity entity,
+          required int sequence,
+          required PlannerTaskProgress progress,
+          required DateTime occurredAt,
+        }) => PlannerWidgetTaskAction(
+          id: id,
+          ownerId: ownerId,
+          entityId: entity.id,
+          kind: entity.kind,
+          progress: progress,
+          localDay: day,
+          occurredAt: occurredAt,
+          queueSequence: sequence,
+        );
+
+        final oneOffHigh = action(
+          id: '10000000-0000-4000-8000-000000000090',
+          entity: oneOff,
+          sequence: 90,
+          progress: const PlannerTaskProgress(
+            state: PlannerTaskProgressState.missed,
+            percent: 0,
+          ),
+          // The winning sequence intentionally has an older wall clock.
+          occurredAt: DateTime.utc(2026, 7, 27, 9),
+        );
+        final oneOffLow = action(
+          id: '10000000-0000-4000-8000-000000000080',
+          entity: oneOff,
+          sequence: 80,
+          progress: const PlannerTaskProgress(
+            state: PlannerTaskProgressState.completed,
+            percent: 100,
+          ),
+          occurredAt: DateTime.utc(2026, 7, 27, 12),
+        );
+        final recurringHigh = action(
+          id: '20000000-0000-4000-8000-000000000190',
+          entity: recurring,
+          sequence: 190,
+          progress: const PlannerTaskProgress(
+            state: PlannerTaskProgressState.partial,
+            percent: 65,
+          ),
+          occurredAt: DateTime.utc(2026, 7, 27, 9),
+        );
+        final recurringLow = action(
+          id: '20000000-0000-4000-8000-000000000180',
+          entity: recurring,
+          sequence: 180,
+          progress: const PlannerTaskProgress(
+            state: PlannerTaskProgressState.completed,
+            percent: 100,
+          ),
+          occurredAt: DateTime.utc(2026, 7, 27, 12),
+        );
+
+        // These Futures enter separate database connections concurrently.
+        await Future.wait(<Future<PlannerTaskProgress>>[
+          firstService.applyWidgetAction(oneOffHigh),
+          secondService.applyWidgetAction(oneOffLow),
+          firstService.applyWidgetAction(recurringLow),
+          secondService.applyWidgetAction(recurringHigh),
+        ]);
+
+        // Replay different stale mutation IDs after the concurrent pass. They
+        // must be rejected by the durable sequence clock, not outbox
+        // idempotency.
+        await secondService.applyWidgetAction(
+          action(
+            id: '30000000-0000-4000-8000-000000000070',
+            entity: oneOff,
+            sequence: 70,
+            progress: const PlannerTaskProgress(
+              state: PlannerTaskProgressState.completed,
+              percent: 100,
+            ),
+            occurredAt: DateTime.utc(2026, 7, 28),
+          ),
+        );
+        await firstService.applyWidgetAction(
+          action(
+            id: '40000000-0000-4000-8000-000000000170',
+            entity: recurring,
+            sequence: 170,
+            progress: const PlannerTaskProgress(
+              state: PlannerTaskProgressState.missed,
+              percent: 0,
+            ),
+            occurredAt: DateTime.utc(2026, 7, 28),
+          ),
+        );
+
+        final storedOneOff = await secondStore.readEntity(
+          ownerId: ownerId,
+          entityId: oneOff.id,
+        );
+        final storedOccurrence = await secondStore.readOccurrence(
+          ownerId: ownerId,
+          occurrenceId: PlannerTaskProgressService.recurringOccurrenceId(
+            recurring,
+            day,
+          ),
+        );
+        expect(PlannerTaskProgress.fromEntity(storedOneOff!).isMissed, isTrue);
+        expect(
+          PlannerTaskProgress.fromOccurrence(storedOccurrence),
+          const PlannerTaskProgress(
+            state: PlannerTaskProgressState.partial,
+            percent: 65,
+          ),
+        );
+      } finally {
+        await secondStore?.close();
+        await firstStore.close();
+        await tempDirectory.delete(recursive: true);
+        driftRuntimeOptions.dontWarnAboutMultipleDatabases =
+            previousWarningSetting;
+      }
+    },
+  );
+
+  test(
+    'schema v1 upgrades the local widget sequence guard without data loss',
+    () async {
+      final previousWarningSetting =
+          driftRuntimeOptions.dontWarnAboutMultipleDatabases;
+      driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+      final tempDirectory = await Directory.systemTemp.createTemp(
+        'perfect-widget-migration-',
+      );
+      final databaseFile = File(
+        '${tempDirectory.path}${Platform.pathSeparator}planner.sqlite',
+      );
+      final originalDatabase = PlannerDatabase(
+        NativeDatabase.createInBackground(databaseFile),
+      );
+      final originalStore = PlannerLocalStore(originalDatabase);
+      var originalStoreClosed = false;
+
+      try {
+        final entity = (await originalStore.createQuickTask(
+          ownerId: ownerId,
+          title: 'Keep me through migration',
+          now: DateTime.utc(2026, 7, 27, 8),
+        )).entity!;
+        await originalDatabase.customStatement(
+          'DROP TABLE planner_widget_action_sequences',
+        );
+        await originalDatabase.customStatement('PRAGMA user_version = 1');
+        await originalStore.close();
+        originalStoreClosed = true;
+
+        final upgradedStore = PlannerLocalStore(
+          PlannerDatabase(NativeDatabase.createInBackground(databaseFile)),
+        );
+        try {
+          expect(
+            await upgradedStore.readEntity(
+              ownerId: ownerId,
+              entityId: entity.id,
+            ),
+            isNotNull,
+          );
+          final action = PlannerWidgetTaskAction(
+            id: '50000000-0000-4000-8000-000000000001',
+            ownerId: ownerId,
+            entityId: entity.id,
+            kind: PlannerEntityKind.oneOffTask,
+            progress: const PlannerTaskProgress(
+              state: PlannerTaskProgressState.completed,
+              percent: 100,
+            ),
+            localDay: DateTime(2026, 7, 27),
+            occurredAt: DateTime.utc(2026, 7, 27, 9),
+            queueSequence: 1,
+          );
+          await PlannerTaskProgressService(
+            upgradedStore,
+            ownerId: ownerId,
+          ).applyWidgetAction(action);
+          expect(
+            PlannerTaskProgress.fromEntity(
+              (await upgradedStore.readEntity(
+                ownerId: ownerId,
+                entityId: entity.id,
+              ))!,
+            ).isComplete,
+            isTrue,
+          );
+        } finally {
+          await upgradedStore.close();
+        }
+      } finally {
+        if (!originalStoreClosed) await originalStore.close();
+        await tempDirectory.delete(recursive: true);
+        driftRuntimeOptions.dontWarnAboutMultipleDatabases =
+            previousWarningSetting;
+      }
+    },
+  );
 }

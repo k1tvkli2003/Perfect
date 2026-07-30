@@ -512,6 +512,157 @@ void main() {
     );
     await repository.dispose();
   });
+
+  test(
+    'non-connectivity failures retain red phase and recover with capped backoff',
+    () async {
+      final retryScheduler = _ControlledRetryScheduler();
+      var failuresRemaining = 3;
+      var pullCalls = 0;
+      final remote = _FakeGateway(
+        onApply: (_) => throw StateError('No push was expected.'),
+        onPull: ({required afterChangeId, required limit}) {
+          pullCalls++;
+          if (failuresRemaining > 0) {
+            failuresRemaining--;
+            throw const FormatException('transient malformed server response');
+          }
+          return PlannerRemoteChangePage(
+            changes: const <PlannerRemoteChange>[],
+            requestedLimit: limit,
+          );
+        },
+      );
+      final repository = PlannerSyncRepository(
+        store,
+        remote,
+        ownerId: ownerId,
+        deviceId: deviceId,
+        retryBaseDelay: const Duration(milliseconds: 10),
+        retryMaxDelay: const Duration(milliseconds: 25),
+        retryTimerFactory: retryScheduler.schedule,
+      );
+
+      await repository.syncNow();
+      expect(
+        repository.syncStatus.value.phase,
+        PlannerSyncPhase.needsAttention,
+      );
+      expect(retryScheduler.delays, const <Duration>[
+        Duration(milliseconds: 10),
+      ]);
+
+      retryScheduler.fireNext();
+      await _waitUntil(() => pullCalls == 2);
+      expect(
+        repository.syncStatus.value.phase,
+        PlannerSyncPhase.needsAttention,
+      );
+      expect(retryScheduler.delays.last, const Duration(milliseconds: 20));
+
+      retryScheduler.fireNext();
+      await _waitUntil(() => pullCalls == 3);
+      expect(
+        repository.syncStatus.value.phase,
+        PlannerSyncPhase.needsAttention,
+      );
+      expect(retryScheduler.delays.last, const Duration(milliseconds: 25));
+
+      retryScheduler.fireNext();
+      await _waitUntil(
+        () => repository.syncStatus.value.phase == PlannerSyncPhase.idle,
+      );
+      expect(pullCalls, 5, reason: 'A successful sync pulls before and after.');
+
+      failuresRemaining = 1;
+      await repository.syncNow();
+      expect(
+        repository.syncStatus.value.phase,
+        PlannerSyncPhase.needsAttention,
+      );
+      expect(
+        retryScheduler.delays.last,
+        const Duration(milliseconds: 10),
+        reason: 'A successful sync resets the consecutive-failure backoff.',
+      );
+      await repository.dispose();
+    },
+  );
+
+  test('offline retry is cancelled by a coalesced manual recovery', () async {
+    final retryScheduler = _ControlledRetryScheduler();
+    var offline = true;
+    var pullCalls = 0;
+    final remote = _FakeGateway(
+      onApply: (_) => throw StateError('No push was expected.'),
+      onPull: ({required afterChangeId, required limit}) {
+        pullCalls++;
+        if (offline) throw const SocketException('network unavailable');
+        return PlannerRemoteChangePage(
+          changes: const <PlannerRemoteChange>[],
+          requestedLimit: limit,
+        );
+      },
+    );
+    final repository = PlannerSyncRepository(
+      store,
+      remote,
+      ownerId: ownerId,
+      deviceId: deviceId,
+      retryTimerFactory: retryScheduler.schedule,
+    );
+
+    await repository.syncNow();
+    expect(repository.syncStatus.value.phase, PlannerSyncPhase.offline);
+    expect(retryScheduler.activeCount, 1);
+
+    offline = false;
+    final first = repository.syncNow();
+    final coalesced = repository.syncNow();
+    expect(identical(first, coalesced), isTrue);
+    expect(retryScheduler.activeCount, 0);
+    await Future.wait(<Future<void>>[first, coalesced]);
+
+    expect(repository.syncStatus.value.phase, PlannerSyncPhase.idle);
+    expect(
+      pullCalls,
+      5,
+      reason:
+          'Concurrent manual requests share one future and drain one extra pass.',
+    );
+    await repository.dispose();
+  });
+
+  test(
+    'dispose cancels a pending retry and prevents late remote work',
+    () async {
+      final retryScheduler = _ControlledRetryScheduler();
+      var pullCalls = 0;
+      final remote = _FakeGateway(
+        onApply: (_) => throw StateError('No push was expected.'),
+        onPull: ({required afterChangeId, required limit}) {
+          pullCalls++;
+          throw StateError('temporary service rejection');
+        },
+      );
+      final repository = PlannerSyncRepository(
+        store,
+        remote,
+        ownerId: ownerId,
+        deviceId: deviceId,
+        retryTimerFactory: retryScheduler.schedule,
+      );
+
+      await repository.syncNow();
+      expect(retryScheduler.activeCount, 1);
+      await repository.dispose();
+      expect(retryScheduler.activeCount, 0);
+
+      retryScheduler.fireAll();
+      await Future<void>.delayed(Duration.zero);
+      expect(pullCalls, 1);
+    },
+  );
 }
 
 Map<String, dynamic> _entitySnapshot({
@@ -632,4 +783,52 @@ class _FakeGateway implements PlannerRemoteGateway {
 
   @override
   Future<void> subscribe(void Function() onChangeHint) => Future<void>.value();
+}
+
+class _ControlledRetryScheduler {
+  final List<Duration> delays = <Duration>[];
+  final List<_ControlledTimer> _timers = <_ControlledTimer>[];
+
+  int get activeCount => _timers.where((timer) => timer.isActive).length;
+
+  Timer schedule(Duration delay, void Function() callback) {
+    delays.add(delay);
+    final timer = _ControlledTimer(callback);
+    _timers.add(timer);
+    return timer;
+  }
+
+  void fireNext() {
+    _timers.firstWhere((timer) => timer.isActive).fire();
+  }
+
+  void fireAll() {
+    for (final timer in _timers.toList(growable: false)) {
+      timer.fire();
+    }
+  }
+}
+
+class _ControlledTimer implements Timer {
+  _ControlledTimer(this._callback);
+
+  final void Function() _callback;
+  bool _active = true;
+  int _tick = 0;
+
+  void fire() {
+    if (!_active) return;
+    _active = false;
+    _tick++;
+    _callback();
+  }
+
+  @override
+  void cancel() => _active = false;
+
+  @override
+  bool get isActive => _active;
+
+  @override
+  int get tick => _tick;
 }

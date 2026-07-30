@@ -354,16 +354,85 @@ class PlannerLocalStore {
     return _focusSessionFromRow(row);
   }
 
+  /// Applies a widget outcome only when its durable ordering tuple is newer.
+  ///
+  /// Android may run the widget callback and the foreground app in independent
+  /// Flutter engines, each with its own [PlannerDatabase] connection. The
+  /// conditional UPSERT is the first write in this transaction, so SQLite
+  /// serializes those engines before [mutation] can touch planner state.
+  ///
+  /// Native actions (positive [queueSequence]) always sort after legacy
+  /// actions. Legacy rows remain deterministic by `occurredAt + actionId`, so
+  /// an old pre-sequence queue can still drain safely. Callers should use a
+  /// stable day key for recurring outcomes and [oneOffWidgetSequenceScope] for
+  /// one-off tasks, whose progress is not day-scoped.
+  Future<T?> runGuardedWidgetOutcome<T>({
+    required String ownerId,
+    required String entityId,
+    required String localDayKey,
+    required int queueSequence,
+    required DateTime occurredAt,
+    required String actionId,
+    required Future<T> Function() mutation,
+  }) async {
+    _requireOwnerId(ownerId);
+    if (entityId.trim().isEmpty || localDayKey.trim().isEmpty) {
+      throw ArgumentError('Widget outcome scope must not be empty.');
+    }
+    if (queueSequence < 0) {
+      throw ArgumentError.value(
+        queueSequence,
+        'queueSequence',
+        'must not be negative',
+      );
+    }
+    final stableActionId = _requireMutationId(actionId);
+    final occurredAtUtc = occurredAt.toUtc();
+    final occurredAtMicros = occurredAtUtc.microsecondsSinceEpoch;
+    if (occurredAtMicros < 0) {
+      throw ArgumentError.value(
+        occurredAt,
+        'occurredAt',
+        'must not be before the Unix epoch',
+      );
+    }
+
+    return _database.transaction(() async {
+      final accepted = await _claimWidgetOutcomeSequence(
+        ownerId: ownerId,
+        entityId: entityId,
+        localDayKey: localDayKey,
+        sequenceDomain: queueSequence > 0 ? 1 : 0,
+        queueSequence: queueSequence,
+        occurredAtMicros: occurredAtMicros,
+        actionId: stableActionId,
+        updatedAt: occurredAtUtc,
+      );
+      if (!accepted) return null;
+      return mutation();
+    });
+  }
+
+  static const oneOffWidgetSequenceScope = '*';
+
   Future<PlannerMutationReceipt> createQuickTask({
     required String ownerId,
     required String title,
     DateTime? now,
+    DateTime? scheduledAt,
     String? mutationId,
   }) async {
     _requireOwnerId(ownerId);
     final normalizedTitle = _requireTitle(title);
     final createdAt = _utc(now);
     final stableMutationId = _requireMutationId(mutationId ?? _uuid.v4());
+    final payload = <String, dynamic>{
+      ...defaultPlannerPayload(title: normalizedTitle),
+      if (scheduledAt != null)
+        PlannerPayloadKeys.timing: <String, dynamic>{
+          'scheduled_at': scheduledAt.toUtc().toIso8601String(),
+        },
+    };
     return _database.transaction(() async {
       final duplicate = await _findOperationByMutationId(stableMutationId);
       if (duplicate != null) {
@@ -372,9 +441,7 @@ class PlannerLocalStore {
           ownerId: ownerId,
           target: PlannerOperationTarget.entity,
           operationType: PlannerOperationType.createEntity,
-          patch: PlannerFieldPatch(<String, dynamic>{
-            '/': defaultPlannerPayload(title: normalizedTitle),
-          }),
+          patch: PlannerFieldPatch(<String, dynamic>{'/': payload}),
         );
         final current = await _findEntityRow(ownerId, duplicate.targetId);
         return PlannerMutationReceipt(
@@ -388,7 +455,7 @@ class PlannerLocalStore {
         id: _uuid.v4(),
         ownerId: ownerId,
         kind: PlannerEntityKind.oneOffTask,
-        payload: defaultPlannerPayload(title: normalizedTitle),
+        payload: payload,
         createdAt: createdAt,
         updatedAt: createdAt,
       );
@@ -1122,6 +1189,82 @@ class PlannerLocalStore {
       now: now,
     ),
   );
+
+  Future<bool> _claimWidgetOutcomeSequence({
+    required String ownerId,
+    required String entityId,
+    required String localDayKey,
+    required int sequenceDomain,
+    required int queueSequence,
+    required int occurredAtMicros,
+    required String actionId,
+    required DateTime updatedAt,
+  }) async {
+    final claimed = await _database
+        .customSelect(
+          '''
+INSERT INTO planner_widget_action_sequences (
+  owner_id,
+  entity_id,
+  local_day,
+  sequence_domain,
+  queue_sequence,
+  occurred_at_micros,
+  action_id,
+  updated_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(owner_id, entity_id, local_day) DO UPDATE SET
+  sequence_domain = excluded.sequence_domain,
+  queue_sequence = excluded.queue_sequence,
+  occurred_at_micros = excluded.occurred_at_micros,
+  action_id = excluded.action_id,
+  updated_at = excluded.updated_at
+WHERE
+  excluded.sequence_domain >
+    planner_widget_action_sequences.sequence_domain
+  OR (
+    excluded.sequence_domain =
+      planner_widget_action_sequences.sequence_domain
+    AND excluded.queue_sequence >
+      planner_widget_action_sequences.queue_sequence
+  )
+  OR (
+    excluded.sequence_domain =
+      planner_widget_action_sequences.sequence_domain
+    AND excluded.queue_sequence =
+      planner_widget_action_sequences.queue_sequence
+    AND excluded.occurred_at_micros >
+      planner_widget_action_sequences.occurred_at_micros
+  )
+  OR (
+    excluded.sequence_domain =
+      planner_widget_action_sequences.sequence_domain
+    AND excluded.queue_sequence =
+      planner_widget_action_sequences.queue_sequence
+    AND excluded.occurred_at_micros =
+      planner_widget_action_sequences.occurred_at_micros
+    AND excluded.action_id >
+      planner_widget_action_sequences.action_id
+  )
+RETURNING action_id
+''',
+          variables: <Variable<Object>>[
+            Variable<String>(ownerId),
+            Variable<String>(entityId),
+            Variable<String>(localDayKey),
+            Variable<int>(sequenceDomain),
+            Variable<int>(queueSequence),
+            Variable<int>(occurredAtMicros),
+            Variable<String>(actionId),
+            Variable<DateTime>(updatedAt),
+          ],
+          readsFrom: <ResultSetImplementation>{
+            _database.plannerWidgetActionSequences,
+          },
+        )
+        .getSingleOrNull();
+    return claimed != null;
+  }
 
   Future<PlannerMutationReceipt> _persistEntityMutationInTransaction({
     required PlannerEntity entity,

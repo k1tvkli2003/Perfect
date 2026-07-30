@@ -5,6 +5,10 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:perfect/ai/perfect_ai_client.dart';
+import 'package:perfect/ai/perfect_ai_contract.dart';
+import 'package:perfect/ai/perfect_voice_recorder.dart';
+import 'package:perfect/app/perfect_preferences.dart';
 import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
@@ -39,6 +43,11 @@ void main() {
   late PlannerDatabase database;
 
   setUp(() async {
+    // Keep raster-brand sampling deterministic when tests switch repeatedly
+    // between compact, tablet, and desktop mark sizes.
+    PaintingBinding.instance.imageCache
+      ..clear()
+      ..clearLiveImages();
     SharedPreferences.setMockInitialValues(<String, Object>{});
     database = PlannerDatabase(NativeDatabase.memory());
     final local = PlannerLocalStore(database);
@@ -96,6 +105,239 @@ void main() {
     },
     tags: 'windows-golden',
   );
+
+  testWidgets(
+    'compact AI toggle participates in footer layout above capture',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      await _pump(tester, aiClient: _WorkspaceAiClient());
+
+      final ai = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-ai-surface')),
+      );
+      final capture = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-surface')),
+      );
+      expect(ai.bottom, lessThanOrEqualTo(capture.top));
+      expect(find.byType(NavigationBar), findsOneWidget);
+      await expectLater(
+        find.byType(PerfectWorkspacePage),
+        matchesGoldenFile('../goldens/perfect_compact_ai_closed.png'),
+      );
+
+      await tester.tap(find.byKey(const ValueKey<String>('perfect-ai-toggle')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-surface')),
+        findsOneWidget,
+      );
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byType(PerfectWorkspacePage),
+        matchesGoldenFile('../goldens/perfect_compact_ai_open.png'),
+      );
+    },
+    tags: 'windows-golden',
+  );
+
+  testWidgets(
+    'Android tablet defaults narrow and expands without overlap',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(900, 1200));
+      await _pump(tester, aiClient: _WorkspaceAiClient());
+
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(
+        tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+        isFalse,
+      );
+      expect(find.byKey(const ValueKey<String>('rail-mark')), findsOneWidget);
+      expect(find.text('Perfect!'), findsNothing);
+      expect(find.byTooltip('Expand navigation'), findsOneWidget);
+      final compass = tester.getRect(
+        find.byKey(const ValueKey<String>('day-compass-panel')),
+      );
+      final stream = tester.getRect(
+        find.byKey(const ValueKey<String>('day-stream-panel')),
+      );
+      final runway = tester.getRect(
+        find.byKey(const ValueKey<String>('day-compass-runway')),
+      );
+      final signal = tester.getRect(
+        find.byKey(const ValueKey<String>('day-stream-signal-zone')),
+      );
+      final ai = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-ai-surface')),
+      );
+      final capture = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-surface')),
+      );
+      expect(compass.top, closeTo(stream.top, 1));
+      expect(compass.bottom, closeTo(stream.bottom, 1));
+      expect(compass.right, lessThan(stream.left));
+      expect(compass.height, greaterThan(500));
+      expect(compass.bottom - runway.bottom, lessThanOrEqualTo(20));
+      expect(stream.bottom - signal.bottom, lessThanOrEqualTo(20));
+      expect(runway.height, greaterThan(260));
+      expect(signal.height, greaterThan(180));
+      expect(ai.top - compass.bottom, lessThan(120));
+      expect(ai.bottom, lessThanOrEqualTo(capture.top));
+      await expectLater(
+        find.byType(PerfectWorkspacePage),
+        matchesGoldenFile('../goldens/perfect_tablet_rail_compact.png'),
+      );
+
+      await tester.tap(find.byTooltip('Expand navigation'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 120));
+      final animatedWidth = tester
+          .getSize(
+            find.byKey(
+              const ValueKey<String>('perfect-navigation-rail-layout'),
+            ),
+          )
+          .width;
+      expect(animatedWidth, inExclusiveRange(78, 212));
+      expect(tester.takeException(), isNull);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+        isTrue,
+      );
+      expect(find.byKey(const ValueKey<String>('rail-mark')), findsNothing);
+      expect(find.text('Perfect!'), findsOneWidget);
+      final expandedCompass = tester.getRect(
+        find.byKey(const ValueKey<String>('day-compass-panel')),
+      );
+      final expandedStream = tester.getRect(
+        find.byKey(const ValueKey<String>('day-stream-panel')),
+      );
+      expect(expandedCompass.right, lessThan(expandedStream.left));
+      expect(expandedCompass.height, greaterThan(500));
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byType(PerfectWorkspacePage),
+        matchesGoldenFile('../goldens/perfect_tablet_rail_expanded.png'),
+      );
+    },
+    tags: 'windows-golden',
+  );
+
+  testWidgets(
+    'medium Day Deck uses content-driven reflow at 768 900 and 1024dp',
+    (tester) async {
+      Future<(Rect, Rect)> layoutAt(double width) async {
+        await tester.binding.setSurfaceSize(Size(width, 1200));
+        await _pump(tester);
+        expect(tester.takeException(), isNull);
+        return (
+          tester.getRect(
+            find.byKey(const ValueKey<String>('day-compass-panel')),
+          ),
+          tester.getRect(
+            find.byKey(const ValueKey<String>('day-stream-panel')),
+          ),
+        );
+      }
+
+      final narrow = await layoutAt(768);
+      expect(narrow.$1.bottom, lessThan(narrow.$2.top));
+
+      final standard = await layoutAt(900);
+      expect(standard.$1.right, lessThan(standard.$2.left));
+      expect(standard.$1.height, greaterThan(500));
+
+      final roomy = await layoutAt(1024);
+      expect(roomy.$1.right, lessThan(roomy.$2.left));
+      expect(roomy.$1.width, greaterThan(standard.$1.width));
+    },
+  );
+
+  testWidgets(
+    'Android tablet landscape keeps the Day Deck and shell continuously usable',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 800));
+      await _pump(tester, aiClient: _WorkspaceAiClient());
+
+      final compass = tester.getRect(
+        find.byKey(const ValueKey<String>('day-compass-panel')),
+      );
+      final stream = tester.getRect(
+        find.byKey(const ValueKey<String>('day-stream-panel')),
+      );
+      final ai = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-ai-surface')),
+      );
+      final capture = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-surface')),
+      );
+
+      expect(compass.right, lessThan(stream.left));
+      expect(compass.top, closeTo(stream.top, 1));
+      expect(compass.bottom, closeTo(stream.bottom, 1));
+      expect(compass.height, greaterThan(450));
+      expect(compass.bottom, lessThanOrEqualTo(ai.top));
+      expect(ai.bottom, lessThanOrEqualTo(capture.top));
+      expect(capture.bottom, lessThanOrEqualTo(800));
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byType(PerfectWorkspacePage),
+        matchesGoldenFile('../goldens/perfect_tablet_landscape.png'),
+      );
+    },
+    tags: 'windows-golden',
+  );
+
+  testWidgets(
+    'tablet Day Deck at 200 percent text becomes one readable column',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(900, 1200));
+      await _pump(tester, textScaler: const TextScaler.linear(2));
+
+      final compass = tester.getRect(
+        find.byKey(const ValueKey<String>('day-compass-panel')),
+      );
+      final stream = tester.getRect(
+        find.byKey(const ValueKey<String>('day-stream-panel')),
+      );
+      expect(compass.bottom, lessThan(stream.top));
+      expect(find.byKey(const ValueKey<String>('rail-mark')), findsOneWidget);
+      expect(find.text('Perfect!'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('Windows rail collapse choice survives a workspace remount', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1366, 768));
+    await _pump(tester);
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+      isTrue,
+    );
+
+    await tester.tap(find.byTooltip('Collapse navigation'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+      isFalse,
+    );
+    final preferences = await SharedPreferences.getInstance();
+    expect(
+      preferences.getBool(PerfectPreferences.navigationRailExtendedKey),
+      isFalse,
+    );
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await _pump(tester);
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+      isFalse,
+    );
+    expect(find.byTooltip('Expand navigation'), findsOneWidget);
+  });
 
   testWidgets(
     '320dp quick capture stays uncluttered with 200 percent text and 48dp actions',
@@ -190,23 +432,170 @@ void main() {
     expect(find.textContaining('Type is fixed after creation'), findsOneWidget);
   });
 
-  testWidgets('expanded Orbit Day dedicates an inspector and rail', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(1366, 768));
-    await _pump(tester);
+  testWidgets(
+    'expanded Windows Day Deck keeps the compass and stream adjacent',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1366, 768));
+      await _pump(tester);
 
-    expect(find.byType(NavigationRail), findsOneWidget);
-    expect(find.text('Inspector'), findsNothing);
-    expect(find.text('Focus Deep Work'), findsWidgets);
-    await tester.tap(find.text('Focus Deep Work').last);
-    await tester.pumpAndSettle();
-    expect(find.text('Inspector'), findsOneWidget);
-    await expectLater(
-      find.byType(PerfectWorkspacePage),
-      matchesGoldenFile('../goldens/perfect_expanded.png'),
-    );
-  }, tags: 'windows-golden');
+      expect(find.byType(NavigationRail), findsOneWidget);
+      expect(find.text('Inspector'), findsNothing);
+      final compass = tester.getRect(
+        find.byKey(const ValueKey<String>('day-compass-panel')),
+      );
+      final stream = tester.getRect(
+        find.byKey(const ValueKey<String>('day-stream-panel')),
+      );
+      expect(compass.right, lessThan(stream.left));
+      expect(compass.top, closeTo(stream.top, 1));
+      expect(compass.bottom, closeTo(stream.bottom, 1));
+      expect(compass.height, greaterThanOrEqualTo(420));
+      expect(find.text('Focus Deep Work'), findsWidgets);
+      final source = _controller.tasks.singleWhere(
+        (item) => item.title == 'Focus Deep Work',
+      );
+      await tester.tap(
+        find.byKey(ValueKey<String>('entity-context-${source.id}')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Inspector'), findsOneWidget);
+      final stage = tester.getRect(
+        find.byKey(const ValueKey<String>('expanded-day-deck-stage')),
+      );
+      final focusPanel = tester.getRect(
+        find.byKey(const ValueKey<String>('expanded-focus-panel')),
+      );
+      expect(focusPanel.top, closeTo(stage.top, 1));
+      expect(focusPanel.bottom, closeTo(stage.bottom, 1));
+      expect(focusPanel.right, closeTo(stage.right, 1));
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byType(PerfectWorkspacePage),
+        matchesGoldenFile('../goldens/perfect_expanded.png'),
+      );
+    },
+    tags: 'windows-golden',
+  );
+
+  testWidgets(
+    'wide Windows Day Deck promotes selected detail to a true third pane',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1920, 1080));
+      await _pump(tester);
+      final source = _controller.tasks.singleWhere(
+        (item) => item.title == 'Focus Deep Work',
+      );
+
+      await tester.tap(
+        find.byKey(ValueKey<String>('entity-context-${source.id}')),
+      );
+      await tester.pumpAndSettle();
+
+      final compass = tester.getRect(
+        find.byKey(const ValueKey<String>('day-compass-panel')),
+      );
+      final stream = tester.getRect(
+        find.byKey(const ValueKey<String>('day-stream-panel')),
+      );
+      final inspector = tester.getRect(
+        find.byKey(ValueKey<String>('expanded-inspector-${source.id}')),
+      );
+      expect(
+        find.byKey(const ValueKey<String>('expanded-focus-panel')),
+        findsNothing,
+      );
+      expect(compass.right, lessThan(stream.left));
+      expect(stream.right, lessThan(inspector.left));
+      expect(compass.top, closeTo(stream.top, 1));
+      expect(stream.top, closeTo(inspector.top, 1));
+      expect(compass.bottom, closeTo(inspector.bottom, 1));
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byType(PerfectWorkspacePage),
+        matchesGoldenFile('../goldens/perfect_windows_wide_inspector.png'),
+      );
+    },
+    tags: 'windows-golden',
+  );
+
+  testWidgets(
+    'short Windows landscape keeps a full-scale deck in a scrollable stage',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1366, 600));
+      await _pump(tester);
+
+      final compass = tester.getRect(
+        find.byKey(const ValueKey<String>('day-compass-panel')),
+      );
+      final stream = tester.getRect(
+        find.byKey(const ValueKey<String>('day-stream-panel')),
+      );
+      expect(compass.right, lessThan(stream.left));
+      expect(compass.height, greaterThanOrEqualTo(420));
+      expect(compass.bottom, greaterThan(500));
+      expect(
+        find.byKey(
+          const PageStorageKey<String>('perfect-expanded-today-scroll'),
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+      await expectLater(
+        find.byType(PerfectWorkspacePage),
+        matchesGoldenFile('../goldens/perfect_windows_short.png'),
+      );
+    },
+    tags: 'windows-golden',
+  );
+
+  testWidgets(
+    'expanded Windows at 200 percent text becomes one readable column',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1366, 900));
+      await _pump(tester, textScaler: const TextScaler.linear(2));
+
+      final compass = tester.getRect(
+        find.byKey(const ValueKey<String>('day-compass-panel')),
+      );
+      final stream = tester.getRect(
+        find.byKey(const ValueKey<String>('day-stream-panel')),
+      );
+      expect(
+        find.byKey(const ValueKey<String>('expanded-day-deck-stacked')),
+        findsOneWidget,
+      );
+      expect(compass.bottom, lessThan(stream.top));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Windows Day Deck remains proportionate through intermediate resizes',
+    (tester) async {
+      for (final width in <double>[1280, 1366, 1600]) {
+        await tester.binding.setSurfaceSize(Size(width, 820));
+        await _pump(tester);
+
+        final compass = tester.getRect(
+          find.byKey(const ValueKey<String>('day-compass-panel')),
+        );
+        final stream = tester.getRect(
+          find.byKey(const ValueKey<String>('day-stream-panel')),
+        );
+        final deck = tester.getRect(
+          find.byKey(const ValueKey<String>('expanded-day-deck-stage')),
+        );
+        expect(compass.right, lessThan(stream.left), reason: 'width $width');
+        expect(
+          compass.width / deck.width,
+          inInclusiveRange(.36, .47),
+          reason: 'width $width',
+        );
+        expect(stream.width, greaterThan(500), reason: 'width $width');
+        expect(tester.takeException(), isNull, reason: 'width $width');
+      }
+    },
+  );
 
   testWidgets('desktop inspector duplicates and selects an independent item', (
     tester,
@@ -543,7 +932,10 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1366, 768));
     await _pump(tester, navigationController: navigation);
 
-    await tester.tap(find.text('Focus Deep Work').last);
+    final task = _controller.tasks.singleWhere(
+      (item) => item.title == 'Focus Deep Work',
+    );
+    await tester.tap(find.byKey(ValueKey<String>('entity-context-${task.id}')));
     await tester.pumpAndSettle();
     expect(find.text('Inspector'), findsOneWidget);
 
@@ -1558,14 +1950,21 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Focus'), findsNothing);
 
-      await tester.tap(find.text('Focus Deep Work').last);
+      final task = _controller.tasks.singleWhere(
+        (item) => item.title == 'Focus Deep Work',
+      );
+      await tester.tap(
+        find.byKey(ValueKey<String>('entity-context-${task.id}')),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Inspector'), findsOneWidget);
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
       expect(find.text('Inspector'), findsNothing);
 
-      await tester.tap(find.text('Focus Deep Work').last);
+      await tester.tap(
+        find.byKey(ValueKey<String>('entity-context-${task.id}')),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Inspector'), findsOneWidget);
       await _sendControlShortcut(tester, LogicalKeyboardKey.digit4);
@@ -1700,6 +2099,7 @@ void main() {
 Future<void> _pump(
   WidgetTester tester, {
   PerfectWorkspaceNavigationController? navigationController,
+  PerfectAiClient? aiClient,
   TextScaler? textScaler,
   TextDirection textDirection = TextDirection.ltr,
 }) async {
@@ -1725,10 +2125,45 @@ Future<void> _pump(
         onSignOut: () async {},
         now: () => _previewNow,
         navigationController: navigationController,
+        aiClient: aiClient,
+        aiVoiceRecorder: aiClient == null ? null : _WorkspaceVoiceRecorder(),
       ),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _WorkspaceAiClient implements PerfectAiClient {
+  @override
+  Future<PerfectAiApplyResult> applyProposal({
+    required String operationId,
+    required String? conversationId,
+    required PerfectAiProposal proposal,
+    PerfectAiCancellation? cancellation,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<PerfectAiTurnResult> chat(
+    PerfectAiRequest request, {
+    PerfectAiCancellation? cancellation,
+  }) => throw UnimplementedError();
+}
+
+class _WorkspaceVoiceRecorder implements PerfectVoiceRecorder {
+  @override
+  Future<void> cancel() async {}
+
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  Future<bool> hasPermission() async => true;
+
+  @override
+  Future<void> start() async {}
+
+  @override
+  Future<PerfectVoiceClip?> stop() async => null;
 }
 
 Finder _cardContaining(String text) =>

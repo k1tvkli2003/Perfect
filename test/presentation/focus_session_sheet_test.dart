@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,6 +31,7 @@ void main() {
           _DisconnectedGateway(),
           ownerId: 'focus-owner',
           deviceId: '11111111-1111-4111-8111-111111111111',
+          retryTimerFactory: (_, _) => _NoopTimer(),
         ),
         ownerId: 'focus-owner',
         todayWidgetBridge: _UnavailableTodayWidgetBridge(),
@@ -88,6 +91,17 @@ void main() {
     },
     timeout: const Timeout(Duration(seconds: 10)),
   );
+}
+
+class _NoopTimer implements Timer {
+  @override
+  bool get isActive => false;
+
+  @override
+  int get tick => 0;
+
+  @override
+  void cancel() {}
 }
 
 class _UnavailableTodayWidgetBridge extends PerfectTodayWidgetBridge {

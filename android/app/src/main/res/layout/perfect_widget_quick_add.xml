@@ -1,0 +1,185 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/perfect_quick_add_surface"
+    android:elevation="24dp"
+    android:layoutDirection="locale"
+    android:minWidth="300dp"
+    android:orientation="vertical"
+    android:padding="22dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:contentDescription="Perfect!"
+            android:src="@drawable/perfect_widget_mark" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/widget_quick_add_title"
+                android:textColor="@color/perfect_widget_ink"
+                android:textDirection="locale"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="A tiny task, safely in your orbit"
+                android:textColor="@color/perfect_widget_muted"
+                android:textDirection="locale"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/quick_add_form"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/quick_add_title"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/perfect_quick_add_input"
+            android:hint="@string/widget_quick_add_hint"
+            android:imeOptions="actionDone"
+            android:importantForAutofill="no"
+            android:inputType="textCapSentences"
+            android:maxLength="160"
+            android:maxLines="1"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:selectAllOnFocus="false"
+            android:textColor="@color/perfect_widget_ink"
+            android:textColorHint="@color/perfect_widget_muted"
+            android:textDirection="locale"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/quick_add_time"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:background="@drawable/perfect_quick_add_secondary"
+                android:contentDescription="Choose an optional time for this task"
+                android:minWidth="112dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/widget_quick_add_time"
+                android:textAllCaps="false"
+                android:textColor="@color/perfect_widget_ink"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/quick_add_clear_time"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Remove the optional task time"
+                android:minWidth="72dp"
+                android:text="@string/widget_quick_add_clear_time"
+                android:textAllCaps="false"
+                android:textColor="@color/perfect_widget_muted"
+                android:textSize="13sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/quick_add_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:accessibilityLiveRegion="polite"
+            android:textColor="#FFC8505A"
+            android:textDirection="locale"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/quick_add_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:minWidth="80dp"
+                android:text="@string/widget_quick_add_cancel"
+                android:textAllCaps="false"
+                android:textColor="@color/perfect_widget_muted"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/quick_add_submit"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/perfect_quick_add_primary"
+                android:enabled="false"
+                android:minWidth="132dp"
+                android:text="@string/widget_quick_add_submit"
+                android:textAllCaps="false"
+                android:textColor="@color/perfect_widget_ink"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/quick_add_signed_out"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_quick_add_signed_out"
+            android:textColor="@color/perfect_widget_muted"
+            android:textDirection="locale"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/quick_add_open_app"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/perfect_quick_add_primary"
+            android:text="@string/widget_quick_add_open_app"
+            android:textAllCaps="false"
+            android:textColor="@color/perfect_widget_ink"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,5 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Requested only when the owner explicitly starts a Perfect AI voice note. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Requested only after the owner turns on local reminders. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -81,6 +83,17 @@
             android:name=".PerfectTodayWidgetService"
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
+        <!-- A focused native dialog surface for one-handed task capture from
+             the widget. It only writes a tokenized replay request to the
+             home_widget bridge; Dart remains the sole Drift writer. -->
+        <activity
+            android:name=".PerfectWidgetQuickAddActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:finishOnTaskLaunch="true"
+            android:noHistory="true"
+            android:theme="@style/PerfectWidgetQuickAddTheme"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize" />
         <!-- Only this app's PendingIntent template reaches the direct-task
              receiver. It first persists the native replay action, then asks
              the background callback to commit the local-first mutation. -->

@@ -30,6 +30,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/.codex-tmp/
 
 # Symbolication related
 app.*.symbols
@@ -51,6 +52,14 @@ app.*.map.json
 .env
 .env.*
 !.env.example
+
+# Private signing material is generated outside the repository. Keep these
+# deny-list entries as a final guard against an accidental copy into the tree.
+*.jks
+*.keystore
+*.pfx
+*-private-key.pem
+protected-secrets.json
 
 # Legacy source and unselected Flutter targets are deliberately retained
 # locally during the private-project migration, but are not part of Perfect.

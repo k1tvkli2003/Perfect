@@ -7,14 +7,20 @@
 
 | ID | Requirement | Source | Evidence needed | Owner | Status |
 |---|---|---|---|---|---|
-| R1 | Flutter Android/Windows | user | build + runtime/screenshot matrix | multi-os | in progress — configured Android artifact verified; final hosted Windows artifact remains |
-| R2 | private local-first cross-device Supabase sync | user | schema/RLS + offline/conflict tests | backend/function | complete except two-install convergence — live migration/RLS/RPC/Auth and local/offline contracts pass |
-| R3 | complete personal planner options/scenarios | user | feature/state matrix + journeys | anatomy/function | complete locally — 162-test suite covers core and hostile paths |
-| R4 | Orbit Day branding and selected icon/type | user selection | final assets + runtime screenshot | modernize/style | complete — transparent 512 source/Windows and Pixel-verified pastel Android adaptation |
-| R5 | dedicated portrait and landscape experiences | user | screenshots and layout rules at each class | anatomy/style | complete locally |
-| R6 | precise prewritten plan and durable record | user | this task record + validation | work-docs/orchestrator | complete through implementation; final CI evidence remains |
+| R1 | Flutter Android/Windows | user | build + runtime/screenshot matrix | multi-os | partial — CI run `30519295088` built and uploaded Android and unpackaged Windows artifacts for `d56455b`; Android runtime passed، Windows runtime was not available on this host |
+| R2 | private local-first cross-device Supabase sync | user | schema/RLS + offline/conflict tests | backend/function | complete except two-install convergence — eight live migrations، owner/RLS/RPC/Auth and local/offline/retry contracts pass |
+| R3 | complete personal planner options/scenarios | user | feature/state matrix + journeys | anatomy/function | complete locally — 262-test suite covers core and hostile paths |
+| R4 | Orbit Day branding and selected icon/type | user selection | final assets + runtime screenshot | modernize/style | selected/implemented — Day Compass has a cleaned transparent 512 master, Android legacy/adaptive/monochrome assets, multi-frame Windows ICO and Pixel Launcher proof; fresh hosted Windows proof remains |
+| R5 | dedicated portrait and landscape experiences | user | screenshots and layout rules at each class | anatomy/style | partial — Android runtime and adaptive/golden tests pass؛ expanded Windows compiles in CI but has not been observed in the real executable |
+| R6 | precise prewritten plan and durable record | user | this task record + validation | work-docs/orchestrator | active — implementation، final identity decision and post-selection Android proof are recorded; final hosted run/handoff remain |
 | R7 | preserve current data/auth/contracts | rebuild | preservation/migration evidence | rebuild/integrity | complete — additive/idempotent live migrations and compatibility tests pass |
-| R8 | high quality, resilience and performance | named skills | critic audit + measurements/tests | critics/perfect/performance | complete — all actionable findings fixed; frozen 8-page Critics PDF visually verified |
+| R8 | high quality, resilience and performance | named skills | critic audit + measurements/tests | critics/perfect/performance | partial whole-product proof — actionable Critics findings، analyzer clean، 256 tests and current goldens pass؛ fresh artifact/CI، Windows runtime and physical-device/OEM checks remain |
+| R9 | agentic AI Dock with text/voice and reviewable planner writes | user + ai | server-secret boundary, responsive UI, tool validation, live provider smoke | ai/backend/style | implemented and deployed — history hydration، text/voice UI، durable proposal review، secure context RPC and Function v3 auth boundary pass; rotated-provider smoke remains |
+| R10 | Android tablet as first-class experience and collapsible tablet/desktop navigation | user | phone/tablet/Windows responsive tests + runtime resize | anatomy/style/function | complete in source/goldens — tablet and Windows compositions، rail persistence and responsive states pass; executable runtime proof remains |
+| R11 | premium motion/hover/transition system and no raw emoji artwork | user + self-improve | asset audit, motion-state matrix, reduced-motion/runtime proof | style/integrity | implemented for current surfaces and covered by responsive/interaction tests؛ full real-runtime motion recording remains |
+| R12 | in-place upgrades preserve session/data | user | two signed consecutive installs on Android/Windows | multi-os/actions/integrity | active — stable JKS/PFX، monotonic versions، serialized `queue: max` CI، exact artifact placeholder، Windows trust/install instructions and offline signing-backup checklist are closed؛ two-version device proof remains |
+| R13 | widget Quick Add through a compact native popup | user | native widget host tap, local create, refresh and sync proof | widgets/function | active — implementation delegated with durable queue/idempotency requirement |
+| R14 | intelligent constraint-driven geometry without screen hardcoding or percentage dogma | user + self-improve | multi-axis viewport/text-scale/IME tests, runtime resize and state-retention proof | style/modernize/rebuild/widgets | active — shared and project contracts recorded; implementation audit and runtime proof in progress |
 
 ### Preservation contract
 
@@ -26,7 +32,7 @@
 | Supabase Auth / owner privacy | `main.dart`, auth UI, RLS policies | compatible-migration | auth state and policy inventory | owner-scoped new tables/policies only | retain existing auth flow and policy history | user A cannot read/write user B in contract tests/live validation when configured |
 | Public/deep-link routes | current app has no named router/deep links | unresolved | source route inventory | add canonical routes only; no removal | route table and fallback shell | route/back/unauthorized tests after routing is introduced |
 | Secrets/configuration references | `AppConfig` dart-defines; no values in repository | immutable | key names only | additive documentation/wiring | restore prior define mapping | unconfigured app state and configured startup path |
-| Native launcher/splash assets | Android mipmaps and Windows `.ico` | derived/rebuildable | current asset inventory | derive from the approved transparent 512 master with platform-safe masks | keep original assets until each platform artifact proves new assets | Android/Windows launcher/splash inspection |
+| Native launcher/splash assets | Android mipmaps and Windows `.ico` | derived/rebuildable | selected Day Compass chroma source plus cleaned 512 RGBA master | derive all raster, monochrome and ICO variants from the checked-in pipeline | regenerate with `tool/generate_day_compass_assets.py` and `flutter_launcher_icons` | Pixel Launcher/widget picker plus Windows Explorer/taskbar/window inspection |
 
 ## Steps
 | Step | Status | Notes |
@@ -38,19 +44,19 @@
 | 5 | complete | Compact, medium and expanded responsive shell is implemented. |
 | 6 | complete | Orbit Day, Inbox/filters, editor, project/area and time plan are functional; drag/reorder is deliberately deferred. |
 | 7 | complete locally | Habits, focus, insight, archive, reminders and diagnostics are implemented and tested; exact alarm/reboot notification proof remains device-specific. |
-| 8 | complete | Selected mark/wordmark, launcher source and platform icons are wired from workspace assets. |
-| 9 | in progress | Analyzer, 162 tests, Android release APK and Pixel Launcher widget runtime pass; Windows local build is environment-blocked and hosted CI remains. |
-| 10 | in progress | Docs are being finalized; commit/push and first hosted CI observation remain. |
+| 8 | complete locally | Day Compass was selected from the symmetric exploration, chroma-cleaned, wired across app/widget/Android/Windows and proven in Pixel Launcher; new hosted Windows artifact proof remains under step 9. |
+| 9 | complete locally with runtime limit | Analyzer، 256 tests، 44 Workspace UI tests، 5 release-contract tests، 33 focused AI tests and Deno check pass. Run `30519295088` remains only the preceding Android/Windows baseline؛ fresh signed artifacts follow the final push. Windows executable runtime was not exercised locally. |
+| 10 | in progress | Function v3 live gate passed؛ signed Android install-over، documentation gate، commit/push and exact-SHA CI/artifact inspection remain. |
 
 ### Responsive Orbit Day rules
 
 | Layout class | Approximate width/orientation | Primary composition | Navigation and actions |
 |---|---|---|---|
 | Compact portrait | Android phone portrait | Day orbit is an upper stage; timeline follows below; quick capture is bottom dock | bottom navigation; contextual sheets; no reliance on hover |
-| Compact landscape / medium | Android phone landscape or narrow Windows window | orbit becomes a left contextual panel; Now/timeline occupies center; Inbox and detail use a switchable/docked secondary pane | navigation rail or compact top rail; keyboard and mouse controls appear without hiding touch paths |
-| Expanded landscape | Windows wide window | three intentional regions: persistent navigation, Orbit/Today stage, timeline+Inbox/inspector | navigation rail; command/quick-capture remains within reach; panels have explicit min/max widths |
+| Compact landscape / medium / tablet | Android phone landscape, Android tablet portrait/landscape, or narrow Windows window | Day Deck: یک Day Compass Stage بزرگ و متناسب در کنار Day Stream پیوسته؛ Habit Pulse/Next Up به جریان وصل‌اند و sparse data به void عظیم تبدیل نمی‌شود | collapsible icon rail, compact by default on tablet; AI command pill کوچک بالای capture و expanded surface منظم؛ keyboard/mouse controls augment rather than replace touch paths |
+| Expanded landscape | Windows wide window | three intentional regions: navigation, Orbit/Today stage, timeline+Inbox/inspector | collapsible rail with remembered desktop preference; command/AI/quick-capture remain within reach; panels have explicit min/max widths |
 
-Breakpoints will be based on available content width and orientation, not device model. Text remains live/RTL-capable; the orbit may simplify to an accessible linear timeline when space, large text or reduced motion requires it.
+Breakpoints will be based on where the current composition stops serving its content, using available width, height, orientation, text scale, safe area and input mode rather than device model. Geometry deliberately mixes intrinsic content sizing, flex distribution, bounded fractions, meaningful aspect ratios, measured anchors and fixed semantic tokens. Neither screen-specific hardcoding nor unbounded percentage sizing is accepted. Text remains live/RTL-capable; the orbit may simplify to an accessible linear timeline when space, large text or reduced motion requires it. Breakpoint changes must preserve draft, focus, selection, scroll and state.
 
 ### Capability and scenario matrix
 
@@ -80,13 +86,13 @@ Perfect is not a fixed checklist. Each object has a small, clear default and an 
 - Flutter domain models, local store, controller and sync repository.
 - Additive Supabase SQL migrations and RLS policies.
 - Responsive route/shell map and functional widgets.
-- Vector brand assets: selected orbital launcher mark, wordmark treatment, semantic icon family and splash variants.
+- Brand assets: selected wordmark/Orbit Day system, transparent Day Compass master, monochrome source, Android derivatives and multi-resolution Windows ICO. Comparison concepts remain only as design history.
 - Android resources and Windows runner icon.
 - Tests, CI, docs/codex evidence and rollback notes.
 
 ## Risks
 - Existing sync is likely too small for concurrent multi-device edits; mitigate with an explicit op/idempotency/version model and contract tests before replacing UI flows.
-- No real Supabase project is in scope; mitigate by treating migration/RLS as code artifact and clearly separating live validation.
+- Live migration/RLS/RPC/Auth evidence does not by itself prove Android↔Windows convergence; retain the local-first contracts and run a two-install owner-session journey before claiming cross-device completion.
 - Generated previews contain English and mock geometry; mitigate with a preview-to-production decomposition manifest and actual RTL/runtime screenshots.
 - Windows local build can be blocked by Developer Mode/plugin symlinks and missing C++ workload; mitigate with transparent proof matrix and CI/artifact checks where possible.
 - Dense orbit UI can become decorative or unreadable; mitigate with linear fallback, clear action hierarchy, touch-target budgets and portrait/landscape screenshots.
@@ -94,9 +100,14 @@ Perfect is not a fixed checklist. Each object has a small, clear default and an 
 ## Acceptance Checks
 - Existing simple items survive projection into the richer task model; no applied migration is edited or destructively removed.
 - Every mutation works offline, survives restart, retries safely, reconciles from remote and exposes a comprehensible sync/error state.
+- Sync Cloud is green only when caught up, yellow while syncing or retrying, and red after an error; icon/label/semantics carry the meaning in addition to colour.
 - A user can capture, schedule, complete, postpone, delete/undo, edit and find a task; log a habit; start/finish focus; and see data persist locally.
 - Portrait, landscape and expanded windows each have deliberate composition, visible next action, keyboard/focus path and no overlap/clipping under RTL/long text.
-- Selected brand identity is rendered from one workspace-owned transparent raster master plus live wordmark typography across app, Android and Windows surfaces.
+- Android tablet has a dedicated two-pane composition and collapsible navigation; desktop navigation is also collapsible and does not permanently consume a wide column.
+- Hover, press, focus, expand/collapse, breakpoint changes, loading and completion feedback share a deliberate motion system and honor reduced motion without layout jumps.
+- No user-visible raw keyboard emoji is used as artwork; dedicated SVG assets remain crisp, themed and accessible.
+- Two consecutive Android and Windows builds install in place with the same signing identity, preserve local planner data and do not ask for login again unless the server invalidated the session.
+- The selected Day Compass identity is rendered from one workspace-owned transparent raster master plus live wordmark typography across app, Android and Windows surfaces; Android's mandatory adaptive mask uses a quiet pastel fill only because a transparent adaptive background became black on Pixel Launcher.
 - `dart analyze`, focused tests and Android debug build pass; Windows build/runtime is attempted and any environment-only blocker recorded.
 
 ### Locked implementation decisions
@@ -108,3 +119,8 @@ Perfect is not a fixed checklist. Each object has a small, clear default and an 
 - **Failure is explicit:** one-off defaults to pending/carry with a cap; recurring/habit defaults to miss then next scheduled occurrence. The user can mark a daily miss or move a one-off task to tomorrow.
 - **Archive is recoverable:** Archive writes a tombstone and a restore is an explicit sync operation; no destructive UI delete is offered.
 - **Typed properties are safe:** values are typed, and formulas use a narrow arithmetic DSL rather than executable code.
+- **Launcher identity is locked:** Day Compass is canonical. The workspace-owned transparent ۵۱۲ master generates Android legacy/adaptive/monochrome and a nine-frame Windows ICO deterministically؛ other concepts remain design history only.
+- **Private CI proof:** run `30519295088` succeeded for `d56455b` and preserved configured Android and unpackaged Windows artifacts. It did not produce a signed MSIX because the signing identity was unavailable.
+- **Agent-ready writes:** external and in-app agents use versioned, owner-authenticated, create-only, idempotent batches. Planner writes remain proposed until owner confirmation and flow through `planner_changes`.
+- **AI secret boundary:** `gemini-flash-lite-latest` is invoked only by the Supabase Edge Function; the Flutter bundle contains no provider credential.
+- **Update lineage:** Android package/JKS certificate and Windows identity/publisher/PFX are stable. CI build numbers are monotonic and trusted builds fail closed when fingerprints do not match.

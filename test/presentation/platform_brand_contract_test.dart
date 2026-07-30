@@ -46,6 +46,17 @@ void main() {
         'xxhdpi': 324,
         'xxxhdpi': 432,
       };
+      const requiredWindowsIconSizes = <int>{
+        16,
+        20,
+        24,
+        32,
+        40,
+        48,
+        64,
+        128,
+        256,
+      };
       const forbiddenLauncherResources = <String>[
         'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml',
         'android/app/src/main/res/mipmap-anydpi-v33/ic_launcher.xml',
@@ -70,36 +81,42 @@ void main() {
         allOf(
           contains('@color/ic_launcher_background'),
           contains('@drawable/ic_launcher_foreground'),
-          contains('android:inset="18%"'),
-          isNot(contains('monochrome')),
+          contains('@drawable/ic_launcher_monochrome'),
+          contains('android:inset="10%"'),
         ),
       );
       expect(
         launcherColors,
-        contains('<color name="ic_launcher_background">#FFE5CC</color>'),
+        contains('<color name="ic_launcher_background">#FFF3E8</color>'),
       );
       for (final forbidden in <String>[
         '#FFFFFF',
         '#FFFFFFFF',
         '#000000',
         '#FF000000',
-        '#00000000',
         '#00FFFFFF',
       ]) {
         expect(
           launcherColors.toUpperCase(),
-          isNot(contains(forbidden)),
+          isNot(contains('>$forbidden<')),
           reason:
-              'Android must use the intentional warm pastel brand tile, not '
-              'a white, black, or transparent launcher fallback.',
+              'The selected Day Compass must not bake a white or black tile '
+              'behind its transparent platform mark.',
         );
       }
-      expect(launcherConfig, contains('adaptive_icon_background: "#FFE5CC"'));
+      expect(launcherConfig, contains('adaptive_icon_background: "#FFF3E8"'));
       expect(
         launcherConfig,
         contains('adaptive_icon_foreground: assets/brand/perfect-launcher.png'),
       );
-      expect(launcherConfig, contains('adaptive_icon_foreground_inset: 18'));
+      expect(launcherConfig, contains('adaptive_icon_foreground_inset: 10'));
+      expect(
+        launcherConfig,
+        contains(
+          'adaptive_icon_monochrome: '
+          'assets/brand/perfect-launcher-monochrome.png',
+        ),
+      );
       expect(
         RegExp(
           r'assets/brand/perfect-launcher\.png',
@@ -154,40 +171,42 @@ void main() {
         codec.dispose();
       }
       for (final foreground in adaptiveForegrounds.entries) {
-        final bitmap = File(
-          'android/app/src/main/res/drawable-${foreground.key}/'
-          'ic_launcher_foreground.png',
-        );
-        expect(bitmap.existsSync(), isTrue);
-        expect(bitmap.lengthSync(), greaterThan(1000));
+        for (final layer in <String>['foreground', 'monochrome']) {
+          final bitmap = File(
+            'android/app/src/main/res/drawable-${foreground.key}/'
+            'ic_launcher_$layer.png',
+          );
+          expect(bitmap.existsSync(), isTrue);
+          expect(bitmap.lengthSync(), greaterThan(1000));
 
-        final codec = await ui.instantiateImageCodec(
-          await bitmap.readAsBytes(),
-        );
-        final frame = await codec.getNextFrame();
-        final image = frame.image;
-        final pixels = await image.toByteData(
-          format: ui.ImageByteFormat.rawRgba,
-        );
-        final rgba = pixels!.buffer.asUint8List();
+          final codec = await ui.instantiateImageCodec(
+            await bitmap.readAsBytes(),
+          );
+          final frame = await codec.getNextFrame();
+          final image = frame.image;
+          final pixels = await image.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          );
+          final rgba = pixels!.buffer.asUint8List();
 
-        expect(image.width, foreground.value);
-        expect(image.height, foreground.value);
-        expect(
-          <int>[
-            rgba[3],
-            rgba[((image.width - 1) * 4) + 3],
-            rgba[(((image.height - 1) * image.width) * 4) + 3],
-            rgba[((image.width * image.height) - 1) * 4 + 3],
-          ],
-          everyElement(0),
-          reason:
-              '${foreground.key} foreground must preserve the exact mark '
-              'without a baked black or white tile.',
-        );
+          expect(image.width, foreground.value);
+          expect(image.height, foreground.value);
+          expect(
+            <int>[
+              rgba[3],
+              rgba[((image.width - 1) * 4) + 3],
+              rgba[(((image.height - 1) * image.width) * 4) + 3],
+              rgba[((image.width * image.height) - 1) * 4 + 3],
+            ],
+            everyElement(0),
+            reason:
+                '${foreground.key} $layer layer must preserve the Day '
+                'Compass without a baked black or white tile.',
+          );
 
-        image.dispose();
-        codec.dispose();
+          image.dispose();
+          codec.dispose();
+        }
       }
       expect(windowsMain, contains('window.Create(L"Perfect!"'));
       expect(windowsResources, contains('VALUE "ProductName", "Perfect!"'));
@@ -195,6 +214,29 @@ void main() {
       expect(selectedSource.lengthSync(), greaterThan(1000));
       expect(androidIcon.lengthSync(), greaterThan(1000));
       expect(windowsIcon.lengthSync(), greaterThan(1000));
+      final ico = windowsIcon.readAsBytesSync();
+      expect(ico.length, greaterThan(6));
+      expect(ico[0], 0);
+      expect(ico[1], 0);
+      expect(ico[2], 1);
+      expect(ico[3], 0);
+      final frameCount = ico[4] | (ico[5] << 8);
+      final actualWindowsIconSizes = <int>{};
+      for (var frame = 0; frame < frameCount; frame++) {
+        final offset = 6 + (frame * 16);
+        expect(ico.length, greaterThan(offset + 15));
+        final width = ico[offset] == 0 ? 256 : ico[offset];
+        final height = ico[offset + 1] == 0 ? 256 : ico[offset + 1];
+        expect(height, width);
+        actualWindowsIconSizes.add(width);
+      }
+      expect(
+        actualWindowsIconSizes,
+        containsAll(requiredWindowsIconSizes),
+        reason:
+            'Explorer, taskbar, window chrome and shortcuts require distinct '
+            'Day Compass frames instead of scaling one 256px bitmap.',
+      );
       expect(flutterMetadata, isNot(contains('platform: web')));
       expect(flutterMetadata, isNot(contains('platform: ios')));
       expect(flutterMetadata, isNot(contains('platform: linux')));
@@ -224,5 +266,45 @@ void main() {
     expect(contract, contains('publication: disabled'));
     expect(contract, isNot(contains('.pfx')));
     expect(contract, isNot(contains('.jks')));
+  });
+
+  test('Android cold start keeps the approved Day Compass surface', () {
+    final fallback = File(
+      'android/app/src/main/res/drawable/launch_background.xml',
+    ).readAsStringSync();
+    final fallbackV21 = File(
+      'android/app/src/main/res/drawable-v21/launch_background.xml',
+    ).readAsStringSync();
+    final splashV31 = File(
+      'android/app/src/main/res/values-v31/styles.xml',
+    ).readAsStringSync();
+    final splashNightV31 = File(
+      'android/app/src/main/res/values-night-v31/styles.xml',
+    ).readAsStringSync();
+
+    for (final launchSurface in <String>[fallback, fallbackV21]) {
+      expect(
+        launchSurface,
+        allOf(
+          contains('@color/perfect_splash_background'),
+          contains('@drawable/perfect_widget_mark'),
+          contains('android:gravity="center"'),
+        ),
+      );
+      expect(launchSurface, isNot(contains('@android:color/white')));
+    }
+    for (final platformSplash in <String>[splashV31, splashNightV31]) {
+      expect(
+        platformSplash,
+        allOf(
+          contains('android:windowSplashScreenBackground'),
+          contains('@color/perfect_splash_background'),
+          contains('android:windowSplashScreenAnimatedIcon'),
+          contains('@drawable/perfect_widget_mark'),
+          contains('android:windowSplashScreenIconBackgroundColor'),
+          contains('@android:color/transparent'),
+        ),
+      );
+    }
   });
 }

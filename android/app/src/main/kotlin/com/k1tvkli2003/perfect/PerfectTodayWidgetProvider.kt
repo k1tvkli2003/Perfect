@@ -11,7 +11,9 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.util.SizeF
 import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
@@ -96,10 +98,61 @@ class PerfectTodayWidgetProvider : HomeWidgetProvider() {
         data: SharedPreferences,
     ) {
       val snapshot = PerfectTodayWidgetStore.read(data)
+      val views =
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Android 12+ launchers can select the best composition directly
+            // from this responsive map, including after rotation without
+            // waking the provider. Narrow/tall and wide/short widgets no longer
+            // inherit a layout chosen from an ambiguous min/max size range.
+            RemoteViews(
+                linkedMapOf(
+                    SizeF(110f, 110f) to createViews(
+                        context,
+                        appWidgetId,
+                        snapshot,
+                        R.layout.perfect_today_widget_small,
+                    ),
+                    SizeF(110f, 180f) to createViews(
+                        context,
+                        appWidgetId,
+                        snapshot,
+                        R.layout.perfect_today_widget_tall,
+                    ),
+                    SizeF(220f, 110f) to createViews(
+                        context,
+                        appWidgetId,
+                        snapshot,
+                        R.layout.perfect_today_widget_wide,
+                    ),
+                    SizeF(260f, 220f) to createViews(
+                        context,
+                        appWidgetId,
+                        snapshot,
+                        R.layout.perfect_today_widget_large,
+                    ),
+                ),
+            )
+          } else {
+            createViews(
+                context,
+                appWidgetId,
+                snapshot,
+                layoutFor(manager.getAppWidgetOptions(appWidgetId)),
+            )
+          }
+      manager.updateAppWidget(appWidgetId, views)
+      manager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_task_list)
+    }
+
+    private fun createViews(
+        context: Context,
+        appWidgetId: Int,
+        snapshot: PerfectTodayWidgetStore.Snapshot,
+        layout: Int,
+    ): RemoteViews {
       val isStale = snapshot.ownerId.isNotBlank() && !snapshot.isCurrentDay
       val visibleItems = if (isStale) emptyList() else snapshot.items
-      val layout = layoutFor(manager.getAppWidgetOptions(appWidgetId))
-      val views = RemoteViews(context.packageName, layout).apply {
+      return RemoteViews(context.packageName, layout).apply {
         setTextViewText(
             R.id.widget_date,
             if (isStale) "Today" else snapshot.dateLabel.ifBlank { "Today" },
@@ -131,13 +184,19 @@ class PerfectTodayWidgetProvider : HomeWidgetProvider() {
 
         val serviceIntent = Intent(context, PerfectTodayWidgetService::class.java).apply {
           putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-          putExtra(EXTRA_COMPACT_LAYOUT, layout == R.layout.perfect_today_widget_small)
+          putExtra(
+              EXTRA_COMPACT_LAYOUT,
+              layout == R.layout.perfect_today_widget_small ||
+                  layout == R.layout.perfect_today_widget_tall,
+          )
           // Widget hosts cache adapters by intent identity; versioning the URI
           // forces a fresh factory after each local projection/action.
-          val sizeClass =
-              if (layout == R.layout.perfect_today_widget_small) "small"
-              else if (layout == R.layout.perfect_today_widget_large) "large"
-              else "wide"
+          val sizeClass = when (layout) {
+            R.layout.perfect_today_widget_small -> "small"
+            R.layout.perfect_today_widget_tall -> "tall"
+            R.layout.perfect_today_widget_large -> "large"
+            else -> "wide"
+          }
           setData(
               Uri.parse(
                   "perfect://today-widget/$appWidgetId/${snapshot.updatedAtMillis}/$sizeClass",
@@ -170,12 +229,21 @@ class PerfectTodayWidgetProvider : HomeWidgetProvider() {
             Uri.parse("perfect://planner/today"),
         )
         setOnClickPendingIntent(R.id.widget_open_today, openToday)
+        val quickAddIntent = Intent(context, PerfectWidgetQuickAddActivity::class.java).apply {
+          setData(Uri.parse("perfect://today-widget/quick-add/$appWidgetId"))
+          putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        }
+        val quickAdd = PendingIntent.getActivity(
+            context,
+            100_000 + appWidgetId,
+            quickAddIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        setOnClickPendingIntent(R.id.widget_quick_add, quickAdd)
         if (layout == R.layout.perfect_today_widget_large) {
           setOnClickPendingIntent(R.id.widget_open_today_footer, openToday)
         }
       }
-      manager.updateAppWidget(appWidgetId, views)
-      manager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_task_list)
     }
 
     private fun maintainDayBoundary(context: Context, data: SharedPreferences) {
@@ -191,7 +259,8 @@ class PerfectTodayWidgetProvider : HomeWidgetProvider() {
       val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
       return when {
         width >= 260 && height >= 220 -> R.layout.perfect_today_widget_large
-        width >= 220 || height >= 140 -> R.layout.perfect_today_widget_wide
+        width >= 220 -> R.layout.perfect_today_widget_wide
+        height >= 180 -> R.layout.perfect_today_widget_tall
         else -> R.layout.perfect_today_widget_small
       }
     }
@@ -354,8 +423,7 @@ private class PerfectTodayRemoteViewsFactory(
     val item = items[position]
     return RemoteViews(context.packageName, itemLayout).apply {
       setTextViewText(R.id.widget_item_title, item.title)
-      setTextViewText(R.id.widget_item_check, item.glyph)
-      setTextColor(R.id.widget_item_check, Color.parseColor(item.stateColor))
+      setImageViewResource(R.id.widget_item_check, item.iconResource)
       if (!compact) {
         setTextViewText(R.id.widget_item_meta, item.time)
         setTextViewText(R.id.widget_item_state, item.stateLabel)
@@ -383,10 +451,13 @@ private class PerfectTodayRemoteViewsFactory(
   override fun hasStableIds(): Boolean = true
 }
 
-private object PerfectTodayWidgetStore {
+internal object PerfectTodayWidgetStore {
   const val SNAPSHOT_KEY = "perfect_today_widget_snapshot_v1"
   const val PENDING_ACTIONS_KEY = "perfect_today_widget_actions_v1"
   const val ACKNOWLEDGED_ACTIONS_KEY = "perfect_today_widget_acknowledged_actions_v1"
+  const val PENDING_QUICK_ADDS_KEY = "perfect_today_widget_quick_adds_v1"
+  const val ACKNOWLEDGED_QUICK_ADDS_KEY =
+      "perfect_today_widget_acknowledged_quick_adds_v1"
   const val INTERACTION_TOKEN_KEY = "perfect_today_widget_token_v1"
   const val OWNER_ID_KEY = "perfect_today_widget_owner_v1"
   private const val ACTION_SEQUENCE_KEY = "perfect_today_widget_action_sequence_v1"
@@ -396,6 +467,7 @@ private object PerfectTodayWidgetStore {
   // are removed on the next native write. A new tap is refused before changing
   // the optimistic snapshot if 4096 distinct, unacknowledged outcomes remain.
   private const val MAX_ACTIONS = 4096
+  private const val MAX_QUICK_ADDS = 256
 
   data class Snapshot(
       val ownerId: String,
@@ -417,12 +489,12 @@ private object PerfectTodayWidgetStore {
       val percent: Int,
       val accent: String,
   ) {
-    val glyph: String
+    val iconResource: Int
       get() = when (state) {
-        "completed" -> "✓"
-        "missed" -> "×"
-        "partial" -> "%"
-        else -> "○"
+        "completed" -> R.drawable.perfect_widget_status_completed
+        "missed" -> R.drawable.perfect_widget_status_missed
+        "partial" -> R.drawable.perfect_widget_status_partial
+        else -> R.drawable.perfect_widget_status_pending
       }
 
     val stateLabel: String
@@ -483,6 +555,33 @@ private object PerfectTodayWidgetStore {
           .appendQueryParameter("local_day", localDay)
           .appendQueryParameter("occurred_at", occurredAt)
           .appendQueryParameter("queue_sequence", queueSequence.toString())
+          .appendQueryParameter("token", token)
+          .build()
+    }
+  }
+
+  data class QuickAdd(
+      val id: String,
+      val ownerId: String,
+      val title: String,
+      val scheduledAt: String?,
+      val occurredAt: String,
+  ) {
+    fun toJson(): JSONObject = JSONObject().apply {
+      put("id", id)
+      put("owner_id", ownerId)
+      put("title", title)
+      if (scheduledAt != null) put("scheduled_at", scheduledAt)
+      put("occurred_at", occurredAt)
+    }
+
+    fun toBackgroundUri(token: String?): Uri? {
+      if (token.isNullOrBlank()) return null
+      return Uri.Builder()
+          .scheme("perfect")
+          .authority("widget-quick-add")
+          .appendQueryParameter("id", id)
+          .appendQueryParameter("owner_id", ownerId)
           .appendQueryParameter("token", token)
           .build()
     }
@@ -577,6 +676,70 @@ private object PerfectTodayWidgetStore {
     } catch (_: Exception) {
       null
     }
+  }
+
+  /**
+   * Durably queues a quick-create request without touching Flutter's database.
+   *
+   * The request UUID is reused as PlannerLocalStore's mutation ID, so a
+   * background retry, app foreground replay, or process restart cannot create
+   * a duplicate task.
+   */
+  fun enqueueQuickAdd(
+      context: Context,
+      title: String,
+      scheduledAt: String?,
+  ): QuickAdd? {
+    val normalizedTitle = title.trim()
+    if (normalizedTitle.isEmpty() || normalizedTitle.length > 160) return null
+    val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+    val ownerId = prefs.getString(OWNER_ID_KEY, null)?.trim().orEmpty()
+    val token = prefs.getString(INTERACTION_TOKEN_KEY, null)?.trim().orEmpty()
+    if (ownerId.isEmpty() || token.isEmpty()) return null
+    val request = QuickAdd(
+        id = UUID.randomUUID().toString(),
+        ownerId = ownerId,
+        title = normalizedTitle,
+        scheduledAt = scheduledAt,
+        occurredAt =
+            DateTimeFormatter.ISO_INSTANT.format(
+                Instant.ofEpochMilli(System.currentTimeMillis()),
+            ),
+    )
+    val prior = try {
+      JSONArray(prefs.getString(PENDING_QUICK_ADDS_KEY, "[]") ?: "[]")
+    } catch (_: Exception) {
+      JSONArray()
+    }
+    val acknowledged = try {
+      val array = JSONArray(
+          prefs.getString(ACKNOWLEDGED_QUICK_ADDS_KEY, "[]") ?: "[]",
+      )
+      buildSet {
+        for (index in 0 until array.length()) {
+          val id = array.optString(index).trim()
+          if (id.isNotEmpty()) add(id)
+        }
+      }
+    } catch (_: Exception) {
+      emptySet()
+    }
+    val compacted = JSONArray()
+    var remaining = 0
+    for (index in 0 until prior.length()) {
+      val queued = prior.optJSONObject(index) ?: continue
+      if (queued.optString("id") in acknowledged) continue
+      if (remaining >= MAX_QUICK_ADDS) return null
+      compacted.put(queued)
+      remaining += 1
+    }
+    if (remaining >= MAX_QUICK_ADDS) return null
+    compacted.put(request.toJson())
+    val committed = prefs.edit()
+        .putString(PENDING_QUICK_ADDS_KEY, compacted.toString())
+        .remove(ACKNOWLEDGED_QUICK_ADDS_KEY)
+        .commit()
+    return if (committed) request else null
   }
 
   private fun appendAction(prefs: SharedPreferences, action: Action): JSONArray? {
