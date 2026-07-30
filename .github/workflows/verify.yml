@@ -340,26 +340,38 @@ jobs:
             throw "Visual Studio installation was not found."
           }
           $redistRoot = Join-Path $visualStudio "VC\Redist\MSVC"
-          $crtFolder = Get-ChildItem -LiteralPath $redistRoot -Directory |
-            Sort-Object { [version]$_.Name } -Descending |
-            ForEach-Object {
-              Get-ChildItem `
-                -Path (Join-Path $_.FullName "x64") `
-                -Directory `
-                -Filter "Microsoft.VC*.CRT" `
-                -ErrorAction SilentlyContinue |
-                Sort-Object Name -Descending |
-                Select-Object -First 1
+          $requiredRuntimeNames = @(
+            "msvcp140.dll",
+            "vcruntime140.dll",
+            "vcruntime140_1.dll"
+          )
+          # VS 2026 images can expose a `v145` redist directory beside
+          # numeric MSVC-version directories. Discover the actual x64 CRT
+          # payload instead of parsing vendor folder names as System.Version.
+          $crtFolder = Get-ChildItem `
+            -LiteralPath $redistRoot `
+            -Directory `
+            -Recurse `
+            -Filter "Microsoft.VC*.CRT" `
+            -ErrorAction SilentlyContinue |
+            Where-Object {
+              $candidate = $_
+              $candidate.Parent.Name -eq "x64" -and
+              @(
+                $requiredRuntimeNames |
+                  Where-Object {
+                    -not (Test-Path -LiteralPath (
+                      Join-Path $candidate.FullName $_
+                    ))
+                  }
+              ).Count -eq 0
             } |
+            Sort-Object LastWriteTimeUtc -Descending |
             Select-Object -First 1
           if (-not $crtFolder) {
             throw "The x64 Visual C++ application-local runtime was not found."
           }
-          foreach ($runtimeName in @(
-            "msvcp140.dll",
-            "vcruntime140.dll",
-            "vcruntime140_1.dll"
-          )) {
+          foreach ($runtimeName in $requiredRuntimeNames) {
             $source = Join-Path $crtFolder.FullName $runtimeName
             if (-not (Test-Path -LiteralPath $source)) {
               throw "Required portable runtime is missing: $runtimeName"

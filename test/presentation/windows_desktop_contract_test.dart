@@ -91,6 +91,10 @@ void main() {
     expect(workflow, contains('msvcp140.dll'));
     expect(workflow, contains('vcruntime140.dll'));
     expect(workflow, contains('vcruntime140_1.dll'));
+    expect(workflow, contains('-Filter "Microsoft.VC*.CRT"'));
+    expect(workflow, contains('-Recurse'));
+    expect(workflow, contains('v145'));
+    expect(workflow, isNot(contains(r'[version]$_.Name')));
     expect(workflow, contains('SHA256SUMS.txt'));
     expect(workflow, contains('-windows-x64-portable-'));
     expect(
