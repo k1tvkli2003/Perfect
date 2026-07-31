@@ -702,6 +702,10 @@ jobs:
         with:
           name: perfect-${{ needs.prepare.outputs.artifact_version }}-windows-x64-portable-${{ steps.windows-build.outputs.mode }}
           path: build/windows/x64/runner/Release
+          # Visual Studio's redist payload can retain the Windows hidden
+          # attribute after Copy-Item. The release root is checksum-covered
+          # and contains no signing material, so include those required DLLs.
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
       - name: Preserve signed private Windows installer

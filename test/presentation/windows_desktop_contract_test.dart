@@ -84,6 +84,7 @@ void main() {
     ).readAsStringSync();
 
     expect(workflow, contains('Complete and checksum the portable Windows'));
+    expect(workflow, contains('include-hidden-files: true'));
     expect(
       workflow,
       contains(r'Microsoft Visual Studio\Installer\vswhere.exe'),
