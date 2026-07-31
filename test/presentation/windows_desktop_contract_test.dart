@@ -137,16 +137,19 @@ void main() {
     expect(packageStep, isNot(contains('Import-Certificate')));
     expect(packageStep, isNot(contains('TrustedPeople')));
     expect(packageStep, isNot(contains(r'Cert:\LocalMachine\Root')));
+    expect(packageStep, contains('X509BasicConstraintsExtension'));
+    expect(packageStep, contains(r'$basicConstraints.CertificateAuthority'));
     expect(installOverStep, contains('Import-Certificate'));
     expect(
       installOverStep,
-      contains(r"Cert:\LocalMachine\Root\$expectedThumbprint"),
+      contains(r"Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"),
     );
     expect(installOverStep, contains('X509BasicConstraintsExtension'));
     expect(
       installOverStep,
       contains(r'$basicConstraints.CertificateAuthority'),
     );
+    expect(workflow, isNot(contains(r'Cert:\LocalMachine\Root')));
     expect(workflow, contains('signtool.exe'));
     expect(workflow, contains('PERFECT_WINDOWS_CERT_THUMBPRINT'));
     expect(workflow, contains(r'Perfect-$env:PERFECT_ARTIFACT_VERSION'));

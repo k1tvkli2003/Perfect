@@ -462,14 +462,27 @@ jobs:
               "Cert:\CurrentUser\My\$($certificate.Thumbprint)"
             $expectedThumbprint = $env:PERFECT_WINDOWS_CERT_THUMBPRINT `
               -replace "[^0-9A-Fa-f]", ""
+            $basicConstraintsExtensions = @(
+              $certificate.Extensions |
+                Where-Object { $_.Oid.Value -eq '2.5.29.19' }
+            )
+            if ($basicConstraintsExtensions.Count -ne 1) {
+              throw 'The Windows signer has ambiguous basic constraints.'
+            }
+            $basicConstraints = [Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]::new(
+              $basicConstraintsExtensions[0],
+              $basicConstraintsExtensions[0].Critical
+            )
             if (
               $certificate.Subject -ne "CN=K1 Perfect Private" -or
+              $certificate.Issuer -ne $certificate.Subject -or
+              $basicConstraints.CertificateAuthority -or
               -not $certificate.HasPrivateKey -or
               $certificate.Thumbprint -ne $expectedThumbprint -or
               $certificate.NotBefore.ToUniversalTime() -gt [DateTime]::UtcNow -or
               $certificate.NotAfter.ToUniversalTime() -lt [DateTime]::UtcNow.AddDays(30)
             ) {
-              throw "The Windows certificate publisher, private key, fingerprint, or validity window does not match the pinned package identity."
+              throw "The Windows end-entity certificate publisher, private key, fingerprint, or validity window does not match the pinned package identity."
             }
             $codeSigningOid = "1.3.6.1.5.5.7.3.3"
             $hasCodeSigningEku = $certificate.Extensions |
@@ -786,31 +799,68 @@ jobs:
             exit 0
           }
 
-          $previousArtifact = $candidates[0].Artifact
           $proofRoot = Join-Path $env:RUNNER_TEMP 'perfect-msix-install-over'
-          $archivePath = Join-Path $proofRoot 'previous-msix.zip'
-          $previousDirectory = Join-Path $proofRoot 'previous'
-          New-Item -ItemType Directory -Force -Path $previousDirectory |
-            Out-Null
-          Invoke-WebRequest `
-            -Uri $previousArtifact.archive_download_url `
-            -Headers @{
-              Accept = 'application/vnd.github+json'
-              Authorization = "Bearer $env:GH_TOKEN"
-              'X-GitHub-Api-Version' = '2022-11-28'
-            } `
-            -OutFile $archivePath
-          Expand-Archive `
-            -LiteralPath $archivePath `
-            -DestinationPath $previousDirectory
-          $previousPackage = @(
-            Get-ChildItem `
-              -LiteralPath $previousDirectory `
-              -Filter '*.msix' `
-              -Recurse
-          )
-          if ($previousPackage.Count -ne 1) {
-            throw "Expected one previous MSIX package, found $($previousPackage.Count)."
+          New-Item -ItemType Directory -Force -Path $proofRoot | Out-Null
+          $previousPackage = $null
+          foreach ($candidate in $candidates) {
+            $candidateRoot = Join-Path `
+              $proofRoot `
+              "candidate-$($candidate.Artifact.id)"
+            $archivePath = Join-Path $candidateRoot 'artifact.zip'
+            $candidateDirectory = Join-Path $candidateRoot 'contents'
+            New-Item -ItemType Directory -Force -Path $candidateDirectory |
+              Out-Null
+            Invoke-WebRequest `
+              -Uri $candidate.Artifact.archive_download_url `
+              -Headers @{
+                Accept = 'application/vnd.github+json'
+                Authorization = "Bearer $env:GH_TOKEN"
+                'X-GitHub-Api-Version' = '2022-11-28'
+              } `
+              -OutFile $archivePath
+            Expand-Archive `
+              -LiteralPath $archivePath `
+              -DestinationPath $candidateDirectory
+            $candidatePackages = @(
+              Get-ChildItem `
+                -LiteralPath $candidateDirectory `
+                -Filter '*.msix' `
+                -Recurse
+            )
+            $candidateCertificates = @(
+              Get-ChildItem `
+                -LiteralPath $candidateDirectory `
+                -Filter 'Perfect-private.cer' `
+                -Recurse
+            )
+            if (
+              $candidatePackages.Count -ne 1 -or
+              $candidateCertificates.Count -ne 1
+            ) {
+              throw (
+                "Older artifact $($candidate.Artifact.name) does not contain " +
+                'one MSIX and one public certificate.'
+              )
+            }
+            $candidateCertificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
+              $candidateCertificates[0].FullName
+            )
+            try {
+              if ($candidateCertificate.Thumbprint -eq $expectedThumbprint) {
+                $previousPackage = @($candidatePackages)
+                break
+              }
+            } finally {
+              $candidateCertificate.Dispose()
+            }
+          }
+          if ($null -eq $previousPackage) {
+            Remove-Item -LiteralPath $proofRoot -Recurse -Force
+            Write-Output (
+              '::notice::No older private MSIX with the pinned signer exists; ' +
+              'this build establishes the install-over baseline.'
+            )
+            exit 0
           }
 
           $certificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
@@ -832,23 +882,19 @@ jobs:
               $certificate.Thumbprint -ne $expectedThumbprint -or
               $certificate.Subject -ne 'CN=K1 Perfect Private' -or
               $certificate.Issuer -ne $certificate.Subject -or
-              -not $basicConstraints.CertificateAuthority -or
+              $basicConstraints.CertificateAuthority -or
               $certificate.HasPrivateKey
             ) {
               throw (
                 'The public install certificate does not match the pinned ' +
-                'self-signed root publisher.'
+                'self-signed end-entity publisher.'
               )
             }
           } finally {
             $certificate.Dispose()
           }
 
-          # This established private signing identity is itself a self-signed
-          # root CA (BasicConstraints CA=true). Microsoft recommends Root only
-          # for an actual root CA; rotating it to an end-entity certificate
-          # would break the user's stable private signing lineage.
-          $trustedPath = "Cert:\LocalMachine\Root\$expectedThumbprint"
+          $trustedPath = "Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"
           $trustPreexisted = Test-Path -LiteralPath $trustedPath
           $sideloadRegistryPaths = @(
             'SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock',
@@ -901,13 +947,13 @@ jobs:
             if (-not $trustPreexisted) {
               $imported = Import-Certificate `
                 -FilePath $publicCertificatePath `
-                -CertStoreLocation 'Cert:\LocalMachine\Root'
+                -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople'
               if ($imported.Thumbprint -ne $expectedThumbprint) {
                 throw 'The machine trust import returned a different certificate.'
               }
             }
             if (-not (Test-Path -LiteralPath $trustedPath)) {
-              throw 'The pinned root publisher is absent from LocalMachine Root.'
+              throw 'The pinned publisher is absent from LocalMachine TrustedPeople.'
             }
 
             Add-AppxPackage `

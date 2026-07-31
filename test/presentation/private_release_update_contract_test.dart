@@ -7,6 +7,7 @@ void main() {
   late String contract;
   late String androidBuild;
   late String signingProvisioner;
+  late String signingProvisionerTest;
   late String gitignore;
 
   setUpAll(() {
@@ -15,6 +16,9 @@ void main() {
     androidBuild = File('android/app/build.gradle.kts').readAsStringSync();
     signingProvisioner = File(
       'tool/provision_private_signing.ps1',
+    ).readAsStringSync();
+    signingProvisionerTest = File(
+      'tool/tests/test_provision_private_signing.ps1',
     ).readAsStringSync();
     gitignore = File('.gitignore').readAsStringSync();
   });
@@ -175,6 +179,48 @@ void main() {
     }
   });
 
+  test('legacy Windows CA signer migration is recoverable and idempotent', () {
+    expect(signingProvisioner, contains('basicConstraints=critical,CA:FALSE'));
+    expect(signingProvisioner, contains('LegacyCertificateAuthority'));
+    expect(signingProvisioner, contains('ValidEndEntity'));
+    expect(signingProvisioner, contains('migration-backups'));
+    expect(
+      signingProvisioner,
+      contains('The Windows PFX and CER identities do not match.'),
+    );
+    expect(
+      signingProvisioner,
+      contains(r'$process.StandardInput.Write($Value)'),
+    );
+    expect(
+      signingProvisioner,
+      isNot(contains('PERFECT_WINDOWS_PFX_PASSWORD --body')),
+    );
+
+    expect(signingProvisionerTest, contains('synthetic/never-contact'));
+    expect(signingProvisionerTest, contains('SkipRepositorySync'));
+    expect(
+      signingProvisionerTest,
+      contains('An idempotent rerun rotated the Android identity.'),
+    );
+    expect(
+      signingProvisionerTest,
+      contains('A post-migration rerun rotated the new Windows identity.'),
+    );
+    expect(
+      signingProvisionerTest,
+      contains('Injected Windows signing promotion failure.'),
+    );
+    expect(
+      signingProvisionerTest,
+      contains('An ambiguous Windows identity was not rejected.'),
+    );
+    expect(
+      signingProvisionerTest,
+      contains('Perfect private signing provisioner: PASS'),
+    );
+  });
+
   test('final installables are identity-checked and checksummed', () {
     expect(workflow, contains('aapt2" dump badging'));
     expect(workflow, contains('apksigner" verify'));
@@ -189,14 +235,22 @@ void main() {
     expect(workflow, contains('build/windows/x64/msix/SHA256SUMS.txt'));
   });
 
-  test('trusted Windows builds prove install-over with exact root cleanup', () {
+  test('trusted Windows builds prove install-over without trusting Root', () {
     expect(workflow, contains('actions: read'));
     expect(workflow, contains('Prove MSIX install-over preserves LocalState'));
-    expect(workflow, contains(r"Cert:\LocalMachine\Root\$expectedThumbprint"));
+    expect(
+      workflow,
+      contains(r"Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"),
+    );
     expect(workflow, contains('X509BasicConstraintsExtension'));
     expect(workflow, contains(r'$basicConstraints.CertificateAuthority'));
     expect(workflow, contains(r'$certificate.Issuer -ne $certificate.Subject'));
     expect(workflow, contains('Add-AppxPackage'));
+    expect(workflow, contains(r'$candidateCertificate.Thumbprint'));
+    expect(
+      workflow,
+      contains('No older private MSIX with the pinned signer exists'),
+    );
     expect(
       workflow,
       contains(r'SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'),
@@ -227,11 +281,12 @@ void main() {
       ),
     );
     expect(workflow, isNot(contains(r'Cert:\CurrentUser\Root')));
+    expect(workflow, isNot(contains(r'Cert:\LocalMachine\Root')));
     expect(
       contract,
       contains('proving that package family and an exact LocalState marker'),
     );
-    expect(contract, contains('self-signed CA certificate'));
+    expect(contract, contains('self-signed end-entity certificate'));
     expect(contract, contains('restores prior policy values'));
   });
 }
