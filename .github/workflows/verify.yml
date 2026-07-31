@@ -817,18 +817,38 @@ jobs:
             $publicCertificatePath
           )
           try {
+            $basicConstraintsExtensions = @(
+              $certificate.Extensions |
+                Where-Object { $_.Oid.Value -eq '2.5.29.19' }
+            )
+            if ($basicConstraintsExtensions.Count -ne 1) {
+              throw 'The pinned install certificate has ambiguous basic constraints.'
+            }
+            $basicConstraints = [Security.Cryptography.X509Certificates.X509BasicConstraintsExtension]::new(
+              $basicConstraintsExtensions[0],
+              $basicConstraintsExtensions[0].Critical
+            )
             if (
               $certificate.Thumbprint -ne $expectedThumbprint -or
               $certificate.Subject -ne 'CN=K1 Perfect Private' -or
+              $certificate.Issuer -ne $certificate.Subject -or
+              -not $basicConstraints.CertificateAuthority -or
               $certificate.HasPrivateKey
             ) {
-              throw 'The public install certificate does not match the pinned publisher.'
+              throw (
+                'The public install certificate does not match the pinned ' +
+                'self-signed root publisher.'
+              )
             }
           } finally {
             $certificate.Dispose()
           }
 
-          $trustedPath = "Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"
+          # This established private signing identity is itself a self-signed
+          # root CA (BasicConstraints CA=true). Microsoft recommends Root only
+          # for an actual root CA; rotating it to an end-entity certificate
+          # would break the user's stable private signing lineage.
+          $trustedPath = "Cert:\LocalMachine\Root\$expectedThumbprint"
           $trustPreexisted = Test-Path -LiteralPath $trustedPath
           $sideloadRegistryPaths = @(
             'SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock',
@@ -881,13 +901,13 @@ jobs:
             if (-not $trustPreexisted) {
               $imported = Import-Certificate `
                 -FilePath $publicCertificatePath `
-                -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople'
+                -CertStoreLocation 'Cert:\LocalMachine\Root'
               if ($imported.Thumbprint -ne $expectedThumbprint) {
                 throw 'The machine trust import returned a different certificate.'
               }
             }
             if (-not (Test-Path -LiteralPath $trustedPath)) {
-              throw 'The pinned publisher is absent from LocalMachine TrustedPeople.'
+              throw 'The pinned root publisher is absent from LocalMachine Root.'
             }
 
             Add-AppxPackage `

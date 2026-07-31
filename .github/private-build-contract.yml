@@ -61,7 +61,7 @@ constraints:
   - The portable bundle carries the matching application-local Visual C++ runtime and a SHA256SUMS manifest.
   - The Android APK and signed MSIX artifact each carry a post-signing SHA256SUMS manifest.
   - Every trusted Windows build installs the latest lower private MSIX and then the current MSIX on the ephemeral runner, proving that package family and an exact LocalState marker survive the version increase.
-  - MSIX install-over verification temporarily enables the two Windows sideload policy paths, uses LocalMachine TrustedPeople only for the pinned public certificate, restores prior policy values, and removes temporary package/trust state; it never mutates a Trusted Root store.
+  - The established Windows signing identity is a self-signed CA certificate. MSIX install-over verification first proves that exact pinned BasicConstraints/Subject/Issuer identity, temporarily enables the two Windows sideload policy paths, imports only that public certificate into LocalMachine Root, restores prior policy values, and removes temporary package/trust state.
   - The MSIX certificate is trusted only on the user's own Windows devices; no store or public trust is implied.
   - The public CER may travel with the private artifact, but its matching PFX must remain a repository secret.
   - If signing secrets are absent, untrusted CI keeps compilation verifiable but labels the resulting artifacts as non-durable fallbacks; trusted CI stops instead of publishing a misleading replacement identity.

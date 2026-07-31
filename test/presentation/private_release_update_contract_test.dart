@@ -189,13 +189,13 @@ void main() {
     expect(workflow, contains('build/windows/x64/msix/SHA256SUMS.txt'));
   });
 
-  test('trusted Windows builds prove install-over without trusting Root', () {
+  test('trusted Windows builds prove install-over with exact root cleanup', () {
     expect(workflow, contains('actions: read'));
     expect(workflow, contains('Prove MSIX install-over preserves LocalState'));
-    expect(
-      workflow,
-      contains(r"Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"),
-    );
+    expect(workflow, contains(r"Cert:\LocalMachine\Root\$expectedThumbprint"));
+    expect(workflow, contains('X509BasicConstraintsExtension'));
+    expect(workflow, contains(r'$basicConstraints.CertificateAuthority'));
+    expect(workflow, contains(r'$certificate.Issuer -ne $certificate.Subject'));
     expect(workflow, contains('Add-AppxPackage'));
     expect(
       workflow,
@@ -226,12 +226,12 @@ void main() {
         ),
       ),
     );
-    expect(workflow, isNot(contains(r'Cert:\LocalMachine\Root')));
     expect(workflow, isNot(contains(r'Cert:\CurrentUser\Root')));
     expect(
       contract,
       contains('proving that package family and an exact LocalState marker'),
     );
-    expect(contract, contains('it never mutates a Trusted Root store'));
+    expect(contract, contains('self-signed CA certificate'));
+    expect(contract, contains('restores prior policy values'));
   });
 }

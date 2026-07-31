@@ -170,14 +170,18 @@ if ($certificate.Thumbprint -ne $expected) {
 }
 Import-Certificate `
   -FilePath .\Perfect-private.cer `
-  -CertStoreLocation Cert:\LocalMachine\TrustedPeople
+  -CertStoreLocation Cert:\LocalMachine\Root
 Add-AppxPackage .\Perfect-*-windows-x64.msix
 ```
 
 نسخهٔ بعدی را با همان package identity و certificate دوباره با
 `Add-AppxPackage` نصب کن؛ Windows آن را روی نسخهٔ قبلی ارتقا می‌دهد و
 `LocalState` همان package family را نگه می‌دارد. گواهی عمومی قابل توزیع است،
-ولی PFX و رمز آن نباید از مخزن امن خارج شوند.
+ولی PFX و رمز آن نباید از مخزن امن خارج شوند. این lineage خصوصی از ابتدا با
+یک certificate خودامضای `CA=true` ساخته شده؛ بنابراین برخلاف certificate
+معمول end-entity، محل اعتماد درست آن `LocalMachine\Root` است. فقط همین
+thumbprint پین‌شده را اعتماد کن و اگر دیگر از Perfect! استفاده نمی‌کنی، آن را
+از همان store حذف کن.
 
 ### پشتیبان هویت امضا
 
