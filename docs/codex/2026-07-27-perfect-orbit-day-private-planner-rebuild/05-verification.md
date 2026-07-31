@@ -3,24 +3,24 @@
 ## Summary
 
 - Result: partial
-- Interpretation: the integrated Flutter/AI/backend source passes its local automated matrix and the final private Android artifact has signed install-over/runtime proof. Exact-SHA hosted CI, signed Windows MSIX update and real two-device convergence remain open.
-- Last verified: 2026-07-31T00:35:00+03:30
+- Interpretation: the integrated Flutter/AI/backend source، exact-SHA CI and all three private artifacts pass their current automated/integrity gates. Android install-over is proven; Windows run `#20` is the first baseline for the migrated signer، so a true two-version update plus signed-in/runtime journeys remain open.
+- Last verified: 2026-07-31T17:57:00+03:30
 - Final Android artifact under test: `build/private-update-proof/perfect-1.1.0+2004.apk`
 - Current final APK SHA-256: `990772FFDC66F36294225A478961AEF3F228E008A3E8826174E6FF50D5C91B8D`
-- Hosted commit: `d56455b9699b130ca2665d59853bac2f647aae2a` on `main` and `origin/main`
-- Hosted CI: [run `30519295088`](https://github.com/k1tvkli2003/Perfect/actions/runs/30519295088), conclusion `success`
+- Hosted commit: `fe24d33f6b22a699619e1dc7afec4440ec89f4fc` on `main` and `origin/main`
+- Hosted CI: [run `30637250609`](https://github.com/k1tvkli2003/Perfect/actions/runs/30637250609) (`#20`), conclusion `success`
 
-این سند بین «اثبات اجرا»، «اثبات hosted build»، «بررسی ایستا» و «بررسی در دسترس‌نبوده» فرق می‌گذارد. شواهد run `30519295088` تاریخی‌اند. source جاری analyzer و ۲۶۲ تست را پاس کرده، migration امن context و Function v3 زنده‌اند و APK `1.1.0+2004` با هویت نهایی install-over شده است؛ CI همان SHA و Windows update هنوز باید جداگانه اثبات شوند.
+این سند بین «اثبات اجرا»، «اثبات hosted build/artifact»، «بررسی خودکار» و «بررسی در دسترس‌نبوده» فرق می‌گذارد. source جاری analyzer و ۲۶۵ تست را پاس کرده، migration امن context و Function v3 زنده‌اند، APK محلی `1.1.0+2004` install-over شده و run `#20` exact-SHA سه artifact نهایی را ساخته است. اجرای responsive فایل portable فقط launch smoke است، نه اثبات GUI کامل. مرحلهٔ Windows update نیز در run `#20` به‌درستی baseline را ثبت کرد؛ تا وجود run `#21` نباید install-over ادعا شود.
 
 ## Current integrated source proof
 
 | Check | Result | Evidence |
 |---|---|---|
 | Flutter static analysis | passed | `flutter analyze --no-pub` → no issues |
-| Full Flutter suite | passed | `flutter test --no-pub --reporter compact` → 262/262 |
+| Full Flutter suite | passed | `flutter test --no-pub --reporter compact` → 265/265 |
 | Workspace UI/adaptive suite | passed | 44/44؛ expanded/short/wide Windows، tablet، 200% text and resize paths |
-| Private release continuity contract | passed | 5/5؛ `1.1.0+2000` base and next run #4 mapping to Android `2004` |
-| Release queue and artifact contract | passed locally / service pending | `queue: max` serializes same-ref builds؛ Android placeholder is `VERSION_CODE`؛ GitHub accepts/rejects the new queue syntax authoritatively after push |
+| Private release continuity contract | passed | monotonic Android/MSIX version mapping، signer constraints، artifact naming and baseline/install-over guards |
+| Release queue and artifact contract | passed locally and hosted | `queue: max` accepted by GitHub؛ exact Android `VERSION_CODE` naming and three private artifacts proven in run `#20` |
 | actionlint compatibility | passed with one scoped compatibility ignore | v1.7.12 predates `concurrency.queue`؛ only the exact new-key diagnostic is ignored، all other diagnostics remain fatal |
 | Windows private install/recovery docs | passed | thumbprint check + `LocalMachine\TrustedPeople` + `Add-AppxPackage`؛ encrypted offline signing backup/restore/hash/fingerprint checklist |
 | Portable signing recovery | passed | synthetic JKS/PFX round-trip؛ private-key possession، wrong password/tamper/non-empty rejection، DACL rollback and no real signing-root access |
@@ -28,7 +28,9 @@
 | Edge source type-check | passed | Deno check |
 | Final Edge deployment | passed live | `perfect-agent` v3؛ `ACTIVE`؛ `verify_jwt=true`؛ hash `ea758008b0606e0384b7b3be1de289a8cdf2041a511008b3b71fae657ec3cd5b`؛ unauthenticated 401 |
 | Final signed Android build/install-over | passed | APK `1.1.0+2004`؛ cert `144E87CB…F49B0AF`؛ install-over preserved package UID/data/widget identity |
-| Final exact-SHA CI/artifacts | pending | Android، Windows portable and signed MSIX evidence not yet recorded |
+| Final exact-SHA CI/artifacts | passed | run `#20` on `fe24d33`؛ Android `1.1.0+2020`، MSIX `1.1.0.20` and portable Windows independently inspected |
+| Windows signer migration | passed | provisioner synthetic PASS؛ legacy self-signed `CA=true` signer replaced by a self-signed `CA=false` end entity، thumbprint `1424F286C0DCACF36701D4C1AF0C0D830F01BA24`؛ rerun identity stable |
+| True Windows install-over | pending next build | run `#20` log says no older package exists with the pinned signer and explicitly establishes the baseline؛ `#21` must prove package family and LocalState preservation |
 
 ## Latest live AI/backend proof
 
@@ -55,14 +57,14 @@
 
 | ID | Requirement | Authoritative evidence inspected | Outcome |
 |---|---|---|---|
-| R1 | Flutter Android + Windows | Android install/runtime ledger؛ CI run `30519295088`؛ hosted artifact API | **partial** — هر دو platform ساخته شدند و Android اجرا شد؛ Windows exe/runtime و signed installer اثبات نشده‌اند |
-| R2 | private local-first cross-device Supabase sync | 256 tests؛ eight migrations remote/local؛ live owner/RLS/RPC/Auth/replay/cursor/context smoke | **partial** — backend و local-first/retry contracts پاس‌اند؛ convergence واقعی Android↔Windows روی دو نصب اجرا نشده است |
-| R3 | planner options and hostile scenarios | full test suite، workspace interaction suite، Android task/habit/widget journeys | **passed for implemented source/test scope** — exact alarm/reboot/OEM behavior و همهٔ device-specific notification paths هنوز proof فیزیکی ندارند |
-| R4 | final Perfect identity across app/Android/Windows | selected Day Compass source/master؛ asset generator؛ Android Pixel Launcher screenshot؛ adaptive/legacy/monochrome resources؛ ۹-frame Windows ICO | **passed locally / hosted Windows pending** — هویت نهایی انتخاب و سیم‌کشی شده و Android runtime پاس است؛ Windows runtime/hosted artifact تازه بعد از push بررسی می‌شود |
-| R5 | deliberate portrait/landscape/expanded experience | 44 Workspace tests/goldens؛ Android portrait/landscape screenshots؛ historical Windows hosted compile | **partial** — current phone/tablet/expanded Windows compositions pass local tests and visual inspection؛ expanded Windows روی executable نهایی مشاهده نشده است |
-| R6 | precise plan and durable work record | task docs، requirement/preservation ledgers، selection ledger، CI evidence in this file | **active/current** — انتخاب Day Compass و proof محلی ثبت شده‌اند؛ SHA و run نهایی پس از push افزوده می‌شوند |
+| R1 | Flutter Android + Windows | Android install/runtime ledger؛ exact-SHA run `#20`؛ three hosted artifacts؛ downloaded portable launch | **partial runtime / artifact pass** — signed Android/MSIX and portable build/integrity pass؛ Windows GUI resize/hover/icon/jank and signed-in Android main workspace remain unobserved |
+| R2 | private local-first cross-device Supabase sync | 265 tests؛ eight migrations remote/local؛ live owner/RLS/RPC/Auth/replay/cursor/context smoke | **partial** — backend و local-first/retry contracts پاس‌اند؛ convergence واقعی Android↔Windows روی دو نصب اجرا نشده است |
+| R3 | planner options and hostile scenarios | 265-test suite، workspace interaction suite، Android task/habit/widget journeys | **passed for implemented source/test scope** — exact alarm/reboot/OEM behavior و همهٔ device-specific notification paths هنوز proof فیزیکی ندارند |
+| R4 | final Perfect identity across app/Android/Windows | selected Day Compass source/master؛ asset generator؛ Pixel Launcher screenshot؛ platform resources؛ hosted Android/MSIX identity | **passed for assets/artifacts؛ partial runtime** — Android launcher runtime پاس است؛ Windows Explorer/taskbar/window icon مشاهده نشده است |
+| R5 | deliberate portrait/landscape/expanded experience | Workspace tests/goldens؛ Android configuration screenshots؛ hosted Windows compile and portable launch | **partial runtime** — compositions pass automated/visual inspection؛ signed-in phone/tablet main workspace and real Windows resize/hover/jank remain unobserved |
+| R6 | precise plan and durable work record | task docs، requirement/preservation ledgers، CI/artifact evidence in this file | **active/current** — final SHA، run `#20`، signer migration and baseline limitation recorded؛ run `#21` remains |
 | R7 | preserve data/auth/contracts | additive migration history/replay؛ legacy compatibility tests؛ owner gate and anon denial | **passed for compatibility contract** — هیچ destructive migration گزارش نشده؛ two-install convergence جداگانه در R2 باز است |
-| R8 | quality, resilience and performance gate | analyzer، 256 tests، 44 Workspace، 5 release، 33 AI، Critics closure، historical Android runtime/hosted baseline | **partial whole-product proof** — current local gates سبزند؛ final signed Android، Windows runtime/MSIX and physical Android/OEM proof بازند |
+| R8 | quality, resilience and performance gate | analyzer، 265 tests، exact-SHA run `#20`، artifact inspection، portable launch، Critics closure | **partial whole-product runtime proof** — automated/artifact gates سبزند؛ signed-in cross-device، Windows GUI/jank and physical Android/OEM proof بازند |
 
 ## Automated checks
 
@@ -70,10 +72,10 @@
 |---|---|---|---|
 | Format | `dart format lib test` | passed | ۱۲۳ فایل؛ پس از آخرین اصلاح فقط یک فایل test format شد |
 | Static analysis | `flutter analyze --no-pub` | passed | `No issues found` |
-| Full test suite | `flutter test --no-pub --reporter compact` | passed | ۲۶۲ تست؛ domain/data/sync/UI/editor/accessibility/golden/widget/privacy/recovery/reminder/AI/startup/signing recovery |
+| Full test suite | `flutter test --no-pub --reporter compact` | passed | ۲۶۵ تست؛ domain/data/sync/UI/editor/accessibility/golden/widget/privacy/recovery/reminder/AI/startup/signing/release concurrency |
 | Workspace interaction suite | `flutter test --no-pub test/presentation/perfect_workspace_page_test.dart` | passed | ۴۴ تست؛ phone/tablet/Windows، 200% text، RTL، short landscape، wide inspector، shortcut/context |
-| Private release contract | focused Flutter test | passed | ۵/۵؛ semantic/epoch/run mapping and install-over guards |
-| Workflow queue lint boundary | actionlint 1.7.12 with scoped filter | passed with documented compatibility caveat | only exact `concurrency.queue` unknown-key diagnostic ignored؛ GitHub service validation pending push |
+| Private release contract | focused Flutter test | passed | ۷/۷؛ semantic/epoch/run mapping، signer migration and install-over guards |
+| Workflow queue lint boundary | actionlint 1.7.12 with scoped filter + GitHub service | passed | only exact old-actionlint `concurrency.queue` diagnostic is scoped؛ GitHub accepted and executed the workflow on run `#20` |
 | Focused AI suite | focused Flutter tests | passed | ۳۳ pass؛ history/context/proposal/client behavior |
 | Edge source check | `deno check supabase/functions/perfect-agent/index.ts` | passed | no type errors |
 | Adaptive secondary surfaces | `flutter test --no-pub -r expanded test/presentation/planner_secondary_surfaces_adaptive_test.dart` | passed | dialog ویندوز و bottom sheet موبایل، Escape و lifecycle |
@@ -85,13 +87,15 @@
 
 | Check | Method | Result | Evidence |
 |---|---|---|---|
-| Exact hosted revision | `git rev-parse HEAD` / `git rev-parse origin/main` + Actions metadata | passed | هر دو ref برابر `d56455b9699b130ca2665d59853bac2f647aae2a`؛ run `30519295088` روی `main`/push همین SHA است |
-| Overall private workflow | GitHub Actions run API | passed | workflow `Perfect private CI` در 2026-07-30T06:33:54Z با conclusion `success` تکمیل شد |
-| Quality and Android job | Actions job `90795953303` | passed | format، analyze، test، restore signing configuration، Android APK build و artifact upload همگی success |
-| Hosted Android artifact | Actions artifacts API | passed | `perfect-android-debug-fallback-configured-private-30519295088`، اندازهٔ 31,141,037 bytes، unexpired |
-| Windows desktop job | Actions job `90795953300` | passed | Windows golden baselines، Windows desktop build و unpackaged artifact upload success |
-| Hosted Windows artifact | Actions artifacts API | passed | `perfect-windows-x64-configured-private-30519295088`، اندازهٔ 15,410,209 bytes، unexpired |
-| Signed private MSIX | job step + artifact inventory | skipped / not produced | `Preserve signed private Windows installer` skipped است و artifact امضاشده‌ای در run وجود ندارد؛ موفقیت unpackaged build نباید به‌عنوان signed MSIX تعبیر شود |
+| Exact hosted revision | `git rev-parse HEAD` / `git rev-parse origin/main` + Actions metadata | passed | هر دو ref برابر `fe24d33f6b22a699619e1dc7afec4440ec89f4fc`؛ run `30637250609` (`#20`) روی همین SHA است |
+| Overall private workflow | GitHub Actions run API | passed | workflow `Perfect private CI` با conclusion `success`؛ Allocate، Quality/Android و Windows هر سه success |
+| Quality and Android job | Actions job `91177911128` | passed | format، analyze، 265/265 tests، Android signing/build/verification/upload همگی success |
+| Hosted Android artifact | Actions artifact + independent package inspection | passed | `perfect-1.1.0-build.2020-android-stable-private-configured-private`؛ `1.1.0+2020`، package `com.k1tvkli2003.perfect`، label `Perfect!`، سه ABI، v2، SHA manifest معتبر، signer ثابت `144E87CB…F49B0AF` |
+| Windows desktop job | Actions job `91177911160` | passed | Windows goldens، desktop build، portable checksum/upload، signed MSIX packaging/upload and baseline detection success |
+| Hosted Windows portable | artifact download + 37-file manifest + launch smoke | passed with GUI limit | `perfect-1.1.0-build.2020-windows-x64-portable-configured-private`؛ 37/37 hashes؛ downloaded `perfect.exe` launched and remained responsive، but resize/hover/icon/jank was not exercised |
+| Signed private MSIX | artifact download + manifest/CMS/block inventory | passed | `perfect-1.1.0-build.2020-windows-x64-msix-configured-private`؛ version `1.1.0.20`، same identity/publisher، `CA=false` signer `1424F286…BA24`، 137 entries and hashes valid |
+| Signing provision/recovery | synthetic provisioner + backup/hash + rerun | passed | Windows root/leaf roles valid، end-entity private-key proof passes، backup hash valid and rerun leaves both Android and Windows identities stable |
+| Windows install-over | run `#20` install-over step log | baseline only / not an upgrade | exact notice: no older private MSIX exists with the pinned signer؛ run `#20` establishes the baseline. Real lower→higher package family/LocalState proof requires run `#21` |
 
 ## Final private Android artifact and runtime
 
@@ -172,11 +176,12 @@
 
 ## Explicit limits
 
-- اجرای محلی Windows ممکن نیست چون این میزبان Visual Studio و workload «Desktop development with C++» ندارد. hosted CI برای `d56455b` build و unpackaged artifact را با موفقیت ساخته است، اما اجرای exe و بررسی Explorer/taskbar/window هنوز انجام نشده است.
+- build محلی Windows ممکن نیست چون این میزبان Visual Studio و workload «Desktop development with C++» ندارد. hosted CI برای `fe24d33` portable و signed MSIX را ساخته است؛ executable دانلودشده launch شد و responsive ماند، اما GUI واقعی برای resize/hover/focus/icon/animation/jank بررسی نشده است.
 - پروژهٔ `evyjrbwibwrdkjakooor` سالم است و هشت migration هم‌نسخهٔ local/remote را پذیرفته است. migration هشتم `20260730220000` authenticated execution و owner/limit bounding را پاس می‌کند؛ anon و direct planner SELECT همچنان بسته‌اند. شواهد replay/cursor/zero-residue مربوط به چهار migration پایه نیز معتبر باقی مانده‌اند. تنها convergence واقعی Android↔Windows هنوز اثبات نشده است.
 - تست Android روی emulator API 35 انجام شد، نه گوشی فیزیکی؛ زمان startup به‌دلیل x86_64/2GB/SwiftShader و ANRهای سیستم نمایندهٔ سخت‌افزار هدف نیست و بهبود عملکرد ادعا نمی‌شود.
 - APK نهایی `1.1.0+2004` با private certificate نهایی امضا شده است؛ سطر debug-certificate در بخش Historical فقط به artifact قدیمی اشاره دارد.
-- signed MSIX در run `30519295088` وجود ندارد: Windows unpackaged artifact موفق است، ولی مرحلهٔ حفظ installer امضاشده skipped شد. این دو خروجی معادل نیستند.
-- Day Compass نهایی در Android runtime اثبات شده است. Windows ICO به‌صورت ساختاری ۹-frame و شفاف بررسی شده، اما نمایش آن در Explorer/taskbar/window روی executable واقعی هنوز به artifact hosted تازه و میزبان Windows دارای toolchain نیاز دارد.
+- signed MSIX `1.1.0.20` در run `#20` موجود و از نظر identity/publisher/signer/entries/hashes معتبر است. با این حال چون signer در همین commit به end-entity جدید مهاجرت کرد، artifact پایین‌تری با همان signer وجود ندارد؛ notice موفق step فقط baseline را ثبت می‌کند و install-over را اثبات نمی‌کند.
+- Day Compass نهایی در Android launcher runtime اثبات شده است. Windows ICO به‌صورت ساختاری ۹-frame و شفاف بررسی و در artifact نهایی بسته‌بندی شده، اما نمایش آن در Explorer/taskbar/window هنوز مشاهده نشده است.
 - Flutter 3.44 دربارهٔ مهاجرت آیندهٔ Kotlin plugin در `home_widget` و `flutter_timezone` هشدار می‌دهد. هر دو dependency مستقیم در آخرین نسخهٔ قابل resolve هستند؛ این هشدار شکست فعلی نیست و مالکیت fix در upstream است.
-- commit/push/CI برای `d56455b` ثبت و موفق‌اند، اما Day Compass و سخت‌گیری‌های تازهٔ widget/Windows هنوز در worktree نهایی‌اند. run `30519295088` نمی‌تواند این تغییرها را اثبات کند؛ run موفق SHA تازه باید جدا ثبت شود.
+- تصاویر Android موجود، launcher/widget و Auth/Configuration را اثبات می‌کنند؛ signed-in Orbit Day main workspace روی phone/tablet runtime نشده است.
+- signed-in widget Quick Add، authenticated session retention، Android↔Windows convergence، positive AI text/voice/proposal-apply با provider key rotateشده و physical notification/OEM/reboot هنوز اجرا نشده‌اند.

@@ -4,9 +4,9 @@
 
 Perfect! اکنون یک planner شخصی Flutter برای Android و Windows است؛ Web عمداً حذف شده است. محصول از یک فهرست ساده به Orbit Day واکنش‌گرا، Task/Habit editor بسیار قابل‌تنظیم، local-first Drift، sync خصوصی Supabase، recovery/conflict/archive، focus/reminder/insight و ویجت بومی Android تبدیل شده است.
 
-گیت پایهٔ commit `d56455b` و CI خصوصی run `30519295088` سبز بود، اما فقط شاهد تاریخی است. پس از آن Day Compass، widget چهار-family، AI Dock/history/context، startup غیرمسدودکننده، retry خودکار Sync Cloud و expanded Windows واقعی یکپارچه شدند. وضعیت source جاری analyzer، ۲۶۲/۲۶۲ تست، Workspace ۴۴/۴۴، release contract پنج/پنج، AI متمرکز ۳۳ تست و Deno check را پاس کرده است. migration هشتمِ context امن نیز زنده و owner-scoped اثبات شده است؛ hosted CI همان SHA پس از push مرجع نهایی می‌شود.
+commit `fe24d33f6b22a699619e1dc7afec4440ec89f4fc` روی `main`/`origin/main` است و CI خصوصی run [`30637250609`](https://github.com/k1tvkli2003/Perfect/actions/runs/30637250609) (`#20`) برای همان SHA سبز شد. وضعیت source جاری analyzer و ۲۶۵/۲۶۵ تست را پاس کرده است. migration هشتمِ context امن نیز زنده و owner-scoped است. run `#20` signed Android، signed MSIX و Windows portable را ساخته و artifactهای هر سه مسیر مستقل بررسی شده‌اند.
 
-build/install-over Android بسته شده و این handoff اکنون تا push/CI نهایی و اثبات Windows update باز است؛ Function v3 و auth boundary آن زنده و اثبات‌شده‌اند. انتخاب هویت دیگر باز نیست. Windows executable runtime، signed MSIX، provider smoke با کلید rotateشده و convergence نهایی روی دو نصب واقعی هنوز اثبات نشده‌اند.
+build/install-over Android و exact-SHA CI/artifact gate بسته شده‌اند. Windows signer از self-signed certificate قدیمی `CA=true` به self-signed end-entity `CA=false` با thumbprint `1424F286C0DCACF36701D4C1AF0C0D830F01BA24` مهاجرت کرد؛ Android signer ثابت ماند. run `#20` عمداً نخستین baseline این lineage است، بنابراین Windows install-over واقعی باید با run `#21` اثبات شود. Windows GUI، signed-in device journeys، provider smoke و convergence دو نصب هنوز بازند.
 
 ## Product behavior delivered
 
@@ -33,22 +33,23 @@ build/install-over Android بسته شده و این handoff اکنون تا pus
 
 - `dart format lib test`: pass
 - `flutter analyze --no-pub`: pass
-- `flutter test --no-pub --reporter compact`: ۲۶۲/۲۶۲ pass
+- `flutter test --no-pub --reporter compact`: ۲۶۵/۲۶۵ pass
 - Workspace UI suite: ۴۴/۴۴ pass
 - release continuity contract: پنج/پنج pass
 - focused AI suite: ۳۳ pass؛ Deno check pass
 - Edge Function: v3 `ACTIVE`، `verify_jwt=true`، hash `ea758008b0606e0384b7b3be1de289a8cdf2041a511008b3b71fae657ec3cd5b`، unauthenticated 401 pass
-- private release contract: ۵/۵؛ queue serialization و `VERSION_CODE` naming closed؛ GitHub queue syntax validation pending push
+- private release/workflow contracts: pass؛ queue serialization و `VERSION_CODE` naming توسط سرویس GitHub در run `#20` پذیرفته شدند
 - `flutter build apk --release --build-name=1.1.0 --build-number=2004`: pass؛ private signed
 - Final local APK SHA-256: `990772FFDC66F36294225A478961AEF3F228E008A3E8826174E6FF50D5C91B8D`
 - Android API 35 install-over/start/logcat for `1.1.0+2004`: pass؛ UID/data/widget binding حفظ شدند؛ session احراز‌شده به‌دلیل signed-out بودن اولیه قابل اثبات نبود
 - launcher name/Day Compass icon: pass روی Pixel Launcher API 35؛ Windows runtime proof هنوز باز است
 - widget picker/add/resize/scroll/deep-link/four-state queue: pass
-- GitHub Actions run `30519295088` for `d56455b`: success
-- hosted Android artifact: pass؛ `perfect-android-debug-fallback-configured-private-30519295088`
-- hosted Windows unpackaged artifact: pass؛ `perfect-windows-x64-configured-private-30519295088`
-- signed MSIX: skipped/not produced
-- Windows local build/runtime: unavailable because Visual Studio C++ workload is missing
+- GitHub Actions run `30637250609` (`#20`) for `fe24d33`: success؛ all three jobs green
+- hosted Android: `1.1.0+2020`، `com.k1tvkli2003.perfect`، label `Perfect!`، سه ABI، v2، hashes and signer `144E87CB…F49B0AF` pass
+- hosted signed MSIX: `1.1.0.20`، same identity/publisher، end-entity `CA=false` signer `1424F286…BA24`، 137 entries and hashes pass
+- hosted portable: 37/37 hashes pass؛ downloaded executable launched responsive
+- Windows install-over: baseline only؛ run `#20` found no lower artifact with the migrated signer، so `#21` must provide the first true upgrade proof
+- Windows GUI runtime: resize/hover/focus/icon/jank unavailable/unobserved؛ portable launch alone does not prove these paths
 - live Supabase migration/RLS/RPC/Auth/context: pass؛ migration `20260730220000` owner/limit/privilege checks green؛ two-device Android↔Windows convergence هنوز اجرا نشده است
 
 جزئیات و تصویرهای runtime در [05-verification.md](05-verification.md) ثبت شده‌اند.
@@ -56,15 +57,15 @@ build/install-over Android بسته شده و این handoff اکنون تا pus
 ## Private setup
 
 1. migrationها، owner profile و `perfect://login-callback` روی پروژهٔ اصلی از قبل آماده‌اند؛ آن‌ها را دستی تکرار نکن.
-2. artifactهای CI با `PERFECT_SUPABASE_URL` و `PERFECT_SUPABASE_PUBLISHABLE_KEY` از پیش متصل ساخته می‌شوند؛ فقط با همان حساب owner وارد شو. artifactهای run `30519295088` پایهٔ پیش از Day Compass هستند؛ artifact تازه پس از push نهایی مرجع خواهد بود.
+2. artifactهای CI با `PERFECT_SUPABASE_URL` و `PERFECT_SUPABASE_PUBLISHABLE_KEY` از پیش متصل ساخته می‌شوند؛ فقط با همان حساب owner وارد شو. artifactهای run `#20` مرجع فعلی‌اند.
 3. اگر build محلی بدون define اجرا شد، می‌توان همان URL و publishable anon key را در configuration امن همان نصب وارد کرد.
-4. برای signed artifact پایدار، secretهای تعریف‌شده در `.github/private-build-contract.yml` را فقط در GitHub Actions تنظیم کن؛ هیچ keystore/certificate یا key داخل repo قرار نده. run فعلی signed MSIX ندارد.
+4. برای signed artifact پایدار، secretهای تعریف‌شده در `.github/private-build-contract.yml` را فقط در GitHub Actions تنظیم کن؛ هیچ keystore یا private key داخل repo قرار نده. public end-entity certificate می‌تواند کنار MSIX باشد، اما PFX/JKS/رمزها و backup migration خصوصی artifact نمی‌شوند.
 5. برای نصب MSIX خصوصی، thumbprint فایل CER را با Repository Variable تطبیق بده، آن را با دسترسی Administrator در `LocalMachine\TrustedPeople` import کن و سپس `Add-AppxPackage` را اجرا کن.
 6. signing root را به‌صورت رمزنگاری‌شده آفلاین backup کن، رمز vault را جدا نگه دار و restore آزمایشی را با manifest hash و fingerprintها تأیید کن؛ GitHub Secrets backup نیست.
 
 ## Environment limits and follow-up proof
 
-- Hosted Windows CI artifact commit `d56455b` را ساخته است؛ این build proof جای اجرای exe، Explorer/taskbar/window inspection یا signed MSIX را نمی‌گیرد. CI باید SHA تازهٔ expanded Windows/AI/startup/sync changes را نیز بسازد.
+- Hosted CI commit `fe24d33` را ساخته و signed MSIX/portable را بررسی کرده است؛ launch responsive فایل portable جای Explorer/taskbar/window، resize/hover/focus یا frame-jank proof را نمی‌گیرد.
 - migration/RLS و authenticated owner مثبت زنده پاس‌اند؛ offline→reconnect، conflict، realtime drop، دو session هم‌زمان و convergence باید روی Android و Windows artifact نهایی end-to-end ثبت شوند.
 - Android proof فعلی emulator است؛ اگر گوشی واقعی متفاوت از API 35 هدف اصلی شد، notification permission، exact alarm policy، reboot reminder و OEM launcher widget هم روی همان دستگاه smoke-test شوند.
 - هشدار future Kotlin migration از `home_widget` و `flutter_timezone` است؛ dependencyهای مستقیم فعلاً آخرین نسخهٔ قابل resolve هستند.
@@ -72,20 +73,21 @@ build/install-over Android بسته شده و این handoff اکنون تا pus
 ## Done
 
 - هستهٔ planner local-first، Supabase owner/context contract، Orbit Day responsive UI، Perfect AI و Android Today widget در source و tests پیاده‌سازی شده‌اند.
-- `d56455b` روی `main`/`origin/main` است و CI run `30519295088` Android و unpackaged Windows artifacts را با success ساخته است.
+- `fe24d33f6b22a699619e1dc7afec4440ec89f4fc` روی `main`/`origin/main` است و exact-SHA run `#20` signed Android، signed MSIX و checksum-complete portable Windows را با success ساخته است.
 - Day Compass از میان conceptها انتخاب، به asset production شفاف تبدیل و در Android launcher/widget/notification و Windows ICO سیم‌کشی شده است.
 - widget چهار family responsive، اسکرول native و چرخهٔ `Empty → Done → Not done → 50% → Empty` را با ترتیب native پایدار دارد.
-- release audit نهایی queue، artifact naming، Windows private install trust و offline signing recovery را بسته است؛ release contract ۵/۵ باقی مانده است.
+- release audit نهایی queue، artifact naming، Windows private install trust و offline signing recovery را بسته است؛ release contract ۷/۷ باقی مانده است.
+- provisioner synthetic، backup hash و rerun identity stability پاس‌اند؛ Windows package signer اکنون end-entity `CA=false` است و Android signer تغییر نکرده است.
 
 ## Remaining
 
-1. گیت کامل نهایی، commit/push `main` و CI همان SHA اجرا و artifactهای Android/Windows/MSIX بررسی شوند.
-2. دو MSIX متوالی با همان certificate روی هم نصب و حفظ package data اثبات شود.
-3. provider smoke فقط پس از تنظیم secret rotateشده اجرا شود.
-4. convergence واقعی Android↔Windows با یک owner و دو نصب ثبت و startup Android روی سخت‌افزار فیزیکی profile شود.
+1. run `#21` با signer `1424F286…BA24` ساخته شود تا `#20 → #21`، package family و LocalState را واقعاً حفظ کند.
+2. signed-in phone/tablet main workspace، Windows GUI resize/hover/icon/jank و signed-in widget Quick Add در runtime ثبت شوند.
+3. provider smoke مثبت text/voice/proposal-apply فقط پس از تنظیم secret rotateشده اجرا شود.
+4. convergence و authenticated session retention واقعی Android↔Windows با یک owner و دو نصب ثبت شود؛ notification/OEM/reboot نیز روی سخت‌افزار فیزیکی smoke شود.
 
 ## Verification
 
-- نتیجهٔ کلی تا پیش از push نهایی `partial` است: Day Compass Android runtime، backend live checks و hosted build پایه پاس‌اند.
+- نتیجهٔ کلی `partial` است: source، backend، exact-SHA CI و artifactها پاس‌اند؛ run `#20` baseline Windows است و runtimeهای احراز‌شدهٔ باقی‌مانده هنوز اجرا نشده‌اند.
 - جزئیات requirement-by-requirement، artifact نام‌ها و محدودیت‌ها در [05-verification.md](05-verification.md) ثبت شده‌اند.
-- هویت نهایی در Android proof دارد؛ Windows executable runtime، signed MSIX و two-install convergence هنوز proof ندارند و نباید complete ادعا شوند.
+- signed MSIX و portable artifact proof دارند؛ اما Windows GUI، true install-over، signed-in cross-device convergence/session و device-specific Android paths نباید complete ادعا شوند.

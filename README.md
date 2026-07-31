@@ -101,19 +101,17 @@ flutter build windows --release
 .\tool\provision_private_signing.ps1
 ```
 
-Windows build به Visual Studio با workload **Desktop development with C++** نیاز دارد. در ماشین فعلی این workload نصب نیست؛ runner ویندوز GitHub Actions
-برای SHA `d56455b9699b130ca2665d59853bac2f647aae2a` خروجی release unpackaged را
-با موفقیت ساخته و نگه داشته است. خروجی بدون dart-define همچنان قابل اجرا است
-و در اولین اجرا صفحهٔ اتصال امن را نشان می‌دهد؛ اما artifact نصب‌شدنی و
-update-compatible فقط از trusted build دارای هویت امضای ثابت می‌آید.
+Windows build به Visual Studio با workload **Desktop development with C++** نیاز دارد. این workload روی ماشین فعلی نصب نیست؛ runner ویندوز GitHub Actions برای SHA `fe24d33f6b22a699619e1dc7afec4440ec89f4fc` خروجی release portable و MSIX خصوصی را با موفقیت ساخته است. فایل portable دانلودشده launch شد و responsive ماند. این launch smoke جای بررسی کامل resize، hover/focus، Explorer/taskbar/window icon یا frame-jank را نمی‌گیرد.
 
-این run شاهد تاریخیِ baseline است و تغییرهای جاری را اثبات نمی‌کند. وضعیت محلیِ
-فعلی `flutter analyze` و هر ۲۶۲ تست را پاس کرده است؛ artifact نهایی Android،
-artifact تازهٔ Windows و CI مربوط به SHA نهایی پس از push جداگانه ثبت می‌شوند.
+وضعیت محلی فعلی `flutter analyze` و هر ۲۶۵ تست را پاس می‌کند. GitHub Actions
+[run `30637250609`](https://github.com/k1tvkli2003/Perfect/actions/runs/30637250609)
+(`#20`) نیز برای همان SHA سبز است و Android `1.1.0+2020`، MSIX `1.1.0.20`
+و Windows portable را حفظ کرده است. این run نخستین baseline برای signer جدید
+Windows است؛ اثبات واقعی install-over به artifact متوالی run `#21` نیاز دارد.
 
 ## GitHub Actions خصوصی
 
-[`verify.yml`](.github/workflows/verify.yml) روی PR، push به `main` و اجرای دستی، format/analyze/test و build release Android/Windows را انجام می‌دهد. نسخهٔ پایهٔ فعلی `1.1.0+2000` است. Android `versionCode` از **epoch پایه + `github.run_number`** ساخته می‌شود و نسخهٔ MSIX از `MAJOR.MINOR.PATCH.github.run_number`؛ بنابراین run بعدیِ شمارهٔ ۴ باید Android `2004` و MSIX `1.1.0.4` بسازد. این مقادیر تا موفق‌شدن run نهایی فقط انتظار قرارداد هستند، نه artifact اثبات‌شده. artifactها ۱۴ روز نگه‌داری می‌شوند و هیچ GitHub Release یا store deploy ساخته نمی‌شود.
+[`verify.yml`](.github/workflows/verify.yml) روی PR، push به `main` و اجرای دستی، format/analyze/test و build release Android/Windows را انجام می‌دهد. نسخهٔ پایهٔ فعلی `1.1.0+2000` است. Android `versionCode` از **epoch پایه + `github.run_number`** ساخته می‌شود و نسخهٔ MSIX از `MAJOR.MINOR.PATCH.github.run_number`؛ run `#20` عملاً Android `2020` و MSIX `1.1.0.20` ساخته است و run `#21` باید به‌ترتیب `2021` و `1.1.0.21` بسازد. artifactها ۱۴ روز نگه‌داری می‌شوند و هیچ GitHub Release یا store deploy ساخته نمی‌شود.
 
 buildهای یک ref با `cancel-in-progress: false` و `queue: max` صف می‌شوند تا دو
 نسخهٔ installable هم‌زمان اجرا یا لغو نشوند. نام قراردادی APK نیز
@@ -134,16 +132,23 @@ buildهای یک ref با `cancel-in-progress: false` و `queue: max` صف می�
 - Android: `PERFECT_ANDROID_KEYSTORE_BASE64`، `PERFECT_ANDROID_KEYSTORE_PASSWORD`، `PERFECT_ANDROID_KEY_ALIAS`، `PERFECT_ANDROID_KEY_PASSWORD`
 - Windows: `PERFECT_WINDOWS_PFX_BASE64`، `PERFECT_WINDOWS_PFX_PASSWORD`
 
-workflow رمز PFX را در argv قرار نمی‌دهد؛ certificate را موقتاً در
-`CurrentUser\My` runner وارد می‌کند و MSIX را با thumbprint پین‌شده امضا
-می‌کند. اسکریپت provision نیز مقدار secret را بدون newline از stdin به `gh`
-می‌دهد.
+workflow رمز PFX را در argv قرار نمی‌دهد؛ end-entity code-signing certificate
+را موقتاً در `CurrentUser\My` runner وارد می‌کند و MSIX را با thumbprint
+پین‌شده امضا می‌کند. اسکریپت provision نیز مقدار secret را بدون newline از
+stdin به `gh` می‌دهد. signer قدیمی `CA=true` دیگر استفاده نمی‌شود؛ package با
+self-signed end-entity `CA=false` امضا می‌شود که فقط digital
+signature/code-signing دارد.
 
 دو fingerprint عمومی نیز به‌صورت Repository Variable ثبت می‌شوند تا تعویض
 تصادفی کلید همان لحظه build را متوقف کند:
 
 - `PERFECT_ANDROID_CERT_SHA256`
 - `PERFECT_WINDOWS_CERT_THUMBPRINT`
+
+مقادیر پین‌شدهٔ lineage فعلی:
+
+- Android signer SHA-256: `144E87CB67A9074EBC11CFED26A96EE1ACE697A861C2EABD77C4203A4F49B0AF`
+- Windows end-entity thumbprint: `1424F286C0DCACF36701D4C1AF0C0D830F01BA24`
 
 PR و اجرای دستی خارج از `main` هیچ‌کدام از credentialهای Supabase یا signing
 را دریافت نمی‌کنند و فقط artifact با برچسب `debug-fallback` می‌سازند. در
@@ -174,14 +179,19 @@ Import-Certificate `
 Add-AppxPackage .\Perfect-*-windows-x64.msix
 ```
 
-نسخهٔ بعدی را با همان package identity و certificate دوباره با
+نسخهٔ بعدی را با همان package identity و end-entity certificate دوباره با
 `Add-AppxPackage` نصب کن؛ Windows آن را روی نسخهٔ قبلی ارتقا می‌دهد و
 `LocalState` همان package family را نگه می‌دارد. گواهی عمومی قابل توزیع است،
 ولی PFX و رمز آن نباید از مخزن امن خارج شوند. Windows signer یک certificate
-خودامضای end-entity با `CA=false` است؛ محل اعتماد درست آن
+self-signed end-entity با `CA=false` است؛ محل اعتماد درست آن
 `LocalMachine\TrustedPeople` است و Root نباید تغییر کند. فقط همین thumbprint
 پین‌شده را اعتماد کن و اگر دیگر از Perfect! استفاده نمی‌کنی، آن را از همان
 store حذف کن.
+
+run `#20` نخستین artifact همین lineage را به‌عنوان baseline ثبت کرده، اما چون artifact
+قدیمی‌تری با این thumbprint وجود نداشت، هنوز شاهد ارتقای دو نسخه نیست. نخستین
+اثبات خودکار واقعی باید در run `#21`، package family و marker دقیق `LocalState`
+را از `1.1.0.20` تا `1.1.0.21` حفظ کند.
 
 ### پشتیبان هویت امضا
 
