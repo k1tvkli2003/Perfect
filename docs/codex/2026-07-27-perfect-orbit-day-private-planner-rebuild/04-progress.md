@@ -60,6 +60,7 @@
 | 2026-07-31T15:15:00+03:30 | active | Exact-SHA CI run `30626988976` passed both Android and Windows/MSIX. Independent raw-artifact inspection found the portable checksum named all three VC runtime DLLs while the uploaded ZIP omitted exactly those files. Dependency-source inspection replaced the initial hidden-attribute hypothesis with the proven cause: `msix 3.18.0` calls `cleanTemporaryFiles()` after packaging and deletes every `_vcRuntimeDllNames` entry from the shared Release directory. Moved the checksum-covered portable upload before MSIX packaging؛ a fresh hosted download must prove ۳۷/۳۷ parity. | run ۱۲ success؛ raw artifact ZIP؛ msix 3.18.0 source؛ workflow ordering contract |
 | 2026-07-31T17:45:00+03:30 | active | Migrated Windows signing from the legacy self-signed `CA=true` signer to a replacement self-signed `CA=false` code-signing end entity while preserving package identity/publisher. Provisioner synthetic validation، encrypted-backup hash and rerun identity stability passed؛ Android signer stayed `144E87CB…F49B0AF` and Windows now pins `1424F286…BA24`. | commit `fe24d33`؛ provisioner synthetic PASS؛ repository variables؛ backup validation |
 | 2026-07-31T17:50:00+03:30 | active | Exact-SHA run [`30637250609`](https://github.com/k1tvkli2003/Perfect/actions/runs/30637250609) (`#20`) passed all three jobs for `fe24d33f6b22a699619e1dc7afec4440ec89f4fc`: analyzer clean، 265/265 tests، signed Android `1.1.0+2020`، signed MSIX `1.1.0.20` and portable Windows. Independent artifact inspection passed Android package/label/three ABIs/v2/hashes، MSIX identity/publisher/`CA=false` signer/137 entries/hashes and portable 37/37 hashes؛ the downloaded executable launched responsive. The install-over step correctly emitted that no lower artifact exists with the new signer، so run `#20` establishes the baseline and does not prove an upgrade. | run `#20` jobs/artifacts/logs؛ independent artifact validation؛ portable launch smoke |
+| 2026-07-31T18:25:00+03:30 | active | Exact-SHA run [`30639359490`](https://github.com/k1tvkli2003/Perfect/actions/runs/30639359490) (`#21`) passed all three jobs for `265f79aada41fee9a3b71db9a855b450e9898cbd`. The Windows runner installed baseline MSIX `1.1.0.20` and upgraded it to `1.1.0.21` with the same signer؛ package family and the exact LocalState marker were preserved. Independent downloads confirmed zero checksum mismatches، Android `1.1.0+2021` with the unchanged signer، MSIX `1.1.0.21` with the same `CA=false` certificate and a 37/37 portable bundle. | run `#21` jobs/artifacts/notice؛ independent artifact validation |
 
 ## Done So Far
 - Durable task record and master plan.
@@ -73,14 +74,13 @@
 - The full 265-test suite and analyzer are green؛ responsive/UI، release، AI، widget، signing and Deno checks also pass.
 - Pixel Launcher runtime proof covers widget discovery, resize-specific compositions, native collection scrolling, direct outcome cycling, deep link and native replay queue.
 - Visual/interaction hardening now covers 320dp, short landscape, expanded Windows composition, RTL, 200% text and reduced motion.
-- `main`/`origin/main` at `fe24d33f6b22a699619e1dc7afec4440ec89f4fc` passed exact-SHA CI run `30637250609`; signed Android، signed MSIX and checksum-complete portable Windows artifacts are hosted and unexpired.
+- release candidate `265f79aada41fee9a3b71db9a855b450e9898cbd` passed exact-SHA CI run `30639359490`; signed Android، signed MSIX and checksum-complete portable Windows artifacts are hosted and unexpired.
 - Day Compass is the canonical transparent app asset; the ten blank-brief and five symmetric files remain comparison history.
 - Final release audit is closed in source/docs: serialized CI queue، exact Android `VERSION_CODE` naming، Windows trust/install guidance and recoverable offline signing backup.
 - Final Android `1.1.0+2004` install-over proof is closed for package/data/widget identity; authenticated session retention remains explicitly unproven because the device began signed out.
-- Windows signer migration is closed: the package uses the `CA=false` end entity `1424F286…BA24` and run `#20` establishes the first trustworthy baseline. True install-over remains intentionally open until `#21` supplies a lower artifact with the same signer.
+- Windows signer migration and update continuity are closed: the package uses the `CA=false` end entity `1424F286…BA24`; run `#20` established baseline `1.1.0.20` and run `#21` upgraded it to `1.1.0.21` while preserving package family and the exact LocalState marker.
 
 ## Next
-1. Produce run `#21` with the same Windows end-entity signer and verify `#20 → #21` preserves package family and the exact LocalState marker.
-2. Exercise the signed-in main workspace on Android phone/tablet and record real Windows GUI resize/hover/icon/jank behavior.
-3. Prove authenticated Android↔Windows convergence/session retention، signed-in widget Quick Add and physical notification/OEM/reboot behavior.
-4. Run positive AI text/voice/proposal-apply only after a rotated provider key is stored through the secure Supabase secret path.
+1. Exercise the signed-in main workspace on Android phone/tablet and record real Windows GUI resize/hover/icon/jank behavior.
+2. Prove authenticated Android↔Windows convergence/session retention، signed-in widget Quick Add and physical notification/OEM/reboot behavior.
+3. Run positive AI text/voice/proposal-apply only after a rotated provider key is stored through the secure Supabase secret path.

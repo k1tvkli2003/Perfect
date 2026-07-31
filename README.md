@@ -101,17 +101,17 @@ flutter build windows --release
 .\tool\provision_private_signing.ps1
 ```
 
-Windows build به Visual Studio با workload **Desktop development with C++** نیاز دارد. این workload روی ماشین فعلی نصب نیست؛ runner ویندوز GitHub Actions برای SHA `fe24d33f6b22a699619e1dc7afec4440ec89f4fc` خروجی release portable و MSIX خصوصی را با موفقیت ساخته است. فایل portable دانلودشده launch شد و responsive ماند. این launch smoke جای بررسی کامل resize، hover/focus، Explorer/taskbar/window icon یا frame-jank را نمی‌گیرد.
+Windows build به Visual Studio با workload **Desktop development with C++** نیاز دارد. این workload روی ماشین فعلی نصب نیست؛ runner ویندوز GitHub Actions برای SHA `265f79aada41fee9a3b71db9a855b450e9898cbd` خروجی release portable و MSIX خصوصی را با موفقیت ساخته است. فایل portable دانلودشده از baseline launch شد و responsive ماند. این launch smoke جای بررسی کامل resize، hover/focus، Explorer/taskbar/window icon یا frame-jank را نمی‌گیرد.
 
 وضعیت محلی فعلی `flutter analyze` و هر ۲۶۵ تست را پاس می‌کند. GitHub Actions
-[run `30637250609`](https://github.com/k1tvkli2003/Perfect/actions/runs/30637250609)
-(`#20`) نیز برای همان SHA سبز است و Android `1.1.0+2020`، MSIX `1.1.0.20`
-و Windows portable را حفظ کرده است. این run نخستین baseline برای signer جدید
-Windows است؛ اثبات واقعی install-over به artifact متوالی run `#21` نیاز دارد.
+[run `30639359490`](https://github.com/k1tvkli2003/Perfect/actions/runs/30639359490)
+(`#21`) نیز برای همان SHA سبز است و Android `1.1.0+2021`، MSIX `1.1.0.21`
+و Windows portable را حفظ کرده است. این run، MSIX baseline شمارهٔ ۲۰ را روی
+نسخهٔ ۲۱ ارتقا داد و ثابت کرد package family و marker دقیق `LocalState` حفظ می‌شوند.
 
 ## GitHub Actions خصوصی
 
-[`verify.yml`](.github/workflows/verify.yml) روی PR، push به `main` و اجرای دستی، format/analyze/test و build release Android/Windows را انجام می‌دهد. نسخهٔ پایهٔ فعلی `1.1.0+2000` است. Android `versionCode` از **epoch پایه + `github.run_number`** ساخته می‌شود و نسخهٔ MSIX از `MAJOR.MINOR.PATCH.github.run_number`؛ run `#20` عملاً Android `2020` و MSIX `1.1.0.20` ساخته است و run `#21` باید به‌ترتیب `2021` و `1.1.0.21` بسازد. artifactها ۱۴ روز نگه‌داری می‌شوند و هیچ GitHub Release یا store deploy ساخته نمی‌شود.
+[`verify.yml`](.github/workflows/verify.yml) روی PR، push به `main` و اجرای دستی، format/analyze/test و build release Android/Windows را انجام می‌دهد. نسخهٔ پایهٔ فعلی `1.1.0+2000` است. Android `versionCode` از **epoch پایه + `github.run_number`** ساخته می‌شود و نسخهٔ MSIX از `MAJOR.MINOR.PATCH.github.run_number`؛ runهای `#20` و `#21` به‌ترتیب Android `2020`/`2021` و MSIX `1.1.0.20`/`1.1.0.21` را ساخته‌اند. artifactها ۱۴ روز نگه‌داری می‌شوند و هیچ GitHub Release یا store deploy ساخته نمی‌شود.
 
 buildهای یک ref با `cancel-in-progress: false` و `queue: max` صف می‌شوند تا دو
 نسخهٔ installable هم‌زمان اجرا یا لغو نشوند. نام قراردادی APK نیز
@@ -188,10 +188,9 @@ self-signed end-entity با `CA=false` است؛ محل اعتماد درست آ�
 پین‌شده را اعتماد کن و اگر دیگر از Perfect! استفاده نمی‌کنی، آن را از همان
 store حذف کن.
 
-run `#20` نخستین artifact همین lineage را به‌عنوان baseline ثبت کرده، اما چون artifact
-قدیمی‌تری با این thumbprint وجود نداشت، هنوز شاهد ارتقای دو نسخه نیست. نخستین
-اثبات خودکار واقعی باید در run `#21`، package family و marker دقیق `LocalState`
-را از `1.1.0.20` تا `1.1.0.21` حفظ کند.
+run `#20` نخستین artifact همین lineage را به‌عنوان baseline ثبت کرد. run `#21`
+همان artifact را نصب و سپس به `1.1.0.21` ارتقا داد؛ package family و hash marker
+دقیق `LocalState` در این install-over حفظ شدند.
 
 ### پشتیبان هویت امضا
 

@@ -1,11 +1,11 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-07-31T17:57:00+03:30
+- Last updated: 2026-07-31T18:25:00+03:30
 - Owner: Codex
 
 ## Current State
-بازسازی local-first و تجربهٔ Orbit Day در commit `fe24d33f6b22a699619e1dc7afec4440ec89f4fc` روی `main`/`origin/main` قرار دارد. exact-SHA GitHub Actions run [`30637250609`](https://github.com/k1tvkli2003/Perfect/actions/runs/30637250609) (`#20`) با conclusion `success` تمام شد؛ analyzer و 265/265 تست سبزند و سه artifact امضاشده/قابل‌حمل Android، MSIX و Windows portable حفظ شده‌اند. Android `1.1.0+2020` با package/label/سه ABI/امضای v2 و fingerprint ثابت `144E87CB…F49B0AF` پاس است. Windows از signer قدیمی `CA=true` به end-entity `CA=false` با thumbprint `1424F286C0DCACF36701D4C1AF0C0D830F01BA24` مهاجرت کرده؛ MSIX `1.1.0.20` با identity/publisher ثابت، 137 entry و hashهای معتبر پاس است، portable نیز 37/37 checksum دارد و executable دانلودشده responsive اجرا شد. provisioner و backup مصنوعی پاس‌اند و rerun هویت را ثابت نگه داشت. چون artifact قدیمی‌تری با signer جدید وجود نداشت، run `#20` صریحاً baseline است؛ اثبات واقعی install-over و LocalState به run `#21` موکول می‌شود. Function v3 و owner-scoped backend زنده‌اند؛ شکاف‌های runtime امضاشده/احراز‌شده همچنان صادقانه بازند.
+بازسازی local-first و تجربهٔ Orbit Day در release candidate commit `265f79aada41fee9a3b71db9a855b450e9898cbd` با exact-SHA GitHub Actions run [`30639359490`](https://github.com/k1tvkli2003/Perfect/actions/runs/30639359490) (`#21`) و conclusion `success` اثبات شده است؛ analyzer و 265/265 تست سبزند و سه artifact Android، MSIX و Windows portable حفظ شده‌اند. Android `1.1.0+2021` با package/label/سه ABI/امضای v2 و fingerprint ثابت `144E87CB…F49B0AF` پاس است. Windows از signer قدیمی `CA=true` به end-entity `CA=false` با thumbprint `1424F286C0DCACF36701D4C1AF0C0D830F01BA24` مهاجرت کرده؛ MSIX `1.1.0.21` با identity/publisher ثابت، 137 entry و hashهای معتبر پاس است و portable نیز 37/37 checksum دارد. run `#20` baseline `1.1.0.20` را ساخت و run `#21` آن را روی `1.1.0.21` ارتقا داد؛ package family و hash marker دقیق LocalState حفظ شدند. Function v3 و owner-scoped backend زنده‌اند؛ شکاف‌های runtime احراز‌شده/GUI همچنان صادقانه بازند.
 
 ## Decisions
 | Date | Decision | Reason | Source |
@@ -44,10 +44,11 @@
 | 2026-07-30 | نصب خصوصی Windows نیازمند تطبیق thumbprint، import گواهی در `LocalMachine\TrustedPeople` و سپس `Add-AppxPackage` است؛ signing root نیز backup رمزنگاری‌شدهٔ آفلاین می‌خواهد. | package خصوصی store trust ندارد و GitHub Secrets قابل دانلود/بازیابی نیستند. | README private-install and signing-backup checklist |
 | 2026-07-31 | Windows MSIX از signer قدیمی `CA=true` به self-signed end-entity code-signing با `CA=false` مهاجرت کرد؛ package identity و publisher ثابت ماندند. | package signer نباید قابلیت CA داشته باشد؛ certificate جایگزین فقط digital signature/code-signing دارد و در `TrustedPeople` پین می‌شود. | commit `fe24d33`؛ provisioner synthetic PASS؛ CI run `#20` |
 | 2026-07-31 | run `#20` نخستین baseline signer جدید است، نه install-over proof. | artifact پایین‌تری با thumbprint `1424F286…BA24` وجود نداشت؛ workflow این حالت را صریحاً گزارش و بدون ادعای upgrade موفق تمام کرد. | log مرحلهٔ `Prove MSIX install-over preserves LocalState` در run `30637250609` |
+| 2026-07-31 | run `#21` اولین Windows install-over واقعی را بست. | نصب `1.1.0.20 → 1.1.0.21` با signer یکسان، package family و hash marker دقیق LocalState را حفظ کرد. | run `30639359490`، job `91185076156` |
 
 ## Blockers
 - هیچ blocker برای source، analyzer، 265/265 تست محلی یا exact-SHA CI وجود ندارد.
-- hosted Android، Windows portable و signed MSIX برای `fe24d33` اثبات شده‌اند؛ true Windows install-over فقط منتظر یک build متوالی `#21` با همان signer است.
+- hosted Android، Windows portable، signed MSIX و true Windows install-over برای runهای متوالی `#20 → #21` اثبات شده‌اند.
 - اجرای محلی Windows به‌علت نبود Visual Studio و workload C++ ممکن نیست. executable دانلودشده responsive اجرا شد، اما resize/hover/focus/icon/jank در GUI واقعی هنوز ثبت نشده است.
 - signer نهایی Windows و Android دیگر blocker نیستند؛ backup hash، provisioner مصنوعی و rerun identity stability پاس‌اند.
 - اثبات migration/RLS/RPC/Auth بسته شده است؛ convergence end-to-end روی دو نصب واقعی باقی مانده و جلوی local-first runtime را نمی‌گیرد.
@@ -64,7 +65,7 @@
 - analyzer و مجموعهٔ کامل ۲۶۵ تست پاس‌اند؛ Workspace، release، AI، responsive، widget، signing و Deno checks نیز در گیت جاری سبزند.
 - race هم‌زمانی foreground/WorkManager با یک جدول local-only در Drift schema v2 و claim اتمیک SQLite بسته شد؛ تست دو connection ثابت می‌کند sequence بالاتر برای one-off و recurring همیشه نهایی می‌ماند.
 - گزارش frozen هشت‌صفحه‌ای Critics رندر و صفحه‌به‌صفحه بازبینی شد؛ همهٔ یافته‌های actionable آن بسته شدند و بدهی P3 فایل‌های presentation به‌صورت شفاف باقی مانده است.
-- commit `fe24d33f6b22a699619e1dc7afec4440ec89f4fc` روی `main` و `origin/main` یکسان است؛ CI run `30637250609` (`#20`) با هر سه job موفق و سه artifact Android/MSIX/portable تکمیل شد.
+- release candidate `265f79aada41fee9a3b71db9a855b450e9898cbd` در CI run `30639359490` (`#21`) با هر سه job موفق، سه artifact Android/MSIX/portable و install-over واقعی تکمیل شد.
 - migrationهای `20260730190000`، `20260730192000` و `20260730210000` روی Supabase زنده اعمال شدند؛ agent plan، conversation/message sync، action audit، retention و metadata guard با عمق محدود owner-scoped آماده‌اند.
 - Edge Function سخت‌شدهٔ `perfect-agent` نسخهٔ ۳ با hash ثبت‌شده، `ACTIVE` و `verify_jwt=true` زنده است؛ probe بدون auth پاسخ 401/`UNAUTHORIZED_NO_AUTH_HEADER` می‌گیرد.
 - Tablet Day Deck جدید در compact/expanded portrait و `1200×800` landscape بازبینی تصویری شده و reflow عرض‌های 768/900/1024، متن 200٪، rail persistence و عدم هم‌پوشانی AI/capture تست شده‌اند.
@@ -74,11 +75,11 @@
 - ابزار backup/restore هویت امضا با یک round-trip مصنوعی واقعی از JKS/PFX، private-key proof، tamper/wrong-password/non-empty-target و rollback مجوزها پاس شد؛ هیچ signing root واقعی در تست خوانده نشد.
 - provisioner synthetic test، hash پشتیبان واقعی و rerun هویت پاس‌اند. Windows package signer اکنون end-entity `CA=false` با thumbprint `1424F286C0DCACF36701D4C1AF0C0D830F01BA24` است؛ Android signer بدون تغییر `144E87CB67A9074EBC11CFED26A96EE1ACE697A861C2EABD77C4203A4F49B0AF` ماند.
 - artifactهای run `#20` مستقلاً بررسی شدند: Android `1.1.0+2020`، package `com.k1tvkli2003.perfect`، label `Perfect!`، سه ABI، v2 و hashهای معتبر؛ MSIX `1.1.0.20` با identity/publisher ثابت، signer `CA=false`، 137 entry و hashهای معتبر؛ portable با 37/37 checksum و executable responsive.
+- run `#21` (`30639359490`) با هر سه job سبز شد. Windows `1.1.0.20 → 1.1.0.21` را نصب کرد و package family/LocalState را حفظ کرد؛ artifactهای تازهٔ Android `1.1.0+2021`، MSIX `1.1.0.21` و portable نیز با صفر hash mismatch و signerهای ثابت مستقلاً بررسی شدند.
 
 ## Remaining
 - اجرای smoke احراز‌شدهٔ provider فقط پس از تنظیم امن کلید rotateشده؛ Function v3 و auth boundary آن زنده و اثبات‌شده‌اند.
 - session احراز‌شده در نصب Android قابل اثبات نبود، چون دستگاه پیش از آزمون signed out بود؛ widget binding و دادهٔ package حفظ شدند، اما حفظ session لاگین نباید ادعا شود.
-- run `#21` با همان Windows signer باید artifact `#20` را به‌عنوان نسخهٔ پایین‌تر نصب و حفظ package family/LocalState را واقعاً اثبات کند؛ run `#20` فقط baseline است.
 - convergence واقعی Android↔Windows روی دو نصب نهایی با همان حساب owner.
 - signed-in phone/tablet main workspace، Windows GUI resize/hover/icon/jank، signed-in widget Quick Add و notification/OEM/reboot روی سخت‌افزار فیزیکی هنوز runtime proof ندارند.
 - AI text/voice/proposal-apply مثبت فقط پس از تنظیم provider key rotateشده end-to-end اجرا شود.
