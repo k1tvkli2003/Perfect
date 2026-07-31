@@ -101,14 +101,16 @@ void main() {
     expect(workflow, contains('StoreName]::Root'));
     expect(workflow, contains('StoreLocation]::CurrentUser'));
     expect(workflow, contains('OpenFlags]::ReadWrite'));
+    expect(workflow, contains(r'$rootTrustAdded = $true'));
+    expect(workflow, contains(r'-LiteralPath $rootTrustPath'));
+    expect(workflow, contains(r'-LiteralPath $trustedPeoplePath'));
+    expect(workflow, contains('Pinned Windows publisher trust prepared'));
+    expect(workflow, contains('Starting signed MSIX packaging'));
+    expect(workflow, contains('Signed MSIX packaging completed'));
     expect(workflow, isNot(contains('certutil.exe')));
     expect(
       workflow.indexOf(r'Cert:\CurrentUser\Root'),
       lessThan(workflow.indexOf('dart run msix:create')),
-    );
-    expect(
-      RegExp(r'Cert:\\CurrentUser\\Root').allMatches(workflow).length,
-      greaterThanOrEqualTo(2),
     );
     expect(workflow, contains('SHA256SUMS.txt'));
     expect(workflow, contains('-windows-x64-portable-'));

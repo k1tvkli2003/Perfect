@@ -427,6 +427,10 @@ jobs:
           $certificate = $null
           $trustedCertificate = $null
           $trustedRootCertificate = $null
+          $trustedPeoplePath = $null
+          $rootTrustPath = $null
+          $trustedPeopleAdded = $false
+          $rootTrustAdded = $false
           $securePfxPassword = $null
           $signingCertificatePath = $null
           try {
@@ -480,9 +484,18 @@ jobs:
                 [Security.Cryptography.X509Certificates.X509ContentType]::Cert
               )
             )
-            $trustedCertificate = Import-Certificate `
-              -FilePath $cerPath `
-              -CertStoreLocation "Cert:\CurrentUser\TrustedPeople"
+            $trustedPeoplePath = `
+              "Cert:\CurrentUser\TrustedPeople\$expectedThumbprint"
+            if (Test-Path -LiteralPath $trustedPeoplePath) {
+              $trustedCertificate = Get-Item -LiteralPath $trustedPeoplePath
+            } else {
+              # Claim cleanup ownership before mutation so even a partially
+              # successful import is removed on the failure path.
+              $trustedPeopleAdded = $true
+              $trustedCertificate = Import-Certificate `
+                -FilePath $cerPath `
+                -CertStoreLocation "Cert:\CurrentUser\TrustedPeople"
+            }
             # SignTool's policy verifier requires a self-signed private
             # publisher to terminate in a trusted root. This extra trust exists
             # only inside the ephemeral runner and is removed in `finally`.
@@ -500,19 +513,25 @@ jobs:
               $rootStore.Open(
                 [Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite
               )
-              $rootStore.Add($rootCertificate)
+              $rootTrustPath = "Cert:\CurrentUser\Root\$expectedThumbprint"
+              if (-not (Test-Path -LiteralPath $rootTrustPath)) {
+                # Claim cleanup ownership before mutation for the same
+                # partial-success guarantee as TrustedPeople.
+                $rootTrustAdded = $true
+                $rootStore.Add($rootCertificate)
+              }
             } finally {
               $rootStore.Close()
               $rootCertificate.Dispose()
             }
-            $trustedRootCertificate = Get-Item `
-              -LiteralPath "Cert:\CurrentUser\Root\$expectedThumbprint"
+            $trustedRootCertificate = Get-Item -LiteralPath $rootTrustPath
             if (
               $trustedCertificate.Thumbprint -ne $expectedThumbprint -or
               $trustedRootCertificate.Thumbprint -ne $expectedThumbprint
             ) {
               throw "The ephemeral Windows trust stores received the wrong certificate."
             }
+            Write-Output "::notice::Pinned Windows publisher trust prepared."
 
             # The PFX password never enters process argv. msix invokes SignTool
             # against the exact, pinned certificate in the ephemeral runner's
@@ -521,6 +540,7 @@ jobs:
               "/fd SHA256 /td SHA256 /tr " +
               "http://timestamp.digicert.com /sha1 $expectedThumbprint"
             )
+            Write-Output "::notice::Starting signed MSIX packaging."
             dart run msix:create `
               --build-windows false `
               --version $msixVersion `
@@ -529,6 +549,7 @@ jobs:
             if ($LASTEXITCODE -ne 0) {
               throw "Private MSIX packaging failed with exit code $LASTEXITCODE."
             }
+            Write-Output "::notice::Signed MSIX packaging completed."
 
             $packages = @(Get-ChildItem -LiteralPath $msixOutput -Filter "*.msix")
             if ($packages.Count -ne 1) {
@@ -627,15 +648,25 @@ jobs:
             "mode=signed-private" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             "version=$msixVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } finally {
-            if ($trustedCertificate) {
+            if (
+              $trustedPeopleAdded -and
+              $trustedPeoplePath -and
+              (Test-Path -LiteralPath $trustedPeoplePath)
+            ) {
               Remove-Item `
-                -LiteralPath "Cert:\CurrentUser\TrustedPeople\$($trustedCertificate.Thumbprint)" `
-                -Force
+                -LiteralPath $trustedPeoplePath `
+                -Force `
+                -ErrorAction SilentlyContinue
             }
-            if ($trustedRootCertificate) {
+            if (
+              $rootTrustAdded -and
+              $rootTrustPath -and
+              (Test-Path -LiteralPath $rootTrustPath)
+            ) {
               Remove-Item `
-                -LiteralPath "Cert:\CurrentUser\Root\$($trustedRootCertificate.Thumbprint)" `
-                -Force
+                -LiteralPath $rootTrustPath `
+                -Force `
+                -ErrorAction SilentlyContinue
             }
             if ($certificate) {
               $certificate.Dispose()
