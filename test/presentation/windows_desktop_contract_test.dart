@@ -106,7 +106,9 @@ void main() {
     expect(workflow, contains('SignedCms]::new'));
     expect(workflow, contains(r'$signedCms.CheckSignature($true)'));
     expect(workflow, contains('"PKCX"'));
-    expect(workflow, contains('1.2.840.113549.1.9.16.2.14'));
+    expect(workflow, contains('The signature is timestamped:\\s+'));
+    expect(workflow, contains('Timestamp Verified by:\\s+'));
+    expect(workflow, contains('DigiCert'));
     expect(workflow, contains('Number of errors:\\s+1'));
     expect(workflow, contains('private publisher trust remains'));
     expect(workflow, contains('SHA256SUMS.txt'));

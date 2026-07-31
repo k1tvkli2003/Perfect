@@ -611,16 +611,6 @@ jobs:
               ) {
                 throw "MSIX cryptographic signer does not match the pinned publisher."
               }
-              $timestampOids = @(
-                $packageSigner.UnsignedAttributes |
-                  ForEach-Object { $_.Oid.Value }
-              )
-              if (
-                $timestampOids -notcontains "1.2.840.113549.1.9.16.2.14" -and
-                $timestampOids -notcontains "1.2.840.113549.1.9.6"
-              ) {
-                throw "MSIX signature is missing its RFC 3161 timestamp."
-              }
             } finally {
               $archive.Dispose()
             }
@@ -641,8 +631,15 @@ jobs:
             )
             $verifyExitCode = $LASTEXITCODE
             $verifyOutput | ForEach-Object { Write-Output $_ }
+            $verifyText = $verifyOutput -join "`n"
+            if (
+              $verifyText -notmatch "The signature is timestamped:\s+" -or
+              $verifyText -notmatch "Timestamp Verified by:\s+" -or
+              $verifyText -notmatch "DigiCert"
+            ) {
+              throw "SignTool did not prove the RFC 3161 timestamp chain."
+            }
             if ($verifyExitCode -ne 0) {
-              $verifyText = $verifyOutput -join "`n"
               $signToolErrors = [regex]::Matches(
                 $verifyText,
                 "SignTool Error:"
