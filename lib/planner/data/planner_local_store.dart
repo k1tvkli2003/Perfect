@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart' show SqliteException;
 import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_operation.dart';
@@ -397,23 +399,70 @@ class PlannerLocalStore {
       );
     }
 
-    return _database.transaction(() async {
-      final accepted = await _claimWidgetOutcomeSequence(
-        ownerId: ownerId,
-        entityId: entityId,
-        localDayKey: localDayKey,
-        sequenceDomain: queueSequence > 0 ? 1 : 0,
-        queueSequence: queueSequence,
-        occurredAtMicros: occurredAtMicros,
-        actionId: stableActionId,
-        updatedAt: occurredAtUtc,
-      );
-      if (!accepted) return null;
-      return mutation();
-    });
+    var busyRetry = 0;
+    while (true) {
+      try {
+        return await _database.transaction(() async {
+          final accepted = await _claimWidgetOutcomeSequence(
+            ownerId: ownerId,
+            entityId: entityId,
+            localDayKey: localDayKey,
+            sequenceDomain: queueSequence > 0 ? 1 : 0,
+            queueSequence: queueSequence,
+            occurredAtMicros: occurredAtMicros,
+            actionId: stableActionId,
+            updatedAt: occurredAtUtc,
+          );
+          if (!accepted) return null;
+          return mutation();
+        });
+      } on SqliteException catch (error) {
+        if (!_isSqliteBusy(error) || busyRetry >= _maximumWidgetBusyRetries) {
+          rethrow;
+        }
+
+        // `busy_timeout` handles ordinary short lock ownership inside SQLite.
+        // A separate foreground/background connection can still return BUSY
+        // while opening BEGIN IMMEDIATE (notably under Linux and some Android
+        // VFS implementations). Retry only that transient result code. The
+        // failed transaction has already rolled back, and the durable sequence
+        // claim plus mutation id makes replay safe even if work began.
+        final delay = _widgetBusyRetryDelay(
+          retry: busyRetry,
+          actionId: stableActionId,
+        );
+        busyRetry++;
+        await Future<void>.delayed(delay);
+      }
+    }
   }
 
   static const oneOffWidgetSequenceScope = '*';
+  static const _sqliteBusyResultCode = 5;
+  static const _maximumWidgetBusyRetries = 4;
+
+  static bool _isSqliteBusy(SqliteException error) =>
+      error.resultCode == _sqliteBusyResultCode;
+
+  static Duration _widgetBusyRetryDelay({
+    required int retry,
+    required String actionId,
+  }) {
+    // Deterministic per-action jitter prevents two widget engines from
+    // repeatedly waking in lockstep while keeping the total retry window
+    // bounded. The SQLite timeout remains the primary wait mechanism.
+    final boundedRetry = retry.clamp(0, _maximumWidgetBusyRetries - 1);
+    final exponentialMilliseconds = 16 << boundedRetry;
+    final jitterMilliseconds =
+        actionId.codeUnits.fold<int>(
+          0,
+          (hash, unit) => (hash * 31 + unit) & 0x7fffffff,
+        ) %
+        17;
+    return Duration(
+      milliseconds: math.min(exponentialMilliseconds + jitterMilliseconds, 160),
+    );
+  }
 
   Future<PlannerMutationReceipt> createQuickTask({
     required String ownerId,

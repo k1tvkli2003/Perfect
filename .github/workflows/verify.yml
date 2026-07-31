@@ -9,6 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
 
 # This is a private, installable build transport workflow, not a public
@@ -717,3 +718,205 @@ jobs:
             build/windows/x64/msix/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 14
+      - name: Prove MSIX install-over preserves LocalState
+        if: steps.windows-msix.outputs.mode == 'signed-private'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PERFECT_CURRENT_ARTIFACT_VERSION: ${{ needs.prepare.outputs.artifact_version }}
+          PERFECT_CURRENT_MSIX_VERSION: ${{ needs.prepare.outputs.msix_version }}
+          PERFECT_WINDOWS_CERT_THUMBPRINT: ${{ secrets.PERFECT_WINDOWS_CERT_THUMBPRINT }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $expectedThumbprint = $env:PERFECT_WINDOWS_CERT_THUMBPRINT `
+            -replace '[^0-9A-Fa-f]', ''
+          $expectedThumbprint = $expectedThumbprint.ToUpperInvariant()
+          $currentArtifactBuild = [int](
+            $env:PERFECT_CURRENT_ARTIFACT_VERSION -replace '^.*-build\.', ''
+          )
+          $currentVersion = [version]$env:PERFECT_CURRENT_MSIX_VERSION
+          $currentDirectory = Resolve-Path "build/windows/x64/msix"
+          $currentPackage = @(
+            Get-ChildItem -LiteralPath $currentDirectory -Filter '*.msix'
+          )
+          $publicCertificatePath = Join-Path `
+            $currentDirectory `
+            'Perfect-private.cer'
+          if ($currentPackage.Count -ne 1) {
+            throw "Expected one current MSIX package, found $($currentPackage.Count)."
+          }
+
+          $artifactResponse = Invoke-RestMethod `
+            -Uri (
+              "https://api.github.com/repos/$env:GITHUB_REPOSITORY/" +
+              "actions/artifacts?per_page=100"
+            ) `
+            -Headers @{
+              Accept = 'application/vnd.github+json'
+              Authorization = "Bearer $env:GH_TOKEN"
+              'X-GitHub-Api-Version' = '2022-11-28'
+            }
+          $candidates = @(
+            $artifactResponse.artifacts |
+              Where-Object {
+                -not $_.expired -and
+                $_.workflow_run.head_branch -eq 'main' -and
+                $_.name -match (
+                  '^perfect-[0-9]+\.[0-9]+\.[0-9]+-build\.' +
+                  '([0-9]+)-windows-x64-msix-configured-private$'
+                ) -and
+                [int]$Matches[1] -lt $currentArtifactBuild
+              } |
+              ForEach-Object {
+                [pscustomobject]@{
+                  Artifact = $_
+                  Build = [int]([regex]::Match(
+                    $_.name,
+                    '-build\.([0-9]+)-windows-x64-msix'
+                  ).Groups[1].Value)
+                }
+              } |
+              Sort-Object Build -Descending
+          )
+          if ($candidates.Count -eq 0) {
+            Write-Output (
+              '::notice::No older private MSIX artifact exists yet; ' +
+              'install-over proof begins with the next trusted build.'
+            )
+            exit 0
+          }
+
+          $previousArtifact = $candidates[0].Artifact
+          $proofRoot = Join-Path $env:RUNNER_TEMP 'perfect-msix-install-over'
+          $archivePath = Join-Path $proofRoot 'previous-msix.zip'
+          $previousDirectory = Join-Path $proofRoot 'previous'
+          New-Item -ItemType Directory -Force -Path $previousDirectory |
+            Out-Null
+          Invoke-WebRequest `
+            -Uri $previousArtifact.archive_download_url `
+            -Headers @{
+              Accept = 'application/vnd.github+json'
+              Authorization = "Bearer $env:GH_TOKEN"
+              'X-GitHub-Api-Version' = '2022-11-28'
+            } `
+            -OutFile $archivePath
+          Expand-Archive `
+            -LiteralPath $archivePath `
+            -DestinationPath $previousDirectory
+          $previousPackage = @(
+            Get-ChildItem `
+              -LiteralPath $previousDirectory `
+              -Filter '*.msix' `
+              -Recurse
+          )
+          if ($previousPackage.Count -ne 1) {
+            throw "Expected one previous MSIX package, found $($previousPackage.Count)."
+          }
+
+          $certificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
+            $publicCertificatePath
+          )
+          try {
+            if (
+              $certificate.Thumbprint -ne $expectedThumbprint -or
+              $certificate.Subject -ne 'CN=K1 Perfect Private' -or
+              $certificate.HasPrivateKey
+            ) {
+              throw 'The public install certificate does not match the pinned publisher.'
+            }
+          } finally {
+            $certificate.Dispose()
+          }
+
+          $trustedPath = "Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"
+          $trustPreexisted = Test-Path -LiteralPath $trustedPath
+          $installedName = 'com.k1tvkli2003.perfect'
+          try {
+            if (-not $trustPreexisted) {
+              $imported = Import-Certificate `
+                -FilePath $publicCertificatePath `
+                -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople'
+              if ($imported.Thumbprint -ne $expectedThumbprint) {
+                throw 'The machine trust import returned a different certificate.'
+              }
+            }
+            if (-not (Test-Path -LiteralPath $trustedPath)) {
+              throw 'The pinned publisher is absent from LocalMachine TrustedPeople.'
+            }
+
+            Add-AppxPackage `
+              -Path $previousPackage[0].FullName `
+              -ForceApplicationShutdown
+            $previousInstallation = Get-AppxPackage -Name $installedName
+            if (-not $previousInstallation) {
+              throw 'The previous MSIX did not install.'
+            }
+            $previousVersion = [version]$previousInstallation.Version
+            if ($previousVersion -ge $currentVersion) {
+              throw (
+                "Previous version $previousVersion must be lower than " +
+                "current version $currentVersion."
+              )
+            }
+            $previousFamily = $previousInstallation.PackageFamilyName
+            $localState = Join-Path `
+              $env:LOCALAPPDATA `
+              "Packages\$previousFamily\LocalState"
+            New-Item -ItemType Directory -Force -Path $localState | Out-Null
+            $markerPath = Join-Path $localState 'ci-install-over-marker.json'
+            $marker = [ordered]@{
+              schema_version = 1
+              previous_version = $previousVersion.ToString()
+              package_family = $previousFamily
+              nonce = [guid]::NewGuid().ToString()
+            } | ConvertTo-Json -Compress
+            [IO.File]::WriteAllText(
+              $markerPath,
+              $marker,
+              [Text.UTF8Encoding]::new($false)
+            )
+            $markerHash = (
+              Get-FileHash -Algorithm SHA256 -LiteralPath $markerPath
+            ).Hash
+
+            Add-AppxPackage `
+              -Path $currentPackage[0].FullName `
+              -ForceApplicationShutdown
+            $currentInstallation = Get-AppxPackage -Name $installedName
+            if (-not $currentInstallation) {
+              throw 'The current MSIX did not install over the previous package.'
+            }
+            if ([version]$currentInstallation.Version -ne $currentVersion) {
+              throw (
+                "Installed version $($currentInstallation.Version) does not " +
+                "match $currentVersion."
+              )
+            }
+            if ($currentInstallation.PackageFamilyName -ne $previousFamily) {
+              throw 'Package family changed during install-over.'
+            }
+            if (-not (Test-Path -LiteralPath $markerPath -PathType Leaf)) {
+              throw 'LocalState marker disappeared during install-over.'
+            }
+            $currentMarkerHash = (
+              Get-FileHash -Algorithm SHA256 -LiteralPath $markerPath
+            ).Hash
+            if ($currentMarkerHash -ne $markerHash) {
+              throw 'LocalState marker changed during install-over.'
+            }
+            Write-Output (
+              "::notice::MSIX install-over passed: $previousVersion -> " +
+              "$currentVersion; package family and LocalState were preserved."
+            )
+          } finally {
+            Get-AppxPackage -Name $installedName -ErrorAction SilentlyContinue |
+              Remove-AppxPackage -ErrorAction SilentlyContinue
+            if (-not $trustPreexisted -and (Test-Path -LiteralPath $trustedPath)) {
+              Remove-Item -LiteralPath $trustedPath -Force
+            }
+            Remove-Item `
+              -LiteralPath $proofRoot `
+              -Recurse `
+              -Force `
+              -ErrorAction SilentlyContinue
+          }

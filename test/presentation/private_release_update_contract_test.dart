@@ -188,4 +188,29 @@ void main() {
     expect(workflow, contains('Signed MSIX checksum coverage'));
     expect(workflow, contains('build/windows/x64/msix/SHA256SUMS.txt'));
   });
+
+  test('trusted Windows builds prove install-over without trusting Root', () {
+    expect(workflow, contains('actions: read'));
+    expect(
+      workflow,
+      contains('Prove MSIX install-over preserves LocalState'),
+    );
+    expect(
+      workflow,
+      contains(r"Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"),
+    );
+    expect(workflow, contains('Add-AppxPackage'));
+    expect(workflow, contains('ci-install-over-marker.json'));
+    expect(workflow, contains(r'PackageFamilyName -ne $previousFamily'));
+    expect(workflow, contains('LocalState marker disappeared'));
+    expect(workflow, contains('LocalState marker changed'));
+    expect(workflow, contains('Remove-AppxPackage'));
+    expect(workflow, isNot(contains(r'Cert:\LocalMachine\Root')));
+    expect(workflow, isNot(contains(r'Cert:\CurrentUser\Root')));
+    expect(
+      contract,
+      contains('proving that package family and an exact LocalState marker'),
+    );
+    expect(contract, contains('it never mutates a Trusted Root store'));
+  });
 }

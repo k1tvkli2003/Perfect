@@ -127,7 +127,9 @@ void main() {
     expect(workflow, contains('AppxSignature.p7x'));
     expect(workflow, contains('com.k1tvkli2003.perfect'));
     expect(workflow, contains('CN=K1 Perfect Private'));
-    expect(workflow, isNot(contains('Import-Certificate')));
+    expect(workflow, contains('Import-Certificate'));
+    expect(workflow, contains(r"Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"));
+    expect(workflow, isNot(contains(r'Cert:\LocalMachine\Root')));
     expect(workflow, contains('signtool.exe'));
     expect(workflow, contains('PERFECT_WINDOWS_CERT_THUMBPRINT'));
     expect(workflow, contains(r'Perfect-$env:PERFECT_ARTIFACT_VERSION'));
