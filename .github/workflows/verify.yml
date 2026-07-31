@@ -725,7 +725,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PERFECT_CURRENT_ARTIFACT_VERSION: ${{ needs.prepare.outputs.artifact_version }}
           PERFECT_CURRENT_MSIX_VERSION: ${{ needs.prepare.outputs.msix_version }}
-          PERFECT_WINDOWS_CERT_THUMBPRINT: ${{ secrets.PERFECT_WINDOWS_CERT_THUMBPRINT }}
+          PERFECT_WINDOWS_CERT_THUMBPRINT: ${{ vars.PERFECT_WINDOWS_CERT_THUMBPRINT }}
         run: |
           $ErrorActionPreference = "Stop"
           $expectedThumbprint = $env:PERFECT_WINDOWS_CERT_THUMBPRINT `

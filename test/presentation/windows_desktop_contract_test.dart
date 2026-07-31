@@ -82,6 +82,13 @@ void main() {
     final contract = File(
       '.github/private-build-contract.yml',
     ).readAsStringSync();
+    final packageStep = workflow.substring(
+      workflow.indexOf('- name: Package signed private MSIX'),
+      workflow.indexOf('- name: Preserve signed private Windows installer'),
+    );
+    final installOverStep = workflow.substring(
+      workflow.indexOf('- name: Prove MSIX install-over preserves LocalState'),
+    );
 
     expect(workflow, contains('Complete and checksum the portable Windows'));
     expect(
@@ -127,8 +134,13 @@ void main() {
     expect(workflow, contains('AppxSignature.p7x'));
     expect(workflow, contains('com.k1tvkli2003.perfect'));
     expect(workflow, contains('CN=K1 Perfect Private'));
-    expect(workflow, contains('Import-Certificate'));
-    expect(workflow, contains(r"Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"));
+    expect(packageStep, isNot(contains('Import-Certificate')));
+    expect(packageStep, isNot(contains('TrustedPeople')));
+    expect(installOverStep, contains('Import-Certificate'));
+    expect(
+      installOverStep,
+      contains(r"Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"),
+    );
     expect(workflow, isNot(contains(r'Cert:\LocalMachine\Root')));
     expect(workflow, contains('signtool.exe'));
     expect(workflow, contains('PERFECT_WINDOWS_CERT_THUMBPRINT'));

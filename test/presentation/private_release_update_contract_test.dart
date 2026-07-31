@@ -191,10 +191,7 @@ void main() {
 
   test('trusted Windows builds prove install-over without trusting Root', () {
     expect(workflow, contains('actions: read'));
-    expect(
-      workflow,
-      contains('Prove MSIX install-over preserves LocalState'),
-    );
+    expect(workflow, contains('Prove MSIX install-over preserves LocalState'));
     expect(
       workflow,
       contains(r"Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"),
@@ -205,6 +202,22 @@ void main() {
     expect(workflow, contains('LocalState marker disappeared'));
     expect(workflow, contains('LocalState marker changed'));
     expect(workflow, contains('Remove-AppxPackage'));
+    expect(
+      RegExp(
+        r'PERFECT_WINDOWS_CERT_THUMBPRINT:\s*\$\{\{ vars\.'
+        r'PERFECT_WINDOWS_CERT_THUMBPRINT \}\}',
+      ).allMatches(workflow),
+      hasLength(2),
+    );
+    expect(
+      workflow,
+      isNot(
+        contains(
+          r'PERFECT_WINDOWS_CERT_THUMBPRINT: ${{ secrets.'
+          'PERFECT_WINDOWS_CERT_THUMBPRINT }}',
+        ),
+      ),
+    );
     expect(workflow, isNot(contains(r'Cert:\LocalMachine\Root')));
     expect(workflow, isNot(contains(r'Cert:\CurrentUser\Root')));
     expect(
