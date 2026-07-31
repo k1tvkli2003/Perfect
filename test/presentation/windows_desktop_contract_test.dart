@@ -111,6 +111,7 @@ void main() {
     expect(workflow, contains('DigiCert'));
     expect(workflow, contains('Number of errors:\\s+1'));
     expect(workflow, contains('private publisher trust remains'));
+    expect(workflow, contains(r'$global:LASTEXITCODE = 0'));
     expect(workflow, contains('SHA256SUMS.txt'));
     expect(workflow, contains('-windows-x64-portable-'));
     expect(

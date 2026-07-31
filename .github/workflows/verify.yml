@@ -658,6 +658,9 @@ jobs:
                 throw "MSIX policy verification failed with an unexpected error."
               }
               Write-Output "::notice::Signature integrity passed; private publisher trust remains an install-time device policy."
+              # PowerShell otherwise propagates SignTool's expected native
+              # exit code even though the exact private-root boundary passed.
+              $global:LASTEXITCODE = 0
             }
 
             Copy-Item `
