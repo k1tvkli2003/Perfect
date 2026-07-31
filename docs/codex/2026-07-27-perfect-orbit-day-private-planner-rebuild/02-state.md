@@ -5,7 +5,7 @@
 - Owner: Codex
 
 ## Current State
-بازسازی local-first و تجربهٔ Orbit Day در release candidate commit `265f79aada41fee9a3b71db9a855b450e9898cbd` با exact-SHA GitHub Actions run [`30639359490`](https://github.com/k1tvkli2003/Perfect/actions/runs/30639359490) (`#21`) و conclusion `success` اثبات شده است؛ analyzer و 265/265 تست سبزند و سه artifact Android، MSIX و Windows portable حفظ شده‌اند. Android `1.1.0+2021` با package/label/سه ABI/امضای v2 و fingerprint ثابت `144E87CB…F49B0AF` پاس است. Windows از signer قدیمی `CA=true` به end-entity `CA=false` با thumbprint `1424F286C0DCACF36701D4C1AF0C0D830F01BA24` مهاجرت کرده؛ MSIX `1.1.0.21` با identity/publisher ثابت، 137 entry و hashهای معتبر پاس است و portable نیز 37/37 checksum دارد. run `#20` baseline `1.1.0.20` را ساخت و run `#21` آن را روی `1.1.0.21` ارتقا داد؛ package family و hash marker دقیق LocalState حفظ شدند. Function v3 و owner-scoped backend زنده‌اند؛ شکاف‌های runtime احراز‌شده/GUI همچنان صادقانه بازند.
+بازسازی local-first و تجربهٔ Orbit Day در commit `fea3ddc7dd16741e1936a5b61de0b4785c079e67` با exact-HEAD run [`30641054596`](https://github.com/k1tvkli2003/Perfect/actions/runs/30641054596) (`#22`) و conclusion `success` اثبات شده است؛ analyzer و 265/265 تست سبزند. Android `1.1.0+2022` با package/label/سه ABI/امضای v2 و fingerprint ثابت پاس است. MSIX `1.1.0.22` با identity/publisher ثابت، 137 entry، signer `CA=false` و hashهای معتبر پاس است؛ portable نیز 37/37 checksum دارد. runهای `#20 → #21 → #22` package family و LocalState را در دو ارتقای متوالی حفظ کردند. portable نهایی title/icon، restored/maximized، short `832×414`، compact `540×414` و scroll دسترسی auth را در GUI واقعی پاس کرد. Function v3 و owner-scoped backend زنده‌اند؛ شکاف‌های signed-in/hover/jank همچنان صادقانه بازند.
 
 ## Decisions
 | Date | Decision | Reason | Source |
@@ -48,8 +48,8 @@
 
 ## Blockers
 - هیچ blocker برای source، analyzer، 265/265 تست محلی یا exact-SHA CI وجود ندارد.
-- hosted Android، Windows portable، signed MSIX و true Windows install-over برای runهای متوالی `#20 → #21` اثبات شده‌اند.
-- اجرای محلی Windows به‌علت نبود Visual Studio و workload C++ ممکن نیست. executable دانلودشده responsive اجرا شد، اما resize/hover/focus/icon/jank در GUI واقعی هنوز ثبت نشده است.
+- hosted Android، Windows portable، signed MSIX و true Windows install-over برای runهای متوالی `#20 → #21 → #22` اثبات شده‌اند.
+- build محلی Windows به‌علت نبود Visual Studio و workload C++ ممکن نیست. portable نهایی دانلودشده با title/icon صحیح در حالت restored/maximized و resizeهای زندهٔ wide/short/compact اجرا شد؛ short-height scroll و دسترسی همهٔ actionهای auth پاس‌اند. signed-in workspace، hover/focus semantics و jank هنوز ثبت نشده‌اند.
 - signer نهایی Windows و Android دیگر blocker نیستند؛ backup hash، provisioner مصنوعی و rerun identity stability پاس‌اند.
 - اثبات migration/RLS/RPC/Auth بسته شده است؛ convergence end-to-end روی دو نصب واقعی باقی مانده و جلوی local-first runtime را نمی‌گیرد.
 - کلید AvalAI موجود باید در dashboard rotate شود؛ مقدار جدید فقط از مسیر secret امن Supabase ثبت می‌شود و live AI smoke تا آن زمان اجرا نمی‌شود.
@@ -65,7 +65,7 @@
 - analyzer و مجموعهٔ کامل ۲۶۵ تست پاس‌اند؛ Workspace، release، AI، responsive، widget، signing و Deno checks نیز در گیت جاری سبزند.
 - race هم‌زمانی foreground/WorkManager با یک جدول local-only در Drift schema v2 و claim اتمیک SQLite بسته شد؛ تست دو connection ثابت می‌کند sequence بالاتر برای one-off و recurring همیشه نهایی می‌ماند.
 - گزارش frozen هشت‌صفحه‌ای Critics رندر و صفحه‌به‌صفحه بازبینی شد؛ همهٔ یافته‌های actionable آن بسته شدند و بدهی P3 فایل‌های presentation به‌صورت شفاف باقی مانده است.
-- release candidate `265f79aada41fee9a3b71db9a855b450e9898cbd` در CI run `30639359490` (`#21`) با هر سه job موفق، سه artifact Android/MSIX/portable و install-over واقعی تکمیل شد.
+- commit `fea3ddc7dd16741e1936a5b61de0b4785c079e67` در CI run `30641054596` (`#22`) با هر سه job موفق، سه artifact Android/MSIX/portable و install-over واقعی تکمیل شد.
 - migrationهای `20260730190000`، `20260730192000` و `20260730210000` روی Supabase زنده اعمال شدند؛ agent plan، conversation/message sync، action audit، retention و metadata guard با عمق محدود owner-scoped آماده‌اند.
 - Edge Function سخت‌شدهٔ `perfect-agent` نسخهٔ ۳ با hash ثبت‌شده، `ACTIVE` و `verify_jwt=true` زنده است؛ probe بدون auth پاسخ 401/`UNAUTHORIZED_NO_AUTH_HEADER` می‌گیرد.
 - Tablet Day Deck جدید در compact/expanded portrait و `1200×800` landscape بازبینی تصویری شده و reflow عرض‌های 768/900/1024، متن 200٪، rail persistence و عدم هم‌پوشانی AI/capture تست شده‌اند.
@@ -81,5 +81,5 @@
 - اجرای smoke احراز‌شدهٔ provider فقط پس از تنظیم امن کلید rotateشده؛ Function v3 و auth boundary آن زنده و اثبات‌شده‌اند.
 - session احراز‌شده در نصب Android قابل اثبات نبود، چون دستگاه پیش از آزمون signed out بود؛ widget binding و دادهٔ package حفظ شدند، اما حفظ session لاگین نباید ادعا شود.
 - convergence واقعی Android↔Windows روی دو نصب نهایی با همان حساب owner.
-- signed-in phone/tablet main workspace، Windows GUI resize/hover/icon/jank، signed-in widget Quick Add و notification/OEM/reboot روی سخت‌افزار فیزیکی هنوز runtime proof ندارند.
+- signed-in phone/tablet main workspace، signed-in Windows workspace/hover/jank، signed-in widget Quick Add و notification/OEM/reboot روی سخت‌افزار فیزیکی هنوز runtime proof ندارند.
 - AI text/voice/proposal-apply مثبت فقط پس از تنظیم provider key rotateشده end-to-end اجرا شود.
