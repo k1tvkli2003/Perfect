@@ -398,6 +398,15 @@ jobs:
           if ($checksumLines.Count -lt 10) {
             throw "Portable bundle checksum coverage is unexpectedly incomplete."
           }
+      # msix cleans its temporary VC runtime files from the shared Release
+      # directory after packaging. Preserve the complete portable bundle first.
+      - name: Preserve private Windows build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: perfect-${{ needs.prepare.outputs.artifact_version }}-windows-x64-portable-${{ steps.windows-build.outputs.mode }}
+          path: build/windows/x64/runner/Release
+          if-no-files-found: error
+          retention-days: 14
       - name: Package signed private MSIX
         id: windows-msix
         if: needs.prepare.outputs.trusted_build == 'true'
@@ -697,17 +706,6 @@ jobs:
             }
             Remove-Item -LiteralPath $pfxPath,$cerPath -Force -ErrorAction SilentlyContinue
           }
-      - name: Preserve private Windows build
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: perfect-${{ needs.prepare.outputs.artifact_version }}-windows-x64-portable-${{ steps.windows-build.outputs.mode }}
-          path: build/windows/x64/runner/Release
-          # Visual Studio's redist payload can retain the Windows hidden
-          # attribute after Copy-Item. The release root is checksum-covered
-          # and contains no signing material, so include those required DLLs.
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 14
       - name: Preserve signed private Windows installer
         if: steps.windows-msix.outputs.mode == 'signed-private'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
