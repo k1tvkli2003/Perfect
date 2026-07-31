@@ -486,11 +486,24 @@ jobs:
             # SignTool's policy verifier requires a self-signed private
             # publisher to terminate in a trusted root. This extra trust exists
             # only inside the ephemeral runner and is removed in `finally`.
-            # `Import-Certificate` can prompt when targeting Root, so use the
-            # documented non-interactive certutil force path for CI.
-            & certutil.exe -user -f -addstore Root $cerPath | Out-Null
-            if ($LASTEXITCODE -ne 0) {
-              throw "The pinned Windows publisher could not be trusted for CI verification."
+            # Root-store command wrappers can show a security prompt even
+            # with force flags, so mutate the current-user store through the
+            # non-interactive .NET API.
+            $rootStore = [Security.Cryptography.X509Certificates.X509Store]::new(
+              [Security.Cryptography.X509Certificates.StoreName]::Root,
+              [Security.Cryptography.X509Certificates.StoreLocation]::CurrentUser
+            )
+            $rootCertificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
+              $cerPath
+            )
+            try {
+              $rootStore.Open(
+                [Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite
+              )
+              $rootStore.Add($rootCertificate)
+            } finally {
+              $rootStore.Close()
+              $rootCertificate.Dispose()
             }
             $trustedRootCertificate = Get-Item `
               -LiteralPath "Cert:\CurrentUser\Root\$expectedThumbprint"
