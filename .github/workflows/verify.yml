@@ -425,12 +425,6 @@ jobs:
           $msixVersion = $env:PERFECT_MSIX_VERSION
 
           $certificate = $null
-          $trustedCertificate = $null
-          $trustedRootCertificate = $null
-          $trustedPeoplePath = $null
-          $rootTrustPath = $null
-          $trustedPeopleAdded = $false
-          $rootTrustAdded = $false
           $securePfxPassword = $null
           $signingCertificatePath = $null
           try {
@@ -484,54 +478,6 @@ jobs:
                 [Security.Cryptography.X509Certificates.X509ContentType]::Cert
               )
             )
-            $trustedPeoplePath = `
-              "Cert:\CurrentUser\TrustedPeople\$expectedThumbprint"
-            if (Test-Path -LiteralPath $trustedPeoplePath) {
-              $trustedCertificate = Get-Item -LiteralPath $trustedPeoplePath
-            } else {
-              # Claim cleanup ownership before mutation so even a partially
-              # successful import is removed on the failure path.
-              $trustedPeopleAdded = $true
-              $trustedCertificate = Import-Certificate `
-                -FilePath $cerPath `
-                -CertStoreLocation "Cert:\CurrentUser\TrustedPeople"
-            }
-            # SignTool's policy verifier requires a self-signed private
-            # publisher to terminate in a trusted root. This extra trust exists
-            # only inside the ephemeral runner and is removed in `finally`.
-            # Root-store command wrappers can show a security prompt even
-            # with force flags, so mutate the current-user store through the
-            # non-interactive .NET API.
-            $rootStore = [Security.Cryptography.X509Certificates.X509Store]::new(
-              [Security.Cryptography.X509Certificates.StoreName]::Root,
-              [Security.Cryptography.X509Certificates.StoreLocation]::CurrentUser
-            )
-            $rootCertificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
-              $cerPath
-            )
-            try {
-              $rootStore.Open(
-                [Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite
-              )
-              $rootTrustPath = "Cert:\CurrentUser\Root\$expectedThumbprint"
-              if (-not (Test-Path -LiteralPath $rootTrustPath)) {
-                # Claim cleanup ownership before mutation for the same
-                # partial-success guarantee as TrustedPeople.
-                $rootTrustAdded = $true
-                $rootStore.Add($rootCertificate)
-              }
-            } finally {
-              $rootStore.Close()
-              $rootCertificate.Dispose()
-            }
-            $trustedRootCertificate = Get-Item -LiteralPath $rootTrustPath
-            if (
-              $trustedCertificate.Thumbprint -ne $expectedThumbprint -or
-              $trustedRootCertificate.Thumbprint -ne $expectedThumbprint
-            ) {
-              throw "The ephemeral Windows trust stores received the wrong certificate."
-            }
-            Write-Output "::notice::Pinned Windows publisher trust prepared."
 
             # The PFX password never enters process argv. msix invokes SignTool
             # against the exact, pinned certificate in the ephemeral runner's
@@ -565,8 +511,10 @@ jobs:
             $archive = [IO.Compression.ZipFile]::OpenRead($package.FullName)
             try {
               $manifestEntry = $archive.GetEntry("AppxManifest.xml")
-              if (-not $manifestEntry -or -not $archive.GetEntry("AppxSignature.p7x")) {
-                throw "MSIX is missing its manifest or package signature."
+              $blockMapEntry = $archive.GetEntry("AppxBlockMap.xml")
+              $signatureEntry = $archive.GetEntry("AppxSignature.p7x")
+              if (-not $manifestEntry -or -not $blockMapEntry -or -not $signatureEntry) {
+                throw "MSIX is missing its manifest, block map, or package signature."
               }
               $reader = [IO.StreamReader]::new($manifestEntry.Open())
               try {
@@ -608,6 +556,71 @@ jobs:
               ) {
                 throw "MSIX identity, version, display name, architecture, or protocol drifted."
               }
+
+              $blockMapReader = [IO.StreamReader]::new($blockMapEntry.Open())
+              try {
+                [xml]$blockMap = $blockMapReader.ReadToEnd()
+              } finally {
+                $blockMapReader.Dispose()
+              }
+              if (
+                $blockMap.DocumentElement.HashMethod -ne
+                "http://www.w3.org/2001/04/xmlenc#sha256"
+              ) {
+                throw "MSIX block-map hashing drifted away from SHA-256."
+              }
+
+              $signatureStream = $signatureEntry.Open()
+              $signatureBuffer = [IO.MemoryStream]::new()
+              try {
+                $signatureStream.CopyTo($signatureBuffer)
+                $signatureBytes = $signatureBuffer.ToArray()
+              } finally {
+                $signatureStream.Dispose()
+                $signatureBuffer.Dispose()
+              }
+              if (
+                $signatureBytes.Length -le 4 -or
+                [Text.Encoding]::ASCII.GetString($signatureBytes, 0, 4) -ne "PKCX"
+              ) {
+                throw "MSIX AppxSignature.p7x has an invalid package-signature header."
+              }
+              $cmsBytes = [byte[]]::new($signatureBytes.Length - 4)
+              [Array]::Copy(
+                $signatureBytes,
+                4,
+                $cmsBytes,
+                0,
+                $cmsBytes.Length
+              )
+              Add-Type -AssemblyName System.Security
+              $signedCms = [Security.Cryptography.Pkcs.SignedCms]::new()
+              $signedCms.Decode($cmsBytes)
+              # The runner must not mutate Trusted Root merely to prove the
+              # cryptographic signature. Certificate trust is an install-time
+              # device policy; this verifies the CMS signature and timestamp.
+              $signedCms.CheckSignature($true)
+              if ($signedCms.SignerInfos.Count -ne 1) {
+                throw "MSIX must contain exactly one primary package signer."
+              }
+              $packageSigner = $signedCms.SignerInfos[0]
+              if (
+                -not $packageSigner.Certificate -or
+                $packageSigner.Certificate.Thumbprint -ne $expectedThumbprint -or
+                $packageSigner.Certificate.Subject -ne "CN=K1 Perfect Private"
+              ) {
+                throw "MSIX cryptographic signer does not match the pinned publisher."
+              }
+              $timestampOids = @(
+                $packageSigner.UnsignedAttributes |
+                  ForEach-Object { $_.Oid.Value }
+              )
+              if (
+                $timestampOids -notcontains "1.2.840.113549.1.9.16.2.14" -and
+                $timestampOids -notcontains "1.2.840.113549.1.9.6"
+              ) {
+                throw "MSIX signature is missing its RFC 3161 timestamp."
+              }
             } finally {
               $archive.Dispose()
             }
@@ -622,9 +635,32 @@ jobs:
             if (-not $signTool) {
               throw "The Windows SDK signing verifier was not found."
             }
-            & $signTool.FullName verify /pa /all /v $package.FullName
-            if ($LASTEXITCODE -ne 0) {
-              throw "MSIX signature verification failed with exit code $LASTEXITCODE."
+            $verifyOutput = @(
+              & $signTool.FullName verify /pa /all /v $package.FullName 2>&1 |
+                ForEach-Object { "$_" }
+            )
+            $verifyExitCode = $LASTEXITCODE
+            $verifyOutput | ForEach-Object { Write-Output $_ }
+            if ($verifyExitCode -ne 0) {
+              $verifyText = $verifyOutput -join "`n"
+              $signToolErrors = [regex]::Matches(
+                $verifyText,
+                "SignTool Error:"
+              )
+              $hasOnlyPrivateRootError = (
+                $verifyExitCode -eq 1 -and
+                $signToolErrors.Count -eq 1 -and
+                $verifyText -match (
+                  "SignTool Error:\s+A certificate chain processed,\s+" +
+                  "but terminated in a root\s+certificate which is not " +
+                  "trusted by\s+the trust provider\."
+                ) -and
+                $verifyText -match "Number of errors:\s+1"
+              )
+              if (-not $hasOnlyPrivateRootError) {
+                throw "MSIX policy verification failed with an unexpected error."
+              }
+              Write-Output "::notice::Signature integrity passed; private publisher trust remains an install-time device policy."
             }
 
             Copy-Item `
@@ -648,26 +684,6 @@ jobs:
             "mode=signed-private" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             "version=$msixVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } finally {
-            if (
-              $trustedPeopleAdded -and
-              $trustedPeoplePath -and
-              (Test-Path -LiteralPath $trustedPeoplePath)
-            ) {
-              Remove-Item `
-                -LiteralPath $trustedPeoplePath `
-                -Force `
-                -ErrorAction SilentlyContinue
-            }
-            if (
-              $rootTrustAdded -and
-              $rootTrustPath -and
-              (Test-Path -LiteralPath $rootTrustPath)
-            ) {
-              Remove-Item `
-                -LiteralPath $rootTrustPath `
-                -Force `
-                -ErrorAction SilentlyContinue
-            }
             if ($certificate) {
               $certificate.Dispose()
             }

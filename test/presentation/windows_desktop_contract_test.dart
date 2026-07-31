@@ -95,23 +95,20 @@ void main() {
     expect(workflow, contains('-Recurse'));
     expect(workflow, contains('v145'));
     expect(workflow, isNot(contains(r'[version]$_.Name')));
-    expect(workflow, contains(r'Cert:\CurrentUser\TrustedPeople'));
-    expect(workflow, contains(r'Cert:\CurrentUser\Root'));
-    expect(workflow, contains('X509Store]::new'));
-    expect(workflow, contains('StoreName]::Root'));
-    expect(workflow, contains('StoreLocation]::CurrentUser'));
-    expect(workflow, contains('OpenFlags]::ReadWrite'));
-    expect(workflow, contains(r'$rootTrustAdded = $true'));
-    expect(workflow, contains(r'-LiteralPath $rootTrustPath'));
-    expect(workflow, contains(r'-LiteralPath $trustedPeoplePath'));
-    expect(workflow, contains('Pinned Windows publisher trust prepared'));
+    expect(workflow, isNot(contains(r'Cert:\CurrentUser\TrustedPeople')));
+    expect(workflow, isNot(contains(r'Cert:\CurrentUser\Root')));
+    expect(workflow, isNot(contains('X509Store]::new')));
     expect(workflow, contains('Starting signed MSIX packaging'));
     expect(workflow, contains('Signed MSIX packaging completed'));
     expect(workflow, isNot(contains('certutil.exe')));
-    expect(
-      workflow.indexOf(r'Cert:\CurrentUser\Root'),
-      lessThan(workflow.indexOf('dart run msix:create')),
-    );
+    expect(workflow, contains('AppxBlockMap.xml'));
+    expect(workflow, contains('xmlenc#sha256'));
+    expect(workflow, contains('SignedCms]::new'));
+    expect(workflow, contains(r'$signedCms.CheckSignature($true)'));
+    expect(workflow, contains('"PKCX"'));
+    expect(workflow, contains('1.2.840.113549.1.9.16.2.14'));
+    expect(workflow, contains('Number of errors:\\s+1'));
+    expect(workflow, contains('private publisher trust remains'));
     expect(workflow, contains('SHA256SUMS.txt'));
     expect(workflow, contains('-windows-x64-portable-'));
     expect(
@@ -123,7 +120,7 @@ void main() {
     expect(workflow, contains('AppxSignature.p7x'));
     expect(workflow, contains('com.k1tvkli2003.perfect'));
     expect(workflow, contains('CN=K1 Perfect Private'));
-    expect(workflow, contains('Import-Certificate'));
+    expect(workflow, isNot(contains('Import-Certificate')));
     expect(workflow, contains('signtool.exe'));
     expect(workflow, contains('PERFECT_WINDOWS_CERT_THUMBPRINT'));
     expect(workflow, contains(r'Perfect-$env:PERFECT_ARTIFACT_VERSION'));
