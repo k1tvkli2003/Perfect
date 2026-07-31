@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:drift/drift.dart';
+import 'package:drift/isolate.dart' show DriftRemoteException;
 import 'package:drift/native.dart' show SqliteException;
 import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
@@ -416,7 +417,7 @@ class PlannerLocalStore {
           if (!accepted) return null;
           return mutation();
         });
-      } on SqliteException catch (error) {
+      } catch (error) {
         if (!_isSqliteBusy(error) || busyRetry >= _maximumWidgetBusyRetries) {
           rethrow;
         }
@@ -441,8 +442,15 @@ class PlannerLocalStore {
   static const _sqliteBusyResultCode = 5;
   static const _maximumWidgetBusyRetries = 4;
 
-  static bool _isSqliteBusy(SqliteException error) =>
-      error.resultCode == _sqliteBusyResultCode;
+  static bool _isSqliteBusy(Object error) {
+    final sqliteError = switch (error) {
+      SqliteException() => error,
+      DriftRemoteException(remoteCause: final SqliteException remoteCause) =>
+        remoteCause,
+      _ => null,
+    };
+    return sqliteError?.resultCode == _sqliteBusyResultCode;
+  }
 
   static Duration _widgetBusyRetryDelay({
     required int retry,

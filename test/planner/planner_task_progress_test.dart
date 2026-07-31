@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/isolate.dart' show DriftRemoteException;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:perfect/planner/data/planner_database.dart';
@@ -443,6 +445,107 @@ void main() {
       } finally {
         await secondStore?.close();
         await firstStore.close();
+        await tempDirectory.delete(recursive: true);
+        driftRuntimeOptions.dontWarnAboutMultipleDatabases =
+            previousWarningSetting;
+      }
+    },
+  );
+
+  test(
+    'background SQLite wrapper retries a guarded outcome after its writer lock clears',
+    () async {
+      final previousWarningSetting =
+          driftRuntimeOptions.dontWarnAboutMultipleDatabases;
+      driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+      final tempDirectory = await Directory.systemTemp.createTemp(
+        'perfect-widget-remote-busy-',
+      );
+      final databaseFile = File(
+        '${tempDirectory.path}${Platform.pathSeparator}planner.sqlite',
+      );
+      final lockDatabase = PlannerDatabase(NativeDatabase(databaseFile));
+      final lockStore = PlannerLocalStore(lockDatabase);
+      PlannerDatabase? backgroundDatabase;
+      PlannerLocalStore? backgroundStore;
+      final lockAcquired = Completer<void>();
+      final releaseLock = Completer<void>();
+      Future<void>? lockFuture;
+
+      try {
+        final entity = (await lockStore.createQuickTask(
+          ownerId: ownerId,
+          title: 'Retry the background outcome',
+          now: DateTime.utc(2026, 7, 27, 8),
+        )).entity!;
+        backgroundDatabase = PlannerDatabase(
+          NativeDatabase.createInBackground(databaseFile),
+        );
+        backgroundStore = PlannerLocalStore(backgroundDatabase);
+        await backgroundDatabase.customStatement('PRAGMA busy_timeout = 0');
+
+        lockFuture = lockDatabase.transaction(() async {
+          await lockDatabase.customStatement(
+            'UPDATE planner_entities SET updated_at = updated_at '
+            'WHERE owner_id = ? AND id = ?',
+            <Object?>[ownerId, entity.id],
+          );
+          lockAcquired.complete();
+          await releaseLock.future;
+        });
+        await lockAcquired.future;
+
+        // Prove this exact executor reports contention through Drift's remote
+        // wrapper rather than as a direct SqliteException.
+        Object? remoteBusy;
+        try {
+          await backgroundDatabase.transaction(() async {});
+        } catch (error) {
+          remoteBusy = error;
+        }
+        expect(remoteBusy, isA<DriftRemoteException>());
+        final remoteCause = (remoteBusy! as DriftRemoteException).remoteCause;
+        expect(remoteCause, isA<SqliteException>());
+        expect((remoteCause as SqliteException).resultCode, 5);
+
+        final service = PlannerTaskProgressService(
+          backgroundStore,
+          ownerId: ownerId,
+        );
+        final outcome = service.applyWidgetAction(
+          PlannerWidgetTaskAction(
+            id: '50000000-0000-4000-8000-000000000500',
+            ownerId: ownerId,
+            entityId: entity.id,
+            kind: entity.kind,
+            progress: const PlannerTaskProgress(
+              state: PlannerTaskProgressState.missed,
+              percent: 0,
+            ),
+            localDay: DateTime(2026, 7, 27),
+            occurredAt: DateTime.utc(2026, 7, 27, 9),
+            queueSequence: 500,
+          ),
+        );
+
+        // The read is queued on the same remote executor after the failed
+        // BEGIN. It is a scheduling barrier, not a timed sleep: once it
+        // returns, the guarded call has observed BUSY and entered backoff.
+        await backgroundDatabase.customSelect('SELECT 1').getSingle();
+        releaseLock.complete();
+        await lockFuture;
+
+        expect((await outcome).isMissed, isTrue);
+        final stored = await backgroundStore.readEntity(
+          ownerId: ownerId,
+          entityId: entity.id,
+        );
+        expect(PlannerTaskProgress.fromEntity(stored!).isMissed, isTrue);
+      } finally {
+        if (!releaseLock.isCompleted) releaseLock.complete();
+        await lockFuture;
+        await backgroundStore?.close();
+        await lockStore.close();
         await tempDirectory.delete(recursive: true);
         driftRuntimeOptions.dontWarnAboutMultipleDatabases =
             previousWarningSetting;

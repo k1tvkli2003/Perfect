@@ -197,6 +197,14 @@ void main() {
       contains(r"Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"),
     );
     expect(workflow, contains('Add-AppxPackage'));
+    expect(
+      workflow,
+      contains(r'SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'),
+    );
+    expect(workflow, contains(r'SOFTWARE\Policies\Microsoft\Windows\Appx'));
+    expect(workflow, contains("'AllowAllTrustedApps'"));
+    expect(workflow, contains(r'$snapshot.Key.DeleteValue'));
+    expect(workflow, contains(r'$snapshot.PreviousValue'));
     expect(workflow, contains('ci-install-over-marker.json'));
     expect(workflow, contains(r'PackageFamilyName -ne $previousFamily'));
     expect(workflow, contains('LocalState marker disappeared'));

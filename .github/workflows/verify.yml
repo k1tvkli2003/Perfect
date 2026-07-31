@@ -830,8 +830,54 @@ jobs:
 
           $trustedPath = "Cert:\LocalMachine\TrustedPeople\$expectedThumbprint"
           $trustPreexisted = Test-Path -LiteralPath $trustedPath
+          $sideloadRegistryPaths = @(
+            'SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock',
+            'SOFTWARE\Policies\Microsoft\Windows\Appx'
+          )
+          $sideloadSnapshots = @()
           $installedName = 'com.k1tvkli2003.perfect'
           try {
+            foreach ($registryPath in $sideloadRegistryPaths) {
+              $registryKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey(
+                $registryPath,
+                $true
+              )
+              $keyPreexisted = $null -ne $registryKey
+              if (-not $keyPreexisted) {
+                $registryKey = [Microsoft.Win32.Registry]::LocalMachine.CreateSubKey(
+                  $registryPath,
+                  $true
+                )
+              }
+              if ($null -eq $registryKey) {
+                throw "Unable to open the sideload policy key $registryPath."
+              }
+              $valuePreexisted = @($registryKey.GetValueNames()) -contains `
+                'AllowAllTrustedApps'
+              $previousValue = $null
+              $previousKind = $null
+              if ($valuePreexisted) {
+                $previousValue = $registryKey.GetValue(
+                  'AllowAllTrustedApps',
+                  $null,
+                  [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames
+                )
+                $previousKind = $registryKey.GetValueKind('AllowAllTrustedApps')
+              }
+              $registryKey.SetValue(
+                'AllowAllTrustedApps',
+                1,
+                [Microsoft.Win32.RegistryValueKind]::DWord
+              )
+              $sideloadSnapshots += [pscustomobject]@{
+                Key = $registryKey
+                Path = $registryPath
+                KeyPreexisted = $keyPreexisted
+                ValuePreexisted = $valuePreexisted
+                PreviousValue = $previousValue
+                PreviousKind = $previousKind
+              }
+            }
             if (-not $trustPreexisted) {
               $imported = Import-Certificate `
                 -FilePath $publicCertificatePath `
@@ -913,6 +959,21 @@ jobs:
               Remove-AppxPackage -ErrorAction SilentlyContinue
             if (-not $trustPreexisted -and (Test-Path -LiteralPath $trustedPath)) {
               Remove-Item -LiteralPath $trustedPath -Force
+            }
+            foreach ($snapshot in $sideloadSnapshots) {
+              try {
+                if ($snapshot.ValuePreexisted) {
+                  $snapshot.Key.SetValue(
+                    'AllowAllTrustedApps',
+                    $snapshot.PreviousValue,
+                    $snapshot.PreviousKind
+                  )
+                } else {
+                  $snapshot.Key.DeleteValue('AllowAllTrustedApps', $false)
+                }
+              } finally {
+                $snapshot.Key.Dispose()
+              }
             }
             Remove-Item `
               -LiteralPath $proofRoot `
