@@ -59,14 +59,16 @@ $iss = Get-Content -Raw -LiteralPath $issPath
 $installer = Get-Content -Raw -LiteralPath $scriptPath
 $workflow = Get-Content -Raw -LiteralPath $workflowPath
 
-Assert-Contains $installer 'Import-Module Microsoft.PowerShell.Security' `
-  "Fresh no-profile installer children must load the Certificate provider."
-Assert-Contains $installer 'New-PSDrive' `
-  "Installer must materialize Cert: when a fresh child omits the drive."
-Assert-Contains $installer '-PSProvider Certificate' `
-  "The materialized Cert: drive must use the Windows Certificate provider."
-Assert-Contains $installer 'Cert:\LocalMachine\TrustedPeople' `
-  "The provider must remain scoped to machine TrustedPeople."
+Assert-Contains $installer 'X509Certificates.X509Store]::new' `
+  "Installer trust must use the direct .NET certificate-store API."
+Assert-Contains $installer 'StoreName]::TrustedPeople' `
+  "Installer trust must target only the TrustedPeople store."
+Assert-Contains $installer 'StoreLocation]::LocalMachine' `
+  "Installer trust must target the local machine explicitly."
+Assert-Contains $installer 'OpenFlags]::ReadWrite' `
+  "Installer mutations must explicitly open only the pinned store."
+Assert-DoesNotMatch $installer 'Import-Certificate|New-PSDrive|Cert:\\' `
+  "No-profile installer children must not depend on a PowerShell Cert drive."
 
 # Inno 7's compiler binaries intentionally expose FileVersion 0.0.0.0. The
 # pinned distribution's uninstaller carries ProductVersion 7.0.2 with fixed-
@@ -169,8 +171,10 @@ Assert-Contains $installer "if (`$LogPath -ceq `"__PERFECT_ORIGINAL_USER_LOG__`"
 
 # Public-certificate and package fail-closed validation.
 foreach ($required in @(
-  'Cert:\LocalMachine\TrustedPeople',
-  'Import-Certificate',
+  'StoreName]::TrustedPeople',
+  'StoreLocation]::LocalMachine',
+  'Add-TrustedCertificate',
+  'Remove-TrustedCertificate',
   '2.5.29.19',
   'CertificateAuthority',
   '2.5.29.15',

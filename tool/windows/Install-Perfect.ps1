@@ -45,27 +45,6 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-
-# Windows PowerShell can expose the Certificate provider without materializing
-# its conventional Cert: drive in a fresh -NoProfile child process (as seen on
-# hosted Windows runners). Create only that provider-backed drive explicitly;
-# every trust operation below remains pinned to LocalMachine\TrustedPeople.
-Import-Module Microsoft.PowerShell.Security -ErrorAction Stop
-if (-not (Get-PSDrive -Name Cert -ErrorAction SilentlyContinue)) {
-  $null = New-PSDrive `
-    -Name Cert `
-    -PSProvider Certificate `
-    -Root "\" `
-    -ErrorAction Stop
-}
-if (
-  (Get-PSDrive -Name Cert).Provider.Name -cne "Certificate" -or
-  -not (Test-Path -LiteralPath "Cert:\LocalMachine\TrustedPeople")
-) {
-  throw "The Windows Certificate provider is unavailable."
-}
-
-$script:TrustedPeoplePath = "Cert:\LocalMachine\TrustedPeople"
 $script:CodeSigningOid = "1.3.6.1.5.5.7.3.3"
 $script:TrustAddedExitCode = 10
 $script:NormalizedThumbprint = $ExpectedThumbprint.ToUpperInvariant()
@@ -379,17 +358,71 @@ function Read-PackageContract {
 }
 
 function Get-TrustedCertificate {
-  $matches = @(Get-ChildItem -LiteralPath $script:TrustedPeoplePath |
-    Where-Object {
+  $store = [Security.Cryptography.X509Certificates.X509Store]::new(
+    [Security.Cryptography.X509Certificates.StoreName]::TrustedPeople,
+    [Security.Cryptography.X509Certificates.StoreLocation]::LocalMachine
+  )
+  try {
+    $store.Open(
+      [Security.Cryptography.X509Certificates.OpenFlags]::ReadOnly
+    )
+    $matches = @($store.Certificates | Where-Object {
       $_.Thumbprint.ToUpperInvariant() -ceq $script:NormalizedThumbprint
     })
-  Assert-Condition `
-    ($matches.Count -le 1) `
-    "TrustedPeople contains duplicate entries for the pinned thumbprint."
-  if ($matches.Count -eq 0) {
-    return $null
+    Assert-Condition `
+      ($matches.Count -le 1) `
+      "TrustedPeople contains duplicate entries for the pinned thumbprint."
+    if ($matches.Count -eq 0) {
+      return $null
+    }
+    # Clone the public certificate before closing the native store handle.
+    return [Security.Cryptography.X509Certificates.X509Certificate2]::new(
+      $matches[0].RawData
+    )
+  } finally {
+    $store.Close()
+    $store.Dispose()
   }
-  return $matches[0]
+}
+
+function Add-TrustedCertificate {
+  param(
+    [Parameter(Mandatory = $true)]
+    [Security.Cryptography.X509Certificates.X509Certificate2]$Certificate
+  )
+  $store = [Security.Cryptography.X509Certificates.X509Store]::new(
+    [Security.Cryptography.X509Certificates.StoreName]::TrustedPeople,
+    [Security.Cryptography.X509Certificates.StoreLocation]::LocalMachine
+  )
+  try {
+    $store.Open(
+      [Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite
+    )
+    $store.Add($Certificate)
+  } finally {
+    $store.Close()
+    $store.Dispose()
+  }
+}
+
+function Remove-TrustedCertificate {
+  param(
+    [Parameter(Mandatory = $true)]
+    [Security.Cryptography.X509Certificates.X509Certificate2]$Certificate
+  )
+  $store = [Security.Cryptography.X509Certificates.X509Store]::new(
+    [Security.Cryptography.X509Certificates.StoreName]::TrustedPeople,
+    [Security.Cryptography.X509Certificates.StoreLocation]::LocalMachine
+  )
+  try {
+    $store.Open(
+      [Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite
+    )
+    $store.Remove($Certificate)
+  } finally {
+    $store.Close()
+    $store.Dispose()
+  }
 }
 
 function Assert-TrustedCertificateMatches {
@@ -427,14 +460,7 @@ function Invoke-MachineTrust {
   }
 
   try {
-    $imported = Import-Certificate `
-      -FilePath $script:ResolvedCertificatePath `
-      -CertStoreLocation $script:TrustedPeoplePath
-    Assert-Condition `
-      ($null -ne $imported -and
-        $imported.Thumbprint.ToUpperInvariant() -ceq
-          $script:NormalizedThumbprint) `
-      "Certificate import did not return the pinned TrustedPeople identity."
+    Add-TrustedCertificate -Certificate $Certificate
     $trusted = Get-TrustedCertificate
     Assert-Condition `
       ($null -ne $trusted) `
@@ -443,8 +469,8 @@ function Invoke-MachineTrust {
     Write-InstallerLog INFO "Added the pinned public certificate to machine TrustedPeople."
     return $script:TrustAddedExitCode
   } catch {
-    # There was no matching entry before this call. If Import-Certificate made
-    # one before a later validation failed, this phase owns and removes it.
+    # There was no matching entry before this call. If X509Store.Add made one
+    # before a later validation failed, this phase owns and removes it.
     $importFailure = $_.Exception
     try {
       $possiblyAdded = Get-TrustedCertificate
@@ -452,7 +478,7 @@ function Invoke-MachineTrust {
         Assert-TrustedCertificateMatches `
           -Expected $Certificate `
           -Actual $possiblyAdded
-        Remove-Item -LiteralPath $possiblyAdded.PSPath -Force
+        Remove-TrustedCertificate -Certificate $possiblyAdded
         Assert-Condition `
           ($null -eq (Get-TrustedCertificate)) `
           "TrustedPeople entry remains after failed-import rollback."
@@ -486,7 +512,7 @@ function Invoke-RemoveTrust {
     return 0
   }
   Assert-TrustedCertificateMatches -Expected $Certificate -Actual $trusted
-  Remove-Item -LiteralPath $trusted.PSPath -Force
+  Remove-TrustedCertificate -Certificate $trusted
   Assert-Condition `
     ($null -eq (Get-TrustedCertificate)) `
     "Pinned certificate remains after TrustedPeople rollback."

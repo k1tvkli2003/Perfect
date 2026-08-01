@@ -201,10 +201,12 @@ void main() {
     expect(contract, contains('excludes CI-only checksum manifests'));
     expect(bootstrap, contains('ExecAsOriginalUser('));
     expect(bootstrap, contains('PrivilegesRequired=admin'));
-    expect(installer, contains(r'Cert:\LocalMachine\TrustedPeople'));
-    expect(installer, contains('Import-Module Microsoft.PowerShell.Security'));
-    expect(installer, contains('New-PSDrive'));
-    expect(installer, contains('-PSProvider Certificate'));
+    expect(installer, contains('X509Certificates.X509Store]::new'));
+    expect(installer, contains('StoreName]::TrustedPeople'));
+    expect(installer, contains('StoreLocation]::LocalMachine'));
+    expect(installer, contains('OpenFlags]::ReadWrite'));
+    expect(installer, isNot(contains('Import-Certificate')));
+    expect(installer, isNot(contains('New-PSDrive')));
     expect(installer, isNot(contains(r'Cert:\LocalMachine\Root')));
     expect(installer, contains(r'$beforeVersion -gt'));
     expect(installer, contains(r'$beforeVersion -eq'));
