@@ -59,6 +59,15 @@ $iss = Get-Content -Raw -LiteralPath $issPath
 $installer = Get-Content -Raw -LiteralPath $scriptPath
 $workflow = Get-Content -Raw -LiteralPath $workflowPath
 
+Assert-Contains $installer 'Import-Module Microsoft.PowerShell.Security' `
+  "Fresh no-profile installer children must load the Certificate provider."
+Assert-Contains $installer 'New-PSDrive' `
+  "Installer must materialize Cert: when a fresh child omits the drive."
+Assert-Contains $installer '-PSProvider Certificate' `
+  "The materialized Cert: drive must use the Windows Certificate provider."
+Assert-Contains $installer 'Cert:\LocalMachine\TrustedPeople' `
+  "The provider must remain scoped to machine TrustedPeople."
+
 # Inno 7's compiler binaries intentionally expose FileVersion 0.0.0.0. The
 # pinned distribution's uninstaller carries ProductVersion 7.0.2 with fixed-
 # width trailing padding, so CI must use and trim that explicit version carrier.

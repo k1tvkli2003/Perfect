@@ -202,6 +202,9 @@ void main() {
     expect(bootstrap, contains('ExecAsOriginalUser('));
     expect(bootstrap, contains('PrivilegesRequired=admin'));
     expect(installer, contains(r'Cert:\LocalMachine\TrustedPeople'));
+    expect(installer, contains('Import-Module Microsoft.PowerShell.Security'));
+    expect(installer, contains('New-PSDrive'));
+    expect(installer, contains('-PSProvider Certificate'));
     expect(installer, isNot(contains(r'Cert:\LocalMachine\Root')));
     expect(installer, contains(r'$beforeVersion -gt'));
     expect(installer, contains(r'$beforeVersion -eq'));

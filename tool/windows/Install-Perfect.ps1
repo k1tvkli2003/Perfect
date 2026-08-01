@@ -46,6 +46,25 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
+# Windows PowerShell can expose the Certificate provider without materializing
+# its conventional Cert: drive in a fresh -NoProfile child process (as seen on
+# hosted Windows runners). Create only that provider-backed drive explicitly;
+# every trust operation below remains pinned to LocalMachine\TrustedPeople.
+Import-Module Microsoft.PowerShell.Security -ErrorAction Stop
+if (-not (Get-PSDrive -Name Cert -ErrorAction SilentlyContinue)) {
+  $null = New-PSDrive `
+    -Name Cert `
+    -PSProvider Certificate `
+    -Root "\" `
+    -ErrorAction Stop
+}
+if (
+  (Get-PSDrive -Name Cert).Provider.Name -cne "Certificate" -or
+  -not (Test-Path -LiteralPath "Cert:\LocalMachine\TrustedPeople")
+) {
+  throw "The Windows Certificate provider is unavailable."
+}
+
 $script:TrustedPeoplePath = "Cert:\LocalMachine\TrustedPeople"
 $script:CodeSigningOid = "1.3.6.1.5.5.7.3.3"
 $script:TrustAddedExitCode = 10
