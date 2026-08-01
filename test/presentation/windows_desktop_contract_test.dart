@@ -77,10 +77,16 @@ void main() {
     );
   });
 
-  test('private CI emits a complete checksummed portable Windows bundle', () {
+  test('private CI emits clean portable and self-contained Windows setup', () {
     final workflow = File('.github/workflows/verify.yml').readAsStringSync();
     final contract = File(
       '.github/private-build-contract.yml',
+    ).readAsStringSync();
+    final installer = File(
+      'tool/windows/Install-Perfect.ps1',
+    ).readAsStringSync();
+    final bootstrap = File(
+      'tool/windows/PerfectBootstrap.iss',
     ).readAsStringSync();
     final packageStep = workflow.substring(
       workflow.indexOf('- name: Package signed private MSIX'),
@@ -90,7 +96,19 @@ void main() {
       workflow.indexOf('- name: Prove MSIX install-over preserves LocalState'),
     );
 
-    expect(workflow, contains('Complete and checksum the portable Windows'));
+    expect(workflow, contains('Complete and package the portable Windows'));
+    expect(workflow, contains('Verify Windows installer source contract'));
+    expect(workflow, contains('PerfectBootstrap.iss'));
+    expect(workflow, contains('ISCC.exe'));
+    expect(workflow, contains('innosetup-7.0.2-x64.exe'));
+    expect(
+      workflow,
+      contains('5AD54CA3DEF786F8F4212552E54CC6D8D61329E2D24A1CFEE0571D42C2684FF1'),
+    );
+    expect(workflow, contains('Official Inno Setup installer signature'));
+    expect(workflow, contains('Prove self-contained Setup clean install'));
+    expect(workflow, contains('ci-setup-update-marker.json'));
+    expect(workflow, contains('Setup proof passed'));
     expect(
       workflow.indexOf('Preserve private Windows build'),
       lessThan(workflow.indexOf('Package signed private MSIX')),
@@ -124,6 +142,8 @@ void main() {
     expect(workflow, contains('private publisher trust remains'));
     expect(workflow, contains(r'$global:LASTEXITCODE = 0'));
     expect(workflow, contains('SHA256SUMS.txt'));
+    expect(workflow, contains('Portable release ZIP contains a CI-only'));
+    expect(workflow, contains('Perfect-*-Windows-Portable.zip'));
     expect(workflow, contains('-windows-x64-portable-'));
     expect(
       workflow,
@@ -149,11 +169,15 @@ void main() {
       installOverStep,
       contains(r'$basicConstraints.CertificateAuthority'),
     );
-    expect(workflow, isNot(contains(r'Cert:\LocalMachine\Root')));
+    expect(workflow, contains('did not mutate Root'));
+    expect(
+      workflow,
+      contains('Certificate stores did not return to their exact baseline'),
+    );
     expect(workflow, contains('signtool.exe'));
     expect(workflow, contains('PERFECT_WINDOWS_CERT_THUMBPRINT'));
     expect(workflow, contains(r'Perfect-$env:PERFECT_ARTIFACT_VERSION'));
-    expect(workflow, contains('Signed MSIX checksum coverage'));
+    expect(workflow, contains('Signed Windows checksum coverage'));
     expect(
       workflow,
       contains('043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1'),
@@ -162,7 +186,15 @@ void main() {
       workflow,
       contains('1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0'),
     );
-    expect(contract, contains('checksummed-portable-release-bundle'));
+    expect(contract, contains('self-contained-msix-bootstrap-exe'));
+    expect(contract, contains('portable-runtime-zip'));
+    expect(contract, contains('excludes CI-only checksum manifests'));
+    expect(bootstrap, contains('ExecAsOriginalUser('));
+    expect(bootstrap, contains('PrivilegesRequired=admin'));
+    expect(installer, contains(r'Cert:\LocalMachine\TrustedPeople'));
+    expect(installer, isNot(contains(r'Cert:\LocalMachine\Root')));
+    expect(installer, contains(r'$beforeVersion -gt'));
+    expect(installer, contains(r'$beforeVersion -eq'));
     expect(contract, contains('application-local Visual C++ runtime'));
     expect(
       contract,

@@ -31,7 +31,12 @@ void main() {
       contains(r'android_version_code=$((android_epoch + run_number))'),
     );
     expect(workflow, contains(r'msix_version=$semantic_version.$run_number'));
-    expect(workflow, contains(r'artifact_version=$semantic_version-build.'));
+    expect(
+      workflow,
+      contains(
+        r'artifact_version="$semantic_version-build.$android_version_code"',
+      ),
+    );
     expect(
       workflow,
       contains('--build-number="\$PERFECT_ANDROID_VERSION_CODE"'),
@@ -231,8 +236,68 @@ void main() {
     expect(workflow, contains('AppxManifest.xml'));
     expect(workflow, contains('AppxSignature.p7x'));
     expect(workflow, contains('signtool.exe'));
-    expect(workflow, contains('Signed MSIX checksum coverage'));
+    expect(workflow, contains('Signed Windows checksum coverage'));
     expect(workflow, contains('build/windows/x64/msix/SHA256SUMS.txt'));
+  });
+
+  test('trusted runs publish one verified three-asset private release', () {
+    expect(workflow, contains(r'release_tag=v$artifact_version'));
+    expect(workflow, contains('Publish private install-ready release'));
+    expect(
+      workflow,
+      contains(
+        "if: needs.prepare.outputs.trusted_build == 'true' && success()",
+      ),
+    );
+    expect(workflow, contains('contents: write'));
+    expect(workflow, contains('attestations: read'));
+    expect(workflow, contains('gh release create'));
+    expect(workflow, contains(r'ensure_release_tag "$tag"'));
+    expect(
+      RegExp(r'ensure_release_tag "\$tag"').allMatches(workflow),
+      hasLength(2),
+    );
+    expect(workflow, contains('git/ref/tags/\$candidate_tag'));
+    expect(workflow, contains('refs/tags/\$candidate_tag'));
+    expect(workflow, contains('--verify-tag'));
+    expect(
+      workflow,
+      contains(
+        'Release tag \$candidate_tag resolves to \$resolved_sha instead of \$GITHUB_SHA',
+      ),
+    );
+    expect(workflow, contains('--draft'));
+    expect(workflow, contains('--draft=false'));
+    expect(workflow, contains('gh release download'));
+    expect(workflow, contains('Draft release byte mismatch'));
+    expect(workflow, contains('gh release verify'));
+    expect(workflow, contains('isImmutable'));
+    expect(workflow, contains(r'immutable $tag already matches this commit'));
+    expect(workflow, contains('exactly three verified install-ready assets'));
+    expect(
+      workflow,
+      contains(r'Perfect-$PERFECT_ARTIFACT_VERSION-Android.apk'),
+    );
+    expect(
+      workflow,
+      contains(r'Perfect-$PERFECT_ARTIFACT_VERSION-Windows-Setup.exe'),
+    );
+    expect(
+      workflow,
+      contains(r'Perfect-$PERFECT_ARTIFACT_VERSION-Windows-Portable.zip'),
+    );
+    expect(
+      contract,
+      contains('publication: trusted-main-success-to-draft-then-private'),
+    );
+    expect(
+      contract,
+      contains('The three user-facing release assets are exactly one signed'),
+    );
+    expect(
+      contract,
+      contains('CER, raw MSIX, checksum files, logs, and transport wrappers'),
+    );
   });
 
   test('trusted Windows builds prove install-over without trusting Root', () {
@@ -269,7 +334,7 @@ void main() {
         r'PERFECT_WINDOWS_CERT_THUMBPRINT:\s*\$\{\{ vars\.'
         r'PERFECT_WINDOWS_CERT_THUMBPRINT \}\}',
       ).allMatches(workflow),
-      hasLength(2),
+      hasLength(3),
     );
     expect(
       workflow,
@@ -281,7 +346,11 @@ void main() {
       ),
     );
     expect(workflow, isNot(contains(r'Cert:\CurrentUser\Root')));
-    expect(workflow, isNot(contains(r'Cert:\LocalMachine\Root')));
+    expect(workflow, contains('did not mutate Root'));
+    expect(
+      workflow,
+      contains('Certificate stores did not return to their exact baseline'),
+    );
     expect(
       contract,
       contains('proving that package family and an exact LocalState marker'),

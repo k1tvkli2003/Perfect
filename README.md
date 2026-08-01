@@ -101,9 +101,9 @@ flutter build windows --release
 .\tool\provision_private_signing.ps1
 ```
 
-Windows build به Visual Studio با workload **Desktop development with C++** نیاز دارد. این workload روی ماشین فعلی نصب نیست؛ runner ویندوز GitHub Actions برای SHA `265f79aada41fee9a3b71db9a855b450e9898cbd` خروجی release portable و MSIX خصوصی را با موفقیت ساخته است. فایل portable دانلودشده از baseline launch شد و responsive ماند. این launch smoke جای بررسی کامل resize، hover/focus، Explorer/taskbar/window icon یا frame-jank را نمی‌گیرد.
+Windows build به Visual Studio با workload **Desktop development with C++** نیاز دارد. این workload روی ماشین فعلی نصب نیست؛ ساخت، امضا، نصب و تست ارتقای Windows روی runner ویندوز GitHub Actions انجام می‌شود. خروجی قابل‌نصب برای کاربر `Windows-Setup.exe` است؛ MSIX و گواهی عمومی فقط payload داخلی Setup و transport کوتاه‌عمر CI هستند.
 
-وضعیت محلی فعلی `flutter analyze` و هر ۲۶۵ تست را پاس می‌کند. GitHub Actions
+وضعیت محلی فعلی `flutter analyze` و هر ۲۶۶ تست را پاس می‌کند. GitHub Actions
 [run `30639359490`](https://github.com/k1tvkli2003/Perfect/actions/runs/30639359490)
 (`#21`) نیز برای همان SHA سبز است و Android `1.1.0+2021`، MSIX `1.1.0.21`
 و Windows portable را حفظ کرده است. این run، MSIX baseline شمارهٔ ۲۰ را روی
@@ -111,7 +111,15 @@ Windows build به Visual Studio با workload **Desktop development with C++** 
 
 ## GitHub Actions خصوصی
 
-[`verify.yml`](.github/workflows/verify.yml) روی PR، push به `main` و اجرای دستی، format/analyze/test و build release Android/Windows را انجام می‌دهد. نسخهٔ پایهٔ فعلی `1.1.0+2000` است. Android `versionCode` از **epoch پایه + `github.run_number`** ساخته می‌شود و نسخهٔ MSIX از `MAJOR.MINOR.PATCH.github.run_number`؛ runهای `#20` و `#21` به‌ترتیب Android `2020`/`2021` و MSIX `1.1.0.20`/`1.1.0.21` را ساخته‌اند. artifactها ۱۴ روز نگه‌داری می‌شوند و هیچ GitHub Release یا store deploy ساخته نمی‌شود.
+[`verify.yml`](.github/workflows/verify.yml) روی PR، push به `main` و اجرای دستی، format/analyze/test و build release Android/Windows را انجام می‌دهد. نسخهٔ پایهٔ فعلی `1.1.0+2000` است. Android `versionCode` از **epoch پایه + `github.run_number`** ساخته می‌شود و نسخهٔ MSIX از `MAJOR.MINOR.PATCH.github.run_number`. هر اجرای موفق و trusted روی `main` پس از عبور همهٔ گیت‌ها ابتدا یک draft می‌سازد، سه فایل را بارگذاری و دوباره دانلود/هش می‌کند و سپس همان GitHub Release خصوصی را منتشر می‌کند.
+
+هر Release دقیقاً سه asset کاربرپسند دارد:
+
+- `Perfect-<version>-Android.apk`
+- `Perfect-<version>-Windows-Setup.exe`
+- `Perfect-<version>-Windows-Portable.zip`
+
+گواهی، MSIX خام، checksum، log یا wrapper جداگانه منتشر نمی‌شود. SHA-256 هر سه فایل داخل Release notes ثبت می‌شود. GitHub دو لینک خودکار Source code را هم در صفحهٔ Release نشان می‌دهد؛ آن‌ها asset بارگذاری‌شدهٔ workflow نیستند و قابل حذف نیستند.
 
 buildهای یک ref با `cancel-in-progress: false` و `queue: max` صف می‌شوند تا دو
 نسخهٔ installable هم‌زمان اجرا یا لغو نشوند. نام قراردادی APK نیز
@@ -154,39 +162,27 @@ PR و اجرای دستی خارج از `main` هیچ‌کدام از credential
 را دریافت نمی‌کنند و فقط artifact با برچسب `debug-fallback` می‌سازند. در
 push یا اجرای دستی روی `main`، نبودن حتی یکی از secretها یا fingerprintها
 باعث fail-closed می‌شود؛ بنابراین CI هرگز یک کلید موقت را به‌عنوان نسخهٔ قابل
-آپدیت تحویل نمی‌دهد. APK و MSIX نهایی پس از امضا از نظر package identity،
-نسخه و certificate بررسی می‌شوند و همراه `SHA256SUMS.txt` می‌آیند. MSIX
-همراه public `.cer` فقط برای دستگاه‌های شخصی خودت است؛ PFX، JKS و رمزها هرگز
-artifact نیستند.
+آپدیت تحویل نمی‌دهد. APK، MSIX داخلی و Setup نهایی پس از امضا از نظر package
+identity، نسخه و certificate بررسی می‌شوند. PFX، JKS و رمزها هرگز artifact
+یا Release asset نیستند.
 
-### نصب خصوصی Windows و اعتماد به گواهی
+### نصب خصوصی Windows
 
-برای نصب MSIX روی دستگاه شخصی، ابتدا `Perfect-private.cer` و فایل MSIX را از
-همان artifact دانلود کن. thumbprint گواهی باید دقیقاً با Repository Variable
-به‌نام `PERFECT_WINDOWS_CERT_THUMBPRINT` یکسان باشد. سپس PowerShell را با
-دسترسی Administrator باز کن و گواهی عمومی را در مخزن machine-wide مورد
-اعتماد وارد کن؛ بعد package را نصب کن:
+فایل `Perfect-<version>-Windows-Setup.exe` را از GitHub Release دانلود و اجرا
+کن و درخواست Administrator را تأیید کن. Setup قبل از هر تغییری thumbprint،
+Subject، نوع end-entity گواهی، هویت و نسخهٔ MSIX داخلی را بررسی می‌کند؛ سپس
+فقط همان گواهی پین‌شده را در `LocalMachine\TrustedPeople` قرار می‌دهد و همان
+package family را نصب یا ارتقا می‌دهد. `Trusted Root` هرگز تغییر نمی‌کند و اگر
+نصب شکست بخورد، trust تازه‌ای که Setup افزوده rollback می‌شود.
 
-```powershell
-$certificate = Get-PfxCertificate -FilePath .\Perfect-private.cer
-$expected = "THUMBPRINT_FROM_REPOSITORY_VARIABLE"
-if ($certificate.Thumbprint -ne $expected) {
-  throw "Perfect certificate fingerprint mismatch."
-}
-Import-Certificate `
-  -FilePath .\Perfect-private.cer `
-  -CertStoreLocation Cert:\LocalMachine\TrustedPeople
-Add-AppxPackage .\Perfect-*-windows-x64.msix
-```
+چون این اپ شخصی با گواهی self-signed امضا می‌شود، اجرای اول ممکن است هشدار
+Unknown publisher/SmartScreen نشان دهد. این به معنی خراب‌بودن Setup نیست؛ حذف
+کامل هشدار به گواهی CA-trusted یا سرویس امضای عمومی نیاز دارد. نسخه‌های بعدی
+روی همین هویت نصب می‌شوند و `LocalState`، نشست و دادهٔ اپ حفظ می‌شود.
 
-نسخهٔ بعدی را با همان package identity و end-entity certificate دوباره با
-`Add-AppxPackage` نصب کن؛ Windows آن را روی نسخهٔ قبلی ارتقا می‌دهد و
-`LocalState` همان package family را نگه می‌دارد. گواهی عمومی قابل توزیع است،
-ولی PFX و رمز آن نباید از مخزن امن خارج شوند. Windows signer یک certificate
-self-signed end-entity با `CA=false` است؛ محل اعتماد درست آن
-`LocalMachine\TrustedPeople` است و Root نباید تغییر کند. فقط همین thumbprint
-پین‌شده را اعتماد کن و اگر دیگر از Perfect! استفاده نمی‌کنی، آن را از همان
-store حذف کن.
+برای حالت portable، ZIP را کامل در یک پوشه extract کن و `Perfect.exe` را از
+همان پوشه اجرا کن. ZIP فقط runtime لازم Flutter/Windows را دارد و installer،
+MSIX، CER، checksum، log یا آرشیو تو‌در‌تو داخل آن نیست.
 
 run `#20` نخستین artifact همین lineage را به‌عنوان baseline ثبت کرد. run `#21`
 همان artifact را نصب و سپس به `1.1.0.21` ارتقا داد؛ package family و hash marker

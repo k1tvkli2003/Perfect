@@ -1,12 +1,14 @@
 # Perfect is deliberately a personal, private workspace. This document is the
-# source-of-truth for GitHub Actions build transport; it is not a public
-# release manifest and it must not be treated as a distribution promise.
+# source-of-truth for trusted GitHub Actions build transport and private
+# GitHub Releases. The repository is private; releases are install/update
+# delivery for the single owner, never a public store or distribution promise.
 product:
   display_name: "Perfect!"
   slug: perfect
   version_source: pubspec semantic version plus Android epoch and the deterministic GitHub Actions run number
-  channel: private GitHub Actions artifacts only
+  channel: private GitHub Releases backed by short-lived Actions transport
   public_releases: false
+  private_github_releases: true
 
 targets:
   android:
@@ -20,7 +22,8 @@ targets:
     signing_certificate_pin: PERFECT_ANDROID_CERT_SHA256 repository variable
   windows:
     architecture: x64
-    artifacts: [checksummed-portable-release-bundle, signed-private-msix, public-install-certificate]
+    release_artifacts: [self-contained-msix-bootstrap-exe, portable-runtime-zip]
+    ci_transport: [signed-private-msix, public-install-certificate, signed-bootstrap-exe]
     identity: com.k1tvkli2003.perfect
     publisher: CN=K1 Perfect Private
     version_mapping:
@@ -47,7 +50,11 @@ workflow:
   public_identity_variables:
     - PERFECT_ANDROID_CERT_SHA256
     - PERFECT_WINDOWS_CERT_THUMBPRINT
-  publication: disabled
+  publication: trusted-main-success-to-draft-then-private-github-release
+  release_assets:
+    - Perfect-MAJOR.MINOR.PATCH-build.VERSION_CODE-Android.apk
+    - Perfect-MAJOR.MINOR.PATCH-build.VERSION_CODE-Windows-Setup.exe
+    - Perfect-MAJOR.MINOR.PATCH-build.VERSION_CODE-Windows-Portable.zip
 
 constraints:
   - Do not put Supabase credentials, Android keystores, PFX files, or passwords in this repository or workflow.
@@ -58,10 +65,14 @@ constraints:
   - Trusted builds fail closed when a signing secret or public certificate pin is missing; verification-only PR builds use the debug key and are never labeled update-compatible.
   - Secret values are supplied through protected environment/stdin boundaries and never placed in a child process command line.
   - The Android application ID, JKS alias/certificate fingerprint, Windows package identity/publisher, and PFX thumbprint are immutable update-lineage fields.
-  - The portable bundle carries the matching application-local Visual C++ runtime and a SHA256SUMS manifest.
-  - The Android APK and signed MSIX artifact each carry a post-signing SHA256SUMS manifest.
+  - Every trusted main/manual-main workflow publishes exactly one immutable-version private GitHub Release after all quality, Android, Windows, installer, and install-over gates pass; pull requests never publish.
+  - The three user-facing release assets are exactly one signed universal APK, one signed self-contained Windows Setup EXE, and one portable runtime ZIP. CER, raw MSIX, checksum files, logs, and transport wrappers are never release assets.
+  - Release checksums are calculated after final signing/compression, recorded in the release notes, and verified again after downloading the draft assets from GitHub so no fourth checksum file is required.
+  - The portable ZIP carries the complete application-local Visual C++ runtime but excludes CI-only checksum manifests and has no redundant wrapper directory.
+  - The Windows Setup EXE embeds the signed MSIX and pinned public certificate, verifies both before mutation, imports only the exact certificate into LocalMachine TrustedPeople, installs or upgrades the same MSIX package family, and rolls back newly added trust if installation fails. It never imports into Trusted Root.
+  - The bootstrap compiler is the official Inno Setup 7.0.2 x64 immutable release, downloaded from its versioned upstream URL and accepted only after its pinned SHA-256 and Authenticode signature pass.
   - Every trusted Windows build with an older artifact from the same pinned signer installs that prior MSIX and then the current MSIX on the ephemeral runner, proving that package family and an exact LocalState marker survive the version increase; the first valid signer build establishes the baseline.
   - The established Windows signing identity is a self-signed end-entity certificate. MSIX packaging and install-over verification both prove that exact pinned BasicConstraints/Subject/Issuer identity. During install-over, CI temporarily enables the two Windows sideload policy paths, imports only that public certificate into LocalMachine TrustedPeople, restores prior policy values, and removes temporary package/trust state; Trusted Root is never mutated.
   - The MSIX certificate is trusted only on the user's own Windows devices; no store or public trust is implied.
-  - The public CER may travel with the private artifact, but its matching PFX must remain a repository secret.
+  - The public CER and raw MSIX may travel only inside CI transport and inside the self-contained Setup payload; they are not separate release downloads. The matching PFX must remain a repository secret.
   - If signing secrets are absent, untrusted CI keeps compilation verifiable but labels the resulting artifacts as non-durable fallbacks; trusted CI stops instead of publishing a misleading replacement identity.

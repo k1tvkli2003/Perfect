@@ -112,7 +112,7 @@ Perfect is not a fixed checklist. Each object has a small, clear default and an 
 
 ### Locked implementation decisions
 
-- **No web / no public release:** Android and Windows are the only build targets. GitHub Actions is private build transport, not a release channel.
+- **No web / no public distribution:** Android and Windows are the only build targets. هر اجرای trusted موفق روی `main` یک GitHub Release خصوصی و install-ready با دقیقاً APK، Windows Setup و Windows Portable منتشر می‌کند؛ PR و branch غیر اصلی release نمی‌سازند.
 - **Single private owner:** public self-signup is disabled operationally; `planner_owner_profiles` permits one allowlisted Auth UUID.
 - **Local first:** every planner mutation is persisted locally with an outbox record before remote sync. Screens render local state even while offline.
 - **Series are not completed:** a recurring task stores a dated occurrence; a habit stores a check/count/duration/avoidance log. Neither action completes the reusable source entity.

@@ -263,7 +263,11 @@ void main() {
     expect(workflow, contains('PERFECT_ANDROID_KEYSTORE_BASE64'));
     expect(androidBuild, contains('PERFECT_ANDROID_KEYSTORE_PATH'));
     expect(androidBuild, contains('privateRelease'));
-    expect(contract, contains('publication: disabled'));
+    expect(
+      contract,
+      contains('publication: trusted-main-success-to-draft-then-private'),
+    );
+    expect(contract, contains('private_github_releases: true'));
     expect(contract, isNot(contains('.pfx')));
     expect(contract, isNot(contains('.jks')));
   });
