@@ -172,6 +172,9 @@ void main() {
       contains(r'$basicConstraints.CertificateAuthority'),
     );
     expect(workflow, contains('did not mutate Root'));
+    expect(workflow, contains(r'-FilePath $Path'));
+    expect(workflow, contains('-WindowStyle Hidden'));
+    expect(workflow, contains(r'$process.ExitCode'));
     expect(
       workflow,
       contains('Certificate stores did not return to their exact baseline'),

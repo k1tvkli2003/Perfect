@@ -1409,12 +1409,17 @@ jobs:
               '/REDIRECTIONGUARD',
               "/LOG=$log"
             )
-            & $Path @arguments
-            if ($LASTEXITCODE -ne 0) {
+            $process = Start-Process `
+              -FilePath $Path `
+              -ArgumentList $arguments `
+              -Wait `
+              -PassThru `
+              -WindowStyle Hidden
+            if ($process.ExitCode -ne 0) {
               if (Test-Path -LiteralPath $log) {
                 Get-Content -LiteralPath $log | Write-Output
               }
-              throw "$Label failed with exit code $LASTEXITCODE."
+              throw "$Label failed with exit code $($process.ExitCode)."
             }
           }
 

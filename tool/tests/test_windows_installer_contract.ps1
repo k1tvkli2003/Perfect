@@ -73,6 +73,14 @@ Assert-Contains $workflow 'PERFECT_ISCC_VERSION=$compilerVersion' `
 Assert-DoesNotMatch $workflow `
   'ISCC[^\r\n]*VersionInfo\.FileVersion|VersionInfo\.FileVersion[^\r\n]*ISCC' `
   "CI must not infer Inno 7 version from ISCC's neutral 0.0.0.0 resource."
+Assert-Contains $workflow '-FilePath $Path' `
+  "Hosted Setup proof must launch the exact generated executable."
+Assert-Contains $workflow '-WindowStyle Hidden' `
+  "Hosted Setup proof must remain non-interactive and deterministic."
+Assert-Contains $workflow '$process.ExitCode' `
+  "Hosted Setup proof must wait for and inspect the GUI process exit code."
+Assert-DoesNotMatch $workflow '&\s+\$Path\s+@arguments' `
+  "Hosted Setup proof must not fire-and-forget the GUI executable."
 
 # Single-file bootstrapper and ownership contract.
 Assert-Contains $iss "Uninstallable=no" `
