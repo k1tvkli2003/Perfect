@@ -287,6 +287,11 @@ void main() {
       contains(r'Perfect-$PERFECT_ARTIFACT_VERSION-Windows-Portable.zip'),
     );
     expect(
+      workflow,
+      contains('for required in \\\n            perfect.exe \\'),
+    );
+    expect(workflow, isNot(contains('Portable ZIP is missing Perfect.exe')));
+    expect(
       contract,
       contains('publication: trusted-main-success-to-draft-then-private'),
     );

@@ -180,7 +180,7 @@ Unknown publisher/SmartScreen نشان دهد. این به معنی خراب‌�
 کامل هشدار به گواهی CA-trusted یا سرویس امضای عمومی نیاز دارد. نسخه‌های بعدی
 روی همین هویت نصب می‌شوند و `LocalState`، نشست و دادهٔ اپ حفظ می‌شود.
 
-برای حالت portable، ZIP را کامل در یک پوشه extract کن و `Perfect.exe` را از
+برای حالت portable، ZIP را کامل در یک پوشه extract کن و `perfect.exe` را از
 همان پوشه اجرا کن. ZIP فقط runtime لازم Flutter/Windows را دارد و installer،
 MSIX، CER، checksum، log یا آرشیو تو‌در‌تو داخل آن نیست.
 

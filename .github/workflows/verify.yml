@@ -541,7 +541,7 @@ jobs:
               throw 'Portable release ZIP contains a CI-only or wrapper entry.'
             }
             foreach ($requiredName in @(
-              'Perfect.exe',
+              'perfect.exe',
               'flutter_windows.dll',
               'msvcp140.dll',
               'vcruntime140.dll',
@@ -1662,7 +1662,7 @@ jobs:
             exit 1
           fi
           for required in \
-            Perfect.exe \
+            perfect.exe \
             flutter_windows.dll \
             msvcp140.dll \
             vcruntime140.dll \
@@ -1692,7 +1692,7 @@ jobs:
             echo
             echo "- **Android:** download \`$android_name\` and install/update it directly."
             echo "- **Windows:** download \`$setup_name\`, run it, and approve the administrator prompt. It verifies and trusts only the pinned Perfect! private publisher, then installs or updates the same MSIX identity."
-            echo "- **Windows portable:** extract every file from \`$portable_name\` into one folder and run \`Perfect.exe\`."
+            echo "- **Windows portable:** extract every file from \`$portable_name\` into one folder and run \`perfect.exe\`."
             echo
             echo "The first Windows setup may show an unknown-publisher warning because this personal build uses a private self-signed certificate rather than a public code-signing service."
             echo
