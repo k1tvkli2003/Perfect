@@ -104,10 +104,12 @@ flutter build windows --release
 Windows build به Visual Studio با workload **Desktop development with C++** نیاز دارد. این workload روی ماشین فعلی نصب نیست؛ ساخت، امضا، نصب و تست ارتقای Windows روی runner ویندوز GitHub Actions انجام می‌شود. خروجی قابل‌نصب برای کاربر `Windows-Setup.exe` است؛ MSIX و گواهی عمومی فقط payload داخلی Setup و transport کوتاه‌عمر CI هستند.
 
 وضعیت محلی فعلی `flutter analyze` و هر ۲۶۶ تست را پاس می‌کند. GitHub Actions
-[run `30639359490`](https://github.com/k1tvkli2003/Perfect/actions/runs/30639359490)
-(`#21`) نیز برای همان SHA سبز است و Android `1.1.0+2021`، MSIX `1.1.0.21`
-و Windows portable را حفظ کرده است. این run، MSIX baseline شمارهٔ ۲۰ را روی
-نسخهٔ ۲۱ ارتقا داد و ثابت کرد package family و marker دقیق `LocalState` حفظ می‌شوند.
+[run `30721214315`](https://github.com/k1tvkli2003/Perfect/actions/runs/30721214315)
+(`#30`) نیز برای commit `1b8468b` سبز است و Release immutable
+[`v1.1.0-build.2030`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2030)
+را با Android `1.1.0+2030`، Windows `1.1.0.30` و دقیقاً سه فایل قابل‌استفاده
+منتشر کرده است. Setup روی runner تمیز نصب و دوباره اجرا شد؛ package family،
+marker دقیق `LocalState` و وضعیت Trusted Root حفظ شدند.
 
 ## GitHub Actions خصوصی
 
@@ -184,9 +186,9 @@ Unknown publisher/SmartScreen نشان دهد. این به معنی خراب‌�
 همان پوشه اجرا کن. ZIP فقط runtime لازم Flutter/Windows را دارد و installer،
 MSIX، CER، checksum، log یا آرشیو تو‌در‌تو داخل آن نیست.
 
-run `#20` نخستین artifact همین lineage را به‌عنوان baseline ثبت کرد. run `#21`
-همان artifact را نصب و سپس به `1.1.0.21` ارتقا داد؛ package family و hash marker
-دقیق `LocalState` در این install-over حفظ شدند.
+run `#20` نخستین artifact همین lineage را به‌عنوان baseline ثبت کرد. run `#30`
+علاوه بر install-over خام `1.1.0.29 → 1.1.0.30`، خود Setup مستقل را برای نصب
+تمیز و اجرای مجدد آزمود و سپس Release immutable سه‌فایلی را منتشر کرد.
 
 ### پشتیبان هویت امضا
 

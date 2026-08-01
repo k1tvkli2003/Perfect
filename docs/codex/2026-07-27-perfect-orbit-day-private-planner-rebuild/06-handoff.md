@@ -4,9 +4,9 @@
 
 Perfect! اکنون یک planner شخصی Flutter برای Android و Windows است؛ Web عمداً حذف شده است. محصول از یک فهرست ساده به Orbit Day واکنش‌گرا، Task/Habit editor بسیار قابل‌تنظیم، local-first Drift، sync خصوصی Supabase، recovery/conflict/archive، focus/reminder/insight و ویجت بومی Android تبدیل شده است.
 
-commit `fea3ddc7dd16741e1936a5b61de0b4785c079e67` در CI خصوصی run [`30641054596`](https://github.com/k1tvkli2003/Perfect/actions/runs/30641054596) (`#22`) سبز شد. وضعیت source جاری analyzer و ۲۶۵/۲۶۵ تست را پاس کرده است. migration هشتمِ context امن نیز زنده و owner-scoped است. run `#22` signed Android، signed MSIX و Windows portable را ساخته و artifactهای هر سه مسیر مستقل بررسی شده‌اند.
+commit `1b8468b18ec8edc2645ab73dffff23a6829ba0ea` در CI خصوصی run [`30721214315`](https://github.com/k1tvkli2003/Perfect/actions/runs/30721214315) (`#30`) سبز شد. وضعیت source جاری analyzer و ۲۶۶/۲۶۶ تست را پاس کرده است. migration هشتمِ context امن نیز زنده و owner-scoped است. Release immutable [`v1.1.0-build.2030`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2030) دقیقاً APK، Windows Setup و Windows portable را منتشر کرده و هر سه دانلود مستقل و hash-verified شده‌اند.
 
-build/install-over Android و exact-SHA CI/artifact gate بسته شده‌اند. Windows signer به end-entity `CA=false` مهاجرت کرد و runهای `#20 → #21 → #22` update continuity را با package family/LocalState ثابت اثبات کردند. portable نهایی نیز title/icon، maximize/restore، wide/short/compact resize و short-height scroll را روی auth surface پاس کرد. signed-in workspace، hover/jank، provider smoke و convergence دو نصب هنوز بازند.
+build/install-over Android و exact-SHA CI/release gate بسته شده‌اند. Windows signer به end-entity `CA=false` مهاجرت کرد و run `#30` هم raw install-over `1.1.0.29 → 1.1.0.30` و هم Setup clean-install/rerun را با package family/LocalState ثابت و Root دست‌نخورده اثبات کرد. portable نهایی نیز title/icon، maximize/restore، wide/short/compact resize و short-height scroll را روی auth surface پاس کرده است. signed-in workspace، hover/jank، provider smoke و convergence دو نصب هنوز بازند.
 
 ## Product behavior delivered
 
@@ -33,22 +33,22 @@ build/install-over Android و exact-SHA CI/artifact gate بسته شده‌ان�
 
 - `dart format lib test`: pass
 - `flutter analyze --no-pub`: pass
-- `flutter test --no-pub --reporter compact`: ۲۶۵/۲۶۵ pass
+- `flutter test --no-pub --reporter compact`: ۲۶۶/۲۶۶ pass
 - Workspace UI suite: ۴۴/۴۴ pass
-- release continuity contract: ۷/۷ pass
+- release continuity contract: ۸/۸ pass
 - focused AI suite: ۳۳ pass؛ Deno check pass
 - Edge Function: v3 `ACTIVE`، `verify_jwt=true`، hash `ea758008b0606e0384b7b3be1de289a8cdf2041a511008b3b71fae657ec3cd5b`، unauthenticated 401 pass
-- private release/workflow contracts: pass؛ queue serialization و `VERSION_CODE` naming توسط سرویس GitHub در runهای `#20`–`#22` پذیرفته شدند
+- private release/workflow contracts: pass؛ queue serialization، `VERSION_CODE` naming و انتشار immutable سه‌فایلی در run `#30` پذیرفته و اجرا شدند
 - `flutter build apk --release --build-name=1.1.0 --build-number=2004`: pass؛ private signed
 - Final local APK SHA-256: `990772FFDC66F36294225A478961AEF3F228E008A3E8826174E6FF50D5C91B8D`
 - Android API 35 install-over/start/logcat for `1.1.0+2004`: pass؛ UID/data/widget binding حفظ شدند؛ session احراز‌شده به‌دلیل signed-out بودن اولیه قابل اثبات نبود
-- launcher name/Day Compass icon: pass روی Pixel Launcher API 35؛ Windows runtime proof هنوز باز است
+- launcher name/Day Compass icon: pass روی Pixel Launcher API 35 و Windows title bar؛ Explorer/taskbar هنوز مشاهده نشده‌اند
 - widget picker/add/resize/scroll/deep-link/four-state queue: pass
-- GitHub Actions run `30641054596` (`#22`) for `fea3ddc`: success؛ all three jobs green
-- hosted Android: `1.1.0+2022`، `com.k1tvkli2003.perfect`، label `Perfect!`، سه ABI، v2، hashes and signer `144E87CB…F49B0AF` pass
-- hosted signed MSIX: `1.1.0.22`، same identity/publisher، end-entity `CA=false` signer `1424F286…BA24`، 137 entries and hashes pass
-- hosted portable: run `#22` has 37/37 hashes and live auth-surface resize/title/icon proof
-- Windows install-over: pass؛ run `#22` نصب `1.1.0.21 → 1.1.0.22` را با package family و LocalState ثابت اثبات کرد
+- GitHub Actions run `30721214315` (`#30`) for `1b8468b`: success؛ identity، Android، Windows و Publish هر چهار job سبز
+- hosted Android: `1.1.0+2030`، `com.k1tvkli2003.perfect`، label `Perfect!`، سه ABI، v2، hashes and signer `144E87CB…F49B0AF` pass
+- hosted Windows: `1.1.0.30`، same identity/publisher، end-entity `CA=false` signer `1424F286…BA24`؛ raw install-over و Setup clean-install/rerun pass
+- hosted portable: 37 فایل runtime، بدون MSIX/CER/checksum/log/nested archive؛ live auth-surface resize/title/icon proof از lineage قبلی معتبر می‌ماند
+- GitHub Release: `v1.1.0-build.2030` immutable و شامل دقیقاً سه asset؛ هر سه download/digest pass
 - Windows GUI auth runtime: title/icon، maximize/restore، `832×414`/`540×414` resize and scroll pass؛ signed-in workspace، hover/focus semantics and jank unobserved
 - live Supabase migration/RLS/RPC/Auth/context: pass؛ migration `20260730220000` owner/limit/privilege checks green؛ two-device Android↔Windows convergence هنوز اجرا نشده است
 
@@ -57,10 +57,10 @@ build/install-over Android و exact-SHA CI/artifact gate بسته شده‌ان�
 ## Private setup
 
 1. migrationها، owner profile و `perfect://login-callback` روی پروژهٔ اصلی از قبل آماده‌اند؛ آن‌ها را دستی تکرار نکن.
-2. artifactهای CI با `PERFECT_SUPABASE_URL` و `PERFECT_SUPABASE_PUBLISHABLE_KEY` از پیش متصل ساخته می‌شوند؛ فقط با همان حساب owner وارد شو. artifactهای run `#22` مرجع فعلی‌اند.
+2. فایل‌های Release با `PERFECT_SUPABASE_URL` و `PERFECT_SUPABASE_PUBLISHABLE_KEY` از پیش متصل ساخته می‌شوند؛ فقط با همان حساب owner وارد شو. Release `v1.1.0-build.2030` مرجع نصب فعلی است.
 3. اگر build محلی بدون define اجرا شد، می‌توان همان URL و publishable anon key را در configuration امن همان نصب وارد کرد.
-4. برای signed artifact پایدار، secretهای تعریف‌شده در `.github/private-build-contract.yml` را فقط در GitHub Actions تنظیم کن؛ هیچ keystore یا private key داخل repo قرار نده. public end-entity certificate می‌تواند کنار MSIX باشد، اما PFX/JKS/رمزها و backup migration خصوصی artifact نمی‌شوند.
-5. برای نصب MSIX خصوصی، thumbprint فایل CER را با Repository Variable تطبیق بده، آن را با دسترسی Administrator در `LocalMachine\TrustedPeople` import کن و سپس `Add-AppxPackage` را اجرا کن.
+4. برای signed artifact پایدار، secretهای تعریف‌شده در `.github/private-build-contract.yml` را فقط در GitHub Actions تنظیم کن؛ هیچ keystore یا private key داخل repo یا Release قرار نده.
+5. برای Windows فقط `Perfect-<version>-Windows-Setup.exe` را اجرا و UAC را تأیید کن؛ Setup گواهی و MSIX داخلی را خودش اعتبارسنجی، trust و install/update می‌کند. CER یا MSIX خام برای کاربر منتشر نمی‌شود.
 6. signing root را به‌صورت رمزنگاری‌شده آفلاین backup کن، رمز vault را جدا نگه دار و restore آزمایشی را با manifest hash و fingerprintها تأیید کن؛ GitHub Secrets backup نیست.
 
 ## Environment limits and follow-up proof
@@ -73,7 +73,7 @@ build/install-over Android و exact-SHA CI/artifact gate بسته شده‌ان�
 ## Done
 
 - هستهٔ planner local-first، Supabase owner/context contract، Orbit Day responsive UI، Perfect AI و Android Today widget در source و tests پیاده‌سازی شده‌اند.
-- `fea3ddc7dd16741e1936a5b61de0b4785c079e67` exact-HEAD run `#22` را با signed Android، signed MSIX، checksum-complete portable Windows و install-over موفق پاس کرده است.
+- `1b8468b18ec8edc2645ab73dffff23a6829ba0ea` exact-HEAD run `#30` را با signed Android، self-contained Windows Setup، clean portable، install-over و Release immutable موفق پاس کرده است.
 - Day Compass از میان conceptها انتخاب، به asset production شفاف تبدیل و در Android launcher/widget/notification و Windows ICO سیم‌کشی شده است.
 - widget چهار family responsive، اسکرول native و چرخهٔ `Empty → Done → Not done → 50% → Empty` را با ترتیب native پایدار دارد.
 - release audit نهایی queue، artifact naming، Windows private install trust و offline signing recovery را بسته است؛ release contract ۷/۷ باقی مانده است.

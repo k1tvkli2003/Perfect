@@ -63,6 +63,10 @@
 | 2026-07-31T18:25:00+03:30 | active | Exact-SHA run [`30639359490`](https://github.com/k1tvkli2003/Perfect/actions/runs/30639359490) (`#21`) passed all three jobs for `265f79aada41fee9a3b71db9a855b450e9898cbd`. The Windows runner installed baseline MSIX `1.1.0.20` and upgraded it to `1.1.0.21` with the same signer؛ package family and the exact LocalState marker were preserved. Independent downloads confirmed zero checksum mismatches، Android `1.1.0+2021` with the unchanged signer، MSIX `1.1.0.21` with the same `CA=false` certificate and a 37/37 portable bundle. | run `#21` jobs/artifacts/notice؛ independent artifact validation |
 | 2026-07-31T19:00:00+03:30 | active | Exact-HEAD run [`30641054596`](https://github.com/k1tvkli2003/Perfect/actions/runs/30641054596) (`#22`) passed all jobs and upgraded MSIX `1.1.0.21 → 1.1.0.22` with package family/LocalState preserved. Independent final artifacts had zero checksum mismatch. The downloaded `1.1.0.22` portable then passed live Windows auth-surface inspection: correct Perfect! title/icon، restored/maximized، short `832×414` and compact `540×414` reflow، vertical scroll and action reachability. Signed-in workspace، hover semantics and jank were not claimed. | run `#22` jobs/artifacts/notice؛ Computer Use window screenshots and accessibility tree |
 
+## Release checkpoint — 2026-08-02
+
+Exact-HEAD run [`30721214315`](https://github.com/k1tvkli2003/Perfect/actions/runs/30721214315) (`#30`) برای commit `1b8468b18ec8edc2645ab73dffff23a6829ba0ea` پاس شد: ۲۶۶ تست، signed Android، Windows build، raw MSIX install-over `1.1.0.29 → 1.1.0.30` و self-contained Setup clean-install/rerun همگی سبز شدند. Release immutable [`v1.1.0-build.2030`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2030) دقیقاً APK، Setup.exe و Portable.zip دارد. دانلود مستقل هر سه فایل با digestهای GitHub برابر بود؛ APK identity/signature/سه ABI، Setup metadata/signer/timestamp و portable ۳۷-file runtime/zero banned extras پاس شدند.
+
 ## Done So Far
 - Durable task record and master plan.
 - Preservation/compatibility contract before mutation.
@@ -72,12 +76,12 @@
 - Broad Android/Windows Flutter implementation and Android widget source are present.
 - V2 local-first/sync contract now includes private-owner isolation, durable outbox, exact idempotency, field conflicts, recurrence/recovery and advanced HabitNow-derived payload/evaluator coverage.
 - A fresh Android release APK was produced from current source, installed and exercised on API 35.
-- The full 265-test suite and analyzer are green؛ responsive/UI، release، AI، widget، signing and Deno checks also pass.
+- The full 266-test suite and analyzer are green؛ responsive/UI، release، AI، widget، signing and Deno checks also pass.
 - Pixel Launcher runtime proof covers widget discovery, resize-specific compositions, native collection scrolling, direct outcome cycling, deep link and native replay queue.
 - Visual/interaction hardening now covers 320dp, short landscape, expanded Windows composition, RTL, 200% text and reduced motion.
-- release candidate `265f79aada41fee9a3b71db9a855b450e9898cbd` passed exact-SHA CI run `30639359490`; signed Android، signed MSIX and checksum-complete portable Windows artifacts are hosted and unexpired.
+- release candidate `1b8468b18ec8edc2645ab73dffff23a6829ba0ea` passed exact-SHA CI run `30721214315`; signed Android، self-contained Windows Setup and clean portable are published in immutable Release `v1.1.0-build.2030`.
 - Day Compass is the canonical transparent app asset; the ten blank-brief and five symmetric files remain comparison history.
-- Final release audit is closed in source/docs: serialized CI queue، exact Android `VERSION_CODE` naming، Windows trust/install guidance and recoverable offline signing backup.
+- Final release audit is closed in source/docs: serialized CI queue، exact Android `VERSION_CODE` naming، automatic immutable three-asset release، self-contained Windows trust/install and recoverable offline signing backup.
 - Final Android `1.1.0+2004` install-over proof is closed for package/data/widget identity; authenticated session retention remains explicitly unproven because the device began signed out.
 - Windows signer migration and update continuity are closed: the package uses the `CA=false` end entity `1424F286…BA24`; run `#20` established baseline `1.1.0.20` and run `#21` upgraded it to `1.1.0.21` while preserving package family and the exact LocalState marker.
 

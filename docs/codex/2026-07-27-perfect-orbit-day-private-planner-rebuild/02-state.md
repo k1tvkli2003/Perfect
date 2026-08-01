@@ -1,11 +1,11 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-07-31T18:25:00+03:30
+- Last updated: 2026-08-02T02:35:00+03:30
 - Owner: Codex
 
 ## Current State
-بازسازی local-first و تجربهٔ Orbit Day در commit `fea3ddc7dd16741e1936a5b61de0b4785c079e67` با exact-HEAD run [`30641054596`](https://github.com/k1tvkli2003/Perfect/actions/runs/30641054596) (`#22`) و conclusion `success` اثبات شده است؛ analyzer و 265/265 تست سبزند. Android `1.1.0+2022` با package/label/سه ABI/امضای v2 و fingerprint ثابت پاس است. MSIX `1.1.0.22` با identity/publisher ثابت، 137 entry، signer `CA=false` و hashهای معتبر پاس است؛ portable نیز 37/37 checksum دارد. runهای `#20 → #21 → #22` package family و LocalState را در دو ارتقای متوالی حفظ کردند. portable نهایی title/icon، restored/maximized، short `832×414`، compact `540×414` و scroll دسترسی auth را در GUI واقعی پاس کرد. Function v3 و owner-scoped backend زنده‌اند؛ شکاف‌های signed-in/hover/jank همچنان صادقانه بازند.
+بازسازی local-first و تجربهٔ Orbit Day در commit `1b8468b18ec8edc2645ab73dffff23a6829ba0ea` با exact-HEAD run [`30721214315`](https://github.com/k1tvkli2003/Perfect/actions/runs/30721214315) (`#30`) و conclusion `success` اثبات شده است؛ analyzer و 266/266 تست سبزند. Android `1.1.0+2030` با package/label/سه ABI/امضای v2 و fingerprint ثابت پاس است. Windows `1.1.0.30` با identity/publisher ثابت و signer `CA=false` پاس است؛ Setup مستقل نصب تمیز، rerun، حفظ package family/LocalState و عدم تغییر Trusted Root را ثابت کرد. Release immutable [`v1.1.0-build.2030`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2030) دقیقاً APK، Setup و portable را دارد؛ portable شامل 37 فایل runtime و صفر MSIX/CER/checksum/log/ZIP تو‌در‌تو است. Function v3 و owner-scoped backend زنده‌اند؛ شکاف‌های signed-in/hover/jank همچنان صادقانه بازند.
 
 ## Decisions
 | Date | Decision | Reason | Source |
@@ -45,9 +45,10 @@
 | 2026-07-31 | Windows MSIX از signer قدیمی `CA=true` به self-signed end-entity code-signing با `CA=false` مهاجرت کرد؛ package identity و publisher ثابت ماندند. | package signer نباید قابلیت CA داشته باشد؛ certificate جایگزین فقط digital signature/code-signing دارد و در `TrustedPeople` پین می‌شود. | commit `fe24d33`؛ provisioner synthetic PASS؛ CI run `#20` |
 | 2026-07-31 | run `#20` نخستین baseline signer جدید است، نه install-over proof. | artifact پایین‌تری با thumbprint `1424F286…BA24` وجود نداشت؛ workflow این حالت را صریحاً گزارش و بدون ادعای upgrade موفق تمام کرد. | log مرحلهٔ `Prove MSIX install-over preserves LocalState` در run `30637250609` |
 | 2026-07-31 | run `#21` اولین Windows install-over واقعی را بست. | نصب `1.1.0.20 → 1.1.0.21` با signer یکسان، package family و hash marker دقیق LocalState را حفظ کرد. | run `30639359490`، job `91185076156` |
+| 2026-08-02 | هر trusted main success یک Release immutable با دقیقاً سه asset نصب‌پذیر می‌سازد. | APK، Setup و portable باید مستقیماً قابل‌استفاده باشند؛ CER/MSIX خام/checksum/log فقط transport داخلی‌اند. Setup نیز trust پین‌شده و نصب/ارتقای MSIX را خودش انجام می‌دهد. | run `30721214315` + release `v1.1.0-build.2030` |
 
 ## Blockers
-- هیچ blocker برای source، analyzer، 265/265 تست محلی یا exact-SHA CI وجود ندارد.
+- هیچ blocker برای source، analyzer، 266/266 تست محلی، exact-SHA CI یا انتشار install-ready وجود ندارد.
 - hosted Android، Windows portable، signed MSIX و true Windows install-over برای runهای متوالی `#20 → #21 → #22` اثبات شده‌اند.
 - build محلی Windows به‌علت نبود Visual Studio و workload C++ ممکن نیست. portable نهایی دانلودشده با title/icon صحیح در حالت restored/maximized و resizeهای زندهٔ wide/short/compact اجرا شد؛ short-height scroll و دسترسی همهٔ actionهای auth پاس‌اند. signed-in workspace، hover/focus semantics و jank هنوز ثبت نشده‌اند.
 - signer نهایی Windows و Android دیگر blocker نیستند؛ backup hash، provisioner مصنوعی و rerun identity stability پاس‌اند.

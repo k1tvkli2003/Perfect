@@ -3,26 +3,38 @@
 ## Summary
 
 - Result: partial
-- Interpretation: the integrated Flutter/AI/backend source، exact-SHA CI and all three private artifacts pass their current automated/integrity gates. Android install-over and Windows `1.1.0.20 → 1.1.0.21` package-family/LocalState continuity are proven؛ signed-in cross-device and GUI/device-runtime journeys remain open.
-- Last verified: 2026-07-31T18:25:00+03:30
+- Interpretation: the integrated Flutter/AI/backend source، exact-SHA CI and all three install-ready private Release assets pass their automated/integrity gates. Android install-over، Windows update continuity and the self-contained Setup clean-install/rerun path are proven؛ signed-in cross-device and remaining GUI/device-runtime journeys remain open.
+- Last verified: 2026-08-02T02:35:00+03:30
 - Final Android artifact under test: `build/private-update-proof/perfect-1.1.0+2004.apk`
 - Current final APK SHA-256: `990772FFDC66F36294225A478961AEF3F228E008A3E8826174E6FF50D5C91B8D`
-- Hosted exact-HEAD commit: `fea3ddc7dd16741e1936a5b61de0b4785c079e67`
-- Hosted CI: [run `30641054596`](https://github.com/k1tvkli2003/Perfect/actions/runs/30641054596) (`#22`), conclusion `success`
+- Hosted exact-HEAD commit: `1b8468b18ec8edc2645ab73dffff23a6829ba0ea`
+- Hosted CI: [run `30721214315`](https://github.com/k1tvkli2003/Perfect/actions/runs/30721214315) (`#30`), conclusion `success`
+- Immutable Release: [`v1.1.0-build.2030`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2030)، exactly three uploaded assets
 
-این سند بین «اثبات اجرا»، «اثبات hosted build/artifact»، «بررسی خودکار» و «بررسی در دسترس‌نبوده» فرق می‌گذارد. source جاری analyzer و ۲۶۵ تست را پاس کرده، migration امن context و Function v3 زنده‌اند و runهای exact-SHA `#20` تا `#22` artifactهای متوالی را ساخته‌اند. Runهای `#21`/`#22` دو install-over با package family/LocalState ثابت را اثبات کردند. portable نهایی auth surface را در GUI واقعی wide/short/compact بررسی کرده است؛ این شاهد به signed-in Orbit workspace، hover یا jank تعمیم داده نمی‌شود.
+این سند بین «اثبات اجرا»، «اثبات hosted build/artifact»، «بررسی خودکار» و «بررسی در دسترس‌نبوده» فرق می‌گذارد. source جاری analyzer و ۲۶۶ تست را پاس کرده، migration امن context و Function v3 زنده‌اند و runهای exact-SHA update continuity را حفظ کرده‌اند. Run `#30` علاوه بر raw install-over، خود Setup را برای clean install و rerun اجرا کرده و Release immutable را پس از download/hash verification منتشر کرده است. portable قبلی auth surface را در GUI واقعی wide/short/compact بررسی کرده است؛ این شاهد به signed-in Orbit workspace، hover یا jank تعمیم داده نمی‌شود.
 
 ## Current integrated source proof
 
 | Check | Result | Evidence |
 |---|---|---|
 | Flutter static analysis | passed | `flutter analyze --no-pub` → no issues |
-| Full Flutter suite | passed | `flutter test --no-pub --reporter compact` → 265/265 |
+| Full Flutter suite | passed | `flutter test --no-pub --reporter compact` → 266/266 |
 | Workspace UI/adaptive suite | passed | 44/44؛ expanded/short/wide Windows، tablet، 200% text and resize paths |
 | Private release continuity contract | passed | monotonic Android/MSIX version mapping، signer constraints، artifact naming and baseline/install-over guards |
 | Release queue and artifact contract | passed locally and hosted | `queue: max` accepted by GitHub؛ exact Android `VERSION_CODE` naming and three private artifacts proven in run `#20` |
 | actionlint compatibility | passed with one scoped compatibility ignore | v1.7.12 predates `concurrency.queue`؛ only the exact new-key diagnostic is ignored، all other diagnostics remain fatal |
-| Windows private install/recovery docs | passed | thumbprint check + `LocalMachine\TrustedPeople` + `Add-AppxPackage`؛ encrypted offline signing backup/restore/hash/fingerprint checklist |
+| Windows private installer | passed | Setup پین‌شده، clean install، rerun، حفظ package family/LocalState، عدم تغییر Root و rollback کنترل‌شده؛ encrypted offline signing backup/restore نیز باقی است |
+
+## Immutable install-ready Release `v1.1.0-build.2030`
+
+| Asset/gate | Result | Evidence |
+|---|---|---|
+| Release/tag | passed | immutable، non-draft، tag روی commit `1b8468b`؛ `gh release verify` attestation را تأیید کرد |
+| Exact asset set | passed | فقط `Perfect-1.1.0-build.2030-Android.apk`، `Perfect-1.1.0-build.2030-Windows-Setup.exe` و `Perfect-1.1.0-build.2030-Windows-Portable.zip` |
+| Android | passed | `com.k1tvkli2003.perfect`، label `Perfect!`، `1.1.0+2030`، سه ABI، امضای v2 و signer `144E87CB…B0AF` |
+| Windows Setup | passed | `Perfect!`، version `1.1.0.30`، signer `1424F286…BA24` و DigiCert timestamp؛ روی runner تمیز نصب و rerun شد |
+| Windows portable | passed | 41 entry/37 file، `perfect.exe` و runtime کامل؛ صفر MSIX/CER/checksum/log/ZIP تو‌در‌تو |
+| Downloaded bytes | passed | هر سه SHA-256 محلی دقیقاً با digestهای GitHub و Release notes برابر بود |
 | Portable signing recovery | passed | synthetic JKS/PFX round-trip؛ private-key possession، wrong password/tamper/non-empty rejection، DACL rollback and no real signing-root access |
 | Focused AI contracts | passed | 33 tests؛ history hydration، proposal recovery، bounded context and client behavior |
 | Edge source type-check | passed | Deno check |
