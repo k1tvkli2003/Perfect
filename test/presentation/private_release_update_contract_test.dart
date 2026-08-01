@@ -351,6 +351,8 @@ void main() {
       workflow,
       contains('Certificate stores did not return to their exact baseline'),
     );
+    expect(workflow, contains(r'(@($trustedPeopleBefore) -join "`n")'));
+    expect(workflow, isNot(contains(r'Compare-Object $trustedPeopleBefore')));
     expect(
       contract,
       contains('proving that package family and an exact LocalState marker'),

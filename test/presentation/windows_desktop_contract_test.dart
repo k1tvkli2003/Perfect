@@ -103,7 +103,9 @@ void main() {
     expect(workflow, contains('innosetup-7.0.2-x64.exe'));
     expect(
       workflow,
-      contains('5AD54CA3DEF786F8F4212552E54CC6D8D61329E2D24A1CFEE0571D42C2684FF1'),
+      contains(
+        '5AD54CA3DEF786F8F4212552E54CC6D8D61329E2D24A1CFEE0571D42C2684FF1',
+      ),
     );
     expect(workflow, contains('Official Inno Setup installer signature'));
     expect(workflow, contains('Prove self-contained Setup clean install'));

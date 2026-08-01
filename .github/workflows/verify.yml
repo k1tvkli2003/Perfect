@@ -1487,7 +1487,8 @@ jobs:
             $trustedRootDuring = Get-CertificateStoreSnapshot `
               -Path 'Cert:\LocalMachine\Root'
             if (
-              @(Compare-Object $trustedRootBefore $trustedRootDuring).Count -ne 0
+              (@($trustedRootBefore) -join "`n") -cne
+                (@($trustedRootDuring) -join "`n")
             ) {
               throw 'Setup changed the LocalMachine Trusted Root inventory.'
             }
@@ -1509,10 +1510,10 @@ jobs:
             $trustedPeopleAfter = Get-CertificateStoreSnapshot `
               -Path 'Cert:\LocalMachine\TrustedPeople'
             if (
-              @(Compare-Object $trustedRootBefore $trustedRootAfter).Count -ne
-                0 -or
-              @(Compare-Object $trustedPeopleBefore $trustedPeopleAfter).Count -ne
-                0
+              (@($trustedRootBefore) -join "`n") -cne
+                (@($trustedRootAfter) -join "`n") -or
+              (@($trustedPeopleBefore) -join "`n") -cne
+                (@($trustedPeopleAfter) -join "`n")
             ) {
               throw 'Certificate stores did not return to their exact baseline.'
             }
