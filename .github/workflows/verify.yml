@@ -1392,6 +1392,34 @@ jobs:
             $env:RUNNER_TEMP `
             ('perfect-setup-proof-' + [guid]::NewGuid().ToString('N'))
           New-Item -ItemType Directory -Path $proofRoot -Force | Out-Null
+          $machineInstallerLog = Join-Path `
+            $env:ProgramFiles `
+            (
+              'Perfect Installer Logs\Perfect-setup-' +
+              "$env:PERFECT_CURRENT_ARTIFACT_VERSION.log"
+            )
+          $userInstallerLog = Join-Path `
+            $env:LOCALAPPDATA `
+            (
+              'Perfect\InstallerLogs\Perfect-setup-' +
+              "$env:PERFECT_CURRENT_MSIX_VERSION-user.log"
+            )
+
+          function Write-SetupDiagnosticLog {
+            param(
+              [Parameter(Mandatory = $true)]
+              [string]$Path,
+              [Parameter(Mandatory = $true)]
+              [string]$Label
+            )
+            if (Test-Path -LiteralPath $Path -PathType Leaf) {
+              Write-Output "::group::Perfect Setup diagnostic: $Label"
+              Get-Content -LiteralPath $Path | Write-Output
+              Write-Output '::endgroup::'
+            } else {
+              Write-Output "::notice::Perfect Setup did not create $Label at $Path."
+            }
+          }
 
           function Invoke-PerfectSetup {
             param(
@@ -1415,10 +1443,14 @@ jobs:
               -Wait `
               -PassThru `
               -WindowStyle Hidden
+            Write-SetupDiagnosticLog -Path $log -Label "$Label Inno log"
+            Write-SetupDiagnosticLog `
+              -Path $machineInstallerLog `
+              -Label "$Label machine phase"
+            Write-SetupDiagnosticLog `
+              -Path $userInstallerLog `
+              -Label "$Label original-user phase"
             if ($process.ExitCode -ne 0) {
-              if (Test-Path -LiteralPath $log) {
-                Get-Content -LiteralPath $log | Write-Output
-              }
               throw "$Label failed with exit code $($process.ExitCode)."
             }
           }
@@ -1427,7 +1459,17 @@ jobs:
             Invoke-PerfectSetup `
               -Path $currentSetup[0].FullName `
               -Label 'current-clean-setup'
-            $baseline = @(Get-AppxPackage -Name $packageName)
+            $packageDeadline = [DateTime]::UtcNow.AddSeconds(15)
+            do {
+              $baseline = @(Get-AppxPackage -Name $packageName)
+              if (
+                $baseline.Count -eq 1 -and
+                [version]$baseline[0].Version -eq $expectedVersion
+              ) {
+                break
+              }
+              Start-Sleep -Milliseconds 500
+            } while ([DateTime]::UtcNow -lt $packageDeadline)
             if (
               $baseline.Count -ne 1 -or
               [version]$baseline[0].Version -ne $expectedVersion

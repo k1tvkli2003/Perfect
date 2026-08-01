@@ -175,6 +175,11 @@ void main() {
     expect(workflow, contains(r'-FilePath $Path'));
     expect(workflow, contains('-WindowStyle Hidden'));
     expect(workflow, contains(r'$process.ExitCode'));
+    expect(workflow, contains('Perfect Setup diagnostic:'));
+    expect(workflow, contains(r'$machineInstallerLog'));
+    expect(workflow, contains(r'$userInstallerLog'));
+    expect(workflow, contains('[DateTime]::UtcNow.AddSeconds(15)'));
+    expect(workflow, contains('Start-Sleep -Milliseconds 500'));
     expect(
       workflow,
       contains('Certificate stores did not return to their exact baseline'),

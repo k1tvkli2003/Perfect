@@ -79,6 +79,16 @@ Assert-Contains $workflow '-WindowStyle Hidden' `
   "Hosted Setup proof must remain non-interactive and deterministic."
 Assert-Contains $workflow '$process.ExitCode' `
   "Hosted Setup proof must wait for and inspect the GUI process exit code."
+Assert-Contains $workflow 'Perfect Setup diagnostic:' `
+  "Hosted Setup proof must expose non-secret bootstrap diagnostics."
+Assert-Contains $workflow '$machineInstallerLog' `
+  "Hosted Setup proof must capture the elevated machine-phase log."
+Assert-Contains $workflow '$userInstallerLog' `
+  "Hosted Setup proof must capture the original-user phase log."
+Assert-Contains $workflow '[DateTime]::UtcNow.AddSeconds(15)' `
+  "Hosted Setup proof must allow bounded package-registration propagation."
+Assert-Contains $workflow 'Start-Sleep -Milliseconds 500' `
+  "Hosted Setup proof must poll registration without a busy loop."
 Assert-DoesNotMatch $workflow '&\s+\$Path\s+@arguments' `
   "Hosted Setup proof must not fire-and-forget the GUI executable."
 
