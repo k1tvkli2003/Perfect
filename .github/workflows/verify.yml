@@ -830,13 +830,20 @@ jobs:
                 $verifyText,
                 "SignTool Error:"
               )
+              # SignTool writes diagnostics across stdout and stderr. After
+              # 2>&1, certificate/timestamp detail may land between the two
+              # halves of this exact private-root policy error, so validate
+              # both anchored fragments plus the exact error count instead of
+              # requiring line adjacency.
               $hasOnlyPrivateRootError = (
                 $verifyExitCode -eq 1 -and
                 $signToolErrors.Count -eq 1 -and
                 $verifyText -match (
                   "SignTool Error:\s+A certificate chain processed,\s+" +
-                  "but terminated in a root\s+certificate which is not " +
-                  "trusted by\s+the trust provider\."
+                  "but terminated in a root"
+                ) -and
+                $verifyText -match (
+                  "certificate which is not trusted by\s+the trust provider\."
                 ) -and
                 $verifyText -match "Number of errors:\s+1"
               )
@@ -958,13 +965,17 @@ jobs:
                 $setupVerifyText,
                 'SignTool Error:'
               )
+              # Preserve the same stdout/stderr interleaving tolerance used
+              # for the MSIX verifier without accepting any second error.
               $setupHasOnlyPrivateRootError = (
                 $setupVerifyExitCode -eq 1 -and
                 $setupSignToolErrors.Count -eq 1 -and
                 $setupVerifyText -match (
                   'SignTool Error:\s+A certificate chain processed,\s+' +
-                  'but terminated in a root\s+certificate which is not ' +
-                  'trusted by\s+the trust provider\.'
+                  'but terminated in a root'
+                ) -and
+                $setupVerifyText -match (
+                  'certificate which is not trusted by\s+the trust provider\.'
                 ) -and
                 $setupVerifyText -match 'Number of errors:\s+1'
               )

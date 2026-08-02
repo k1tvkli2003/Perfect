@@ -1,14 +1,28 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-02 08:02 +03:30
+- Last updated: 2026-08-02 09:17 +03:30
 - Owner: Codex
 
 ## Current State
 
-The private feedback feature is implemented as a self-contained Perfect source snapshot and as canonical reusable component v1.2.0. Perfect formatting and full analysis are clean; feedback tests pass 53/53; focused More integration passes; the full non-golden suite passes 316/316; and Windows goldens pass 7/7. An independent source-level verifier passes all eight inspected contracts. Canonical v1.2.0 now has dependency-backed proof: `pub get` and full analysis pass, all 53/53 component tests pass, both ReadyUse suites pass 7/7 and 3/3, and validator, inventory, and skill quick-validation pass. Generated canonical files were cleaned afterward, and the target/canonical behavioral drift audit found zero unintended differences.
+The private feedback feature is implemented as a self-contained Perfect source snapshot and as canonical reusable component v1.2.2. After the third path-hardening pass, Perfect formatting/diff checks and full analysis are clean; repository tests pass 29/29, the complete feedback suite passes 56/56, the full non-golden suite passes 319/319, and Windows goldens pass 7/7. The release-workflow source contract passes 8/8. The earlier focused More integration remains green at its recorded checkpoint. The original independent source-level eight-contract verifier passed the export/concurrency/privacy contracts, and independent re-review now passes the latest filesystem patch with the explicit location-safety caveat below.
 
-A 67.2 MB Android release-mode APK builds locally, but certificate inspection identifies the Android Debug signer. It is verification-only and does not prove stable private-release signing. The local Windows build cannot start because `flutter doctor` reports that Visual Studio is not installed. The task therefore remains active until CI produces and proves the intended stably signed release assets; real Android/Windows native capture, share/Save As, upgrade, and data-continuity evidence also remains required.
+Canonical v1.2.2 now contains the complete third hardening. Format is clean, full analysis reports no issues, and the full component suite passes 56/56. ReadyUse suites pass 7/7 and 3/3; the validator scans 20 files at v1.2.2; inventory resolves verified-source v1.2.2 for Android/Windows; and skill quick-validation passes. Generated `.dart_tool`, `build`, `.flutter-plugins-dependencies`, and `pubspec.lock` artifacts were removed afterward through validated paths and their absence was confirmed. A full lib/test drift audit reports no behavioral drift; the remaining differences are the documented namespace/copy, structural barrel-path, and product-neutral state/token adaptations. Perfect's provenance comment also reports v1.2.2.
+
+A 67.2 MB Android release-mode APK builds locally, but certificate inspection identifies the Android Debug signer. It is verification-only and does not prove stable private-release signing. The local Windows build cannot start because `flutter doctor` reports that Visual Studio is not installed.
+
+GitHub Actions Run #33 (`30732676410`, head `b54b4e0`) failed and produced no release. Its Linux job passed format and analysis, then reported 314 passed, one failed, and one skipped test. The sole failure was `a linked storage base is rejected before namespace access`: a trailing separator survived normalization, and POSIX `lstat("link/")` dereferenced the final directory symlink, so the repository returned an empty list instead of rejecting the untrusted base. The patch strips trailing separators from every non-root supplied base before entity probes while preserving real filesystem roots; the regression now covers linked bases both with and without a trailing platform separator.
+
+Independent review then widened that first patch before release. A pure lexical storage-path policy recognized POSIX `/`, Windows drive roots, and UNC share roots, stripped trailing/repeated separators only beyond the actual volume boundary, and stopped ancestry traversal at the share rather than climbing to a synthetic UNC parent. After canonical resolution the complete ancestry was checked again without following links, and the pre/post fingerprint, canonical path, and `FileSystemEntity.identical` result had to agree. Repeated-separator final/ancestor links were rejected, while a relative path with dot segments and a missing base resolved and created exactly one intended trusted base. That second-pass checkpoint passed repository 28/28, feedback 55/55, full analysis, and non-golden 318/318; it was later superseded by the third patch described below.
+
+A subsequent independent verifier did not accept that second filesystem patch as final. It found that mutable directory metadata (`size`, `modified`, and `changed`) could produce a false identity-change failure, extended Windows drive/UNC/volume-GUID roots were not modeled, and the policy helper leaked through the public barrel. Those findings triggered a third patch.
+
+The third patch removes `_PathFingerprint`/`FileStat` from the base-identity decision while preserving full fingerprints for the separate held-root/lock contract. Base validation now performs canonical resolve, a complete no-follow ancestry rewalk, a second canonical resolve, exact canonical equality plus a current OS `identical` alias check, and a final ancestry rewalk. The lexical policy handles exact POSIX, ordinary drive/UNC, extended drive/UNC, and valid volume-GUID roots, preserves required separators, uses the same normalization in `_comparisonPath`, and rejects `\\.\`, GLOBALROOT/unknown `\\?\`, malformed roots, forward slashes, and dot components in the extended namespace. The helper is hidden from the public barrel and tests import the internal source explicitly. Perfect repository 29/29 and feedback 56/56 pass; focused analysis, format, and diff checks are clean. Independent re-review passes.
+
+The accepted caveat is precise: this is canonical-path/no-follow location safety, not an OS file-id or inode snapshot held across the entire validation window. A regular-directory replacement at the same safe lexical path is intentionally accepted, and no test deterministically injects a swap at the exact boundary between validation passes. No production-only test callback was added to simulate that timing.
+
+Run #33's Windows job built the desktop bundle and portable package and reached signed MSIX/Setup verification, but the job still failed before install/upgrade proof and release publication. SignTool's merged stdout/stderr placed certificate/timestamp detail between the two halves of the expected private-root policy message. The classifier incorrectly required those halves to be adjacent. The patch now requires exactly one SignTool error plus both anchored message fragments without adjacency; the workflow source regression passes 8/8. A replacement CI run and final release inspection are still pending, so no new signing, installer, upgrade, or release claim is made.
 
 The authenticated workspace owns one controller per Supabase user. Storage namespace and preference key are deterministically owner-scoped, initialization failure is contained, and disposal detaches the repository immediately. Global Flutter/async failures plus handled planner-local and sync failures enter the bounded private log without repeating the same automatic-retry diagnostic indefinitely.
 
@@ -39,6 +53,9 @@ The UI preserves StudyHUB parity: the floating control is draggable and excluded
 | 2026-08-02 | Bind export approval to an immutable snapshot | Counts shown during privacy review must match the data delivered; drift requires a new review. | Controller/exporter contract |
 | 2026-08-02 | Keep all Windows transient commit artifacts in the managed cache | Clear must detect and retry incomplete cleanup without touching or misclassifying the owner-selected destination. | Windows timeout regression coverage |
 | 2026-08-02 | Treat external saved/shared ZIPs as outside Clear scope | The app cannot safely delete copies after ownership has passed to a picker/share destination. | Privacy confirmation contract |
+| 2026-08-02 | Strip only non-root trailing separators before filesystem trust probes | POSIX `lstat` dereferences a final directory symlink when the probed spelling ends in `/`; roots must still retain their valid spelling. | Run #33 Linux failure and focused regression |
+| 2026-08-02 | Model filesystem volume roots lexically and revalidate identity after resolution | UNC share roots must not traverse toward a synthetic parent, and a base that changes between no-follow validation and canonical resolution must fail closed. | Independent patch review and 28/28 focused repository tests |
+| 2026-08-02 | Classify the expected private-root SignTool result by exact error count and anchored fragments | Merged stdout/stderr can interleave certificate/timestamp detail; adjacency is not a stable ordering contract. | Run #33 Windows log and 8/8 workflow regression |
 
 ## Independent Findings and Closures
 
@@ -51,32 +68,41 @@ The UI preserves StudyHUB parity: the floating control is draggable and excluded
 | Repeated logger attachment and failed append could duplicate or strand records | Logger attachment is owner-aware/idempotent, uses bounded retries, and cancels/resumes safely across detach/reattach. | closed; logger tests pass |
 | Screenshot write could leave an orphan when index commit failed | Failed commits remove the new screenshot; startup sweeps crash orphans while preserving indexed files. | closed; repository tests pass |
 | Header-only PNG checks accepted structurally incomplete images | Validation now walks chunks through complete `IEND` and checks IHDR dimensions/encoding constraints and configured bounds. | closed; repository tests pass |
-| Parallel Flutter checks locked Windows native assets | Checks were serialized; Perfect feedback 53/53, full non-golden 316/316, and Windows golden 7/7 now pass. | closed for test execution |
-| Clear All could leave recoverable data in screenshot/recovery directories or atomic `.bak`/`.tmp` generations | Clear All now removes active storage and every recoverable generation, rebuilds safe empty indexes, surfaces partial deletion, and retains a retry path. | closed at focused/source level; Perfect feedback 53/53 and independent verifier pass |
-| Concurrent repository/export operations could race or deadlock | Added the same-instance/shared-process/OS store lease, FIFO drain, public re-entry rejection, and bounded lock timeout. | closed at focused/source level; Perfect feedback 53/53 and independent eight-contract pass |
-| A reviewed export could change before native delivery | Review now holds an immutable deep snapshot and revalidates it under lease after picker return/before delivery. | closed at focused/source level; Perfect feedback 53/53 and independent verifier pass |
+| Parallel Flutter checks locked Windows native assets | Checks were serialized; current Perfect feedback 56/56, full non-golden 319/319, and Windows golden 7/7 pass. | closed for test execution |
+| Clear All could leave recoverable data in screenshot/recovery directories or atomic `.bak`/`.tmp` generations | Clear All now removes active storage and every recoverable generation, rebuilds safe empty indexes, surfaces partial deletion, and retains a retry path. | closed at focused/source level; Perfect feedback 56/56 and independent verifier pass |
+| Concurrent repository/export operations could race or deadlock | Added the same-instance/shared-process/OS store lease, FIFO drain, public re-entry rejection, and bounded lock timeout. | closed at focused/source level; Perfect feedback 56/56 and independent eight-contract pass |
+| A reviewed export could change before native delivery | Review now holds an immutable deep snapshot and revalidates it under lease after picker return/before delivery. | closed at focused/source level; Perfect feedback 56/56 and independent verifier pass |
 | Junctions or links could redirect cleanup outside the managed cache | Canonical ancestor/child validation rejects linked temp-root ancestry and linked managed children; purge does not follow links. | closed at focused/source level; exporter tests and independent verifier pass |
 | A timed-out Windows saver could outlive Clear and recreate private staging | Staging, backup, and active marker now live in managed cache; marker makes Clear fail closed until saver settlement cleanup completes. | closed at focused/source level; stalled-saver regression passes; native runtime pending |
 | Pending logger records could repopulate a cleared/recovered store | Clear/recovery detach and double-clear buffers around work and reattachment, including failure paths. | closed at focused/source level; repository tests and independent verifier pass |
+| A trailing separator let POSIX `lstat` dereference a linked storage base | Normalize away trailing/repeated separators beyond a platform-aware volume root before probing; test final/ancestor links in multiple spellings. | closed in Perfect/canonical and independently reviewed; replacement CI pending |
+| The first fix depended on host parent semantics and did not prove UNC/root or post-resolve stability | Added platform-aware roots, relative/dot-segment coverage, two canonical resolutions around no-follow ancestry walks, canonical equality, and current alias identity. | closed in Perfect/canonical with 319/319 full-suite and independent pass; replacement CI pending |
+| SignTool private-root output was split by merged stdout/stderr detail | Match two anchored policy fragments plus exactly one SignTool error instead of requiring adjacency. | closed locally; release workflow contract 8/8 passes; replacement CI pending |
+| Mutable directory metadata is treated as storage identity | Removed FileStat/fingerprint comparison from base identity; use two canonical resolves around no-follow ancestry rewalk plus canonical equality/current alias identity. | closed; independent re-review pass with documented location-safety caveat |
+| Extended Windows roots are not modeled and the lexical helper is public | Added ordinary/extended drive, UNC, and valid volume-GUID boundaries with strict malformed/device-namespace rejection; hid helper from public barrel. | closed in Perfect/canonical; repository 29/29, feedback/canonical 56/56, independent pass; replacement CI pending |
 
 ## Blockers
 
 - Local Windows build proof is environment-blocked: `flutter doctor` reports Visual Studio is not installed. Unblock with CI or a Windows host containing the required Visual Studio desktop C++ tooling.
 - Stable Android/Windows release proof depends on CI signing and artifact production. The local Android APK uses the Android Debug signer and is not a release-signing substitute.
+- Run #33 failed before Android packaging, Windows install/upgrade proof, and release publication. The local fixes need a new CI run before any final artifact or signing conclusion.
 
 ## Done
 
 - StudyHUB behavior and privacy contract frozen.
 - Product-neutral feedback architecture implemented and integrated.
 - Owner isolation, lifecycle safety, retry behavior, atomic persistence, cleanup recovery, redaction, full PNG validation, and UI parity implemented.
-- Canonical component v1.2.0 placed directly in the Components library with synchronized manifest/header/README/changelog/catalog version contract.
+- Canonical component v1.2.2 placed directly in the Components library with synchronized version surfaces and the complete third filesystem hardening.
 - `ReadyUse` skill and component verification/inventory helpers created; skill structure and catalog inventory checks passed.
 - Perfect format and full analysis passed.
-- Perfect feedback tests passed 53/53; focused More integration passed; full non-golden tests passed 316/316; Windows goldens passed 7/7.
+- Perfect feedback tests passed 56/56 after the third hardening; focused repository tests passed 29/29; full analysis, format, and diff checks are clean; full non-golden passes 319/319; and Windows goldens pass 7/7. Focused More integration passed at its recorded checkpoint.
 - A 67.2 MB Android release-mode APK was built and correctly classified as verification-only because it uses the Android Debug signer.
 - Independent source-level verification passed all eight targeted contracts.
-- Canonical v1.2.0 `pub get`, full analysis, and 53/53 tests passed; ReadyUse suites passed 7/7 and 3/3; validator, inventory, and quick-validation passed.
-- Canonical generated files were cleaned and the behavioral drift audit reported zero unintended differences.
+- Canonical v1.2.2 format/full analysis and full tests passed 56/56; ReadyUse suites passed 7/7 and 3/3; validator, inventory, and quick-validation passed.
+- Canonical generated files were cleaned through validated paths, absence was confirmed, and the full lib/test drift audit reported no behavioral drift beyond documented adaptations.
+- Run #33 failures were traced to the POSIX final-symlink probe and SignTool stdout/stderr interleaving assumptions; both have local patches and regressions.
+- After the third hardening, Perfect format/diff and full analysis pass, repository tests pass 29/29, feedback passes 56/56, full non-golden passes 319/319, Windows goldens pass 7/7, and the release-workflow contract remains 8/8.
+- Independent re-review passes the third filesystem patch with the explicit canonical-path/no-follow location-safety caveat.
 
 ## Remaining
 
@@ -85,3 +111,4 @@ The UI preserves StudyHUB parity: the floating control is draggable and excluded
 - Perform real Android and Windows capture/export/runtime smoke tests and responsive visual inspection.
 - Verify app lifecycle, session/data preservation, signing, and in-place upgrade behavior.
 - Inspect final diff/security scan, commit, push `main`, wait for workflow completion, and inspect exact release assets.
+- Run replacement CI for the current remediation and confirm that Linux tests, Windows packaging verification, install/upgrade proof, and the exact three-asset release all complete.

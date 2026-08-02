@@ -13,6 +13,194 @@ typedef ReadyFeedbackEntityDeleter =
     Future<void> Function(FileSystemEntity entity, bool recursive);
 typedef ReadyFeedbackRecoveryClock = DateTime Function();
 
+/// Pure lexical rules for the filesystem-volume boundary used by feedback
+/// storage.
+///
+/// Keeping this policy independent from the host platform lets the Windows
+/// drive, UNC, extended drive/UNC, and volume-GUID cases remain
+/// regression-tested on every CI runner without probing a real network share.
+abstract final class ReadyFeedbackStoragePathPolicy {
+  static String withoutTrailingDirectorySeparators(
+    String path, {
+    required bool windows,
+  }) {
+    final volumeRootLength = _volumeRootLength(path, windows: windows);
+    var end = path.length;
+    while (end > volumeRootLength &&
+        _isSeparator(path.codeUnitAt(end - 1), windows: windows)) {
+      end--;
+    }
+    return end == path.length ? path : path.substring(0, end);
+  }
+
+  static bool isVolumeRoot(String path, {required bool windows}) {
+    final volumeRootLength = _volumeRootLength(path, windows: windows);
+    return volumeRootLength != 0 && path.length == volumeRootLength;
+  }
+
+  static String parentPath(String path, {required bool windows}) {
+    final normalized = withoutTrailingDirectorySeparators(
+      path,
+      windows: windows,
+    );
+    final volumeRootLength = _volumeRootLength(normalized, windows: windows);
+    if (volumeRootLength == 0 || normalized.length == volumeRootLength) {
+      return normalized;
+    }
+
+    var separator = normalized.length - 1;
+    while (separator >= 0 &&
+        !_isSeparator(normalized.codeUnitAt(separator), windows: windows)) {
+      separator--;
+    }
+    if (separator < volumeRootLength) {
+      return normalized.substring(0, volumeRootLength);
+    }
+    return withoutTrailingDirectorySeparators(
+      normalized.substring(0, separator),
+      windows: windows,
+    );
+  }
+
+  static bool usesWindowsDeviceNamespace(String path) =>
+      path.startsWith(r'\\?\') || path.startsWith(r'\\.\');
+
+  static bool isSupportedExtendedWindowsPath(String path) {
+    if (!path.startsWith(r'\\?\') || path.contains('/')) return false;
+    final volumeRootLength = _extendedWindowsVolumeRootLength(path);
+    if (volumeRootLength == 0) return false;
+
+    var remainder = path.substring(volumeRootLength);
+    final extendedUnc = _startsWithAsciiCaseInsensitive(path, r'\\?\UNC\');
+    if (extendedUnc && remainder.isNotEmpty) {
+      if (!remainder.startsWith(r'\')) return false;
+      remainder = remainder.substring(1);
+    }
+    if (remainder.endsWith(r'\')) {
+      remainder = remainder.substring(0, remainder.length - 1);
+    }
+    if (remainder.isEmpty) return true;
+
+    final components = remainder.split(r'\');
+    return components.every(
+      (component) =>
+          component.isNotEmpty && component != '.' && component != '..',
+    );
+  }
+
+  static int _volumeRootLength(String path, {required bool windows}) {
+    if (path.isEmpty) return 0;
+    if (!windows) {
+      return _isSeparator(path.codeUnitAt(0), windows: false) ? 1 : 0;
+    }
+
+    if (path.startsWith(r'\\?\')) {
+      return _extendedWindowsVolumeRootLength(path);
+    }
+    if (path.startsWith(r'\\.\')) return 0;
+
+    if (path.length >= 3 &&
+        _isAsciiLetter(path.codeUnitAt(0)) &&
+        path.codeUnitAt(1) == 0x3a &&
+        _isSeparator(path.codeUnitAt(2), windows: true)) {
+      return 3;
+    }
+
+    if (path.length < 5 ||
+        !_isSeparator(path.codeUnitAt(0), windows: true) ||
+        !_isSeparator(path.codeUnitAt(1), windows: true)) {
+      return 0;
+    }
+
+    return _uncVolumeRootLength(path, start: 2, windows: true);
+  }
+
+  static int _extendedWindowsVolumeRootLength(String path) {
+    if (!path.startsWith(r'\\?\') || path.contains('/')) return 0;
+    if (path.length >= 7 &&
+        _isAsciiLetter(path.codeUnitAt(4)) &&
+        path.codeUnitAt(5) == 0x3a &&
+        path.codeUnitAt(6) == 0x5c) {
+      return 7;
+    }
+    if (_startsWithAsciiCaseInsensitive(path, r'\\?\UNC\')) {
+      return _uncVolumeRootLength(path, start: 8, windows: true);
+    }
+
+    const volumePrefix = r'\\?\Volume{';
+    if (!_startsWithAsciiCaseInsensitive(path, volumePrefix)) return 0;
+    final guidStart = volumePrefix.length;
+    const guidLength = 36;
+    final closingBrace = guidStart + guidLength;
+    if (path.length <= closingBrace + 1 ||
+        path.codeUnitAt(closingBrace) != 0x7d ||
+        path.codeUnitAt(closingBrace + 1) != 0x5c ||
+        !_isGuid(path, guidStart)) {
+      return 0;
+    }
+    return closingBrace + 2;
+  }
+
+  static int _uncVolumeRootLength(
+    String path, {
+    required int start,
+    required bool windows,
+  }) {
+    var cursor = start;
+    final serverStart = cursor;
+    while (cursor < path.length &&
+        !_isSeparator(path.codeUnitAt(cursor), windows: windows)) {
+      cursor++;
+    }
+    if (cursor == serverStart || cursor == path.length) return 0;
+    cursor++;
+
+    final shareStart = cursor;
+    while (cursor < path.length &&
+        !_isSeparator(path.codeUnitAt(cursor), windows: windows)) {
+      cursor++;
+    }
+    return cursor == shareStart ? 0 : cursor;
+  }
+
+  static bool _startsWithAsciiCaseInsensitive(String value, String prefix) {
+    if (value.length < prefix.length) return false;
+    for (var index = 0; index < prefix.length; index++) {
+      final left = value.codeUnitAt(index);
+      final right = prefix.codeUnitAt(index);
+      final foldedLeft = left >= 0x41 && left <= 0x5a ? left + 0x20 : left;
+      final foldedRight = right >= 0x41 && right <= 0x5a ? right + 0x20 : right;
+      if (foldedLeft != foldedRight) return false;
+    }
+    return true;
+  }
+
+  static bool _isGuid(String value, int start) {
+    const hyphenOffsets = <int>{8, 13, 18, 23};
+    for (var offset = 0; offset < 36; offset++) {
+      final codeUnit = value.codeUnitAt(start + offset);
+      if (hyphenOffsets.contains(offset)) {
+        if (codeUnit != 0x2d) return false;
+      } else if (!_isHexDigit(codeUnit)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static bool _isHexDigit(int codeUnit) =>
+      (codeUnit >= 0x30 && codeUnit <= 0x39) ||
+      (codeUnit >= 0x41 && codeUnit <= 0x46) ||
+      (codeUnit >= 0x61 && codeUnit <= 0x66);
+
+  static bool _isSeparator(int codeUnit, {required bool windows}) =>
+      codeUnit == 0x2f || (windows && codeUnit == 0x5c);
+
+  static bool _isAsciiLetter(int codeUnit) =>
+      (codeUnit >= 0x41 && codeUnit <= 0x5a) ||
+      (codeUnit >= 0x61 && codeUnit <= 0x7a);
+}
+
 class ReadyFeedbackRecoveryResult {
   const ReadyFeedbackRecoveryResult({
     required this.directory,
@@ -1217,10 +1405,35 @@ class ReadyFeedbackRepository {
     return FileSystemEntity.type(path, followLinks: false);
   }
 
-  Future<Directory> _prepareTrustedBaseDirectory(Directory suppliedBase) async {
-    final normalizedPath = suppliedBase.absolute.uri.normalizePath().toFilePath(
+  String _normalizeAbsoluteStoragePath(String path) {
+    final absolute = File(path).absolute.path;
+    if (Platform.isWindows &&
+        ReadyFeedbackStoragePathPolicy.usesWindowsDeviceNamespace(absolute)) {
+      if (!ReadyFeedbackStoragePathPolicy.isSupportedExtendedWindowsPath(
+        absolute,
+      )) {
+        throw FileSystemException(
+          'Feedback storage rejects unsupported Windows device namespaces.',
+          path,
+        );
+      }
+      return ReadyFeedbackStoragePathPolicy.withoutTrailingDirectorySeparators(
+        absolute,
+        windows: true,
+      );
+    }
+
+    final normalized = File(
+      absolute,
+    ).uri.normalizePath().toFilePath(windows: Platform.isWindows);
+    return ReadyFeedbackStoragePathPolicy.withoutTrailingDirectorySeparators(
+      normalized,
       windows: Platform.isWindows,
     );
+  }
+
+  Future<Directory> _prepareTrustedBaseDirectory(Directory suppliedBase) async {
+    final normalizedPath = _normalizeAbsoluteStoragePath(suppliedBase.path);
     final requestedBase = Directory(normalizedPath);
     final missing = <Directory>[];
     var current = requestedBase;
@@ -1237,8 +1450,31 @@ class ReadyFeedbackRepository {
         );
       }
 
-      final parent = current.parent;
-      if (_comparisonPath(parent.path) == _comparisonPath(current.path)) break;
+      final isVolumeRoot = ReadyFeedbackStoragePathPolicy.isVolumeRoot(
+        current.path,
+        windows: Platform.isWindows,
+      );
+      if (isVolumeRoot) {
+        if (type == FileSystemEntityType.notFound) {
+          throw FileSystemException(
+            'Feedback storage volume root must already exist.',
+            current.path,
+          );
+        }
+        break;
+      }
+      final parent = Directory(
+        ReadyFeedbackStoragePathPolicy.parentPath(
+          current.path,
+          windows: Platform.isWindows,
+        ),
+      );
+      if (_comparisonPath(parent.path) == _comparisonPath(current.path)) {
+        throw FileSystemException(
+          'Feedback storage ancestry ended before a filesystem volume root.',
+          current.path,
+        );
+      }
       current = parent;
     }
 
@@ -1246,10 +1482,13 @@ class ReadyFeedbackRepository {
     // parent and the newly created component on every step both supports normal
     // temp/test roots and rejects a link or junction inserted into the path.
     for (final directory in missing.reversed) {
-      await _requireDirectory(
-        directory.parent,
-        description: 'feedback storage ancestor',
+      final parent = Directory(
+        ReadyFeedbackStoragePathPolicy.parentPath(
+          directory.path,
+          windows: Platform.isWindows,
+        ),
       );
+      await _requireDirectory(parent, description: 'feedback storage ancestor');
       final type = await _typeWithoutFollowingLinks(directory.path);
       if (type == FileSystemEntityType.notFound) {
         await directory.create();
@@ -1269,12 +1508,62 @@ class ReadyFeedbackRepository {
       requestedBase,
       description: 'feedback storage base',
     );
-    final resolved = Directory(await requestedBase.resolveSymbolicLinks());
+    // Directory mtime/ctime/size describes mutable contents, not identity.
+    // Resolve twice around a no-follow ancestry walk instead. Canonical drift
+    // or a final link/junction fails closed; replacing one regular directory
+    // with another at the same safe lexical location remains location-safe.
+    final resolvedBefore = Directory(
+      await requestedBase.resolveSymbolicLinks(),
+    );
+    await _requireTrustedBaseAncestry(requestedBase);
+    final resolvedAfter = Directory(await requestedBase.resolveSymbolicLinks());
+    final sameResolvedEntity = await FileSystemEntity.identical(
+      requestedBase.path,
+      resolvedAfter.path,
+    );
+    if (_comparisonPath(resolvedBefore.path) !=
+            _comparisonPath(resolvedAfter.path) ||
+        !sameResolvedEntity) {
+      throw FileSystemException(
+        'Feedback storage identity changed while its base was validated.',
+        requestedBase.path,
+      );
+    }
+    await _requireTrustedBaseAncestry(requestedBase);
     await _requireDirectory(
-      resolved,
+      resolvedAfter,
       description: 'resolved feedback storage base',
     );
-    return resolved;
+    return resolvedAfter;
+  }
+
+  Future<void> _requireTrustedBaseAncestry(Directory requestedBase) async {
+    var current = requestedBase;
+    while (true) {
+      await _requireDirectory(
+        current,
+        description: 'feedback storage ancestor after canonical resolution',
+      );
+      if (ReadyFeedbackStoragePathPolicy.isVolumeRoot(
+        current.path,
+        windows: Platform.isWindows,
+      )) {
+        return;
+      }
+      final parent = Directory(
+        ReadyFeedbackStoragePathPolicy.parentPath(
+          current.path,
+          windows: Platform.isWindows,
+        ),
+      );
+      if (_comparisonPath(parent.path) == _comparisonPath(current.path)) {
+        throw FileSystemException(
+          'Feedback storage ancestry changed before reaching its volume root.',
+          current.path,
+        );
+      }
+      current = parent;
+    }
   }
 
   Future<void> _requireDirectory(
@@ -1474,13 +1763,7 @@ class ReadyFeedbackRepository {
   }
 
   String _comparisonPath(String path) {
-    var normalized = File(
-      path,
-    ).absolute.uri.normalizePath().toFilePath(windows: Platform.isWindows);
-    while (normalized.length > 1 &&
-        normalized.endsWith(Platform.pathSeparator)) {
-      normalized = normalized.substring(0, normalized.length - 1);
-    }
+    final normalized = _normalizeAbsoluteStoragePath(path);
     return Platform.isWindows ? normalized.toLowerCase() : normalized;
   }
 

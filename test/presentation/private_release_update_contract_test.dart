@@ -257,6 +257,26 @@ void main() {
     expect(workflow, contains('signtool.exe'));
     expect(workflow, contains('Signed Windows checksum coverage'));
     expect(workflow, contains('build/windows/x64/msix/SHA256SUMS.txt'));
+    expect(
+      RegExp(
+        r'SignTool Error:\\s\+A certificate chain processed,\\s\+',
+      ).allMatches(workflow),
+      hasLength(2),
+    );
+    expect(
+      RegExp(r'but terminated in a root').allMatches(workflow),
+      hasLength(2),
+    );
+    expect(
+      RegExp(
+        r'certificate which is not trusted by\\s\+the trust provider\\\.',
+      ).allMatches(workflow),
+      hasLength(2),
+    );
+    expect(
+      workflow,
+      isNot(contains(r'but terminated in a root\s+certificate which is not')),
+    );
   });
 
   test('trusted runs publish one verified three-asset private release', () {

@@ -5,6 +5,8 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:perfect/feedback/ready_feedback_capture.dart';
+import 'package:perfect/feedback/src/feedback_repository.dart'
+    show ReadyFeedbackStoragePathPolicy;
 
 void main() {
   late Directory temporary;
@@ -267,7 +269,202 @@ void main() {
     expect(await impatient.readEntries(), isEmpty);
   });
 
-  test('a linked storage base is rejected before namespace access', () async {
+  test('storage path policy preserves POSIX drive and UNC volume roots', () {
+    expect(
+      ReadyFeedbackStoragePathPolicy.withoutTrailingDirectorySeparators(
+        '////',
+        windows: false,
+      ),
+      '/',
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isVolumeRoot('/', windows: false),
+      isTrue,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.withoutTrailingDirectorySeparators(
+        '/tmp/private-feedback///',
+        windows: false,
+      ),
+      '/tmp/private-feedback',
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.withoutTrailingDirectorySeparators(
+        r'C:\\\',
+        windows: true,
+      ),
+      r'C:\',
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isVolumeRoot(r'C:\', windows: true),
+      isTrue,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isVolumeRoot(r'C:\\', windows: true),
+      isFalse,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.parentPath(r'C:\feedback', windows: true),
+      r'C:\',
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.withoutTrailingDirectorySeparators(
+        r'\\server\share\\\',
+        windows: true,
+      ),
+      r'\\server\share',
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isVolumeRoot(
+        r'\\server\share',
+        windows: true,
+      ),
+      isTrue,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isVolumeRoot(
+        r'\\server\share\',
+        windows: true,
+      ),
+      isFalse,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isVolumeRoot(
+        r'\\server\share\nested',
+        windows: true,
+      ),
+      isFalse,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.parentPath(
+        r'\\server\share\feedback',
+        windows: true,
+      ),
+      r'\\server\share',
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.withoutTrailingDirectorySeparators(
+        r'\\server\share\nested\\\',
+        windows: true,
+      ),
+      r'\\server\share\nested',
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isVolumeRoot(r'\\server\', windows: true),
+      isFalse,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isSupportedExtendedWindowsPath(r'\\?\C:\'),
+      isTrue,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isVolumeRoot(r'\\?\C:\', windows: true),
+      isTrue,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.withoutTrailingDirectorySeparators(
+        r'\\?\C:\\',
+        windows: true,
+      ),
+      r'\\?\C:\',
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.parentPath(
+        r'\\?\C:\feedback',
+        windows: true,
+      ),
+      r'\\?\C:\',
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isSupportedExtendedWindowsPath(
+        r'\\?\UNC\server\share',
+      ),
+      isTrue,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isVolumeRoot(
+        r'\\?\UNC\server\share',
+        windows: true,
+      ),
+      isTrue,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isVolumeRoot(
+        r'\\?\UNC\server\share\',
+        windows: true,
+      ),
+      isFalse,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.withoutTrailingDirectorySeparators(
+        r'\\?\UNC\server\share\',
+        windows: true,
+      ),
+      r'\\?\UNC\server\share',
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.parentPath(
+        r'\\?\UNC\server\share\feedback',
+        windows: true,
+      ),
+      r'\\?\UNC\server\share',
+    );
+    const volumeGuidRoot = r'\\?\Volume{01234567-89ab-cdef-0123-456789abcdef}\';
+    expect(
+      ReadyFeedbackStoragePathPolicy.isSupportedExtendedWindowsPath(
+        volumeGuidRoot,
+      ),
+      isTrue,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.isVolumeRoot(
+        volumeGuidRoot,
+        windows: true,
+      ),
+      isTrue,
+    );
+    expect(
+      ReadyFeedbackStoragePathPolicy.parentPath(
+        '${volumeGuidRoot}feedback\\nested',
+        windows: true,
+      ),
+      '${volumeGuidRoot}feedback',
+    );
+    for (final unsupported in <String>[
+      r'\\.\PhysicalDrive0',
+      r'\\?\GLOBALROOT\Device\HarddiskVolume1',
+      r'\\?\C:/feedback',
+      r'\\?\C:',
+      r'\\?\C:\safe\..\escape',
+      r'\\?\Volume{01234567-89ab-cdef-0123-456789abcdef}',
+      r'\\?\Volume{not-a-guid}\',
+    ]) {
+      expect(
+        ReadyFeedbackStoragePathPolicy.isSupportedExtendedWindowsPath(
+          unsupported,
+        ),
+        isFalse,
+        reason: unsupported,
+      );
+    }
+    expect(
+      ReadyFeedbackStoragePathPolicy.usesWindowsDeviceNamespace(
+        r'\\.\PhysicalDrive0',
+      ),
+      isTrue,
+    );
+  });
+
+  test('storage path policy stays outside the public feedback barrel', () {
+    final barrel = File(
+      'lib${Platform.pathSeparator}feedback${Platform.pathSeparator}'
+      'ready_feedback_capture.dart',
+    ).readAsStringSync();
+
+    expect(barrel, contains('hide ReadyFeedbackStoragePathPolicy'));
+  });
+
+  test('a linked storage base with repeated separators is rejected', () async {
     final realBase = await Directory.systemTemp.createTemp(
       'ready-feedback-real-base-',
     );
@@ -279,14 +476,22 @@ void main() {
       return;
     }
     try {
-      final linkedRepository = ReadyFeedbackRepository(
-        config: config,
-        rootDirectoryResolver: () async => Directory(linkedBase.path),
-      );
-      await expectLater(
-        linkedRepository.readEntries(),
-        throwsA(isA<ReadyFeedbackStorageException>()),
-      );
+      for (final suppliedBase in <Directory>[
+        Directory(linkedBase.path),
+        Directory(
+          '${linkedBase.path}${Platform.pathSeparator}'
+          '${Platform.pathSeparator}${Platform.pathSeparator}',
+        ),
+      ]) {
+        final linkedRepository = ReadyFeedbackRepository(
+          config: config,
+          rootDirectoryResolver: () async => suppliedBase,
+        );
+        await expectLater(
+          linkedRepository.readEntries(),
+          throwsA(isA<ReadyFeedbackStorageException>()),
+        );
+      }
       expect(
         await Directory(
           '${realBase.path}${Platform.pathSeparator}${config.storageNamespace}',
@@ -298,6 +503,40 @@ void main() {
       await realBase.delete(recursive: true);
     }
   });
+
+  test(
+    'a relative base with dot segments resolves to one trusted base',
+    () async {
+      final intendedBase = Directory(
+        '${temporary.path}${Platform.pathSeparator}relative-parent'
+        '${Platform.pathSeparator}relative-base',
+      );
+      final relativePath = _relativeDirectoryPath(
+        from: Directory.current,
+        to: intendedBase,
+      );
+      if (relativePath == null) {
+        markTestSkipped('The test base is on a different filesystem volume.');
+        return;
+      }
+      final suppliedBase = Directory(
+        '.${Platform.pathSeparator}$relativePath${Platform.pathSeparator}.'
+        '${Platform.pathSeparator}${Platform.pathSeparator}',
+      );
+      final relativeRepository = ReadyFeedbackRepository(
+        config: config,
+        rootDirectoryResolver: () async => suppliedBase,
+      );
+
+      final root = await relativeRepository.rootDirectory;
+
+      expect(
+        await FileSystemEntity.identical(root.parent.path, intendedBase.path),
+        isTrue,
+      );
+      expect(root.path, endsWith(config.storageNamespace));
+    },
+  );
 
   test('a linked storage ancestor is rejected before base creation', () async {
     final realParent = await Directory.systemTemp.createTemp(
@@ -1087,6 +1326,42 @@ Future<bool> _createFileLinkOrSkip(Link link, File target) async {
 Future<FileSystemEntityType> _typeWithoutFollowingLinks(String path) async {
   if (await FileSystemEntity.isLink(path)) return FileSystemEntityType.link;
   return FileSystemEntity.type(path, followLinks: false);
+}
+
+String? _relativeDirectoryPath({
+  required Directory from,
+  required Directory to,
+}) {
+  final fromUri = from.absolute.uri.normalizePath();
+  final toUri = to.absolute.uri.normalizePath();
+  final sameHost = Platform.isWindows
+      ? fromUri.host.toLowerCase() == toUri.host.toLowerCase()
+      : fromUri.host == toUri.host;
+  if (fromUri.scheme != toUri.scheme || !sameHost) return null;
+
+  final fromSegments = fromUri.pathSegments
+      .where((segment) => segment.isNotEmpty)
+      .toList(growable: false);
+  final toSegments = toUri.pathSegments
+      .where((segment) => segment.isNotEmpty)
+      .toList(growable: false);
+  var shared = 0;
+  while (shared < fromSegments.length && shared < toSegments.length) {
+    final left = fromSegments[shared];
+    final right = toSegments[shared];
+    final equal = Platform.isWindows
+        ? left.toLowerCase() == right.toLowerCase()
+        : left == right;
+    if (!equal) break;
+    shared++;
+  }
+  if (Platform.isWindows && shared == 0) return null;
+
+  final parts = <String>[
+    for (var index = shared; index < fromSegments.length; index++) '..',
+    ...toSegments.skip(shared),
+  ];
+  return parts.isEmpty ? '.' : parts.join(Platform.pathSeparator);
 }
 
 Uint8List _png() => base64Decode(
