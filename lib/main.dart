@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:perfect/ai/perfect_ai_client.dart';
@@ -6,6 +7,7 @@ import 'package:perfect/app/app_config.dart';
 import 'package:perfect/app/perfect_preferences.dart';
 import 'package:perfect/auth/auth_page.dart';
 import 'package:perfect/auth/configuration_page.dart';
+import 'package:perfect/feedback/ready_feedback_capture.dart';
 import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/notifications/planner_reminder_scheduler.dart';
@@ -20,6 +22,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  ReadyFeedbackLogger.instance.installGlobalErrorCapture();
   runApp(const PerfectApp());
 }
 
@@ -374,16 +377,42 @@ class _PlannerWorkspaceScopeState extends State<_PlannerWorkspaceScope>
       const PerfectTodayWidgetBridge();
   final PerfectWorkspaceNavigationController _navigationController =
       PerfectWorkspaceNavigationController();
+  late final ReadyFeedbackController _feedbackController;
   StreamSubscription<Uri?>? _widgetLaunchSubscription;
   StreamSubscription<String>? _reminderNavigationSubscription;
+  String? _lastLoggedLocalError;
+  String? _lastLoggedSyncDiagnostic;
   bool _isDisposed = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    final ownerScope = base64UrlEncode(
+      utf8.encode(widget.userId),
+    ).replaceAll('=', '');
+    _feedbackController = ReadyFeedbackController(
+      config: ReadyFeedbackConfig(
+        applicationName: 'Perfect!',
+        storageNamespace: 'perfect-feedback-$ownerScope',
+        settingsKey: 'perfect.feedback_capture_enabled.$ownerScope',
+      ),
+    );
+    unawaited(_initializeFeedback());
     _bindReminderNavigation();
     unawaited(_bindWidgetNavigation());
+  }
+
+  Future<void> _initializeFeedback() async {
+    try {
+      await _feedbackController.initialize();
+    } on Object catch (error, stackTrace) {
+      ReadyFeedbackLogger.instance.error(
+        error,
+        stackTrace: stackTrace,
+        context: 'Starting owner-scoped feedback capture',
+      );
+    }
   }
 
   void _bindReminderNavigation() {
@@ -444,6 +473,7 @@ class _PlannerWorkspaceScopeState extends State<_PlannerWorkspaceScope>
         todayWidgetBridge: _todayWidgetBridge,
       );
       _controller = controller;
+      controller.addListener(_capturePlannerDiagnostics);
       if (_isDisposed) controller.requestShutdown();
       await controller.start();
       if (_isDisposed) {
@@ -462,6 +492,48 @@ class _PlannerWorkspaceScopeState extends State<_PlannerWorkspaceScope>
     }
   }
 
+  void _capturePlannerDiagnostics() {
+    final controller = _controller;
+    if (_isDisposed || controller == null) return;
+
+    final localError = controller.localError?.toString().trim();
+    if (localError == null || localError.isEmpty) {
+      _lastLoggedLocalError = null;
+    } else if (localError != _lastLoggedLocalError) {
+      _lastLoggedLocalError = localError;
+      ReadyFeedbackLogger.instance.error(
+        localError,
+        context: 'Planner local data',
+      );
+    }
+
+    final syncStatus = controller.syncStatus;
+    final syncMessage = syncStatus.message?.trim();
+    final shouldCaptureSync =
+        syncMessage != null &&
+        syncMessage.isNotEmpty &&
+        (syncStatus.phase == PlannerSyncPhase.offline ||
+            syncStatus.phase == PlannerSyncPhase.needsAttention);
+    if (!shouldCaptureSync) {
+      // Keep the last failure through the transient syncing phase so every
+      // automatic retry does not duplicate the same diagnostic. A confirmed
+      // successful idle state re-arms capture for a later regression.
+      if (syncStatus.phase == PlannerSyncPhase.idle) {
+        _lastLoggedSyncDiagnostic = null;
+      }
+      return;
+    }
+    final diagnostic = '${syncStatus.phase.name}:$syncMessage';
+    if (diagnostic == _lastLoggedSyncDiagnostic) return;
+    _lastLoggedSyncDiagnostic = diagnostic;
+    ReadyFeedbackLogger.instance.warning(
+      syncMessage,
+      context: syncStatus.phase == PlannerSyncPhase.offline
+          ? 'Planner sync offline; automatic retry remains active'
+          : 'Planner sync needs attention; automatic retry remains active',
+    );
+  }
+
   @override
   void dispose() {
     _isDisposed = true;
@@ -475,7 +547,12 @@ class _PlannerWorkspaceScopeState extends State<_PlannerWorkspaceScope>
       unawaited(reminderNavigationSubscription.cancel());
     }
     _navigationController.dispose();
+    // The feedback controller explicitly makes in-flight initialization safe
+    // after disposal. Detach its owner-scoped repository immediately so a
+    // fast sign-out cannot keep routing new global logs into the old owner.
+    _feedbackController.dispose();
     final controller = _controller;
+    controller?.removeListener(_capturePlannerDiagnostics);
     controller?.requestShutdown();
     // Startup owns the database until its current await completes. Disposing
     // through the same future prevents close-vs-start races and guarantees that
@@ -523,6 +600,7 @@ class _PlannerWorkspaceScopeState extends State<_PlannerWorkspaceScope>
           }
           return PerfectWorkspacePage(
             controller: controller,
+            feedbackController: _feedbackController,
             aiClient: SupabasePerfectAiClient(Supabase.instance.client),
             themeMode: widget.themeMode,
             onThemeModeChanged: widget.onThemeModeChanged,

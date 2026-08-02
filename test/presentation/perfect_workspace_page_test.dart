@@ -9,6 +9,7 @@ import 'package:perfect/ai/perfect_ai_client.dart';
 import 'package:perfect/ai/perfect_ai_contract.dart';
 import 'package:perfect/ai/perfect_voice_recorder.dart';
 import 'package:perfect/app/perfect_preferences.dart';
+import 'package:perfect/feedback/ready_feedback_capture.dart';
 import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
@@ -923,6 +924,95 @@ void main() {
       expect(find.text('Private controls, not public settings.'), findsNothing);
     },
   );
+
+  testWidgets('More exposes the persistent private feedback capture control', (
+    tester,
+  ) async {
+    const config = ReadyFeedbackConfig(
+      applicationName: 'Perfect!',
+      storageNamespace: 'perfect-feedback-test',
+      settingsKey: 'perfect.feedback_capture_enabled',
+    );
+    late final ReadyFeedbackLogger feedbackLogger;
+    late final ReadyFeedbackController feedback;
+    await tester.runAsync(() async {
+      feedbackLogger = ReadyFeedbackLogger(
+        memoryLimit: 20,
+        retryDelays: const <Duration>[],
+      );
+      feedback = ReadyFeedbackController(
+        config: config,
+        repository: _WorkspaceFeedbackRepository(config: config),
+        logger: feedbackLogger,
+      );
+      await feedback.initialize();
+    });
+    addTearDown(feedbackLogger.dispose);
+    addTearDown(feedback.dispose);
+
+    await tester.binding.setSurfaceSize(const Size(900, 1000));
+    await _pump(tester, feedbackController: feedback);
+    expect(find.byTooltip('Capture feedback'), findsOneWidget);
+    expect(find.bySemanticsLabel('Capture private feedback'), findsOneWidget);
+    await tester.tap(find.byTooltip('Capture feedback'));
+    await tester.pumpAndSettle();
+    expect(find.text('Private feedback capture'), findsOneWidget);
+    expect(
+      find.text('Everything stays on this device until you export it.'),
+      findsOneWidget,
+    );
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('More (Ctrl+5)'));
+    await tester.pumpAndSettle();
+    expect(find.text('Feedback capture button'), findsOneWidget);
+    expect(find.text('Captured feedback & logs'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Private feedback and diagnostics settings'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byTooltip('Capture feedback'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Note only'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextField).last,
+      'Keep the feedback route tied to the visible workspace section.',
+    );
+    await tester.tap(find.text('Save privately'));
+    await tester.pump();
+    await _pumpUntil(tester, () => !feedback.busy);
+    await tester.pumpAndSettle();
+    late final List<ReadyFeedbackEntry> saved;
+    await tester.runAsync(() async {
+      saved = await feedback.readEntries();
+    });
+    expect(saved, hasLength(1));
+    expect(saved.single.route, 'More');
+    expect(saved.single.kind, ReadyFeedbackKind.error);
+
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(
+      tester,
+      feedbackController: feedback,
+      textScaler: const TextScaler.linear(2),
+    );
+    expect(find.byTooltip('Capture feedback'), findsOneWidget);
+    expect(find.text('Feedback capture button'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.byType(Switch).last);
+    await tester.pump();
+    expect(feedback.enabled, isFalse);
+    expect(find.byTooltip('Capture feedback'), findsNothing);
+    late final SharedPreferences preferences;
+    await tester.runAsync(() async {
+      preferences = await SharedPreferences.getInstance();
+    });
+    expect(preferences.getBool(config.settingsKey), isFalse);
+  });
 
   testWidgets('Today deep link clears an inspector already open on Today', (
     tester,
@@ -2100,6 +2190,7 @@ Future<void> _pump(
   WidgetTester tester, {
   PerfectWorkspaceNavigationController? navigationController,
   PerfectAiClient? aiClient,
+  ReadyFeedbackController? feedbackController,
   TextScaler? textScaler,
   TextDirection textDirection = TextDirection.ltr,
 }) async {
@@ -2126,11 +2217,35 @@ Future<void> _pump(
         now: () => _previewNow,
         navigationController: navigationController,
         aiClient: aiClient,
+        feedbackController: feedbackController,
         aiVoiceRecorder: aiClient == null ? null : _WorkspaceVoiceRecorder(),
       ),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _WorkspaceFeedbackRepository extends ReadyFeedbackRepository {
+  _WorkspaceFeedbackRepository({required super.config});
+
+  final List<ReadyFeedbackEntry> _entries = <ReadyFeedbackEntry>[];
+
+  @override
+  Future<List<ReadyFeedbackEntry>> readEntries() async =>
+      List<ReadyFeedbackEntry>.unmodifiable(_entries);
+
+  @override
+  Future<ReadyFeedbackEntry> addEntry(
+    ReadyFeedbackEntry entry, {
+    ReadyFeedbackScreenshotCapture? screenshot,
+    Uint8List? screenshotBytes,
+  }) async {
+    _entries.add(entry);
+    return entry;
+  }
+
+  @override
+  Future<void> appendLog(ReadyFeedbackLogRecord record) async {}
 }
 
 class _WorkspaceAiClient implements PerfectAiClient {

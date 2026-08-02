@@ -8,6 +8,7 @@ import 'package:perfect/ai/perfect_ai_client.dart';
 import 'package:perfect/ai/perfect_ai_dock.dart';
 import 'package:perfect/ai/perfect_voice_recorder.dart';
 import 'package:perfect/app/perfect_preferences.dart';
+import 'package:perfect/feedback/ready_feedback_capture.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_formula.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
@@ -69,6 +70,7 @@ class PerfectWorkspacePage extends StatefulWidget {
     this.navigationController,
     this.aiClient,
     this.aiVoiceRecorder,
+    this.feedbackController,
   });
 
   final PlannerWorkspaceController controller;
@@ -79,6 +81,7 @@ class PerfectWorkspacePage extends StatefulWidget {
   final PerfectWorkspaceNavigationController? navigationController;
   final PerfectAiClient? aiClient;
   final PerfectVoiceRecorder? aiVoiceRecorder;
+  final ReadyFeedbackController? feedbackController;
 
   @override
   State<PerfectWorkspacePage> createState() => _PerfectWorkspacePageState();
@@ -243,66 +246,76 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
   }
 
   @override
-  Widget build(BuildContext context) => CallbackShortcuts(
-    bindings: <ShortcutActivator, VoidCallback>{
-      const SingleActivator(LogicalKeyboardKey.keyN, control: true):
-          _openEditor,
-      const SingleActivator(LogicalKeyboardKey.digit1, control: true): () =>
-          _selectDestination(0),
-      const SingleActivator(LogicalKeyboardKey.digit2, control: true): () =>
-          _selectDestination(1),
-      const SingleActivator(LogicalKeyboardKey.digit3, control: true): () =>
-          _selectDestination(2),
-      const SingleActivator(LogicalKeyboardKey.digit4, control: true): () =>
-          _selectDestination(3),
-      const SingleActivator(LogicalKeyboardKey.digit5, control: true): () =>
-          _selectDestination(4),
-      const SingleActivator(LogicalKeyboardKey.keyK, control: true):
-          _focusQuickCapture,
-      const SingleActivator(
-        LogicalKeyboardKey.keyF,
-        control: true,
-        shift: true,
-      ): _openFocusFromShortcut,
-      const SingleActivator(LogicalKeyboardKey.escape): _dismissLocalContext,
-    },
-    child: Focus(
-      focusNode: _workspaceFocusNode,
-      autofocus: true,
-      child: FocusTraversalGroup(
-        key: const ValueKey<String>('workspace-focus-traversal'),
-        policy: ReadingOrderTraversalPolicy(),
-        child: AnimatedBuilder(
-          animation: widget.controller,
-          builder: (context, _) {
-            if (!widget.controller.isReady) return const _WorkspaceLoading();
-            _schedulePendingNavigationConsumption();
-            _ensureTodayProjection();
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                final shortLandscape =
-                    constraints.maxHeight < 520 && constraints.maxWidth >= 520;
-                final tier = constraints.maxWidth < 640
-                    ? _WorkspaceLayoutTier.compact
-                    : constraints.maxWidth < 1280
-                    ? _WorkspaceLayoutTier.medium
-                    : _WorkspaceLayoutTier.expanded;
-                _preserveQuickCaptureFocusAcross(tier);
-                if (shortLandscape && constraints.maxWidth < 1280) {
-                  return _medium(context, shortLandscape: true);
-                }
-                return switch (tier) {
-                  _WorkspaceLayoutTier.compact => _compact(context),
-                  _WorkspaceLayoutTier.medium => _medium(context),
-                  _WorkspaceLayoutTier.expanded => _expanded(context),
-                };
-              },
-            );
-          },
+  Widget build(BuildContext context) {
+    final workspace = CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.keyN, control: true):
+            _openEditor,
+        const SingleActivator(LogicalKeyboardKey.digit1, control: true): () =>
+            _selectDestination(0),
+        const SingleActivator(LogicalKeyboardKey.digit2, control: true): () =>
+            _selectDestination(1),
+        const SingleActivator(LogicalKeyboardKey.digit3, control: true): () =>
+            _selectDestination(2),
+        const SingleActivator(LogicalKeyboardKey.digit4, control: true): () =>
+            _selectDestination(3),
+        const SingleActivator(LogicalKeyboardKey.digit5, control: true): () =>
+            _selectDestination(4),
+        const SingleActivator(LogicalKeyboardKey.keyK, control: true):
+            _focusQuickCapture,
+        const SingleActivator(
+          LogicalKeyboardKey.keyF,
+          control: true,
+          shift: true,
+        ): _openFocusFromShortcut,
+        const SingleActivator(LogicalKeyboardKey.escape): _dismissLocalContext,
+      },
+      child: Focus(
+        focusNode: _workspaceFocusNode,
+        autofocus: true,
+        child: FocusTraversalGroup(
+          key: const ValueKey<String>('workspace-focus-traversal'),
+          policy: ReadingOrderTraversalPolicy(),
+          child: AnimatedBuilder(
+            animation: widget.controller,
+            builder: (context, _) {
+              if (!widget.controller.isReady) return const _WorkspaceLoading();
+              _schedulePendingNavigationConsumption();
+              _ensureTodayProjection();
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final shortLandscape =
+                      constraints.maxHeight < 520 &&
+                      constraints.maxWidth >= 520;
+                  final tier = constraints.maxWidth < 640
+                      ? _WorkspaceLayoutTier.compact
+                      : constraints.maxWidth < 1280
+                      ? _WorkspaceLayoutTier.medium
+                      : _WorkspaceLayoutTier.expanded;
+                  _preserveQuickCaptureFocusAcross(tier);
+                  if (shortLandscape && constraints.maxWidth < 1280) {
+                    return _medium(context, shortLandscape: true);
+                  }
+                  return switch (tier) {
+                    _WorkspaceLayoutTier.compact => _compact(context),
+                    _WorkspaceLayoutTier.medium => _medium(context),
+                    _WorkspaceLayoutTier.expanded => _expanded(context),
+                  };
+                },
+              );
+            },
+          ),
         ),
       ),
-    ),
-  );
+    );
+    final feedbackController = widget.feedbackController;
+    if (feedbackController == null) return workspace;
+    return ReadyFeedbackOverlay(
+      controller: feedbackController,
+      routeName: _destination.label,
+      child: workspace,
+    );
+  }
 
   Widget _compact(BuildContext context) => Scaffold(
     body: SafeArea(
@@ -568,6 +581,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         ),
         _PerfectDestination.more => _MorePage(
           controller: widget.controller,
+          feedbackController: widget.feedbackController,
           themeMode: widget.themeMode,
           onThemeModeChanged: widget.onThemeModeChanged,
           onSignOut: widget.onSignOut,
@@ -3286,6 +3300,7 @@ class _MorePage extends StatelessWidget {
     required this.onSignOut,
     required this.onAddProject,
     required this.onAddArea,
+    this.feedbackController,
   });
 
   final PlannerWorkspaceController controller;
@@ -3294,6 +3309,7 @@ class _MorePage extends StatelessWidget {
   final Future<void> Function() onSignOut;
   final VoidCallback onAddProject;
   final VoidCallback onAddArea;
+  final ReadyFeedbackController? feedbackController;
 
   @override
   Widget build(BuildContext context) => ListView(
@@ -3304,6 +3320,17 @@ class _MorePage extends StatelessWidget {
         subtitle: 'Private controls, not public settings.',
       ),
       const SizedBox(height: PerfectSpace.md),
+      if (feedbackController case final feedback?) ...[
+        Semantics(
+          container: true,
+          label: 'Private feedback and diagnostics settings',
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            child: ReadyFeedbackSettingsTile(controller: feedback),
+          ),
+        ),
+        const SizedBox(height: PerfectSpace.md),
+      ],
       Card(
         child: Padding(
           padding: const EdgeInsets.all(PerfectSpace.md),
