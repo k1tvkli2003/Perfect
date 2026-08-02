@@ -1,21 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:perfect/app/app_config.dart';
+import 'package:perfect/auth/private_owner_identity.dart';
 import 'package:perfect/presentation/perfect_brand.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+typedef PrivateOwnerSignIn =
+    Future<void> Function({required String email, required String password});
+typedef PrivateOwnerPasswordRecovery =
+    Future<void> Function({required String email, required String redirectTo});
+
 /// Private-owner access only. There is intentionally no public sign-up path.
 class AuthPage extends StatefulWidget {
-  const AuthPage({super.key, this.onChangeConnection});
+  const AuthPage({
+    super.key,
+    this.onChangeConnection,
+    this.ownerIdentity = const PrivateOwnerIdentity.compiled(),
+    this.signIn,
+    this.sendPasswordRecovery,
+  });
 
   final Future<void> Function()? onChangeConnection;
+  final PrivateOwnerIdentity ownerIdentity;
+  final PrivateOwnerSignIn? signIn;
+  final PrivateOwnerPasswordRecovery? sendPasswordRecovery;
 
   @override
   State<AuthPage> createState() => _AuthPageState();
 }
 
 class _AuthPageState extends State<AuthPage> {
-  final _email = TextEditingController();
+  final _username = TextEditingController();
   final _password = TextEditingController();
   bool _busy = false;
   bool _recoveryMode = false;
@@ -23,19 +38,30 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   void dispose() {
-    _email.dispose();
+    _username.dispose();
     _password.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    final email = _email.text.trim();
+    final username = _username.text.trim();
     final password = _password.text;
-    if (!email.contains('@')) {
-      setState(() => _message = 'Enter the private account email.');
+    if (!widget.ownerIdentity.recognizes(username)) {
+      setState(
+        () => _message =
+            'Use the private username ${widget.ownerIdentity.username}.',
+      );
       return;
     }
-    if (!_recoveryMode && password.length < 8) {
+    final email = widget.ownerIdentity.resolveEmail(username);
+    if (email == null) {
+      setState(
+        () => _message =
+            'This build is missing the private account identity. Install a trusted Perfect release.',
+      );
+      return;
+    }
+    if (!_recoveryMode && password.isEmpty) {
       setState(() => _message = 'Enter your password.');
       return;
     }
@@ -45,10 +71,9 @@ class _AuthPageState extends State<AuthPage> {
     });
     try {
       if (_recoveryMode) {
-        await Supabase.instance.client.auth.resetPasswordForEmail(
-          email,
-          redirectTo: AppConfig.authRedirectUri,
-        );
+        final recover =
+            widget.sendPasswordRecovery ?? _sendSupabasePasswordRecovery;
+        await recover(email: email, redirectTo: AppConfig.authRedirectUri);
         if (mounted) {
           setState(
             () => _message =
@@ -56,13 +81,17 @@ class _AuthPageState extends State<AuthPage> {
           );
         }
       } else {
-        await Supabase.instance.client.auth.signInWithPassword(
-          email: email,
-          password: password,
-        );
+        final signIn = widget.signIn ?? _signInWithSupabase;
+        await signIn(email: email, password: password);
       }
     } on AuthException catch (error) {
-      if (mounted) setState(() => _message = error.message);
+      if (mounted) {
+        setState(
+          () => _message = _recoveryMode
+              ? error.message
+              : 'The username or password is incorrect.',
+        );
+      }
     } on Object {
       if (mounted) {
         setState(
@@ -73,6 +102,26 @@ class _AuthPageState extends State<AuthPage> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  static Future<void> _signInWithSupabase({
+    required String email,
+    required String password,
+  }) async {
+    await Supabase.instance.client.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  static Future<void> _sendSupabasePasswordRecovery({
+    required String email,
+    required String redirectTo,
+  }) async {
+    await Supabase.instance.client.auth.resetPasswordForEmail(
+      email,
+      redirectTo: redirectTo,
+    );
   }
 
   Future<void> _changeConnection() async {
@@ -149,20 +198,24 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                     const SizedBox(height: PerfectSpace.lg),
                     TextField(
-                      controller: _email,
-                      keyboardType: TextInputType.emailAddress,
+                      key: const ValueKey('private-owner-username'),
+                      controller: _username,
+                      keyboardType: TextInputType.text,
                       textInputAction: _recoveryMode
                           ? TextInputAction.done
                           : TextInputAction.next,
-                      autofillHints: const [AutofillHints.email],
+                      autofillHints: const [AutofillHints.username],
+                      autocorrect: false,
+                      enableSuggestions: false,
                       onSubmitted: (_) {
                         if (_recoveryMode) _submit();
                       },
-                      decoration: const InputDecoration(labelText: 'Email'),
+                      decoration: const InputDecoration(labelText: 'Username'),
                     ),
                     if (!_recoveryMode) ...[
                       const SizedBox(height: PerfectSpace.sm),
                       TextField(
+                        key: const ValueKey('private-owner-password'),
                         controller: _password,
                         obscureText: true,
                         enableSuggestions: false,
@@ -217,7 +270,7 @@ class _AuthPageState extends State<AuthPage> {
                       ),
                     const SizedBox(height: PerfectSpace.xs),
                     Text(
-                      'This app has no public registration. The one private owner is approved in Supabase before first access.',
+                      'This app has no public registration. Only the private Perfect account can sign in.',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
@@ -251,10 +304,10 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
   }
 
   Future<void> _update() async {
-    if (_password.text.length < 12) {
+    if (_password.text.length < 8) {
       setState(
-        () => _message =
-            'Choose at least 12 characters for this private account.',
+        () =>
+            _message = 'Choose at least 8 characters for this private account.',
       );
       return;
     }

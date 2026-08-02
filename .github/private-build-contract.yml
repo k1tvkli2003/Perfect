@@ -39,6 +39,7 @@ workflow:
   optional_runtime_secrets:
     - PERFECT_SUPABASE_URL
     - PERFECT_SUPABASE_PUBLISHABLE_KEY
+    - PERFECT_OWNER_AUTH_EMAIL
   windows_signing_secrets:
     - PERFECT_WINDOWS_PFX_BASE64
     - PERFECT_WINDOWS_PFX_PASSWORD
@@ -57,7 +58,8 @@ workflow:
     - Perfect-MAJOR.MINOR.PATCH-build.VERSION_CODE-Windows-Portable.zip
 
 constraints:
-  - Do not put Supabase credentials, Android keystores, PFX files, or passwords in this repository or workflow.
+  - Do not put the owner's auth email, Supabase credentials, Android keystores, PFX files, or passwords in this repository or workflow.
+  - Trusted configured builds map the fixed private username to PERFECT_OWNER_AUTH_EMAIL at compile time; the transport email is never shown in the sign-in UI and the password is never embedded.
   - Pull requests and manual runs outside main never receive Supabase or signing secrets; private signing runs only for trusted push-to-main or workflow_dispatch-on-main builds.
   - A rerun keeps the same Android versionCode and MSIX version, while each later workflow run receives a larger revision for in-place upgrades.
   - The checked-in pubspec BUILD value is an Android epoch. It may increase but never decrease, and lets trusted CI remain above private/local artifacts that were installed before the workflow lineage began.

@@ -128,6 +128,25 @@ void main() {
     );
     expect(
       workflow,
+      contains(
+        r"${{ needs.prepare.outputs.trusted_build == 'true' && "
+        r"secrets.PERFECT_OWNER_AUTH_EMAIL || '' }}",
+      ),
+    );
+    expect(
+      workflow,
+      contains(
+        '--dart-define="PERFECT_OWNER_AUTH_EMAIL=\$PERFECT_OWNER_AUTH_EMAIL"',
+      ),
+    );
+    expect(
+      workflow,
+      contains(
+        '--dart-define="PERFECT_OWNER_AUTH_EMAIL=\$env:PERFECT_OWNER_AUTH_EMAIL"',
+      ),
+    );
+    expect(
+      workflow,
       contains("if: needs.prepare.outputs.trusted_build == 'true'"),
     );
     expect(

@@ -192,6 +192,7 @@ jobs:
         env:
           PERFECT_SUPABASE_URL: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_SUPABASE_URL || '' }}
           PERFECT_SUPABASE_PUBLISHABLE_KEY: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_SUPABASE_PUBLISHABLE_KEY || '' }}
+          PERFECT_OWNER_AUTH_EMAIL: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_OWNER_AUTH_EMAIL || '' }}
           PERFECT_SEMANTIC_VERSION: ${{ needs.prepare.outputs.semantic_version }}
           PERFECT_ANDROID_VERSION_CODE: ${{ needs.prepare.outputs.android_version_code }}
           PERFECT_ANDROID_KEYSTORE_PATH: ${{ needs.prepare.outputs.trusted_build == 'true' && format('{0}/perfect-private.jks', runner.temp) || '' }}
@@ -199,12 +200,13 @@ jobs:
           PERFECT_ANDROID_KEY_ALIAS: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_ANDROID_KEY_ALIAS || '' }}
           PERFECT_ANDROID_KEY_PASSWORD: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_ANDROID_KEY_PASSWORD || '' }}
         run: |
-          if [[ -n "$PERFECT_SUPABASE_URL" && -n "$PERFECT_SUPABASE_PUBLISHABLE_KEY" ]]; then
+          if [[ -n "$PERFECT_SUPABASE_URL" && -n "$PERFECT_SUPABASE_PUBLISHABLE_KEY" && -n "$PERFECT_OWNER_AUTH_EMAIL" ]]; then
             flutter build apk --release \
               --build-name="$PERFECT_SEMANTIC_VERSION" \
               --build-number="$PERFECT_ANDROID_VERSION_CODE" \
               --dart-define="SUPABASE_URL=$PERFECT_SUPABASE_URL" \
               --dart-define="SUPABASE_PUBLISHABLE_KEY=$PERFECT_SUPABASE_PUBLISHABLE_KEY" \
+              --dart-define="PERFECT_OWNER_AUTH_EMAIL=$PERFECT_OWNER_AUTH_EMAIL" \
               --dart-define="SUPABASE_AUTH_REDIRECT_URI=perfect://login-callback"
             echo "mode=configured-private" >> "$GITHUB_OUTPUT"
           else
@@ -212,7 +214,7 @@ jobs:
               --build-name="$PERFECT_SEMANTIC_VERSION" \
               --build-number="$PERFECT_ANDROID_VERSION_CODE"
             echo "mode=verification-only-unconfigured" >> "$GITHUB_OUTPUT"
-            echo "::warning::Supabase repository secrets are absent. This artifact verifies compilation but opens the configuration screen and is not a sync-ready install."
+            echo "::warning::Private runtime secrets are absent. This artifact verifies compilation but is not a ready private install."
           fi
       - name: Verify and checksum Android package
         id: android-package
@@ -389,15 +391,17 @@ jobs:
         env:
           PERFECT_SUPABASE_URL: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_SUPABASE_URL || '' }}
           PERFECT_SUPABASE_PUBLISHABLE_KEY: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_SUPABASE_PUBLISHABLE_KEY || '' }}
+          PERFECT_OWNER_AUTH_EMAIL: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_OWNER_AUTH_EMAIL || '' }}
           PERFECT_SEMANTIC_VERSION: ${{ needs.prepare.outputs.semantic_version }}
           PERFECT_WINDOWS_BUILD_NUMBER: ${{ needs.prepare.outputs.android_version_code }}
         run: |
-          if ($env:PERFECT_SUPABASE_URL -and $env:PERFECT_SUPABASE_PUBLISHABLE_KEY) {
+          if ($env:PERFECT_SUPABASE_URL -and $env:PERFECT_SUPABASE_PUBLISHABLE_KEY -and $env:PERFECT_OWNER_AUTH_EMAIL) {
             flutter build windows --release `
               --build-name="$env:PERFECT_SEMANTIC_VERSION" `
               --build-number="$env:PERFECT_WINDOWS_BUILD_NUMBER" `
               --dart-define="SUPABASE_URL=$env:PERFECT_SUPABASE_URL" `
               --dart-define="SUPABASE_PUBLISHABLE_KEY=$env:PERFECT_SUPABASE_PUBLISHABLE_KEY" `
+              --dart-define="PERFECT_OWNER_AUTH_EMAIL=$env:PERFECT_OWNER_AUTH_EMAIL" `
               --dart-define="SUPABASE_AUTH_REDIRECT_URI=perfect://login-callback"
             "mode=configured-private" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } else {
@@ -405,7 +409,7 @@ jobs:
               --build-name="$env:PERFECT_SEMANTIC_VERSION" `
               --build-number="$env:PERFECT_WINDOWS_BUILD_NUMBER"
             "mode=verification-only-unconfigured" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            Write-Warning "Supabase repository secrets are absent. This artifact verifies compilation but opens the configuration screen and is not a sync-ready install."
+            Write-Warning "Private runtime secrets are absent. This artifact verifies compilation but is not a ready private install."
           }
       - name: Complete and package the portable Windows bundle
         shell: pwsh

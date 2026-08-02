@@ -198,3 +198,4 @@
 - Flutter 3.44 دربارهٔ مهاجرت آیندهٔ Kotlin plugin در `home_widget` و `flutter_timezone` هشدار می‌دهد. هر دو dependency مستقیم در آخرین نسخهٔ قابل resolve هستند؛ این هشدار شکست فعلی نیست و مالکیت fix در upstream است.
 - تصاویر Android موجود، launcher/widget و Auth/Configuration را اثبات می‌کنند؛ signed-in Orbit Day main workspace روی phone/tablet runtime نشده است.
 - signed-in widget Quick Add، authenticated session retention، Android↔Windows convergence، positive AI text/voice/proposal-apply با provider key rotateشده و physical notification/OEM/reboot هنوز اجرا نشده‌اند.
+- Supabase Auth API ورود حساب خصوصی را با credential جدید و همان UUID موجود در `planner_owner_profiles` تأیید کرده است؛ این اثبات API جایگزین اجرای UI نسخهٔ ریلیز بعدی روی Android/Windows نیست.

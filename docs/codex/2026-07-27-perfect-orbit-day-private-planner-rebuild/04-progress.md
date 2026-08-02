@@ -67,6 +67,8 @@
 
 Exact-HEAD run [`30721214315`](https://github.com/k1tvkli2003/Perfect/actions/runs/30721214315) (`#30`) برای commit `1b8468b18ec8edc2645ab73dffff23a6829ba0ea` پاس شد: ۲۶۶ تست، signed Android، Windows build، raw MSIX install-over `1.1.0.29 → 1.1.0.30` و self-contained Setup clean-install/rerun همگی سبز شدند. Release immutable [`v1.1.0-build.2030`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2030) دقیقاً APK، Setup.exe و Portable.zip دارد. دانلود مستقل هر سه فایل با digestهای GitHub برابر بود؛ APK identity/signature/سه ABI، Setup metadata/signer/timestamp و portable ۳۷-file runtime/zero banned extras پاس شدند.
 
+ورود مالک خصوصی در همان Supabase user متصل به `planner_owner_profiles` تثبیت شد: نام کاربری اپ `keyvan` است، ایمیل انتقالی فقط از Secret بیلد می‌آید و رمز در سورس/Workflow ذخیره نمی‌شود. Admin API حساب موجود را بدون تغییر UUID به‌روزرسانی کرد؛ password sign-in واقعی، تطابق UUID مالک و metadata نام کاربری پاس شد و نشست آزمایشی بلافاصله revoke شد.
+
 ## Done So Far
 - Durable task record and master plan.
 - Preservation/compatibility contract before mutation.
