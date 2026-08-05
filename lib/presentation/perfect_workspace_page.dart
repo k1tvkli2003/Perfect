@@ -3666,8 +3666,9 @@ enum _TaskKindFilter { all, oneOff, recurring }
 
 class _TasksPageState extends State<_TasksPage> {
   final _search = TextEditingController();
-  _TaskFilter _filter = _TaskFilter.inbox;
+  _TaskFilter _filter = _TaskFilter.active;
   _TaskKindFilter _kindFilter = _TaskKindFilter.all;
+  bool _filtersExpanded = false;
 
   @override
   void dispose() {
@@ -3710,7 +3711,7 @@ class _TasksPageState extends State<_TasksPage> {
       children: [
         _PageTitle(
           title: 'Tasks',
-          subtitle: 'Inbox first. Details only when you need them.',
+          subtitle: 'All open work first. Narrow only when you need to.',
           onAdd: widget.onAdd,
         ),
         const SizedBox(height: PerfectSpace.md),
@@ -3719,9 +3720,12 @@ class _TasksPageState extends State<_TasksPage> {
           filter: _filter,
           kindFilter: _kindFilter,
           resultCount: tasks.length,
+          expanded: _filtersExpanded,
           onSearchChanged: () => setState(() {}),
           onFilterChanged: (value) => setState(() => _filter = value),
           onKindChanged: (value) => setState(() => _kindFilter = value),
+          onToggleExpanded: () =>
+              setState(() => _filtersExpanded = !_filtersExpanded),
         ),
         const SizedBox(height: PerfectSpace.md),
         if (tasks.isEmpty)
@@ -3730,10 +3734,10 @@ class _TasksPageState extends State<_TasksPage> {
                 ? Icons.celebration_outlined
                 : Icons.inbox_outlined,
             title: _search.text.trim().isEmpty
-                ? 'Your ${_taskFilterLabel(_filter).toLowerCase()} is clear.'
+                ? _taskEmptyTitle(_filter)
                 : 'Nothing matches that search.',
             body: _search.text.trim().isEmpty
-                ? 'Use quick capture when the next task appears.'
+                ? _taskEmptyBody(_filter)
                 : 'Try a title, note, or category you used before.',
             actionLabel: 'Create task',
             onAction: widget.onAdd,
@@ -3758,18 +3762,22 @@ class _TaskFilterDeck extends StatelessWidget {
     required this.filter,
     required this.kindFilter,
     required this.resultCount,
+    required this.expanded,
     required this.onSearchChanged,
     required this.onFilterChanged,
     required this.onKindChanged,
+    required this.onToggleExpanded,
   });
 
   final TextEditingController search;
   final _TaskFilter filter;
   final _TaskKindFilter kindFilter;
   final int resultCount;
+  final bool expanded;
   final VoidCallback onSearchChanged;
   final ValueChanged<_TaskFilter> onFilterChanged;
   final ValueChanged<_TaskKindFilter> onKindChanged;
+  final VoidCallback onToggleExpanded;
 
   @override
   Widget build(BuildContext context) {
@@ -3777,17 +3785,24 @@ class _TaskFilterDeck extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: scheme.outlineVariant),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(PerfectSpace.md),
+        padding: const EdgeInsets.all(PerfectSpace.sm),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final wide = constraints.maxWidth >= 700;
+            final showControls = wide || expanded;
+            final animationDuration = PerfectMotion.responsive(
+              context,
+              PerfectMotion.standard,
+            );
             final searchField = TextField(
               controller: search,
               onChanged: (_) => onSearchChanged(),
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
               textDirection: _textDirection(search.text),
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search_rounded),
@@ -3825,6 +3840,125 @@ class _TaskFilterDeck extends StatelessWidget {
                 ),
               ],
             );
+            final resultCopy =
+                '$resultCount ${resultCount == 1 ? 'result' : 'results'}';
+            final filterSummary =
+                '${_taskFilterLabel(filter)} · '
+                '${_taskKindFilterLabel(kindFilter)}';
+            final highTextScale =
+                MediaQuery.textScalerOf(context).scale(14) / 14 >= 1.6;
+            final compactToggle = Semantics(
+              button: true,
+              label:
+                  '${expanded ? 'Hide' : 'Show'} task filters. '
+                  '$filterSummary. $resultCopy.',
+              child: ExcludeSemantics(
+                child: Material(
+                  color: scheme.surfaceContainerLowest,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: scheme.outlineVariant),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    key: const ValueKey<String>('task-filter-toggle'),
+                    onTap: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      onToggleExpanded();
+                    },
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 48),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: PerfectSpace.sm,
+                          vertical: PerfectSpace.xs,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.tune_rounded,
+                              size: 19,
+                              color: scheme.primary,
+                            ),
+                            const SizedBox(width: PerfectSpace.xs),
+                            Expanded(
+                              child: highTextScale
+                                  ? Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          filterSummary,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                        ),
+                                        Text(
+                                          resultCopy,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelSmall
+                                              ?.copyWith(
+                                                color: scheme.onSurfaceVariant,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                      ],
+                                    )
+                                  : Text(
+                                      filterSummary,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                    ),
+                            ),
+                            if (!highTextScale) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 9,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: scheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(99),
+                                ),
+                                child: Text(
+                                  '$resultCount',
+                                  style: Theme.of(context).textTheme.labelMedium
+                                      ?.copyWith(
+                                        color: scheme.onPrimaryContainer,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                ),
+                              ),
+                              const SizedBox(width: PerfectSpace.xs),
+                            ],
+                            AnimatedRotation(
+                              turns: expanded ? .5 : 0,
+                              duration: animationDuration,
+                              curve: PerfectMotion.productive,
+                              child: const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                size: 22,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -3839,32 +3973,55 @@ class _TaskFilterDeck extends StatelessWidget {
                   )
                 else ...[
                   searchField,
-                  const SizedBox(height: PerfectSpace.md),
-                  controls,
-                ],
-                const SizedBox(height: PerfectSpace.sm),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.filter_alt_outlined,
-                      size: 17,
-                      color: scheme.onSurfaceVariant,
+                  const SizedBox(height: PerfectSpace.xs),
+                  compactToggle,
+                  AnimatedSwitcher(
+                    duration: animationDuration,
+                    switchInCurve: PerfectMotion.enter,
+                    switchOutCurve: PerfectMotion.exit,
+                    transitionBuilder: (child, animation) => SizeTransition(
+                      sizeFactor: animation,
+                      alignment: Alignment.topCenter,
+                      child: FadeTransition(opacity: animation, child: child),
                     ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        '$resultCount ${resultCount == 1 ? 'result' : 'results'} · '
-                        '${_taskKindFilterLabel(kindFilter)} · '
-                        '${_taskFilterLabel(filter)}',
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w700,
+                    child: showControls
+                        ? Padding(
+                            key: const ValueKey<String>('task-filter-controls'),
+                            padding: const EdgeInsets.only(
+                              top: PerfectSpace.sm,
                             ),
+                            child: controls,
+                          )
+                        : const SizedBox.shrink(
+                            key: ValueKey<String>(
+                              'task-filter-controls-collapsed',
+                            ),
+                          ),
+                  ),
+                ],
+                if (wide) ...[
+                  const SizedBox(height: PerfectSpace.sm),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.filter_alt_outlined,
+                        size: 17,
+                        color: scheme.onSurfaceVariant,
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '$resultCopy · $filterSummary',
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             );
           },
@@ -3915,6 +4072,7 @@ class _FilterGroup<T> extends StatelessWidget {
                     : Icon(iconFor!(value), size: 17),
                 label: Text(labelFor(value)),
                 selected: selected == value,
+                showCheckmark: false,
                 onSelected: (_) => onChanged(value),
               ),
             )
@@ -3926,9 +4084,26 @@ class _FilterGroup<T> extends StatelessWidget {
 
 String _taskFilterLabel(_TaskFilter filter) => switch (filter) {
   _TaskFilter.inbox => 'Inbox',
-  _TaskFilter.active => 'Active',
+  _TaskFilter.active => 'Open',
   _TaskFilter.scheduled => 'Scheduled',
   _TaskFilter.completed => 'Completed',
+};
+
+String _taskEmptyTitle(_TaskFilter filter) => switch (filter) {
+  _TaskFilter.inbox => 'Your inbox is clear.',
+  _TaskFilter.active => 'No open tasks.',
+  _TaskFilter.scheduled => 'Nothing scheduled.',
+  _TaskFilter.completed => 'No completed tasks yet.',
+};
+
+String _taskEmptyBody(_TaskFilter filter) => switch (filter) {
+  _TaskFilter.inbox =>
+    'Everything has a place. Add a task when something new appears.',
+  _TaskFilter.active =>
+    'Create the next task, or switch to Completed to review finished work.',
+  _TaskFilter.scheduled => 'Plan a task when it needs a date or time.',
+  _TaskFilter.completed =>
+    'Finished work will collect here without leaving your active list.',
 };
 
 String _taskKindFilterLabel(_TaskKindFilter filter) => switch (filter) {
@@ -3939,7 +4114,7 @@ String _taskKindFilterLabel(_TaskKindFilter filter) => switch (filter) {
 
 IconData _taskKindFilterIcon(_TaskKindFilter filter) => switch (filter) {
   _TaskKindFilter.all => Icons.view_agenda_outlined,
-  _TaskKindFilter.oneOff => Icons.check_circle_outline_rounded,
+  _TaskKindFilter.oneOff => Icons.filter_1_rounded,
   _TaskKindFilter.recurring => Icons.repeat_rounded,
 };
 

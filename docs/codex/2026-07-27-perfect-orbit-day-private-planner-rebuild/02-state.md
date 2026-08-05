@@ -1,11 +1,11 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-05T23:11:44+03:30
+- Last updated: 2026-08-06T01:24:13+03:30
 - Owner: Codex
 
 ## Current State
-در HEAD فعلی `e0a5e67397e71954187fe00be19389097b233164` و release خصوصی `v1.1.0-build.2035`، گیت جدید Critics برای Tasks، Habits و editor فریز شد. ۶۱/۶۱ تست متمرکز پاس‌اند، اما سه نقص P1 واقعی هنوز بازند: projection هبیت در Pending target را به ۱ تقلیل می‌دهد، Tasks با Inbox پیش‌فرض می‌تواند همهٔ activeهای زمان‌دار را پنهان کند، و کنترل compact Home در شواهد runtime با آخرین ردیف تداخل بصری دارد. چرخهٔ Perfect از علت داده‌ای هبیت شروع می‌شود و سپس hierarchy صفحهٔ Tasks و پیوستگی Home را می‌بندد. لجر کامل در `10-critics-tasks-habits-editor-ledger.md` است.
+Perfect Cycle 1 روی commit `a793531279174f735ad1e247f96a5213613dabb1` با workflow موفق [`31041370535`](https://github.com/k1tvkli2003/Perfect/actions/runs/31041370535) و release immutable [`v1.1.0-build.2036`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2036) بسته شد؛ release دقیقاً APK، portable ZIP و Windows Setup دارد و install-over/LocalState پاس است. Cycle 2 نیز به‌صورت محلی صفحهٔ Tasks را از Inbox پنهان‌کننده به Open صادقانه منتقل کرده، filter deck موبایل را progressive کرده، keyboard-dismiss و reflow متن ۲۰۰٪ را بسته و ۳۵۶/۳۵۶ تست را سبز کرده است. C3، یعنی پیوستگی آخرین ردیف Home با dock، مرحلهٔ بعد است. لجر کامل در `10-critics-tasks-habits-editor-ledger.md` است.
 
 بازسازی local-first و تجربهٔ Orbit Day در commit `1b8468b18ec8edc2645ab73dffff23a6829ba0ea` با exact-HEAD run [`30721214315`](https://github.com/k1tvkli2003/Perfect/actions/runs/30721214315) (`#30`) و conclusion `success` اثبات شده است؛ analyzer و 266/266 تست سبزند. Android `1.1.0+2030` با package/label/سه ABI/امضای v2 و fingerprint ثابت پاس است. Windows `1.1.0.30` با identity/publisher ثابت و signer `CA=false` پاس است؛ Setup مستقل نصب تمیز، rerun، حفظ package family/LocalState و عدم تغییر Trusted Root را ثابت کرد. Release immutable [`v1.1.0-build.2030`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2030) دقیقاً APK، Setup و portable را دارد؛ portable شامل 37 فایل runtime و صفر MSIX/CER/checksum/log/ZIP تو‌در‌تو است. Function v3 و owner-scoped backend زنده‌اند؛ شکاف‌های signed-in/hover/jank همچنان صادقانه بازند.
 
@@ -48,6 +48,7 @@
 | 2026-07-31 | run `#20` نخستین baseline signer جدید است، نه install-over proof. | artifact پایین‌تری با thumbprint `1424F286…BA24` وجود نداشت؛ workflow این حالت را صریحاً گزارش و بدون ادعای upgrade موفق تمام کرد. | log مرحلهٔ `Prove MSIX install-over preserves LocalState` در run `30637250609` |
 | 2026-07-31 | run `#21` اولین Windows install-over واقعی را بست. | نصب `1.1.0.20 → 1.1.0.21` با signer یکسان، package family و hash marker دقیق LocalState را حفظ کرد. | run `30639359490`، job `91185076156` |
 | 2026-08-02 | هر trusted main success یک Release immutable با دقیقاً سه asset نصب‌پذیر می‌سازد. | APK، Setup و portable باید مستقیماً قابل‌استفاده باشند؛ CER/MSIX خام/checksum/log فقط transport داخلی‌اند. Setup نیز trust پین‌شده و نصب/ارتقای MSIX را خودش انجام می‌دهد. | run `30721214315` + release `v1.1.0-build.2030` |
+| 2026-08-06 | Tasks به‌طور پیش‌فرض همهٔ کارهای Open را نشان می‌دهد و فیلترهای compact فقط در صورت درخواست باز می‌شوند. | Inbox نباید کارهای زمان‌دار معتبر را پنهان کند و ابزار فیلتر نباید قبل از خود کارها نصف viewport را اشغال کند. | Critics C2/C4 + Android runtime + workspace tests |
 
 ## Blockers
 - هیچ blocker برای source، analyzer، 266/266 تست محلی، exact-SHA CI یا انتشار install-ready وجود ندارد.
@@ -81,7 +82,7 @@
 - run `#21` (`30639359490`) با هر سه job سبز شد. Windows `1.1.0.20 → 1.1.0.21` را نصب کرد و package family/LocalState را حفظ کرد؛ artifactهای تازهٔ Android `1.1.0+2021`، MSIX `1.1.0.21` و portable نیز با صفر hash mismatch و signerهای ثابت مستقلاً بررسی شدند.
 
 ## Remaining
-- بستن findings فریز‌شدهٔ C1 تا C12 در `10-critics-tasks-habits-editor-ledger.md`؛ سه finding نخست P1 هستند و ترتیب چرخهٔ Perfect را تعیین می‌کنند.
+- بستن findings باقی‌ماندهٔ C3 و C5 تا C12 در `10-critics-tasks-habits-editor-ledger.md`؛ C1، C2 و C4 بسته‌اند و بخش Task-filter از C5 نیز بسته شده است.
 - تبدیل Focus فعلی از sheet تایمر به Focus Studio پس از quality gate فعال Tasks/Habits/editor؛ قرارداد محصول و مرز permissionها در `09-product-opportunity-roadmap.md` تثبیت شده است.
 - اجرای smoke احراز‌شدهٔ provider فقط پس از تنظیم امن کلید rotateشده؛ Function v3 و auth boundary آن زنده و اثبات‌شده‌اند.
 - session احراز‌شده در نصب Android قابل اثبات نبود، چون دستگاه پیش از آزمون signed out بود؛ widget binding و دادهٔ package حفظ شدند، اما حفظ session لاگین نباید ادعا شود.

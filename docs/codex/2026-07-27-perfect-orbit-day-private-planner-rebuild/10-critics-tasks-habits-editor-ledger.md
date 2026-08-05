@@ -64,3 +64,19 @@ The existing Pomodoro, Countdown, Stopwatch, session recovery and task linkage r
 - Regression coverage includes pending measured and pending checklist domain cases plus a compact Android workspace assertion.
 - Runtime evidence: `.codex-tmp/critics-cycle1/android-habits-cycle1-fixed.png` and `perfect-cycle1-habits.xml`; the preview cold-started in 2685 ms with no `FATAL EXCEPTION` or `E/flutter` match.
 - Gates: `flutter analyze` passed; full `flutter test` passed 355/355.
+- Release proof: exact-SHA run #36 succeeded and immutable `v1.1.0-build.2036` contains exactly the three install-ready assets.
+
+### C2 and C4 — closed in Perfect Cycle 2
+
+- Tasks now defaults to `Open`, so active scheduled and unscheduled work is visible without recovery through a filter.
+- Compact layouts show one search field and one `Open · All` summary; TYPE/STATUS are disclosed only on request with reduced-motion-aware Fade + Size transition.
+- Wide layouts retain inline controls. Returning to compact collapses auto-disclosed wide controls unless the owner explicitly expanded them.
+- Search text and filter state survive reflow. Tapping outside Search or opening filters dismisses the IME before revealing the list.
+- Empty states are specific to Inbox/Open/Scheduled/Completed and no longer direct the owner to Home-only Quick Capture.
+- Evidence: 356/356 full tests, analyzer clean, `.codex-tmp/critics-cycle1/android-tasks-cycle2-collapsed.png` and `android-tasks-cycle2-expanded-final.png`.
+
+### C5 — partially closed in Perfect Cycle 2
+
+- Task Type/Status chips use selected color and shape with `showCheckmark=false`; the Single icon is now a numeral rather than a check-like glyph.
+- Semantics still announces the selected state.
+- Category, icon and color pickers remain open under C5 and will be closed with the editor/category cycle.

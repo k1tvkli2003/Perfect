@@ -12,8 +12,8 @@
 ### Next
 
 - Perfect Cycle 1: complete — configured Habit targets and checklist thresholds survive pending projections and measured-unit copy is no longer duplicated.
-- Perfect Cycle 2: active — truthful Tasks default plus progressive compact filters.
-- Perfect Cycle 3: compact Home task/dock continuity and approved-reference screenshot comparison.
+- Perfect Cycle 2: complete locally — truthful Open default، progressive compact filters، keyboard dismissal، 200% reflow and selection language are verified; release gate is next.
+- Perfect Cycle 3: next — compact Home task/dock continuity and approved-reference screenshot comparison.
 
 ## 2026-08-05 — Perfect Cycle 1 closure
 
@@ -23,6 +23,16 @@
 | 2026-08-05T23:17:44+03:30 | active | Simplified measured status copy to one unit phrase and added domain plus compact-workspace regressions. | `lib/presentation/perfect_workspace_page.dart`; two focused test files |
 | 2026-08-05T23:17:44+03:30 | active | Refreshed the Android sibling preview and visually confirmed `Pending · 0 of 8 glasses · 0%`. | `.codex-tmp/critics-cycle1/android-habits-cycle1-fixed.png` |
 | 2026-08-05T23:17:44+03:30 | active | Closed source, full-suite and runtime-crash gates for Cycle 1. | analyzer clean; 355/355 tests; 2685 ms cold start; no fatal/Flutter error match |
+
+## 2026-08-06 — Perfect Cycle 2 closure
+
+| Time | Status | Entry | Evidence |
+|---|---|---|---|
+| 2026-08-06T01:24:13+03:30 | active | Replaced Inbox-first with a truthful Open default so scheduled active work is visible immediately. | `_TasksPageState`; scheduled-only compact regression |
+| 2026-08-06T01:24:13+03:30 | active | Rebuilt compact filters as Search + one summary control with animated progressive disclosure; wide layouts retain inline controls. | `_TaskFilterDeck`; phone and 900dp tests |
+| 2026-08-06T01:24:13+03:30 | active | Removed selected checkmarks from Task filter chips, replaced the misleading Single check icon, and retained semantic selection. | `_FilterGroup`; ChoiceChip assertion |
+| 2026-08-06T01:24:13+03:30 | active | Added tap-out/expand keyboard dismissal and a two-line 200% text composition; corrected empty-state copy so Tasks no longer points to Home-only Quick Capture. | widget tests + Android input-method/runtime screenshots |
+| 2026-08-06T01:24:13+03:30 | active | Passed full source and behavior gates. | analyzer clean; 356/356 tests; API 35 preview cold start and no fatal/Flutter error match |
 
 ## Log
 | Time | Status | Entry | Evidence |

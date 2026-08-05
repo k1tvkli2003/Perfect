@@ -693,9 +693,11 @@ void main() {
       );
       await tester.pump();
       expect(
-        find.text('Inbox first. Details only when you need them.'),
+        find.text('All open work first. Narrow only when you need to.'),
         findsOneWidget,
       );
+      expect(find.text('Open · All'), findsOneWidget);
+      expect(find.textContaining('result'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -1546,7 +1548,12 @@ void main() {
 
       await tester.tap(find.text('Tasks'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Active'));
+      expect(find.text('Focus Deep Work'), findsOneWidget);
+      expect(find.text('TYPE'), findsNothing);
+      expect(find.text('STATUS'), findsNothing);
+      await tester.tap(
+        find.byKey(const ValueKey<String>('task-filter-toggle')),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(ChoiceChip, 'Recurring'));
       await tester.pumpAndSettle();
@@ -1581,7 +1588,7 @@ void main() {
 
       expect(find.text('TYPE'), findsOneWidget);
       expect(find.text('STATUS'), findsOneWidget);
-      expect(find.textContaining('All · Inbox'), findsOneWidget);
+      expect(find.textContaining('Open · All'), findsOneWidget);
       final search = find.byWidgetPredicate(
         (widget) =>
             widget is TextField &&
@@ -1592,13 +1599,60 @@ void main() {
       await tester.pump();
       expect(find.text('Read cardiology notes'), findsOneWidget);
       expect(find.text('Focus Deep Work'), findsNothing);
-      expect(find.text('1 result · All · Inbox'), findsOneWidget);
+      expect(find.text('1 result · Open · All'), findsOneWidget);
 
       await tester.binding.setSurfaceSize(const Size(390, 844));
       await tester.pumpAndSettle();
       expect(find.text('Read cardiology notes'), findsOneWidget);
-      expect(find.text('1 result · All · Inbox'), findsOneWidget);
+      expect(find.text('Open · All'), findsOneWidget);
+      expect(find.text('TYPE'), findsNothing);
+      expect(find.text('STATUS'), findsNothing);
       expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'compact Tasks shows scheduled work first and discloses filters on demand',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      await _pump(tester);
+
+      await tester.tap(find.text('Tasks'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Focus Deep Work'), findsOneWidget);
+      expect(find.text('No open tasks.'), findsNothing);
+      expect(find.text('Open · All'), findsOneWidget);
+      expect(find.text('TYPE'), findsNothing);
+      expect(find.text('STATUS'), findsNothing);
+
+      final search = find.byWidgetPredicate(
+        (widget) =>
+            widget is TextField &&
+            widget.decoration?.hintText == 'Find a task, note, or category…',
+      );
+      await tester.tap(search);
+      await tester.pump();
+      expect(tester.testTextInput.isVisible, isTrue);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('task-filter-toggle')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.testTextInput.isVisible, isFalse);
+      expect(find.text('TYPE'), findsOneWidget);
+      expect(find.text('STATUS'), findsOneWidget);
+      final openChip = tester.widget<ChoiceChip>(
+        find.widgetWithText(ChoiceChip, 'Open'),
+      );
+      expect(openChip.selected, isTrue);
+      expect(openChip.showCheckmark, isFalse);
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Inbox'));
+      await tester.pumpAndSettle();
+      expect(find.text('Focus Deep Work'), findsNothing);
+      expect(find.text('Your inbox is clear.'), findsOneWidget);
     },
   );
 

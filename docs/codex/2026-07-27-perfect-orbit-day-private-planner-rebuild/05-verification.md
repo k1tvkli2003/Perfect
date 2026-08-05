@@ -21,6 +21,20 @@
 | Android runtime semantics and screenshot | API 35 `emulator-5556` | passed | Expected measured target present in UI and semantics; screenshot at `.codex-tmp/critics-cycle1/android-habits-cycle1-fixed.png`. |
 | Cold-start crash scan | clear logcat, force-stop, cold start, 3-second scan | passed | 2685 ms; no `FATAL EXCEPTION`, `E/flutter` or preview-process fatal match. |
 
+## 2026-08-06 Perfect Cycle 2 — truthful Tasks and progressive filters
+
+| Check | Command/Method | Result | Evidence / limit |
+|---|---|---|---|
+| Exact previous-stage release | workflow run `31041370535` and release API | passed | SHA `a793531…`; run #36 success; immutable `v1.1.0-build.2036` has exactly Android APK، Windows portable ZIP and Windows Setup EXE. |
+| Task default truth | compact workspace widget test + API 35 preview | passed | `Focus Deep Work` and all three active tasks are visible without choosing a filter; Inbox remains explicitly selectable. |
+| Progressive filter behavior | compact/wide widget tests and Android screenshots | passed | phone defaults to Search + `Open · All`; TYPE/STATUS animate on demand; 900dp retains inline controls. |
+| Keyboard lifecycle | widget input visibility + Android `dumpsys input_method` | passed | Search opens IME; tapping the filter summary unfocuses Search, reports `mInputShown=false`, opens filters and restores the task list. |
+| Large text and RTL | 390dp RTL at 200% | passed | filter summary and result count recompose instead of truncating; no exception. |
+| Selection language | ChoiceChip inspection | passed for Task filters | selected color/shape remains, `showCheckmark=false`; category/icon/color surfaces remain under C5. |
+| Static analysis | `flutter analyze` | passed | `No issues found`; deprecated SizeTransition API was replaced before closure. |
+| Full Flutter suite | `flutter test` | passed | 356/356. |
+| Android runtime | debug sibling preview on `emulator-5554`, API 35 | passed | cold start 3291 ms; collapsed/expanded screenshots under `.codex-tmp/critics-cycle1/`; no `FATAL EXCEPTION` or `E/flutter` match. |
+
 ## Summary
 
 - Result: partial
