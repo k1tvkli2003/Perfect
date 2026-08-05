@@ -6791,7 +6791,7 @@ String _habitSummaryDetail(
   if (summary.method == 'count' || summary.method == 'duration') {
     final unit = safeNullableJsonString(habit.tracking['unit']);
     final suffix = unit == null ? '' : ' $unit';
-    return '$state · ${_compactNumber(summary.amount)}$suffix of '
+    return '$state · ${_compactNumber(summary.amount)} of '
         '${_compactNumber(summary.target)}$suffix · ${summary.progressPercent}%';
   }
   if (summary.method == 'checklist') {

@@ -28,20 +28,24 @@ class PlannerHabitDaySummary {
     this.outcome,
   });
 
-  const PlannerHabitDaySummary.pending({String method = 'check'})
-    : this(
-        state: PlannerHabitDayState.pending,
-        method: method,
-        hasLog: false,
-        amount: 0,
-        target: 1,
-        progressPercent: 0,
-        checkedItemIds: const <String>{},
-        checkedCount: 0,
-        requiredCount: 0,
-        totalChecklistItems: 0,
-        occurrences: const <PlannerOccurrence>[],
-      );
+  const PlannerHabitDaySummary.pending({
+    String method = 'check',
+    double target = 1,
+    int requiredCount = 0,
+    int totalChecklistItems = 0,
+  }) : this(
+         state: PlannerHabitDayState.pending,
+         method: method,
+         hasLog: false,
+         amount: 0,
+         target: target,
+         progressPercent: 0,
+         checkedItemIds: const <String>{},
+         checkedCount: 0,
+         requiredCount: requiredCount,
+         totalChecklistItems: totalChecklistItems,
+         occurrences: const <PlannerOccurrence>[],
+       );
 
   final PlannerHabitDayState state;
   final String method;
@@ -102,6 +106,23 @@ abstract final class PlannerHabitDayEngine {
       fallback: 'check',
     );
     if (matching.isEmpty) {
+      if (method == 'count' || method == 'duration') {
+        return PlannerHabitDaySummary.pending(
+          method: method,
+          target: _positiveNumber(habit.tracking['target'], fallback: 1),
+        );
+      }
+      if (method == 'checklist') {
+        final checklist = PlannerHabitTrackingEngine.evaluateChecklist(
+          entity: habit,
+        );
+        return PlannerHabitDaySummary.pending(
+          method: method,
+          target: checklist.requiredCount.toDouble(),
+          requiredCount: checklist.requiredCount,
+          totalChecklistItems: checklist.totalCount,
+        );
+      }
       return PlannerHabitDaySummary.pending(method: method);
     }
 

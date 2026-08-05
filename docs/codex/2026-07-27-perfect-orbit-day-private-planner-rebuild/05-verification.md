@@ -1,5 +1,26 @@
 # Verification
 
+## 2026-08-05 Critics baseline
+
+| Check | Command/Method | Result | Evidence / limit |
+|---|---|---|---|
+| Focused domain and presentation baseline | `flutter test test/planner/planner_habit_day_summary_test.dart test/presentation/planner_editor_test.dart test/presentation/focus_session_sheet_test.dart test/presentation/perfect_workspace_page_test.dart` | passed | 61/61; this validates existing assertions but does not waive the frozen C1–C12 findings. |
+| Android signed-in preview inspection | live preview on `emulator-5556`, 1080×2400, API 35 | partial pass | Tasks/Habits/wizard flows rendered and remained actionable; runtime exposed the truthful-data, hierarchy and occlusion findings recorded in `10-critics-tasks-habits-editor-ledger.md`. |
+| Approved-reference comparison | side-by-side inspection of current Android Home and the selected reference | failed quality gate | Home is directionally close, but last-row continuity and Orbit finish remain below the accepted target. |
+| Local Windows preview build | `flutter build windows --debug -t lib/dev/perfect_live_preview.dart` | not run successfully | blocked by missing Visual Studio Desktop C++ toolchain on this host; existing goldens and hosted release builds are supporting evidence, not live hover/motion proof. |
+
+## 2026-08-05 Perfect Cycle 1 — pending Habit truth
+
+| Check | Command/Method | Result | Evidence / limit |
+|---|---|---|---|
+| Domain regression | `flutter test test/planner/planner_habit_day_summary_test.dart` | passed | Pending count target 8 and checklist threshold 2/3 are preserved. |
+| Workspace regression | focused `perfect_workspace_page_test.dart` | passed | Compact Habits renders `Pending · 0 of 8 glasses · 0%` and rejects the old `of 1 glasses` output. |
+| Static analysis | `flutter analyze` | passed | `No issues found`. |
+| Full Flutter suite | `flutter test` | passed | 355/355. |
+| Android preview build/install | debug sibling APK from `lib/dev/perfect_live_preview.dart`, `adb install -r` | passed | Production package/session remains untouched; preview package updated successfully. |
+| Android runtime semantics and screenshot | API 35 `emulator-5556` | passed | Expected measured target present in UI and semantics; screenshot at `.codex-tmp/critics-cycle1/android-habits-cycle1-fixed.png`. |
+| Cold-start crash scan | clear logcat, force-stop, cold start, 3-second scan | passed | 2685 ms; no `FATAL EXCEPTION`, `E/flutter` or preview-process fatal match. |
+
 ## Summary
 
 - Result: partial

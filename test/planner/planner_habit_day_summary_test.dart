@@ -4,6 +4,61 @@ import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_operation.dart';
 
 void main() {
+  test('pending measured habit preserves its configured target', () {
+    final summary = PlannerHabitDayEngine.evaluate(
+      habit: _habit(
+        tracking: const <String, dynamic>{
+          'method': 'count',
+          'target': 8,
+          'goal': 'at_least',
+          'unit': 'glasses',
+        },
+      ),
+      occurrences: const <PlannerOccurrence>[],
+    );
+
+    expect(summary.state, PlannerHabitDayState.pending);
+    expect(summary.hasLog, isFalse);
+    expect(summary.amount, 0);
+    expect(summary.target, 8);
+    expect(summary.progressPercent, 0);
+  });
+
+  test('pending checklist habit exposes its configured success threshold', () {
+    final summary = PlannerHabitDayEngine.evaluate(
+      habit: _habit(
+        tracking: const <String, dynamic>{
+          PlannerHabitTrackingKeys.method: 'checklist',
+          PlannerHabitTrackingKeys.checklist: <Map<String, dynamic>>[
+            <String, dynamic>{
+              PlannerHabitTrackingKeys.itemId: 'water',
+              PlannerHabitTrackingKeys.itemRequired: true,
+            },
+            <String, dynamic>{
+              PlannerHabitTrackingKeys.itemId: 'stretch',
+              PlannerHabitTrackingKeys.itemRequired: true,
+            },
+            <String, dynamic>{
+              PlannerHabitTrackingKeys.itemId: 'journal',
+              PlannerHabitTrackingKeys.itemRequired: true,
+            },
+          ],
+          PlannerHabitTrackingKeys.successCondition: <String, dynamic>{
+            PlannerHabitTrackingKeys.successType: 'count',
+            PlannerHabitTrackingKeys.successValue: 2,
+          },
+        },
+      ),
+      occurrences: const <PlannerOccurrence>[],
+    );
+
+    expect(summary.state, PlannerHabitDayState.pending);
+    expect(summary.hasLog, isFalse);
+    expect(summary.requiredCount, 2);
+    expect(summary.totalChecklistItems, 3);
+    expect(summary.target, 2);
+  });
+
   test('legacy measured observations become one aggregate daily result', () {
     final habit = _habit(
       tracking: const <String, dynamic>{

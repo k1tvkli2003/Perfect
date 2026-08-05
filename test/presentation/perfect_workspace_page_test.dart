@@ -1625,6 +1625,36 @@ void main() {
     expect(find.text('100%'), findsOneWidget);
   });
 
+  testWidgets('pending measured habit shows its real configured target', (
+    tester,
+  ) async {
+    await _runControllerMutation(
+      tester,
+      () => _controller.saveEntity(
+        kind: PlannerEntityKind.habit,
+        payload: <String, dynamic>{
+          ...defaultPlannerPayload(title: 'Drink water'),
+          PlannerPayloadKeys.tracking: <String, dynamic>{
+            'method': 'count',
+            'goal': 'at_least',
+            'target': 8,
+            'unit': 'glasses',
+          },
+        },
+      ),
+    );
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(find.text('Habits'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Drink water'), findsOneWidget);
+    expect(find.text('At least 8 glasses'), findsOneWidget);
+    expect(find.text('Pending · 0 of 8 glasses · 0%'), findsOneWidget);
+    expect(find.textContaining('of 1 glasses'), findsNothing);
+  });
+
   testWidgets(
     'editing keeps entity type stable and preserves actionable checklist metadata',
     (tester) async {

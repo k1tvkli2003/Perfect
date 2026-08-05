@@ -1,5 +1,29 @@
 # Progress
 
+## 2026-08-05 — Critics freeze and Focus Studio direction
+
+| Time | Status | Entry | Evidence |
+|---|---|---|---|
+| 2026-08-05T23:11:44+03:30 | active | Android Tasks/Habits and both wizard paths were inspected against the approved reference and HabitNow decision order; source roots were traced before mutation. | `.codex-tmp/critics-cycle1/`; `lib/presentation/perfect_workspace_page.dart`; `lib/presentation/planner_editor.dart` |
+| 2026-08-05T23:11:44+03:30 | active | Focused baseline passed 61/61 while three P1 product defects remained outside the encoded assertions. | `flutter test test/planner/planner_habit_day_summary_test.dart test/presentation/planner_editor_test.dart test/presentation/focus_session_sheet_test.dart test/presentation/perfect_workspace_page_test.dart` |
+| 2026-08-05T23:11:44+03:30 | active | Ranked findings and counterarguments were frozen before implementation. | `10-critics-tasks-habits-editor-ledger.md` |
+| 2026-08-05T23:11:44+03:30 | active | Focus was defined as an operating mode with Focus Contract, explainable presets, Flip experiment, graduated Shield, distraction capture and outcome learning. | `09-product-opportunity-roadmap.md` section 8 |
+
+### Next
+
+- Perfect Cycle 1: complete — configured Habit targets and checklist thresholds survive pending projections and measured-unit copy is no longer duplicated.
+- Perfect Cycle 2: active — truthful Tasks default plus progressive compact filters.
+- Perfect Cycle 3: compact Home task/dock continuity and approved-reference screenshot comparison.
+
+## 2026-08-05 — Perfect Cycle 1 closure
+
+| Time | Status | Entry | Evidence |
+|---|---|---|---|
+| 2026-08-05T23:17:44+03:30 | active | Fixed the pending daily projection so count/duration targets and checklist success thresholds are preserved before the first log. | `lib/planner/domain/planner_habit_day_summary.dart` |
+| 2026-08-05T23:17:44+03:30 | active | Simplified measured status copy to one unit phrase and added domain plus compact-workspace regressions. | `lib/presentation/perfect_workspace_page.dart`; two focused test files |
+| 2026-08-05T23:17:44+03:30 | active | Refreshed the Android sibling preview and visually confirmed `Pending · 0 of 8 glasses · 0%`. | `.codex-tmp/critics-cycle1/android-habits-cycle1-fixed.png` |
+| 2026-08-05T23:17:44+03:30 | active | Closed source, full-suite and runtime-crash gates for Cycle 1. | analyzer clean; 355/355 tests; 2685 ms cold start; no fatal/Flutter error match |
+
 ## Log
 | Time | Status | Entry | Evidence |
 |---|---|---|---|
