@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_operation.dart';
 import 'package:perfect/presentation/perfect_brand.dart';
+import 'package:perfect/presentation/perfect_motion.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
 
@@ -24,18 +25,22 @@ class FocusSessionSheet extends StatefulWidget {
     if (desktop) {
       return showDialog<void>(
         context: context,
-        builder: (context) => Dialog(
-          clipBehavior: Clip.antiAlias,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: 560,
-              maxWidth: 680,
-              maxHeight: (MediaQuery.sizeOf(context).height - 80).clamp(
-                560,
-                780,
+        builder: (context) => PerfectStagedEntrance(
+          rise: 22,
+          scaleBegin: .96,
+          child: Dialog(
+            clipBehavior: Clip.antiAlias,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: 560,
+                maxWidth: 680,
+                maxHeight: (MediaQuery.sizeOf(context).height - 80).clamp(
+                  560,
+                  780,
+                ),
               ),
+              child: FocusSessionSheet(controller: controller, entity: entity),
             ),
-            child: FocusSessionSheet(controller: controller, entity: entity),
           ),
         ),
       );
@@ -44,6 +49,7 @@ class FocusSessionSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
+      sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
       backgroundColor: Theme.of(context).colorScheme.surface,
       builder: (context) => SafeArea(
         top: false,

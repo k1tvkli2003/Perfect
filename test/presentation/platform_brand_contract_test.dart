@@ -1,7 +1,75 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
+
+({int left, int top, int right, int bottom}) _alphaBounds(
+  Uint8List rgba,
+  int width,
+  int height, {
+  int threshold = 1,
+}) {
+  var minX = width;
+  var minY = height;
+  var maxX = -1;
+  var maxY = -1;
+  for (var y = 0; y < height; y++) {
+    for (var x = 0; x < width; x++) {
+      final alpha = rgba[((y * width) + x) * 4 + 3];
+      if (alpha < threshold) continue;
+      minX = minX < x ? minX : x;
+      minY = minY < y ? minY : y;
+      maxX = maxX > x ? maxX : x;
+      maxY = maxY > y ? maxY : y;
+    }
+  }
+  if (maxX < 0 || maxY < 0) {
+    throw StateError('Expected at least one visible icon pixel.');
+  }
+  return (left: minX, top: minY, right: maxX + 1, bottom: maxY + 1);
+}
+
+int _alphaComponents(
+  Uint8List rgba,
+  int width,
+  int height, {
+  int threshold = 192,
+}) {
+  final visible = List<bool>.generate(width * height, (index) {
+    return rgba[(index * 4) + 3] >= threshold;
+  });
+  var components = 0;
+  final queue = <int>[];
+  for (var index = 0; index < visible.length; index++) {
+    if (!visible[index]) continue;
+    components++;
+    visible[index] = false;
+    queue
+      ..clear()
+      ..add(index);
+    for (var cursor = 0; cursor < queue.length; cursor++) {
+      final current = queue[cursor];
+      final x = current % width;
+      final y = current ~/ width;
+      for (var offsetY = -1; offsetY <= 1; offsetY++) {
+        for (var offsetX = -1; offsetX <= 1; offsetX++) {
+          if (offsetX == 0 && offsetY == 0) continue;
+          final nextX = x + offsetX;
+          final nextY = y + offsetY;
+          if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height) {
+            continue;
+          }
+          final next = (nextY * width) + nextX;
+          if (!visible[next]) continue;
+          visible[next] = false;
+          queue.add(next);
+        }
+      }
+    }
+  }
+  return components;
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -82,7 +150,7 @@ void main() {
           contains('@color/ic_launcher_background'),
           contains('@drawable/ic_launcher_foreground'),
           contains('@drawable/ic_launcher_monochrome'),
-          contains('android:inset="10%"'),
+          contains('android:inset="19%"'),
         ),
       );
       expect(
@@ -109,7 +177,7 @@ void main() {
         launcherConfig,
         contains('adaptive_icon_foreground: assets/brand/perfect-launcher.png'),
       );
-      expect(launcherConfig, contains('adaptive_icon_foreground_inset: 10'));
+      expect(launcherConfig, contains('adaptive_icon_foreground_inset: 19'));
       expect(
         launcherConfig,
         contains(
@@ -188,6 +256,18 @@ void main() {
             format: ui.ImageByteFormat.rawRgba,
           );
           final rgba = pixels!.buffer.asUint8List();
+          final bounds = _alphaBounds(
+            rgba,
+            image.width,
+            image.height,
+            threshold: 128,
+          );
+          final densityScale = image.width / 108;
+          const appliedLayerScale = 1 - (2 * .19);
+          final effectiveWidthDp =
+              ((bounds.right - bounds.left) / densityScale) * appliedLayerScale;
+          final effectiveHeightDp =
+              ((bounds.bottom - bounds.top) / densityScale) * appliedLayerScale;
 
           expect(image.width, foreground.value);
           expect(image.height, foreground.value);
@@ -203,6 +283,20 @@ void main() {
                 '${foreground.key} $layer layer must preserve the Day '
                 'Compass without a baked black or white tile.',
           );
+          expect(
+            effectiveWidthDp,
+            inInclusiveRange(48, 66),
+            reason:
+                '${foreground.key} $layer must stay optically legible while '
+                'remaining inside Android\'s adaptive-icon safe zone.',
+          );
+          expect(effectiveHeightDp, inInclusiveRange(48, 66));
+          final startInset = bounds.left / densityScale;
+          final endInset = (image.width - bounds.right) / densityScale;
+          final topInset = bounds.top / densityScale;
+          final bottomInset = (image.height - bounds.bottom) / densityScale;
+          expect((startInset - endInset).abs(), lessThanOrEqualTo(1));
+          expect((topInset - bottomInset).abs(), lessThanOrEqualTo(1));
 
           image.dispose();
           codec.dispose();
@@ -271,6 +365,79 @@ void main() {
     expect(contract, isNot(contains('.pfx')));
     expect(contract, isNot(contains('.jks')));
   });
+
+  test(
+    'Android widgets render the exact selected Day Compass at 36dp',
+    () async {
+      final publicMark = File(
+        'android/app/src/main/res/drawable/perfect_widget_mark.xml',
+      ).readAsStringSync();
+      expect(publicMark, contains('@drawable/perfect_widget_mark_raster'));
+      expect(publicMark, isNot(contains('pathData=')));
+
+      const rasterSizes = <String, int>{
+        'mdpi': 36,
+        'hdpi': 54,
+        'xhdpi': 72,
+        'xxhdpi': 108,
+        'xxxhdpi': 144,
+      };
+      for (final raster in rasterSizes.entries) {
+        final bitmap = File(
+          'android/app/src/main/res/drawable-${raster.key}/'
+          'perfect_widget_mark_raster.png',
+        );
+        expect(bitmap.existsSync(), isTrue);
+        final codec = await ui.instantiateImageCodec(
+          await bitmap.readAsBytes(),
+        );
+        final frame = await codec.getNextFrame();
+        final image = frame.image;
+        final pixels = await image.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
+        final rgba = pixels!.buffer.asUint8List();
+
+        expect(image.width, raster.value);
+        expect(image.height, raster.value);
+        expect(<int>[
+          rgba[3],
+          rgba[((image.width - 1) * 4) + 3],
+          rgba[(((image.height - 1) * image.width) * 4) + 3],
+          rgba[((image.width * image.height) - 1) * 4 + 3],
+        ], everyElement(0));
+        expect(
+          _alphaComponents(rgba, image.width, image.height),
+          7,
+          reason:
+              '${raster.key} widget mark must preserve all six selected pastel '
+              'modules plus the dark owner core.',
+        );
+        final centre =
+            (((image.height ~/ 2) * image.width) + (image.width ~/ 2)) * 4;
+        expect(rgba[centre + 3], greaterThan(220));
+        expect(rgba[centre], lessThan(100));
+        expect(rgba[centre + 1], lessThan(100));
+        expect(rgba[centre + 2], lessThan(100));
+
+        image.dispose();
+        codec.dispose();
+      }
+
+      for (final layout in <String>[
+        'perfect_today_widget_small.xml',
+        'perfect_today_widget_tall.xml',
+        'perfect_today_widget_wide.xml',
+        'perfect_today_widget_large.xml',
+        'perfect_widget_quick_add.xml',
+      ]) {
+        final source = File(
+          'android/app/src/main/res/layout/$layout',
+        ).readAsStringSync();
+        expect(source, contains('@drawable/perfect_widget_mark'));
+      }
+    },
+  );
 
   test('Android cold start keeps the approved Day Compass surface', () {
     final fallback = File(

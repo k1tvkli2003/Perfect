@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:perfect/auth/auth_page.dart';
 import 'package:perfect/auth/configuration_page.dart';
 import 'package:perfect/main.dart';
+import 'package:perfect/presentation/perfect_brand.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +35,8 @@ void main() {
         find.byKey(const ValueKey<String>('perfect-bootstrap')),
         findsOneWidget,
       );
-      expect(find.text('Perfect!'), findsOneWidget);
+      expect(find.byType(PerfectWordmark), findsOneWidget);
+      expect(find.bySemanticsLabel('Perfect!'), findsNWidgets(2));
       expect(find.text('Opening your day'), findsOneWidget);
       expect(find.byType(ConfigurationPage), findsNothing);
       expect(find.byType(AuthPage), findsNothing);

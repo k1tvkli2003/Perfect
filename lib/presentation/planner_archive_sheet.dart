@@ -39,6 +39,7 @@ class PlannerArchiveSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
+      sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
       backgroundColor: Theme.of(context).colorScheme.surface,
       builder: (context) => SafeArea(
         top: false,

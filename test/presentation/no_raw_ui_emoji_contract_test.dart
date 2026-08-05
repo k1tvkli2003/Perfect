@@ -60,7 +60,27 @@ void main() {
             .toList()
           ..sort((a, b) => a.path.compareTo(b.path));
 
-    expect(files, hasLength(11));
+    expect(
+      files.map((file) => file.uri.pathSegments.last).toSet(),
+      containsAll(<String>{
+        'ai.svg',
+        'calendar.svg',
+        'capture.svg',
+        'compass.svg',
+        'finance.svg',
+        'habit.svg',
+        'health.svg',
+        'home.svg',
+        'idea.svg',
+        'label.svg',
+        'send.svg',
+        'star.svg',
+        'study.svg',
+        'task.svg',
+        'voice.svg',
+        'work.svg',
+      }),
+    );
     for (final file in files) {
       final source = file.readAsStringSync();
       expect(source, contains('viewBox="0 0 24 24"'), reason: file.path);

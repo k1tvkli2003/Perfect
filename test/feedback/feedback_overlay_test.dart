@@ -8,6 +8,125 @@ import 'package:perfect/feedback/ready_feedback_capture.dart';
 
 void main() {
   testWidgets(
+    'feedback shortcut is a compact accessible edge tab instead of a FAB',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      const config = ReadyFeedbackConfig(
+        applicationName: 'Perfect!',
+        storageNamespace: 'feedback-overlay-affordance-test',
+        settingsKey: 'feedback.enabled',
+      );
+      final controller = ReadyFeedbackController(
+        config: config,
+        repository: _MemoryRepository(config: config),
+        settingsStore: _MemorySettings(),
+        logger: ReadyFeedbackLogger(memoryLimit: 20),
+      );
+      addTearDown(controller.dispose);
+      await tester.runAsync(controller.initialize);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ReadyFeedbackOverlay(
+              controller: controller,
+              routeName: 'Synthetic edge route',
+              child: const ColoredBox(color: Color(0xFFF6F1EA)),
+            ),
+          ),
+        ),
+      );
+      await _settle(tester);
+
+      final affordance = find.byKey(
+        const ValueKey<String>('ready-feedback-affordance'),
+      );
+      final visualTab = find.byKey(
+        const ValueKey<String>('ready-feedback-edge-tab'),
+      );
+      final surfaceSize = tester.getSize(find.byType(Scaffold));
+      expect(tester.getSize(affordance), const Size.square(48));
+      expect(tester.getSize(visualTab), const Size(34, 40));
+      expect(tester.getTopRight(affordance).dx, surfaceSize.width);
+      expect(find.byType(FloatingActionButton), findsNothing);
+      expect(find.byIcon(Icons.feedback_outlined), findsOneWidget);
+      final node = tester.getSemantics(affordance);
+      expect(node.label, contains('Capture private feedback'));
+      expect(node.hint, contains('Drag along the screen edge'));
+
+      final control = tester.widget<InkWell>(affordance);
+      expect(control.canRequestFocus, isTrue);
+      control.focusNode!.requestFocus();
+      await tester.pump(const Duration(milliseconds: 150));
+      final decoration = tester
+          .widget<AnimatedContainer>(visualTab)
+          .decoration!;
+      expect(
+        ((decoration as BoxDecoration).border! as Border).top.color,
+        Theme.of(tester.element(affordance)).colorScheme.primary,
+      );
+
+      await tester.drag(affordance, Offset(-surfaceSize.width, 20));
+      await _settle(tester);
+      expect(tester.getTopLeft(affordance).dx, 0);
+      semantics.dispose();
+    },
+  );
+
+  testWidgets('feedback edge tab yields to an active owned workspace surface', (
+    tester,
+  ) async {
+    const config = ReadyFeedbackConfig(
+      applicationName: 'Perfect!',
+      storageNamespace: 'feedback-overlay-suppression-test',
+      settingsKey: 'feedback.suppression.enabled',
+    );
+    final controller = ReadyFeedbackController(
+      config: config,
+      repository: _MemoryRepository(config: config),
+      settingsStore: _MemorySettings(),
+      logger: ReadyFeedbackLogger(memoryLimit: 20),
+    );
+    addTearDown(controller.dispose);
+    await tester.runAsync(controller.initialize);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ReadyFeedbackOverlay(
+            controller: controller,
+            routeName: 'Focused surface',
+            launcherVisible: false,
+            child: const ColoredBox(color: Color(0xFFF6F1EA)),
+          ),
+        ),
+      ),
+    );
+    await _settle(tester);
+    expect(
+      find.byKey(const ValueKey<String>('ready-feedback-affordance')),
+      findsNothing,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ReadyFeedbackOverlay(
+            controller: controller,
+            routeName: 'Focused surface',
+            child: const ColoredBox(color: Color(0xFFF6F1EA)),
+          ),
+        ),
+      ),
+    );
+    await _settle(tester);
+    expect(
+      find.byKey(const ValueKey<String>('ready-feedback-affordance')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
     'screenshot is previewed before save and review stays privacy-explicit',
     (tester) async {
       final semantics = tester.ensureSemantics();

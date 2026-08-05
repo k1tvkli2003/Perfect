@@ -23,31 +23,34 @@ class PerfectSyncIndicator extends StatefulWidget {
 class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
     with SingleTickerProviderStateMixin {
   final FocusNode _focusNode = FocusNode(debugLabel: 'Perfect sync indicator');
-  late final AnimationController _pulse = AnimationController(
+  late final AnimationController _flow = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1350),
+    duration: const Duration(milliseconds: 1200),
   );
+  bool _hovered = false;
+  bool _focused = false;
+  bool _pressed = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _updatePulse();
+    _updateFlow();
   }
 
   @override
   void didUpdateWidget(covariant PerfectSyncIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _updatePulse();
+    _updateFlow();
   }
 
-  void _updatePulse() {
-    final shouldPulse =
+  void _updateFlow() {
+    final shouldFlow =
         _visual.state == PerfectSyncVisualState.flowing &&
         !MediaQuery.disableAnimationsOf(context);
-    if (shouldPulse && !_pulse.isAnimating) {
-      _pulse.repeat(reverse: true);
-    } else if (!shouldPulse && _pulse.isAnimating) {
-      _pulse
+    if (shouldFlow && !_flow.isAnimating) {
+      _flow.repeat();
+    } else if (!shouldFlow && _flow.isAnimating) {
+      _flow
         ..stop()
         ..value = 0;
     }
@@ -55,7 +58,7 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
 
   @override
   void dispose() {
-    _pulse.dispose();
+    _flow.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -63,21 +66,21 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
   _SyncVisual get _visual => switch (widget.status.phase) {
     PlannerSyncPhase.idle => const _SyncVisual(
       state: PerfectSyncVisualState.current,
-      icon: Icons.cloud_done_rounded,
-      label: 'Up to date',
+      statusIcon: Icons.check_rounded,
+      label: 'Synced',
       detail: 'All local changes are synced across your Perfect devices.',
-      color: PerfectColors.mint,
+      color: PerfectColors.sync,
     ),
     PlannerSyncPhase.syncing => const _SyncVisual(
       state: PerfectSyncVisualState.flowing,
-      icon: Icons.cloud_sync_rounded,
+      statusIcon: Icons.sync_rounded,
       label: 'Syncing',
       detail: 'Perfect is sending or receiving changes now.',
       color: PerfectColors.apricot,
     ),
     PlannerSyncPhase.offline => const _SyncVisual(
       state: PerfectSyncVisualState.flowing,
-      icon: Icons.cloud_queue_rounded,
+      statusIcon: Icons.replay_rounded,
       label: 'Retrying',
       detail:
           'Changes are safe on this device. Automatic sync will retry when the connection is ready.',
@@ -85,7 +88,7 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
     ),
     PlannerSyncPhase.needsAttention => const _SyncVisual(
       state: PerfectSyncVisualState.error,
-      icon: Icons.cloud_off_rounded,
+      statusIcon: Icons.priority_high_rounded,
       label: 'Sync issue',
       detail:
           'The last sync did not finish. Local planning still works and your changes remain on this device.',
@@ -96,79 +99,149 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
   @override
   Widget build(BuildContext context) {
     final visual = _visual;
-    final semanticLabel =
-        '${visual.label}. ${visual.detail} Tap for sync details and retry.';
+    final scheme = Theme.of(context).colorScheme;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final radius = BorderRadius.circular(20);
+    // The compact header reference is deliberately calm: status is a cloud
+    // and a word, not a second pill competing with the product mark.
+    final surface = _pressed
+        ? visual.color.withValues(alpha: .12)
+        : _hovered
+        ? visual.color.withValues(alpha: .07)
+        : Colors.transparent;
+    final border = _focused ? scheme.primary : Colors.transparent;
+    final scale = reduceMotion || !_pressed ? 1.0 : .975;
     return Tooltip(
       message: '${visual.label}\n${visual.detail}',
       child: Semantics(
         button: true,
-        label: semanticLabel,
+        liveRegion: true,
+        label: 'Sync status: ${visual.label}. ${visual.detail}',
+        hint: 'Open sync details and retry.',
         child: Material(
           color: Colors.transparent,
-          child: InkWell(
-            key: const ValueKey<String>('perfect-sync-indicator'),
-            borderRadius: _borderRadius(visual.state),
-            onTap: () => _showDetails(context),
-            mouseCursor: SystemMouseCursors.click,
-            canRequestFocus: true,
-            focusNode: _focusNode,
+          child: TweenAnimationBuilder<double>(
+            duration: PerfectMotion.responsive(context, PerfectMotion.quick),
+            curve: PerfectMotion.productive,
+            tween: Tween<double>(end: scale),
+            builder: (context, value, child) =>
+                Transform.scale(scale: value, child: child),
             child: AnimatedContainer(
+              key: const ValueKey<String>('perfect-sync-surface'),
               duration: PerfectMotion.responsive(
                 context,
                 PerfectMotion.standard,
               ),
               curve: PerfectMotion.productive,
               constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-              padding: EdgeInsets.symmetric(
-                horizontal: widget.compact ? PerfectSpace.sm : PerfectSpace.md,
-              ),
               decoration: BoxDecoration(
-                color: Color.alphaBlend(
-                  visual.color.withValues(alpha: .13),
-                  Theme.of(context).colorScheme.surface,
-                ),
-                borderRadius: _borderRadius(visual.state),
-                border: Border.all(
-                  color: visual.color,
-                  width: visual.state == PerfectSyncVisualState.error ? 2 : 1,
-                ),
+                color: surface,
+                borderRadius: radius,
+                border: Border.all(color: border, width: 1),
+                boxShadow: _hovered && !reduceMotion
+                    ? <BoxShadow>[
+                        BoxShadow(
+                          color: scheme.shadow.withValues(alpha: .09),
+                          blurRadius: 16,
+                          offset: const Offset(0, 5),
+                        ),
+                      ]
+                    : const <BoxShadow>[],
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedSwitcher(
-                    duration: PerfectMotion.responsive(
-                      context,
-                      PerfectMotion.quick,
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: radius,
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  key: const ValueKey<String>('perfect-sync-indicator'),
+                  borderRadius: radius,
+                  onTap: () => _showDetails(context),
+                  mouseCursor: SystemMouseCursors.click,
+                  canRequestFocus: true,
+                  focusNode: _focusNode,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  splashColor: visual.color.withValues(alpha: .12),
+                  onHover: (value) => _setInteraction(hovered: value),
+                  onFocusChange: (value) => _setInteraction(focused: value),
+                  onHighlightChanged: (value) =>
+                      _setInteraction(pressed: value),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: 48,
+                      minWidth: 48,
                     ),
-                    child: AnimatedBuilder(
-                      key: ValueKey<PlannerSyncPhase>(widget.status.phase),
-                      animation: _pulse,
-                      builder: (context, child) => Transform.scale(
-                        scale: visual.state == PerfectSyncVisualState.flowing
-                            ? 1 + (_pulse.value * .055)
-                            : 1,
-                        child: child,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: widget.compact ? 0 : PerfectSpace.xs,
+                        vertical: PerfectSpace.xxs,
                       ),
-                      child: Icon(visual.icon, color: visual.color, size: 20),
+                      child: ExcludeSemantics(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _SyncCloudMark(
+                              phase: widget.status.phase,
+                              visual: visual,
+                              flow: _flow,
+                              size: widget.compact ? 28 : 32,
+                            ),
+                            const SizedBox(width: PerfectSpace.xs),
+                            AnimatedSwitcher(
+                              duration: PerfectMotion.responsive(
+                                context,
+                                PerfectMotion.quick,
+                              ),
+                              switchInCurve: PerfectMotion.enter,
+                              switchOutCurve: PerfectMotion.exit,
+                              transitionBuilder: (child, animation) =>
+                                  FadeTransition(
+                                    opacity: animation,
+                                    child: child,
+                                  ),
+                              child: Text(
+                                visual.label,
+                                key: ValueKey<PlannerSyncPhase>(
+                                  widget.status.phase,
+                                ),
+                                style: Theme.of(context).textTheme.labelLarge
+                                    ?.copyWith(
+                                      color: visual.color,
+                                      fontSize: widget.compact ? 12 : null,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  if (!widget.compact) ...[
-                    const SizedBox(width: PerfectSpace.xs),
-                    Text(
-                      visual.label,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ],
+                ),
               ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  void _setInteraction({bool? hovered, bool? focused, bool? pressed}) {
+    final nextHovered = hovered ?? _hovered;
+    final nextFocused = focused ?? _focused;
+    final nextPressed = pressed ?? _pressed;
+    if (nextHovered == _hovered &&
+        nextFocused == _focused &&
+        nextPressed == _pressed) {
+      return;
+    }
+    setState(() {
+      _hovered = nextHovered;
+      _focused = nextFocused;
+      _pressed = nextPressed;
+    });
   }
 
   Future<void> _showDetails(BuildContext context) async {
@@ -180,7 +253,12 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
         builder: (context, setDialogState) => AlertDialog(
           title: Row(
             children: [
-              Icon(visual.icon, color: visual.color),
+              _SyncCloudMark(
+                phase: widget.status.phase,
+                visual: visual,
+                flow: _flow,
+                size: 40,
+              ),
               const SizedBox(width: PerfectSpace.sm),
               Expanded(child: Text(visual.label)),
             ],
@@ -262,29 +340,54 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
 class _SyncVisual {
   const _SyncVisual({
     required this.state,
-    required this.icon,
+    required this.statusIcon,
     required this.label,
     required this.detail,
     required this.color,
   });
 
   final PerfectSyncVisualState state;
-  final IconData icon;
+  final IconData statusIcon;
   final String label;
   final String detail;
   final Color color;
 }
 
-BorderRadius _borderRadius(PerfectSyncVisualState state) => switch (state) {
-  PerfectSyncVisualState.current => BorderRadius.circular(99),
-  PerfectSyncVisualState.flowing => BorderRadius.circular(16),
-  PerfectSyncVisualState.error => const BorderRadius.only(
-    topLeft: Radius.circular(6),
-    topRight: Radius.circular(18),
-    bottomLeft: Radius.circular(18),
-    bottomRight: Radius.circular(6),
-  ),
-};
+class _SyncCloudMark extends StatelessWidget {
+  const _SyncCloudMark({
+    required this.phase,
+    required this.visual,
+    required this.flow,
+    this.size = 36,
+  });
+
+  final PlannerSyncPhase phase;
+  final _SyncVisual visual;
+  final Animation<double> flow;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = switch (phase) {
+      PlannerSyncPhase.idle => Icons.cloud_done_outlined,
+      PlannerSyncPhase.syncing => Icons.cloud_sync_outlined,
+      PlannerSyncPhase.offline => Icons.cloud_upload_outlined,
+      PlannerSyncPhase.needsAttention => Icons.cloud_off_outlined,
+    };
+    return SizedBox.square(
+      key: ValueKey<String>('perfect-sync-mark-${phase.name}'),
+      dimension: size,
+      child: Center(
+        child: visual.state == PerfectSyncVisualState.flowing
+            ? RotationTransition(
+                turns: flow,
+                child: Icon(icon, color: visual.color, size: size * .82),
+              )
+            : Icon(icon, color: visual.color, size: size * .82),
+      ),
+    );
+  }
+}
 
 String _formatSyncTime(DateTime value) {
   final hour = value.hour.toString().padLeft(2, '0');

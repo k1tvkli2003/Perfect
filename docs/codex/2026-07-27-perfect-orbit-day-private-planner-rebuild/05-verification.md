@@ -199,3 +199,20 @@
 - تصاویر Android موجود، launcher/widget و Auth/Configuration را اثبات می‌کنند؛ signed-in Orbit Day main workspace روی phone/tablet runtime نشده است.
 - signed-in widget Quick Add، authenticated session retention، Android↔Windows convergence، positive AI text/voice/proposal-apply با provider key rotateشده و physical notification/OEM/reboot هنوز اجرا نشده‌اند.
 - Supabase Auth API ورود حساب خصوصی را با credential جدید و همان UUID موجود در `planner_owner_profiles` تأیید کرده است؛ این اثبات API جایگزین اجرای UI نسخهٔ ریلیز بعدی روی Android/Windows نیست.
+
+## 2026-08-05 Home / Day Compass modernization gate
+
+| Check | Method | Result | Evidence / limit |
+|---|---|---|---|
+| Static analysis | `flutter analyze` | passed | `No issues found` after the final Day Compass and compact dock composition |
+| Full Flutter suite | `flutter test` | passed | 352/352 tests across data، sync، AI، feedback، editor، responsive workspace، branding، accessibility and release contracts |
+| Responsive Home suite | `flutter test test/presentation/perfect_workspace_page_test.dart` | passed | 51/51 including phone/tablet/Windows، intermediate resize، short landscape، RTL، 200% text، final-row scroll reachability and goldens |
+| Day Compass panel contract | bounds + goldens | passed | circular Orbit is the primary tablet/Windows instrument; duplicate `Today’s runway` was removed and the dial stays adjacent to Day Stream without overlap |
+| Compact composer continuity | widget bounds + Android screenshot | passed | collapsed Quick Capture reserves a transparent slot above the glass footer; it has no background rail and no longer overlays Today rows |
+| Sync Cloud contract | focused tests + Android screenshot | passed | `Synced` green، `Syncing/Retrying` yellow and `Sync issue` red use distinct cloud icons، visible concise labels، semantics and a 48dp target |
+| Secret-free Android runtime | `lib/dev/perfect_live_preview.dart` on `Codex_API35` / `emulator-5556` | passed | debug APK installed، cold launch completed in 4269ms، no `FATAL EXCEPTION`، `AndroidRuntime` or `E/flutter`; screenshot: `screenshots/perfect-live-preview-latest.png` |
+| API 37 emulator attempt | `Gauss_QA_API37` | environment failure, replaced | system `mapper.ranchu`/`system_server` crashed while Gradle had already built the APK; the same APK installed and ran on API 35 with SwiftShader. This is not counted as app runtime proof for API 37. |
+
+The live preview is deterministic local development evidence, not a signed private
+release and not authenticated cross-device convergence proof. Release signing،
+session retention and owner Supabase convergence remain separate gates.

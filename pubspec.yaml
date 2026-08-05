@@ -69,7 +69,10 @@ flutter_launcher_icons:
   # use this quiet pastel platform fill so no white/black fallback appears.
   adaptive_icon_background: "#FFF3E8"
   adaptive_icon_foreground: assets/brand/perfect-launcher.png
-  adaptive_icon_foreground_inset: 10
+  # The selected art intentionally fills its transparent 512px master. A 19%
+  # platform inset maps the complete Day Compass into Android's <=66dp safe
+  # zone inside the 108dp adaptive layer, so launcher masks never crop a petal.
+  adaptive_icon_foreground_inset: 19
   adaptive_icon_monochrome: assets/brand/perfect-launcher-monochrome.png
   windows:
     # The plugin emits only one 256px ICO frame. The checked-in Day Compass ICO

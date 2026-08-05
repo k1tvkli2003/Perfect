@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:perfect/ai/perfect_ai_client.dart';
 import 'package:perfect/ai/perfect_ai_contract.dart';
 import 'package:perfect/ai/perfect_voice_recorder.dart';
+import 'package:perfect/presentation/perfect_motion.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 import 'package:uuid/uuid.dart';
 
@@ -14,12 +16,16 @@ class PerfectAiDock extends StatefulWidget {
     required this.onProposalApplied,
     this.voiceRecorder,
     this.desktop = false,
+    this.showCollapsedLauncher = true,
+    this.onOpenChanged,
   });
 
   final PerfectAiClient client;
   final PerfectVoiceRecorder? voiceRecorder;
   final Future<void> Function() onProposalApplied;
   final bool desktop;
+  final bool showCollapsedLauncher;
+  final ValueChanged<bool>? onOpenChanged;
 
   @override
   State<PerfectAiDock> createState() => PerfectAiDockState();
@@ -56,9 +62,33 @@ class PerfectAiDockState extends State<PerfectAiDock>
   bool _historyAttempted = false;
   bool _historySuppressed = false;
   bool _recording = false;
-  bool _toggleHovered = false;
-  bool _toggleFocused = false;
-  bool _togglePressed = false;
+  FocusNode? _returnFocus;
+
+  bool get isOpen => _open;
+
+  void toggleOpen() => _toggleOpen();
+
+  void open() {
+    if (!_open) _toggleOpen();
+  }
+
+  void close() {
+    if (_open) _toggleOpen();
+  }
+
+  /// Opens the AI surface and continues directly into its consent-first voice
+  /// flow. This keeps the footer microphone honest: it never masquerades as a
+  /// decorative shortcut that merely opens an unrelated text panel.
+  Future<void> openVoice() async {
+    if (!_open) {
+      _toggleOpen();
+      await WidgetsBinding.instance.endOfFrame;
+    }
+    if (!mounted || _recording || _voiceClip != null || _sending || _applying) {
+      return;
+    }
+    await _requestVoiceConsent();
+  }
 
   @override
   void initState() {
@@ -90,279 +120,299 @@ class PerfectAiDockState extends State<PerfectAiDock>
 
   @override
   Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
-    final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    final animationDuration = reduceMotion
-        ? const Duration(microseconds: 1)
-        : PerfectMotion.standard;
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          widget.desktop ? PerfectSpace.xl : PerfectSpace.md,
-          PerfectSpace.xxs,
-          widget.desktop ? PerfectSpace.xl : PerfectSpace.md,
-          PerfectSpace.xxs,
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final availableWidth = constraints.maxWidth;
-            final mediaUsableHeight =
-                (media.size.height - media.viewInsets.bottom)
-                    .clamp(0.0, double.infinity)
-                    .toDouble();
-            final usableViewportHeight = constraints.hasBoundedHeight
-                ? constraints.maxHeight.clamp(0.0, mediaUsableHeight).toDouble()
-                : mediaUsableHeight;
-            final openHeightFactor = usableViewportHeight < 560
-                ? .46
-                : widget.desktop
-                ? .44
-                : .46;
-            final openHeight = usableViewportHeight * openHeightFactor;
-            final targetHeight = _open
-                ? openHeight
-                : widget.desktop
-                ? 52.0
-                : 58.0;
-            final compactCommandWidth = availableWidth <= 256
-                ? availableWidth
-                : (availableWidth * .34).clamp(256.0, 360.0);
-            final targetWidth = _open || !widget.desktop
-                ? availableWidth
-                : compactCommandWidth;
-            final denseOpenLayout = targetHeight < 48 * 5.25;
-            final scheme = Theme.of(context).colorScheme;
-            final closedInteractive = !_open;
-            final borderColor = _open
-                ? scheme.tertiary.withValues(alpha: .62)
-                : _toggleFocused
-                ? scheme.primary
-                : _toggleHovered
-                ? scheme.tertiary
-                : scheme.outlineVariant;
-            final surfaceTint = _toggleHovered && closedInteractive
-                ? scheme.tertiaryContainer.withValues(alpha: .38)
-                : Colors.transparent;
+    final mediaSize = MediaQuery.sizeOf(context);
+    final mediaKeyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    final view = View.of(context);
+    final viewKeyboardInset = view.viewInsets.bottom / view.devicePixelRatio;
+    final keyboardInset = mediaKeyboardInset > viewKeyboardInset
+        ? mediaKeyboardInset
+        : viewKeyboardInset;
+    final bodySize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
+    final duration = PerfectMotion.responsive(
+      context,
+      PerfectMotion.emphasized,
+    );
 
-            return Align(
-              alignment: widget.desktop
-                  ? AlignmentDirectional.bottomEnd
-                  : AlignmentDirectional.bottomCenter,
-              child: AnimatedSize(
-                key: const ValueKey<String>('perfect-ai-layout'),
-                duration: animationDuration,
-                curve: PerfectMotion.productive,
-                alignment: widget.desktop
-                    ? AlignmentDirectional.bottomEnd
-                    : AlignmentDirectional.bottomCenter,
-                clipBehavior: Clip.none,
-                child: SizedBox(
-                  width: targetWidth,
-                  height: targetHeight,
-                  child: AnimatedScale(
-                    scale: closedInteractive && _togglePressed ? .985 : 1,
-                    duration: PerfectMotion.responsive(
-                      context,
-                      PerfectMotion.quick,
-                    ),
-                    curve: PerfectMotion.productive,
-                    child: AnimatedContainer(
-                      key: const ValueKey<String>('perfect-ai-surface'),
-                      duration: PerfectMotion.responsive(
-                        context,
-                        PerfectMotion.quick,
-                      ),
-                      curve: PerfectMotion.productive,
-                      decoration: BoxDecoration(
-                        color: Color.alphaBlend(surfaceTint, scheme.surface),
-                        gradient: _open
-                            ? LinearGradient(
-                                begin: AlignmentDirectional.topStart,
-                                end: AlignmentDirectional.bottomEnd,
-                                colors: [
-                                  scheme.surface,
-                                  Color.alphaBlend(
-                                    scheme.tertiary.withValues(alpha: .09),
-                                    scheme.surface,
-                                  ),
-                                  Color.alphaBlend(
-                                    scheme.secondary.withValues(alpha: .08),
-                                    scheme.surface,
-                                  ),
-                                ],
-                              )
-                            : null,
-                        borderRadius: BorderRadius.circular(_open ? 28 : 99),
-                        border: Border.all(
-                          color: borderColor,
-                          width: _toggleFocused && closedInteractive ? 2 : 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                (_toggleHovered && closedInteractive
-                                        ? scheme.tertiary
-                                        : PerfectColors.lilac)
-                                    .withValues(
-                                      alpha: _toggleHovered ? .17 : .10,
-                                    ),
-                            blurRadius: _toggleHovered ? 24 : 18,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(_open ? 27 : 99),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.hasBoundedWidth
+            ? constraints.maxWidth
+            : mediaSize.width;
+        final mediaUsableHeight = (mediaSize.height - keyboardInset)
+            .clamp(0.0, double.infinity)
+            .toDouble();
+        final usableViewportHeight = constraints.hasBoundedHeight
+            ? constraints.maxHeight.clamp(0.0, mediaUsableHeight).toDouble()
+            : mediaUsableHeight;
+        final horizontalGutter = widget.desktop
+            ? PerfectSpace.xl
+            : PerfectSpace.md;
+        final innerWidth = (availableWidth - (horizontalGutter * 2))
+            .clamp(0.0, double.infinity)
+            .toDouble();
+        final expandedComposition =
+            widget.desktop && innerWidth >= 1040 && textScale < 1.7;
+        final tabletComposition = innerWidth >= 680 && !expandedComposition;
+        final openHeightFactor = usableViewportHeight < 560
+            ? .74
+            : textScale >= 1.7
+            ? .72
+            : expandedComposition
+            ? .50
+            : tabletComposition
+            ? .46
+            : .48;
+        final openHeight = (usableViewportHeight * openHeightFactor).clamp(
+          0.0,
+          expandedComposition || textScale >= 1.7 ? 520.0 : 460.0,
+        );
+        final openWidth = expandedComposition
+            ? (innerWidth * .88).clamp(880.0, 1120.0)
+            : innerWidth;
+        final closedWidth = !widget.desktop || innerWidth <= 256
+            ? innerWidth
+            : (innerWidth * .34).clamp(256.0, 360.0);
+        final denseOpenLayout = openHeight < 300 || textScale >= 1.7;
+
+        final content = !_open && !widget.showCollapsedLauncher
+            ? const SizedBox.shrink(
+                key: ValueKey<String>('perfect-ai-collapsed-zero'),
+              )
+            : SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalGutter,
+                    PerfectSpace.xxs,
+                    horizontalGutter,
+                    PerfectSpace.xxs,
+                  ),
+                  child: Align(
+                    widthFactor: 1,
+                    heightFactor: 1,
+                    alignment: _open
+                        ? AlignmentDirectional.bottomCenter
+                        : widget.desktop
+                        ? AlignmentDirectional.bottomEnd
+                        : AlignmentDirectional.bottomCenter,
+                    child: SizedBox(
+                      width: _open ? openWidth : closedWidth,
+                      height: _open
+                          ? openHeight
+                          : widget.desktop
+                          ? 52
+                          : 58,
+                      child: PerfectMotionSwitcher(
+                        kind: PerfectTransitionKind.fadeScale,
                         child: _open
-                            ? _openDock(context, dense: denseOpenLayout)
-                            : _closedToggle(context),
+                            ? _openSurface(
+                                context,
+                                dense: denseOpenLayout,
+                                showContextRail: expandedComposition,
+                                showContextStrip: tabletComposition,
+                              )
+                            : _closedSurface(context),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-      ),
+              );
+
+        if (PerfectMotion.reduced(context)) {
+          return Align(
+            key: const ValueKey<String>('perfect-ai-layout'),
+            widthFactor: 1,
+            heightFactor: 1,
+            alignment: AlignmentDirectional.bottomCenter,
+            child: content,
+          );
+        }
+        return AnimatedSize(
+          key: const ValueKey<String>('perfect-ai-layout'),
+          duration: duration,
+          reverseDuration: PerfectMotion.standard,
+          curve: PerfectMotion.emphasizedCurve,
+          alignment: AlignmentDirectional.bottomCenter,
+          clipBehavior: Clip.hardEdge,
+          child: content,
+        );
+      },
     );
   }
 
-  Widget _closedToggle(BuildContext context) => Semantics(
-    button: true,
-    expanded: false,
-    label: 'Open Perfect AI',
-    child: Material(
-      color: Colors.transparent,
-      child: InkWell(
-        key: const ValueKey<String>('perfect-ai-toggle'),
-        onTap: _toggleOpen,
-        onHover: (value) => setState(() => _toggleHovered = value),
-        onFocusChange: (value) => setState(() => _toggleFocused = value),
-        onHighlightChanged: (value) => setState(() => _togglePressed = value),
-        borderRadius: BorderRadius.circular(99),
-        mouseCursor: SystemMouseCursors.click,
-        canRequestFocus: true,
-        focusNode: _toggleFocus,
-        child: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(
-            widget.desktop ? 6 : 7,
-            5,
-            widget.desktop ? 12 : 14,
-            5,
-          ),
-          child: Row(
-            children: [
-              _BrandPulse(
-                active: _sending || _applying,
-                compact: widget.desktop,
-              ),
-              SizedBox(
-                width: widget.desktop ? PerfectSpace.xs : PerfectSpace.sm,
-              ),
-              Expanded(
-                child:
-                    widget.desktop ||
-                        MediaQuery.textScalerOf(context).scale(1) >= 1.5
-                    ? Text.rich(
-                        TextSpan(
-                          text: 'Perfect AI',
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(fontWeight: FontWeight.w800),
-                          children: [
-                            TextSpan(
-                              text:
-                                  MediaQuery.textScalerOf(context).scale(1) >=
-                                      1.5
-                                  ? ''
-                                  : _proposal == null
-                                  ? '  ·  Ask or speak'
-                                  : '  ·  Review ${_proposal!.items.length} changes',
-                              style: Theme.of(context).textTheme.labelMedium
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                          ],
+  Widget _closedSurface(BuildContext context) => SizedBox.expand(
+    key: const ValueKey<String>('perfect-ai-surface'),
+    child: PerfectInteractiveSurface(
+      key: const ValueKey<String>('perfect-ai-toggle'),
+      onTap: _toggleOpen,
+      semanticLabel: 'Open Perfect AI',
+      tooltip: 'Open Perfect AI',
+      focusNode: _toggleFocus,
+      tone: PerfectInteractiveTone.tertiary,
+      selected: _proposal != null,
+      borderRadius: const BorderRadius.all(Radius.circular(PerfectRadius.pill)),
+      padding: EdgeInsetsDirectional.fromSTEB(
+        widget.desktop ? 6 : 7,
+        5,
+        widget.desktop ? 12 : 14,
+        5,
+      ),
+      child: Semantics(
+        expanded: false,
+        child: Row(
+          children: [
+            _BrandPulse(active: _sending || _applying, compact: widget.desktop),
+            SizedBox(width: widget.desktop ? PerfectSpace.xs : PerfectSpace.sm),
+            Expanded(
+              child:
+                  widget.desktop ||
+                      MediaQuery.textScalerOf(context).scale(1) >= 1.5
+                  ? Text.rich(
+                      TextSpan(
+                        text: 'Perfect AI',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Perfect AI',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(fontWeight: FontWeight.w800),
-                          ),
-                          Text(
-                            _proposal == null
-                                ? 'Ask, speak, or shape your plan'
-                                : '${_proposal!.items.length} changes ready to review',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.labelSmall
+                          TextSpan(
+                            text:
+                                MediaQuery.textScalerOf(context).scale(1) >= 1.5
+                                ? ''
+                                : _proposal == null
+                                ? '  ·  Ask or speak'
+                                : '  ·  Review ${_proposal!.items.length} changes',
+                            style: Theme.of(context).textTheme.labelMedium
                                 ?.copyWith(
                                   color: Theme.of(
                                     context,
                                   ).colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w500,
                                 ),
                           ),
                         ],
                       ),
-              ),
-              if (_proposal != null)
-                Container(
-                  key: const ValueKey<String>('perfect-ai-proposal-badge'),
-                  margin: const EdgeInsetsDirectional.only(
-                    end: PerfectSpace.xs,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: PerfectColors.mintSoft,
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: Text(
-                    '${_proposal!.items.length}',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: PerfectColors.ink,
-                      fontWeight: FontWeight.w800,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Perfect AI',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                        Text(
+                          _proposal == null
+                              ? 'Ask, speak, or shape your plan'
+                              : '${_proposal!.items.length} changes ready to review',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      ],
                     ),
+            ),
+            if (_proposal != null)
+              Container(
+                key: const ValueKey<String>('perfect-ai-proposal-badge'),
+                margin: const EdgeInsetsDirectional.only(end: PerfectSpace.xs),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: PerfectColors.mintSoft,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  '${_proposal!.items.length}',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: PerfectColors.ink,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-              Icon(
-                widget.desktop
-                    ? Icons.keyboard_arrow_up_rounded
-                    : Icons.auto_awesome_rounded,
-                size: 20,
               ),
-            ],
-          ),
+            Icon(
+              widget.desktop
+                  ? Icons.keyboard_arrow_up_rounded
+                  : Icons.auto_awesome_rounded,
+              size: 20,
+            ),
+          ],
         ),
       ),
     ),
   );
 
-  Widget _openDock(BuildContext context, {required bool dense}) => Column(
+  Widget _openSurface(
+    BuildContext context, {
+    required bool dense,
+    required bool showContextRail,
+    required bool showContextStrip,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    final tokens = PerfectSurfaceTheme.of(context);
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.escape): _toggleOpen,
+      },
+      child: FocusTraversalGroup(
+        child: Semantics(
+          container: true,
+          expanded: true,
+          label: 'Perfect AI workspace',
+          child: PerfectGlassSurface(
+            surfaceKey: const ValueKey<String>('perfect-ai-surface'),
+            strength: PerfectGlassStrength.strong,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(PerfectRadius.dock),
+            ),
+            borderColor: MediaQuery.highContrastOf(context)
+                ? tokens.strokeStrong
+                : scheme.tertiary.withValues(alpha: .48),
+            tint: Color.alphaBlend(
+              scheme.tertiary.withValues(alpha: .035),
+              tokens.glassStrong,
+            ),
+            child: _openDock(
+              context,
+              dense: dense,
+              showContextRail: showContextRail,
+              showContextStrip: showContextStrip,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _openDock(
+    BuildContext context, {
+    required bool dense,
+    required bool showContextRail,
+    required bool showContextStrip,
+  }) => Column(
     children: [
       _DockHeader(
         busy: _sending || _applying,
+        dense: dense,
         onClose: _toggleOpen,
         onNewConversation: _sending || _applying ? null : _clearConversation,
       ),
+      if (showContextStrip) const _ContextStrip(),
       Expanded(
-        child: widget.desktop
+        child: showContextRail
             ? Row(
                 children: [
                   Expanded(
@@ -376,12 +426,12 @@ class PerfectAiDockState extends State<PerfectAiDock>
                     ),
                     color: Theme.of(context).colorScheme.outlineVariant,
                   ),
-                  Expanded(flex: 3, child: _contextRail(context)),
+                  SizedBox(width: 280, child: _contextRail(context)),
                 ],
               )
             : _conversation(context, dense: dense),
       ),
-      _composerBar(context),
+      _composerBar(context, dense: dense),
     ],
   );
 
@@ -485,136 +535,226 @@ class PerfectAiDockState extends State<PerfectAiDock>
     ],
   );
 
-  Widget _composerBar(BuildContext context) {
+  Widget _composerBar(BuildContext context, {required bool dense}) {
     final hasInput =
         _composer.text.trim().isNotEmpty || _voiceClip != null || _recording;
-    final largeText = MediaQuery.textScalerOf(context).scale(1) >= 1.5;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(
-        PerfectSpace.sm,
-        PerfectSpace.xs,
-        PerfectSpace.sm,
-        PerfectSpace.sm,
+    final bodySize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+    final largeText =
+        MediaQuery.textScalerOf(context).scale(bodySize) / bodySize >= 1.5;
+    final scheme = Theme.of(context).colorScheme;
+    final tokens = PerfectSurfaceTheme.of(context);
+    final isWindows = Theme.of(context).platform == TargetPlatform.windows;
+    final voiceControl = IconButton(
+      key: const ValueKey<String>('perfect-ai-voice'),
+      tooltip: _recording
+          ? 'Stop voice note'
+          : _voiceClip == null
+          ? 'Record a private voice note'
+          : 'Remove voice note',
+      isSelected: _recording || _voiceClip != null,
+      style: IconButton.styleFrom(
+        minimumSize: const Size.square(48),
+        backgroundColor: _recording
+            ? scheme.errorContainer
+            : _voiceClip != null
+            ? scheme.secondaryContainer
+            : scheme.surfaceContainerHigh,
+        foregroundColor: _recording
+            ? scheme.onErrorContainer
+            : _voiceClip != null
+            ? scheme.onSecondaryContainer
+            : scheme.onSurfaceVariant,
       ),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withValues(alpha: .90),
-        border: Border(
-          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      onPressed: _sending || _applying
+          ? null
+          : _recording
+          ? _stopRecording
+          : _voiceClip != null
+          ? _removeVoiceClip
+          : _requestVoiceConsent,
+      icon: PerfectMotionSwitcher(
+        duration: PerfectMotion.quick,
+        reverseDuration: PerfectMotion.quick,
+        child: Icon(
+          _recording
+              ? Icons.stop_rounded
+              : _voiceClip != null
+              ? Icons.close_rounded
+              : Icons.mic_none_rounded,
+          key: ValueKey<String>(
+            _recording
+                ? 'recording'
+                : _voiceClip != null
+                ? 'recorded'
+                : 'idle',
+          ),
         ),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          IconButton(
-            key: const ValueKey<String>('perfect-ai-voice'),
-            tooltip: _recording
-                ? 'Stop voice note'
-                : _voiceClip == null
-                ? 'Record a private voice note'
-                : 'Remove voice note',
+    );
+    final composerField = Semantics(
+      liveRegion: _recording,
+      child: TextField(
+        key: const ValueKey<String>('perfect-ai-composer'),
+        controller: _composer,
+        focusNode: _composerFocus,
+        minLines: 1,
+        maxLines: dense
+            ? 1
+            : widget.desktop
+            ? 3
+            : 2,
+        maxLength: 4000,
+        enabled: !_sending && !_applying && !_recording,
+        textInputAction: isWindows
+            ? TextInputAction.send
+            : TextInputAction.newline,
+        onChanged: (_) => setState(() {}),
+        onTapOutside: (_) => _composerFocus.unfocus(),
+        onSubmitted: isWindows ? (_) => _submit() : null,
+        decoration: InputDecoration(
+          counterText: '',
+          hintMaxLines: dense
+              ? 1
+              : largeText
+              ? 2
+              : 1,
+          hintText: _recording
+              ? 'Listening… ${_formatDuration(_recordingDuration)}'
+              : _voiceClip != null
+              ? 'Voice note ready — add context if you want'
+              : largeText
+              ? 'Ask Perfect AI…'
+              : 'Ask Perfect AI to plan, explain, or reorganize…',
+          fillColor: Colors.transparent,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: PerfectSpace.xs,
+            vertical: largeText ? 7 : 13,
+          ),
+        ),
+      ),
+    );
+    final sendControl = _sending
+        ? IconButton(
+            key: const ValueKey<String>('perfect-ai-cancel'),
+            tooltip: 'Cancel answer',
             style: IconButton.styleFrom(
               minimumSize: const Size.square(48),
-              backgroundColor: _recording
-                  ? Theme.of(context).colorScheme.errorContainer
-                  : _voiceClip != null
-                  ? PerfectColors.mintSoft
-                  : Theme.of(context).colorScheme.surfaceContainerHigh,
-              foregroundColor: _recording
-                  ? Theme.of(context).colorScheme.onErrorContainer
-                  : PerfectColors.ink,
+              backgroundColor: scheme.errorContainer,
+              foregroundColor: scheme.onErrorContainer,
             ),
-            onPressed: _sending || _applying
-                ? null
-                : _recording
-                ? _stopRecording
-                : _voiceClip != null
-                ? _removeVoiceClip
-                : _requestVoiceConsent,
-            icon: Icon(
-              _recording
-                  ? Icons.stop_rounded
-                  : _voiceClip != null
-                  ? Icons.close_rounded
-                  : Icons.mic_none_rounded,
+            onPressed: _cancelRequest,
+            icon: const Icon(Icons.stop_rounded),
+          )
+        : IconButton.filled(
+            key: const ValueKey<String>('perfect-ai-send'),
+            tooltip: isWindows
+                ? 'Send to Perfect AI (Enter)'
+                : 'Send to Perfect AI',
+            style: IconButton.styleFrom(
+              minimumSize: const Size.square(48),
+              backgroundColor: PerfectColors.apricot,
+              foregroundColor: PerfectColors.ink,
             ),
-          ),
-          const SizedBox(width: PerfectSpace.xs),
-          Expanded(
-            child: TextField(
-              key: const ValueKey<String>('perfect-ai-composer'),
-              controller: _composer,
-              focusNode: _composerFocus,
-              minLines: 1,
-              maxLines: widget.desktop ? 3 : 2,
-              maxLength: 4000,
-              enabled: !_sending && !_applying && !_recording,
-              textInputAction: widget.desktop
-                  ? TextInputAction.send
-                  : TextInputAction.newline,
-              onChanged: (_) => setState(() {}),
-              onSubmitted: widget.desktop ? (_) => _submit() : null,
-              decoration: InputDecoration(
-                counterText: '',
-                hintMaxLines: 1,
-                hintText: _recording
-                    ? 'Listening… ${_formatDuration(_recordingDuration)}'
-                    : _voiceClip != null
-                    ? 'Voice note ready — add context if you want'
-                    : largeText
-                    ? 'Ask Perfect AI…'
-                    : 'Ask Perfect AI to plan, explain, or reorganize…',
-                fillColor: Colors.transparent,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: PerfectSpace.xs,
-                  vertical: largeText ? 7 : 13,
-                ),
+            onPressed: !hasInput || _recording || _applying ? null : _submit,
+            icon: PerfectMotionSwitcher(
+              duration: PerfectMotion.quick,
+              reverseDuration: PerfectMotion.quick,
+              child: Icon(
+                _applying
+                    ? Icons.hourglass_top_rounded
+                    : Icons.arrow_upward_rounded,
+                key: ValueKey<bool>(_applying),
               ),
             ),
-          ),
-          const SizedBox(width: PerfectSpace.xs),
-          if (_sending)
-            IconButton(
-              key: const ValueKey<String>('perfect-ai-cancel'),
-              tooltip: 'Cancel answer',
-              onPressed: _cancelRequest,
-              icon: const Icon(Icons.stop_circle_outlined),
-            )
-          else
-            IconButton.filled(
-              key: const ValueKey<String>('perfect-ai-send'),
-              tooltip: 'Send to Perfect AI',
-              style: IconButton.styleFrom(
-                minimumSize: const Size.square(48),
-                backgroundColor: PerfectColors.apricot,
-                foregroundColor: PerfectColors.ink,
-              ),
-              onPressed: !hasInput || _recording || _applying ? null : _submit,
-              icon: const Icon(Icons.arrow_upward_rounded),
-            ),
-        ],
+          );
+    final composer = DecoratedBox(
+      key: const ValueKey<String>('perfect-ai-composer-shell'),
+      decoration: BoxDecoration(
+        color: Color.alphaBlend(
+          scheme.tertiary.withValues(alpha: .025),
+          tokens.surface,
+        ),
+        borderRadius: BorderRadius.circular(PerfectRadius.card),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(PerfectSpace.xxs),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final stacked = constraints.maxWidth < (largeText ? 360 : 248);
+            if (stacked) {
+              return Column(
+                key: const ValueKey<String>('perfect-ai-composer-stacked'),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  composerField,
+                  const SizedBox(height: PerfectSpace.xxs),
+                  Row(children: [voiceControl, const Spacer(), sendControl]),
+                ],
+              );
+            }
+            return Row(
+              key: const ValueKey<String>('perfect-ai-composer-inline'),
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                voiceControl,
+                const SizedBox(width: PerfectSpace.xs),
+                Expanded(child: composerField),
+                const SizedBox(width: PerfectSpace.xs),
+                sendControl,
+              ],
+            );
+          },
+        ),
+      ),
+    );
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.enter, control: true): () =>
+            unawaited(_submit()),
+      },
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          PerfectSpace.xs,
+          PerfectSpace.xs,
+          PerfectSpace.xs,
+          PerfectSpace.xs,
+        ),
+        child: composer,
       ),
     );
   }
 
   void _toggleOpen() {
-    setState(() {
-      _open = !_open;
-      _toggleHovered = false;
-      _togglePressed = false;
-    });
+    final opening = !_open;
+    if (opening) _returnFocus = FocusManager.instance.primaryFocus;
+    setState(() => _open = opening);
+    widget.onOpenChanged?.call(_open);
     if (_open) {
       if (!_historySuppressed) {
         unawaited(_hydrateLatestConversation(force: true));
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && widget.desktop) _composerFocus.requestFocus();
+        if (mounted && Theme.of(context).platform == TargetPlatform.windows) {
+          _composerFocus.requestFocus();
+        }
       });
-    } else if (_recording) {
-      unawaited(_cancelRecording());
+    } else {
+      if (_recording) unawaited(_cancelRecording());
+      final returnFocus = _returnFocus;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted ||
+            returnFocus == null ||
+            returnFocus.context == null ||
+            !returnFocus.canRequestFocus) {
+          return;
+        }
+        returnFocus.requestFocus();
+      });
     }
   }
 
@@ -1017,10 +1157,18 @@ class PerfectAiDockState extends State<PerfectAiDock>
   void _scrollToLatest() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_historyScroll.hasClients) return;
+      final duration = PerfectMotion.responsive(
+        context,
+        PerfectMotion.standard,
+      );
+      if (duration == Duration.zero) {
+        _historyScroll.jumpTo(_historyScroll.position.maxScrollExtent);
+        return;
+      }
       _historyScroll.animateTo(
         _historyScroll.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
+        duration: duration,
+        curve: PerfectMotion.productive,
       );
     });
   }
@@ -1094,66 +1242,179 @@ class _ContextPromise extends StatelessWidget {
   );
 }
 
+/// Tablet-sized docks keep the trust contract visible without spending a
+/// permanent desktop rail. The strip scrolls at large text rather than
+/// compressing labels or growing over the conversation.
+class _ContextStrip extends StatelessWidget {
+  const _ContextStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final bodySize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
+    return Container(
+      key: const ValueKey<String>('perfect-ai-context-strip'),
+      height: textScale >= 1.5 ? 58 : 46,
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: scheme.outlineVariant),
+          bottom: BorderSide(color: scheme.outlineVariant),
+        ),
+      ),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(
+          horizontal: PerfectSpace.md,
+          vertical: PerfectSpace.xs,
+        ),
+        children: const <Widget>[
+          _ContextChip(
+            icon: Icons.calendar_view_day_rounded,
+            label: 'Schedule-aware',
+          ),
+          SizedBox(width: PerfectSpace.xs),
+          _ContextChip(icon: Icons.fact_check_outlined, label: 'Review first'),
+          SizedBox(width: PerfectSpace.xs),
+          _ContextChip(icon: Icons.lock_outline_rounded, label: 'Owner-only'),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContextChip extends StatelessWidget {
+  const _ContextChip({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      label: label,
+      child: ExcludeSemantics(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.tertiaryContainer.withValues(alpha: .64),
+            borderRadius: BorderRadius.circular(PerfectRadius.pill),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: PerfectSpace.sm),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(icon, size: 17, color: scheme.onTertiaryContainer),
+                const SizedBox(width: PerfectSpace.xs),
+                Text(
+                  label,
+                  maxLines: 1,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: scheme.onTertiaryContainer,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _DockHeader extends StatelessWidget {
   const _DockHeader({
     required this.busy,
+    required this.dense,
     required this.onClose,
     required this.onNewConversation,
   });
 
   final bool busy;
+  final bool dense;
   final VoidCallback onClose;
   final VoidCallback? onNewConversation;
 
   @override
   Widget build(BuildContext context) {
-    final largeText = MediaQuery.textScalerOf(context).scale(1) >= 1.5;
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(8, 6, 8, 2),
-      child: Row(
-        children: [
-          _BrandPulse(active: busy),
-          const SizedBox(width: PerfectSpace.sm),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Perfect AI',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                if (!largeText)
-                  Text(
-                    busy
-                        ? 'Shaping your request…'
-                        : 'Aware of your synced plan',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    final bodySize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
+    final scheme = Theme.of(context).colorScheme;
+    final title = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Perfect AI',
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        if (textScale < 1.6)
+          Text(
+            busy ? 'Shaping your request…' : 'Aware of your synced plan',
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+      ],
+    );
+    final close = IconButton(
+      key: const ValueKey<String>('perfect-ai-close'),
+      tooltip: 'Close Perfect AI',
+      onPressed: onClose,
+      icon: const Icon(Icons.keyboard_arrow_down_rounded),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final stacked = !dense && constraints.maxWidth < 250;
+        return Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(8, 6, 8, 2),
+          child: stacked
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _BrandPulse(active: busy, compact: true),
+                        const SizedBox(width: PerfectSpace.xs),
+                        Expanded(child: title),
+                        close,
+                      ],
                     ),
-                  ),
-              ],
-            ),
-          ),
-          IconButton(
-            tooltip: 'New AI conversation',
-            onPressed: onNewConversation,
-            icon: const Icon(Icons.add_comment_outlined),
-          ),
-          IconButton(
-            key: const ValueKey<String>('perfect-ai-close'),
-            tooltip: 'Close Perfect AI',
-            onPressed: onClose,
-            icon: const Icon(Icons.keyboard_arrow_down_rounded),
-          ),
-        ],
-      ),
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: TextButton.icon(
+                        key: const ValueKey<String>('perfect-ai-new-chat'),
+                        onPressed: onNewConversation,
+                        icon: const Icon(Icons.add_comment_outlined),
+                        label: const Text('New conversation'),
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    _BrandPulse(active: busy),
+                    const SizedBox(width: PerfectSpace.sm),
+                    Expanded(child: title),
+                    IconButton(
+                      key: const ValueKey<String>('perfect-ai-new-chat'),
+                      tooltip: 'New AI conversation',
+                      onPressed: onNewConversation,
+                      icon: const Icon(Icons.add_comment_outlined),
+                    ),
+                    close,
+                  ],
+                ),
+        );
+      },
     );
   }
 }
@@ -1245,6 +1506,11 @@ class _EmptyConversation extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
+      if (constraints.maxHeight < 52) {
+        return const SizedBox.shrink(
+          key: ValueKey<String>('perfect-ai-empty-compressed'),
+        );
+      }
       final compactHeight = dense || constraints.maxHeight < 260;
       final horizontalPaths =
           constraints.maxWidth >= 560 && constraints.maxHeight >= 150;
@@ -1270,15 +1536,11 @@ class _EmptyConversation extends StatelessWidget {
                       children: [
                         Text(
                           'Choose a starting path',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.titleSmall
                               ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                         Text(
                           'Perfect AI turns it into a reviewable plan.',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
                                 color: Theme.of(
@@ -1324,20 +1586,38 @@ class _StarterPaths extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (compact) {
-      return ListView.separated(
-        key: const ValueKey<String>('perfect-ai-starter-paths'),
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.zero,
-        itemCount: _starterPaths.length,
-        separatorBuilder: (_, _) => const SizedBox(width: PerfectSpace.xs),
-        itemBuilder: (context, index) => SizedBox(
-          width: desktop ? 190 : 152,
-          child: _StarterPathTile(
-            data: _starterPaths[index],
-            compact: true,
-            onSelected: onSelected,
-          ),
-        ),
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final bodySize =
+              Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+          final textScale =
+              MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
+          final proportionalWidth =
+              constraints.maxWidth *
+              (textScale >= 1.5
+                  ? .82
+                  : desktop
+                  ? .42
+                  : .56);
+          final tileWidth = proportionalWidth
+              .clamp(textScale >= 1.5 ? 190.0 : 152.0, 240.0)
+              .toDouble();
+          return ListView.separated(
+            key: const ValueKey<String>('perfect-ai-starter-paths'),
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.zero,
+            itemCount: _starterPaths.length,
+            separatorBuilder: (_, _) => const SizedBox(width: PerfectSpace.xs),
+            itemBuilder: (context, index) => SizedBox(
+              width: tileWidth,
+              child: _StarterPathTile(
+                data: _starterPaths[index],
+                compact: true,
+                onSelected: onSelected,
+              ),
+            ),
+          );
+        },
       );
     }
 
@@ -1378,7 +1658,7 @@ class _StarterPaths extends StatelessWidget {
   }
 }
 
-class _StarterPathTile extends StatefulWidget {
+class _StarterPathTile extends StatelessWidget {
   const _StarterPathTile({
     required this.data,
     required this.onSelected,
@@ -1390,58 +1670,49 @@ class _StarterPathTile extends StatefulWidget {
   final bool compact;
 
   @override
-  State<_StarterPathTile> createState() => _StarterPathTileState();
-}
-
-class _StarterPathTileState extends State<_StarterPathTile> {
-  bool _hovered = false;
-  bool _focused = false;
-  bool _pressed = false;
-
-  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final colors = switch (widget.data.zone) {
+    final colors = switch (data.zone) {
       _StarterZone.plan => (
         fill: scheme.primaryContainer,
         foreground: scheme.onPrimaryContainer,
         accent: scheme.primary,
+        tone: PerfectInteractiveTone.primary,
       ),
       _StarterZone.habit => (
         fill: scheme.secondaryContainer,
         foreground: scheme.onSecondaryContainer,
         accent: scheme.secondary,
+        tone: PerfectInteractiveTone.secondary,
       ),
       _StarterZone.rebalance => (
         fill: scheme.tertiaryContainer,
         foreground: scheme.onTertiaryContainer,
         accent: scheme.tertiary,
+        tone: PerfectInteractiveTone.tertiary,
       ),
     };
-    final duration = PerfectMotion.responsive(context, PerfectMotion.quick);
     final child = Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          width: widget.compact ? 32 : 38,
-          height: widget.compact ? 32 : 38,
+          width: compact ? 32 : 38,
+          height: compact ? 32 : 38,
           decoration: BoxDecoration(
             color: colors.accent.withValues(alpha: .17),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(PerfectRadius.compact),
           ),
           child: Icon(
-            widget.data.icon,
-            size: widget.compact ? 18 : 20,
+            data.icon,
+            size: compact ? 18 : 20,
             color: colors.foreground,
           ),
         ),
         const SizedBox(width: PerfectSpace.xs),
         Expanded(
-          child: widget.compact
+          child: compact
               ? Text(
-                  widget.data.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  data.title,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: colors.foreground,
                     fontWeight: FontWeight.w800,
@@ -1452,18 +1723,14 @@ class _StarterPathTileState extends State<_StarterPathTile> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.data.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      data.title,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         color: colors.foreground,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     Text(
-                      widget.data.detail,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      data.detail,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: colors.foreground.withValues(alpha: .76),
                       ),
@@ -1475,60 +1742,23 @@ class _StarterPathTileState extends State<_StarterPathTile> {
       ],
     );
 
-    return Semantics(
-      button: true,
-      label: '${widget.data.title}. ${widget.data.detail}',
-      child: AnimatedScale(
-        scale: _pressed ? .985 : 1,
-        duration: duration,
-        curve: PerfectMotion.productive,
-        child: AnimatedContainer(
-          key: ValueKey<String>('${widget.data.keyName}-zone'),
-          duration: duration,
-          curve: PerfectMotion.productive,
-          constraints: const BoxConstraints(minHeight: 48),
-          decoration: BoxDecoration(
-            color: Color.alphaBlend(
-              scheme.surface.withValues(alpha: _hovered ? .12 : 0),
-              colors.fill,
-            ),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: _focused
-                  ? colors.accent
-                  : colors.accent.withValues(alpha: .26),
-              width: _focused ? 2 : 1,
-            ),
-            boxShadow: _hovered
-                ? [
-                    BoxShadow(
-                      color: colors.accent.withValues(alpha: .13),
-                      blurRadius: 16,
-                      offset: const Offset(0, 5),
-                    ),
-                  ]
-                : const [],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              key: ValueKey<String>(widget.data.keyName),
-              onTap: () => widget.onSelected(widget.data.prompt),
-              onHover: (value) => setState(() => _hovered = value),
-              onFocusChange: (value) => setState(() => _focused = value),
-              onHighlightChanged: (value) => setState(() => _pressed = value),
-              mouseCursor: SystemMouseCursors.click,
-              borderRadius: BorderRadius.circular(18),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: PerfectSpace.sm,
-                  vertical: widget.compact ? PerfectSpace.xs : PerfectSpace.sm,
-                ),
-                child: child,
-              ),
-            ),
-          ),
-        ),
+    return PerfectInteractiveSurface(
+      key: ValueKey<String>(data.keyName),
+      onTap: () => onSelected(data.prompt),
+      semanticLabel: '${data.title}. ${data.detail}',
+      tone: colors.tone,
+      selected: true,
+      foregroundColor: colors.foreground,
+      borderRadius: const BorderRadius.all(
+        Radius.circular(PerfectRadius.control),
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: PerfectSpace.sm,
+        vertical: compact ? PerfectSpace.xs : PerfectSpace.sm,
+      ),
+      child: KeyedSubtree(
+        key: ValueKey<String>('${data.keyName}-zone'),
+        child: child,
       ),
     );
   }
@@ -1590,6 +1820,7 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = message.role == PerfectAiRole.user;
+    final scheme = Theme.of(context).colorScheme;
     return Align(
       alignment: user
           ? AlignmentDirectional.centerEnd
@@ -1602,9 +1833,7 @@ class _MessageBubble extends StatelessWidget {
           vertical: PerfectSpace.sm,
         ),
         decoration: BoxDecoration(
-          color: user
-              ? PerfectColors.apricotSoft
-              : Theme.of(context).colorScheme.surfaceContainerHigh,
+          color: user ? scheme.primaryContainer : scheme.surfaceContainerHigh,
           borderRadius: BorderRadiusDirectional.only(
             topStart: const Radius.circular(20),
             topEnd: const Radius.circular(20),
@@ -1614,9 +1843,9 @@ class _MessageBubble extends StatelessWidget {
         ),
         child: SelectableText(
           message.text,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: PerfectColors.ink),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: user ? scheme.onPrimaryContainer : scheme.onSurface,
+          ),
         ),
       ),
     );
@@ -1627,25 +1856,28 @@ class _ThinkingBubble extends StatelessWidget {
   const _ThinkingBubble();
 
   @override
-  Widget build(BuildContext context) => Align(
-    alignment: AlignmentDirectional.centerStart,
-    child: Container(
-      key: const ValueKey<String>('perfect-ai-thinking'),
-      margin: const EdgeInsets.only(bottom: PerfectSpace.xs),
-      padding: const EdgeInsets.symmetric(
-        horizontal: PerfectSpace.md,
-        vertical: PerfectSpace.sm,
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: Container(
+        key: const ValueKey<String>('perfect-ai-thinking'),
+        margin: const EdgeInsets.only(bottom: PerfectSpace.xs),
+        padding: const EdgeInsets.symmetric(
+          horizontal: PerfectSpace.md,
+          vertical: PerfectSpace.sm,
+        ),
+        decoration: BoxDecoration(
+          color: scheme.tertiaryContainer,
+          borderRadius: BorderRadius.circular(PerfectRadius.control),
+        ),
+        child: SizedBox(
+          width: 54,
+          child: LinearProgressIndicator(minHeight: 3, color: scheme.tertiary),
+        ),
       ),
-      decoration: BoxDecoration(
-        color: PerfectColors.lilacSoft,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: const SizedBox(
-        width: 54,
-        child: LinearProgressIndicator(minHeight: 3),
-      ),
-    ),
-  );
+    );
+  }
 }
 
 class _HistoryStatusBanner extends StatelessWidget {
@@ -1666,6 +1898,35 @@ class _HistoryStatusBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final bodySize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
+    final indicator = loading
+        ? const SizedBox.square(
+            dimension: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        : Icon(
+            Icons.cloud_off_rounded,
+            size: 18,
+            color: scheme.onErrorContainer,
+          );
+    final message = Text(
+      loading
+          ? 'Syncing your AI conversation…'
+          : 'Synced history is unavailable. You can still start a new chat.',
+      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        color: loading ? scheme.onSurfaceVariant : scheme.onErrorContainer,
+      ),
+    );
+    final retry = !loading && retryable
+        ? TextButton.icon(
+            key: const ValueKey<String>('perfect-ai-history-retry'),
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Retry'),
+          )
+        : null;
     return Container(
       key: ValueKey<String>(
         loading ? 'perfect-ai-history-loading' : 'perfect-ai-history-error',
@@ -1681,45 +1942,40 @@ class _HistoryStatusBanner extends StatelessWidget {
             : scheme.errorContainer.withValues(alpha: .72),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Row(
-        children: [
-          if (loading)
-            const SizedBox.square(
-              dimension: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          else
-            Icon(
-              Icons.cloud_off_rounded,
-              size: 18,
-              color: scheme.onErrorContainer,
-            ),
-          const SizedBox(width: PerfectSpace.sm),
-          Expanded(
-            child: Text(
-              loading
-                  ? 'Syncing your AI conversation…'
-                  : 'Synced history is unavailable. You can still start a new chat.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: loading
-                    ? scheme.onSurfaceVariant
-                    : scheme.onErrorContainer,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final stacked =
+              retry != null && (constraints.maxWidth < 320 || textScale >= 1.5);
+          final status = Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: PerfectSpace.xxs),
+                child: indicator,
               ),
-            ),
-          ),
-          if (!loading && retryable)
-            TextButton(
-              key: const ValueKey<String>('perfect-ai-history-retry'),
-              onPressed: onRetry,
-              child: const Text('Retry'),
-            ),
-        ],
+              const SizedBox(width: PerfectSpace.sm),
+              Expanded(child: message),
+              if (!stacked && retry != null) ...[
+                const SizedBox(width: PerfectSpace.xs),
+                retry,
+              ],
+            ],
+          );
+          if (!stacked) return status;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              status,
+              Align(alignment: AlignmentDirectional.centerEnd, child: retry),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-class _ProposalPreview extends StatelessWidget {
+class _ProposalPreview extends StatefulWidget {
   const _ProposalPreview({
     required this.proposal,
     required this.applying,
@@ -1733,108 +1989,283 @@ class _ProposalPreview extends StatelessWidget {
   final VoidCallback? onDismiss;
 
   @override
-  Widget build(BuildContext context) => Container(
-    key: const ValueKey<String>('perfect-ai-proposal'),
-    margin: const EdgeInsets.only(top: PerfectSpace.xs),
-    padding: const EdgeInsets.all(PerfectSpace.md),
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [
-          PerfectColors.mintSoft,
-          PerfectColors.lilacSoft.withValues(alpha: .72),
-        ],
-      ),
-      borderRadius: const BorderRadiusDirectional.only(
-        topStart: Radius.circular(8),
-        topEnd: Radius.circular(26),
-        bottomStart: Radius.circular(26),
-        bottomEnd: Radius.circular(26),
-      ),
-      border: Border.all(color: PerfectColors.mint.withValues(alpha: .7)),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(Icons.fact_check_outlined, size: 20),
-            const SizedBox(width: PerfectSpace.xs),
-            Expanded(
-              child: Text(
-                proposal.title,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
-              ),
+  State<_ProposalPreview> createState() => _ProposalPreviewState();
+}
+
+class _ProposalPreviewState extends State<_ProposalPreview> {
+  static const _collapsedItemCount = 4;
+
+  bool _showAll = false;
+
+  @override
+  void didUpdateWidget(covariant _ProposalPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.proposal.submissionId != widget.proposal.submissionId) {
+      _showAll = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final proposal = widget.proposal;
+    final scheme = Theme.of(context).colorScheme;
+    final tokens = PerfectSurfaceTheme.of(context);
+    final bodySize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
+    final visibleItems = _showAll
+        ? proposal.items
+        : proposal.items.take(_collapsedItemCount);
+    final hiddenCount = proposal.items.length - visibleItems.length;
+
+    return Container(
+      key: const ValueKey<String>('perfect-ai-proposal'),
+      margin: const EdgeInsets.only(top: PerfectSpace.xs),
+      padding: const EdgeInsets.all(PerfectSpace.md),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color.alphaBlend(
+              scheme.secondary.withValues(alpha: .08),
+              tokens.surfaceRaised,
             ),
-            Text(
-              '${proposal.items.length} changes',
-              style: Theme.of(context).textTheme.labelSmall,
+            Color.alphaBlend(
+              scheme.tertiary.withValues(alpha: .1),
+              tokens.surfaceRaised,
             ),
           ],
         ),
-        if (proposal.summary.isNotEmpty) ...[
-          const SizedBox(height: PerfectSpace.xxs),
-          Text(
-            proposal.summary,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
-        const SizedBox(height: PerfectSpace.xs),
-        for (final item in proposal.items.take(3))
-          Padding(
-            padding: const EdgeInsets.only(bottom: PerfectSpace.xxs),
-            child: Row(
-              children: [
-                const Icon(Icons.add_circle_outline_rounded, size: 16),
-                const SizedBox(width: PerfectSpace.xs),
-                Expanded(
+        borderRadius: const BorderRadiusDirectional.only(
+          topStart: Radius.circular(PerfectRadius.compact),
+          topEnd: Radius.circular(PerfectRadius.panel),
+          bottomStart: Radius.circular(PerfectRadius.panel),
+          bottomEnd: Radius.circular(PerfectRadius.panel),
+        ),
+        border: Border.all(
+          color: MediaQuery.highContrastOf(context)
+              ? tokens.strokeStrong
+              : scheme.secondary.withValues(alpha: .62),
+          width: MediaQuery.highContrastOf(context) ? 2 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final stacked = constraints.maxWidth < 300 || textScale >= 1.5;
+              final title = Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.fact_check_outlined,
+                    size: 20,
+                    color: scheme.secondary,
+                  ),
+                  const SizedBox(width: PerfectSpace.xs),
+                  Expanded(
+                    child: Text(
+                      proposal.title,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: scheme.onSurface,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+              final count = DecoratedBox(
+                decoration: BoxDecoration(
+                  color: scheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(PerfectRadius.pill),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: PerfectSpace.sm,
+                    vertical: PerfectSpace.xxs,
+                  ),
                   child: Text(
-                    item.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelMedium,
+                    '${proposal.items.length} changes',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: scheme.onSecondaryContainer,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
-                Text(item.kind, style: Theme.of(context).textTheme.labelSmall),
+              );
+              if (stacked) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    title,
+                    const SizedBox(height: PerfectSpace.xs),
+                    count,
+                  ],
+                );
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: title),
+                  const SizedBox(width: PerfectSpace.sm),
+                  count,
+                ],
+              );
+            },
+          ),
+          if (proposal.summary.isNotEmpty) ...[
+            const SizedBox(height: PerfectSpace.xs),
+            Text(
+              proposal.summary,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+            ),
+          ],
+          const SizedBox(height: PerfectSpace.sm),
+          for (final item in visibleItems)
+            _ProposalItemRow(item: item, textScale: textScale),
+          if (hiddenCount > 0)
+            TextButton.icon(
+              key: const ValueKey<String>('perfect-ai-review-all'),
+              onPressed: () => setState(() => _showAll = true),
+              icon: const Icon(Icons.unfold_more_rounded),
+              label: Text('Review all ${proposal.items.length} changes'),
+            ),
+          const SizedBox(height: PerfectSpace.xs),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.lock_outline_rounded,
+                size: 17,
+                color: scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: PerfectSpace.xs),
+              Expanded(
+                child: Text(
+                  'Nothing is written to your planner until you choose Apply.',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: PerfectSpace.sm),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              runAlignment: WrapAlignment.end,
+              spacing: PerfectSpace.xs,
+              runSpacing: PerfectSpace.xs,
+              children: [
+                TextButton(
+                  key: const ValueKey<String>('perfect-ai-dismiss-proposal'),
+                  onPressed: widget.onDismiss,
+                  child: const Text('Dismiss'),
+                ),
+                FilledButton.icon(
+                  key: const ValueKey<String>('perfect-ai-apply-proposal'),
+                  onPressed: widget.applying ? null : widget.onApply,
+                  icon: widget.applying
+                      ? const SizedBox.square(
+                          dimension: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.done_all_rounded),
+                  label: Text('Apply ${proposal.items.length} changes'),
+                ),
               ],
             ),
           ),
-        if (proposal.items.length > 3)
-          Text(
-            '+ ${proposal.items.length - 3} more',
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
-        const SizedBox(height: PerfectSpace.sm),
-        Wrap(
-          alignment: WrapAlignment.end,
-          runAlignment: WrapAlignment.end,
-          spacing: PerfectSpace.xs,
-          runSpacing: PerfectSpace.xxs,
-          children: [
-            TextButton(
-              key: const ValueKey<String>('perfect-ai-dismiss-proposal'),
-              onPressed: onDismiss,
-              child: const Text('Dismiss'),
-            ),
-            FilledButton.icon(
-              key: const ValueKey<String>('perfect-ai-apply-proposal'),
-              onPressed: applying ? null : onApply,
-              icon: applying
-                  ? const SizedBox.square(
-                      dimension: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.done_all_rounded),
-              label: const Text('Apply to Perfect'),
-            ),
-          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ProposalItemRow extends StatelessWidget {
+  const _ProposalItemRow({required this.item, required this.textScale});
+
+  final PerfectAiProposalItem item;
+  final double textScale;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final kind = DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(PerfectRadius.pill),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: PerfectSpace.xs,
+          vertical: PerfectSpace.xxs,
         ),
-      ],
-    ),
-  );
+        child: Text(
+          item.kind.replaceAll('_', ' '),
+          style: Theme.of(
+            context,
+          ).textTheme.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
+        ),
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: PerfectSpace.xs),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final stacked = constraints.maxWidth < 300 || textScale >= 1.5;
+          final title = Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: PerfectSpace.xxs),
+                child: Icon(
+                  Icons.add_circle_outline_rounded,
+                  size: 17,
+                  color: scheme.secondary,
+                ),
+              ),
+              const SizedBox(width: PerfectSpace.xs),
+              Expanded(
+                child: Text(
+                  item.title,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: scheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          );
+          if (stacked) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                title,
+                const SizedBox(height: PerfectSpace.xxs),
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 25),
+                  child: kind,
+                ),
+              ],
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: title),
+              const SizedBox(width: PerfectSpace.xs),
+              kind,
+            ],
+          );
+        },
+      ),
+    );
+  }
 }
 
 class _ErrorRibbon extends StatelessWidget {
@@ -1849,39 +2280,89 @@ class _ErrorRibbon extends StatelessWidget {
   final VoidCallback onDismiss;
 
   @override
-  Widget build(BuildContext context) => Container(
-    key: const ValueKey<String>('perfect-ai-error'),
-    margin: const EdgeInsets.only(top: PerfectSpace.xs),
-    padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 4, 8),
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.errorContainer,
-      borderRadius: BorderRadius.circular(18),
-    ),
-    child: Row(
-      children: [
-        Icon(
-          Icons.error_outline_rounded,
-          color: Theme.of(context).colorScheme.onErrorContainer,
-        ),
-        const SizedBox(width: PerfectSpace.xs),
-        Expanded(
-          child: Text(
-            error.message,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onErrorContainer,
-            ),
-          ),
-        ),
-        if (onRetry != null)
-          TextButton(onPressed: onRetry, child: const Text('Retry')),
-        IconButton(
-          tooltip: 'Dismiss error',
-          onPressed: onDismiss,
-          icon: const Icon(Icons.close_rounded),
-        ),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final bodySize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
+    final dismiss = IconButton(
+      key: const ValueKey<String>('perfect-ai-error-dismiss'),
+      tooltip: 'Dismiss error',
+      onPressed: onDismiss,
+      icon: const Icon(Icons.close_rounded),
+    );
+    return Container(
+      key: const ValueKey<String>('perfect-ai-error'),
+      margin: const EdgeInsets.only(top: PerfectSpace.xs),
+      padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 4, 8),
+      decoration: BoxDecoration(
+        color: scheme.errorContainer,
+        borderRadius: BorderRadius.circular(PerfectRadius.control),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final stacked = constraints.maxWidth < 340 || textScale >= 1.5;
+          final message = Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: PerfectSpace.xxs),
+                child: Icon(
+                  Icons.error_outline_rounded,
+                  color: scheme.onErrorContainer,
+                ),
+              ),
+              const SizedBox(width: PerfectSpace.xs),
+              Expanded(
+                child: Text(
+                  error.message,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: scheme.onErrorContainer,
+                  ),
+                ),
+              ),
+            ],
+          );
+          if (!stacked) {
+            return Row(
+              children: [
+                Expanded(child: message),
+                if (onRetry != null)
+                  TextButton(
+                    key: const ValueKey<String>('perfect-ai-error-retry'),
+                    onPressed: onRetry,
+                    child: const Text('Retry'),
+                  ),
+                dismiss,
+              ],
+            );
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              message,
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: Wrap(
+                  spacing: PerfectSpace.xs,
+                  children: [
+                    if (onRetry != null)
+                      TextButton.icon(
+                        key: const ValueKey<String>('perfect-ai-error-retry'),
+                        onPressed: onRetry,
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Retry'),
+                      ),
+                    dismiss,
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 }
 
 String _formatDuration(Duration duration) {

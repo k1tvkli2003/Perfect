@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/presentation/perfect_brand.dart';
+import 'package:perfect/presentation/perfect_motion.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
 
@@ -26,15 +27,19 @@ class PlannerHabitLogSheet extends StatefulWidget {
     if (MediaQuery.sizeOf(context).width >= 680) {
       return showDialog<void>(
         context: context,
-        builder: (context) => Dialog(
-          insetPadding: const EdgeInsets.all(PerfectSpace.xl),
-          child: ConstrainedBox(
-            key: const ValueKey<String>('perfect-habit-log-dialog-surface'),
-            constraints: const BoxConstraints(maxWidth: 680, maxHeight: 760),
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: sheet,
+        builder: (context) => PerfectStagedEntrance(
+          rise: 22,
+          scaleBegin: .96,
+          child: Dialog(
+            insetPadding: const EdgeInsets.all(PerfectSpace.xl),
+            child: ConstrainedBox(
+              key: const ValueKey<String>('perfect-habit-log-dialog-surface'),
+              constraints: const BoxConstraints(maxWidth: 680, maxHeight: 760),
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: sheet,
+              ),
             ),
           ),
         ),
@@ -44,6 +49,7 @@ class PlannerHabitLogSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
+      sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
       backgroundColor: Theme.of(context).colorScheme.surface,
       builder: (context) => SafeArea(
         key: const ValueKey<String>('perfect-habit-log-surface'),

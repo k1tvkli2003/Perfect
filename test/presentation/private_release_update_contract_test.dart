@@ -11,7 +11,12 @@ void main() {
   late String gitignore;
 
   setUpAll(() {
-    workflow = File('.github/workflows/verify.yml').readAsStringSync();
+    // Git may materialize workflow files with CRLF on Windows. Normalize the
+    // source contract before checking shell snippets so this test verifies
+    // release semantics rather than the developer's checkout newline policy.
+    workflow = File(
+      '.github/workflows/verify.yml',
+    ).readAsStringSync().replaceAll('\r\n', '\n');
     contract = File('.github/private-build-contract.yml').readAsStringSync();
     androidBuild = File('android/app/build.gradle.kts').readAsStringSync();
     signingProvisioner = File(

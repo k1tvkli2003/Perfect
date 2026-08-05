@@ -1,6 +1,8 @@
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_formula.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
@@ -10,8 +12,12 @@ import 'package:perfect/presentation/perfect_theme.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
 import 'package:uuid/uuid.dart';
 
-/// A sectioned editor: fast capture stays at the top while every task/habit
-/// scenario remains reachable through deliberate, collapsed detail sections.
+/// A state-preserving creation ritual for tasks, habits and planning objects.
+///
+/// Habit creation follows the decision order proven by HabitNow (type,
+/// category, evaluation, definition, frequency and timing) while retaining
+/// Perfect!'s richer local-first data contract. Task creation uses a shorter
+/// sibling path and keeps a title-only quick-save escape hatch.
 class PlannerEditor extends StatefulWidget {
   const PlannerEditor({
     super.key,
@@ -33,45 +39,47 @@ class PlannerEditor extends StatefulWidget {
     PlannerEntityKind initialKind = PlannerEntityKind.oneOffTask,
   }) {
     final media = MediaQuery.of(context);
-    final geometry = PerfectResponsiveGeometry.fromSize(
-      media.size,
-      textScale: media.textScaler.scale(1),
-    );
+    // A workspace snackbar lives in the root overlay and can otherwise sit on
+    // top of this route's bottom actions (notably after Duplicate -> Edit).
+    // The editor owns the full screen, so retire that transient surface before
+    // installing the route and keep every wizard action immediately hittable.
+    ScaffoldMessenger.maybeOf(context)?.removeCurrentSnackBar();
     final editor = PlannerEditor(
       controller: controller,
       existing: existing,
       initialKind: initialKind,
       onDismiss: () => Navigator.of(context).maybePop(),
     );
-    if (geometry.prefersDialog) {
-      return showDialog<void>(
-        context: context,
-        builder: (context) => Dialog(
-          insetPadding: EdgeInsets.symmetric(
-            horizontal: geometry.horizontalGutter,
-            vertical: geometry.verticalGutter,
-          ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: geometry.editorMaxWidth,
-              maxHeight: geometry.editorMaxHeight(820),
+    final reduceMotion = media.disableAnimations;
+    return Navigator.of(context).push<void>(
+      PageRouteBuilder<void>(
+        fullscreenDialog: true,
+        transitionDuration: reduceMotion ? Duration.zero : PerfectMotion.route,
+        reverseTransitionDuration: reduceMotion
+            ? Duration.zero
+            : PerfectMotion.standard,
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            Scaffold(resizeToAvoidBottomInset: true, body: editor),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curved = CurvedAnimation(
+            parent: animation,
+            curve: PerfectMotion.modalEnter,
+            reverseCurve: PerfectMotion.exit,
+          );
+          return FadeTransition(
+            opacity: curved,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, .08),
+                end: Offset.zero,
+              ).animate(curved),
+              child: ScaleTransition(
+                scale: Tween<double>(begin: .986, end: 1).animate(curved),
+                child: child,
+              ),
             ),
-            child: editor,
-          ),
-        ),
-      );
-    }
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      builder: (context) => SafeArea(
-        top: false,
-        child: FractionallySizedBox(
-          heightFactor: geometry.editorSheetHeightFactor,
-          child: editor,
-        ),
+          );
+        },
       ),
     );
   }
@@ -82,6 +90,8 @@ class PlannerEditor extends StatefulWidget {
 
 class _PlannerEditorState extends State<PlannerEditor> {
   final _formKey = GlobalKey<FormState>();
+  int _wizardStep = 0;
+  int _transitionDirection = 1;
   late final TextEditingController _title;
   late final TextEditingController _note;
   late final TextEditingController _category;
@@ -478,6 +488,14 @@ class _PlannerEditorState extends State<PlannerEditor> {
       if (type == 'project') _projectId = id;
       if (type == 'area') _areaId = id;
     }
+    if (existing == null && _kind == PlannerEntityKind.habit) {
+      _recurrence = 'daily';
+    } else if (existing == null &&
+        _kind == PlannerEntityKind.recurringTask &&
+        _recurrence == 'none') {
+      _recurrence = 'weekly';
+      _weekdays.add(DateTime.now().weekday);
+    }
   }
 
   @override
@@ -502,233 +520,1257 @@ class _PlannerEditorState extends State<PlannerEditor> {
 
   @override
   Widget build(BuildContext context) => PerfectGeometryBuilder(
-    builder: (context, geometry) => Align(
-      alignment: Alignment.topCenter,
-      child: SizedBox(
-        width: geometry.editorMaxWidth,
-        height: geometry.availableSize.height,
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(
-                geometry.horizontalGutter,
-                geometry.verticalGutter,
-                math.max(PerfectSpace.sm, geometry.horizontalGutter - 8),
-                PerfectSpace.sm,
-              ),
-              child: Row(
+    builder: (context, geometry) {
+      final steps = _wizardSteps;
+      final safeStep = _wizardStep.clamp(0, steps.length - 1);
+      if (safeStep != _wizardStep) _wizardStep = safeStep;
+      return CallbackShortcuts(
+        bindings: <ShortcutActivator, VoidCallback>{
+          const SingleActivator(LogicalKeyboardKey.enter, control: true):
+              _saving ? () {} : _save,
+          const SingleActivator(LogicalKeyboardKey.arrowLeft, alt: true):
+              _saving ? () {} : _goBack,
+          const SingleActivator(LogicalKeyboardKey.escape): _saving
+              ? () {}
+              : (widget.onDismiss ?? () {}),
+        },
+        child: FocusTraversalGroup(
+          policy: OrderedTraversalPolicy(),
+          child: Material(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: SafeArea(
+              child: Column(
                 children: [
+                  _wizardHeader(context, geometry, steps),
                   Expanded(
-                    child: Text(
-                      widget.existing == null
-                          ? 'Make it yours'
-                          : 'Edit details',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                    child: geometry.isCompact
+                        ? _compactWizardBody(context, geometry, steps)
+                        : _wideWizardBody(context, geometry, steps),
+                  ),
+                  _wizardFooter(context, geometry, steps),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  List<_PlannerWizardStep> get _wizardSteps {
+    const type = _PlannerWizardStep(
+      id: 'type',
+      label: 'Type',
+      title: 'What are you shaping?',
+      subtitle:
+          'Choose the planning object first. You can keep it quick or make it precise.',
+      pictogram: 'compass',
+    );
+    const category = _PlannerWizardStep(
+      id: 'category',
+      label: 'Category',
+      title: 'Where does it belong?',
+      subtitle:
+          'A category makes scanning faster. Identity details stay optional.',
+      pictogram: 'label',
+    );
+    const define = _PlannerWizardStep(
+      id: 'define',
+      label: 'Define',
+      title: 'Define it clearly',
+      subtitle:
+          'Name the outcome in plain language, then add only the detail you need.',
+      pictogram: 'idea',
+    );
+    const review = _PlannerWizardStep(
+      id: 'review',
+      label: 'Review',
+      title: 'Ready when you are',
+      subtitle:
+          'Review the live plan, keep advanced metadata optional, then save locally first.',
+      pictogram: 'star',
+    );
+    if (_isHabit) {
+      return const <_PlannerWizardStep>[
+        type,
+        category,
+        _PlannerWizardStep(
+          id: 'evaluate',
+          label: 'Measure',
+          title: 'How will progress count?',
+          subtitle:
+              'Pick one clear evaluation model. You can change its goal on the next step.',
+          pictogram: 'habit',
+        ),
+        define,
+        _PlannerWizardStep(
+          id: 'frequency',
+          label: 'Rhythm',
+          title: 'How often should it return?',
+          subtitle:
+              'Daily, selected dates, a flexible quota, or a precise repeating interval.',
+          pictogram: 'habit',
+        ),
+        _PlannerWizardStep(
+          id: 'plan',
+          label: 'Plan',
+          title: 'When should it meet your day?',
+          subtitle:
+              'Set the active window, reminders, priority and the recovery rule for missed days.',
+          pictogram: 'compass',
+        ),
+        review,
+      ];
+    }
+    if (_isTask) {
+      return <_PlannerWizardStep>[
+        type,
+        category,
+        define,
+        if (_kind == PlannerEntityKind.recurringTask)
+          const _PlannerWizardStep(
+            id: 'frequency',
+            label: 'Rhythm',
+            title: 'How often should it return?',
+            subtitle:
+                'Choose a useful recurrence without turning the task into a tracking habit.',
+            pictogram: 'task',
+          ),
+        const _PlannerWizardStep(
+          id: 'plan',
+          label: 'Plan',
+          title: 'Place it in your day',
+          subtitle:
+              'Schedule the work, add reminders and decide what happens if it slips.',
+          pictogram: 'compass',
+        ),
+        const _PlannerWizardStep(
+          id: 'details',
+          label: 'Details',
+          title: 'Give it the right working context',
+          subtitle:
+              'Estimate, energy, checklist and focus tools stay together—not in your way.',
+          pictogram: 'task',
+        ),
+        review,
+      ];
+    }
+    return const <_PlannerWizardStep>[type, define, category, review];
+  }
+
+  Widget _wizardHeader(
+    BuildContext context,
+    PerfectResponsiveGeometry geometry,
+    List<_PlannerWizardStep> steps,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    final current = steps[_wizardStep];
+    final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+    final ultraCompact =
+        geometry.isCompact &&
+        (textScale >= 1.6 || geometry.availableSize.height < 560);
+    final letHeaderBreathe = geometry.isCompact || textScale >= 1.5;
+    if (ultraCompact) {
+      // At 200% text on a short phone, the descriptive stage already carries
+      // the title and the next action needs real viewport space. Preserve the
+      // close target and an explicit step announcement, then give the active
+      // form a usable scroll window instead of compressing it to a strip.
+      return Padding(
+        padding: EdgeInsetsDirectional.fromSTEB(
+          geometry.horizontalGutter,
+          PerfectSpace.xxs,
+          geometry.horizontalGutter,
+          PerfectSpace.xxs,
+        ),
+        child: SizedBox(
+          height: 52,
+          child: Row(
+            children: [
+              IconButton(
+                tooltip: 'Close editor',
+                onPressed: _saving ? null : widget.onDismiss,
+                icon: const Icon(Icons.close_rounded),
+              ),
+              const SizedBox(width: PerfectSpace.xs),
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  label:
+                      '${widget.existing == null ? 'Make it yours' : 'Edit details'}. '
+                      '${_kindLabel(_kind)}, step ${_wizardStep + 1} of ${steps.length}.',
+                  child: Text(
+                    '${_kindLabel(_kind)} · ${_wizardStep + 1} / ${steps.length}',
+                    maxLines: 1,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: scheme.onSurface,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
-                  IconButton(
-                    tooltip: 'Close editor',
-                    onPressed: _saving ? null : widget.onDismiss,
-                    icon: const Icon(Icons.close_rounded),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(
+        geometry.horizontalGutter,
+        geometry.isShortLandscape ? PerfectSpace.xs : PerfectSpace.sm,
+        geometry.horizontalGutter,
+        PerfectSpace.xs,
+      ),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: geometry.isShortLandscape ? 52 : 60,
+        ),
+        child: Row(
+          children: [
+            IconButton(
+              tooltip: 'Close editor',
+              onPressed: _saving ? null : widget.onDismiss,
+              icon: const Icon(Icons.close_rounded),
+            ),
+            const SizedBox(width: PerfectSpace.xs),
+            PerfectPictogram(
+              name: current.pictogram,
+              size: 34,
+              framed: true,
+              semanticLabel: current.label,
+            ),
+            const SizedBox(width: PerfectSpace.sm),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.existing == null ? 'Make it yours' : 'Edit details',
+                    maxLines: letHeaderBreathe ? null : 1,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  Text(
+                    '${_kindLabel(_kind)} · Step ${_wizardStep + 1} of ${steps.length}',
+                    maxLines: letHeaderBreathe ? null : 1,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  key: const ValueKey<String>('planner-editor-scroll'),
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: EdgeInsetsDirectional.fromSTEB(
-                    geometry.horizontalGutter,
-                    PerfectSpace.sm,
-                    geometry.horizontalGutter,
-                    geometry.isShortLandscape
-                        ? PerfectSpace.lg
-                        : PerfectSpace.xxl,
+            if (!geometry.isCompact)
+              TextButton.icon(
+                key: const ValueKey<String>('planner-editor-quick-save'),
+                onPressed: _saving ? null : _save,
+                icon: const Icon(Icons.bolt_rounded, size: 19),
+                label: const Text('Quick save'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _compactWizardBody(
+    BuildContext context,
+    PerfectResponsiveGeometry geometry,
+    List<_PlannerWizardStep> steps,
+  ) => Column(
+    children: [
+      _compactStepMeter(context, steps),
+      Expanded(child: _wizardStage(context, geometry, steps[_wizardStep])),
+    ],
+  );
+
+  Widget _wideWizardBody(
+    BuildContext context,
+    PerfectResponsiveGeometry geometry,
+    List<_PlannerWizardStep> steps,
+  ) {
+    final railWidth = geometry.isExpanded
+        ? math.min(292.0, geometry.contentWidth * .24)
+        : math.min(244.0, geometry.contentWidth * .30);
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(
+        geometry.horizontalGutter,
+        PerfectSpace.xs,
+        geometry.horizontalGutter,
+        PerfectSpace.xs,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(width: railWidth, child: _wizardRail(context, steps)),
+          const SizedBox(width: PerfectSpace.lg),
+          Expanded(child: _wizardStage(context, geometry, steps[_wizardStep])),
+        ],
+      ),
+    );
+  }
+
+  Widget _compactStepMeter(
+    BuildContext context,
+    List<_PlannerWizardStep> steps,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+    final ultraCompact = textScale >= 1.6;
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(
+        PerfectSpace.md,
+        ultraCompact ? PerfectSpace.xxs : PerfectSpace.xs,
+        PerfectSpace.md,
+        ultraCompact ? PerfectSpace.xxs : PerfectSpace.sm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: List<Widget>.generate(steps.length, (index) {
+              final active = index <= _wizardStep;
+              return Expanded(
+                child: AnimatedContainer(
+                  key: ValueKey<String>('wizard-meter-${steps[index].id}'),
+                  duration: PerfectMotion.responsive(
+                    context,
+                    PerfectMotion.standard,
                   ),
-                  children: [
-                    _kindPicker(context),
-                    const SizedBox(height: PerfectSpace.md),
-                    TextFormField(
-                      controller: _title,
-                      autofocus: widget.existing == null,
-                      maxLength: 160,
-                      textDirection: _directionFor(_title.text),
-                      onChanged: (_) => setState(() {}),
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: 'What matters?',
-                        hintText: 'e.g. Finish the portfolio case study',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Give this a clear title.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: PerfectSpace.sm),
-                    TextFormField(
-                      controller: _note,
-                      minLines: 2,
-                      maxLines: 5,
-                      textDirection: _directionFor(_note.text),
-                      onChanged: (_) => setState(() {}),
-                      decoration: const InputDecoration(
-                        labelText: 'Note (optional)',
-                        alignLabelWithHint: true,
-                      ),
-                    ),
-                    const SizedBox(height: PerfectSpace.lg),
-                    _section(
-                      context,
-                      title: 'Organization',
-                      subtitle:
-                          'Keep one source task while placing it in an area or project.',
-                      child: _organizationSection(context),
-                    ),
-                    _section(
-                      context,
-                      title: 'Category & identity',
-                      subtitle:
-                          'Use a familiar label; personal categories stay yours.',
-                      child: _categorySection(context),
-                    ),
-                    _section(
-                      context,
-                      title: 'Time & plan',
-                      subtitle: 'Schedule without forcing a deadline.',
-                      child: _timeSection(context),
-                    ),
-                    _section(
-                      context,
-                      title: 'Repeat & recovery',
-                      subtitle:
-                          'Define what should happen when life interrupts.',
-                      child: _recoverySection(context),
-                    ),
-                    if (_isHabit)
-                      _section(
-                        context,
-                        title: 'Habit tracking',
-                        subtitle:
-                            'A check, a number, a duration, or an avoidance goal.',
-                        child: _trackingSection(context),
-                      ),
-                    if (_isTask)
-                      _section(
-                        context,
-                        title: 'Task context',
-                        subtitle: 'Priority, focus intent, and a useful link.',
-                        child: _taskContextSection(context),
-                      ),
-                    if (_kind == PlannerEntityKind.oneOffTask)
-                      _section(
-                        context,
-                        title: 'Task outcome',
-                        subtitle:
-                            'The same four states are available from the app and Perfect Today widget.',
-                        child: _taskOutcomeSection(context),
-                      ),
-                    _section(
-                      context,
-                      title: 'Reminders',
-                      subtitle:
-                          'Local notification setup is requested only when you turn this on.',
-                      child: _reminderSection(context),
-                    ),
-                    _section(
-                      context,
-                      title: 'Custom properties',
-                      subtitle:
-                          'Typed data stays local-first; formulas are declarative, never executable code.',
-                      child: _propertySection(context),
-                    ),
-                  ],
+                  height: 4,
+                  margin: EdgeInsetsDirectional.only(
+                    end: index == steps.length - 1 ? 0 : PerfectSpace.xxs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: active ? scheme.primary : scheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
                 ),
+              );
+            }),
+          ),
+          if (!ultraCompact) ...[
+            const SizedBox(height: PerfectSpace.xs),
+            Text(
+              steps[_wizardStep].label,
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge?.copyWith(color: scheme.primary),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _wizardRail(BuildContext context, List<_PlannerWizardStep> steps) {
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(PerfectSpace.sm),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.separated(
+                key: const ValueKey<String>('planner-editor-step-rail'),
+                itemCount: steps.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: PerfectSpace.xxs),
+                itemBuilder: (context, index) {
+                  final step = steps[index];
+                  final selected = index == _wizardStep;
+                  final completed = index < _wizardStep;
+                  return PerfectInteractiveSurface(
+                    key: ValueKey<String>('planner-step-${step.id}'),
+                    semanticLabel:
+                        '${step.label}, step ${index + 1} of ${steps.length}',
+                    selected: selected,
+                    onTap: _saving ? null : () => _goToStep(index),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: PerfectSpace.sm,
+                      vertical: PerfectSpace.xs,
+                    ),
+                    child: Row(
+                      children: [
+                        AnimatedContainer(
+                          duration: PerfectMotion.responsive(
+                            context,
+                            PerfectMotion.standard,
+                          ),
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? scheme.primaryContainer
+                                : completed
+                                ? scheme.secondaryContainer
+                                : scheme.surfaceContainerHighest,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: completed
+                              ? Icon(
+                                  Icons.check_rounded,
+                                  size: 18,
+                                  color: scheme.onSecondaryContainer,
+                                )
+                              : Text(
+                                  '${index + 1}',
+                                  style: Theme.of(context).textTheme.labelLarge,
+                                ),
+                        ),
+                        const SizedBox(width: PerfectSpace.sm),
+                        Expanded(
+                          child: Text(
+                            step.label,
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: selected
+                                      ? scheme.onSurface
+                                      : scheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(
-                  geometry.horizontalGutter,
-                  PerfectSpace.sm,
-                  geometry.horizontalGutter,
-                  geometry.verticalGutter,
+            const SizedBox(height: PerfectSpace.sm),
+            _liveSummary(context, compact: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _wizardStage(
+    BuildContext context,
+    PerfectResponsiveGeometry geometry,
+    _PlannerWizardStep step,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    return Form(
+      key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: Material(
+          color: scheme.surfaceContainerLowest,
+          child: AnimatedSwitcher(
+            duration: PerfectMotion.responsive(
+              context,
+              PerfectMotion.emphasized,
+            ),
+            switchInCurve: PerfectMotion.enter,
+            switchOutCurve: PerfectMotion.exit,
+            layoutBuilder: (currentChild, previousChildren) => Stack(
+              alignment: Alignment.topCenter,
+              children: <Widget>[...previousChildren, ?currentChild],
+            ),
+            transitionBuilder: (child, animation) {
+              final from = _transitionDirection >= 0 ? .035 : -.035;
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: Offset(from, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
                 ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _saving ? null : _save,
-                    icon: _saving
-                        ? const SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.check_rounded),
-                    label: Text(
-                      _saving ? 'Saving locally…' : 'Save to Perfect',
+              );
+            },
+            child: ListView(
+              key: ValueKey<String>('planner-editor-${step.id}'),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsetsDirectional.fromSTEB(
+                geometry.isCompact ? PerfectSpace.md : PerfectSpace.xxl,
+                geometry.isShortLandscape ? PerfectSpace.md : PerfectSpace.xl,
+                geometry.isCompact ? PerfectSpace.md : PerfectSpace.xxl,
+                PerfectSpace.giant,
+              ),
+              children: [
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 760),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          step.title,
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        const SizedBox(height: PerfectSpace.xs),
+                        Text(
+                          step.subtitle,
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(color: scheme.onSurfaceVariant),
+                        ),
+                        const SizedBox(height: PerfectSpace.xl),
+                        _wizardStepContent(context, step.id),
+                      ],
                     ),
                   ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _wizardStepContent(BuildContext context, String stepId) =>
+      switch (stepId) {
+        'type' => _kindPicker(context),
+        'category' => _categoryAndOrganizationStep(context),
+        'evaluate' => _trackingMethodChooser(context),
+        'define' => _definitionStep(context),
+        'frequency' => _recoverySection(context, showRecovery: false),
+        'plan' => _planningStep(context),
+        'details' => _detailsStep(context),
+        'review' => _reviewStep(context),
+        _ => const SizedBox.shrink(),
+      };
+
+  Widget _wizardFooter(
+    BuildContext context,
+    PerfectResponsiveGeometry geometry,
+    List<_PlannerWizardStep> steps,
+  ) {
+    final isLast = _wizardStep == steps.length - 1;
+    final scheme = Theme.of(context).colorScheme;
+    final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+    final ultraCompact =
+        geometry.isCompact &&
+        (textScale >= 1.6 || geometry.availableSize.height < 560);
+    final stackActions =
+        !ultraCompact &&
+        (geometry.availableSize.width < 430 || textScale >= 1.6);
+    final backAction = _wizardStep > 0
+        ? (stackActions || ultraCompact)
+              ? IconButton.outlined(
+                  key: const ValueKey<String>('planner-editor-back'),
+                  tooltip: 'Back',
+                  onPressed: _saving ? null : _goBack,
+                  icon: const Icon(Icons.arrow_back_rounded),
+                )
+              : OutlinedButton.icon(
+                  key: const ValueKey<String>('planner-editor-back'),
+                  onPressed: _saving ? null : _goBack,
+                  icon: const Icon(Icons.arrow_back_rounded),
+                  label: const Text('Back'),
+                )
+        : null;
+    final quickAction = geometry.isCompact && !isLast && !ultraCompact
+        ? stackActions
+              ? IconButton(
+                  key: const ValueKey<String>(
+                    'planner-editor-quick-save-compact',
+                  ),
+                  tooltip: 'Quick save · Ctrl+Enter',
+                  onPressed: _saving ? null : _save,
+                  icon: const Icon(Icons.bolt_rounded),
+                )
+              : TextButton.icon(
+                  key: const ValueKey<String>(
+                    'planner-editor-quick-save-compact',
+                  ),
+                  onPressed: _saving ? null : _save,
+                  icon: const Icon(Icons.bolt_rounded),
+                  label: const Text('Quick save'),
+                )
+        : null;
+    final primaryAction = FilledButton.icon(
+      key: ValueKey<String>(
+        isLast ? 'planner-editor-save' : 'planner-editor-next',
+      ),
+      onPressed: _saving
+          ? null
+          : isLast
+          ? _save
+          : _goNext,
+      icon: _saving
+          ? const SizedBox.square(
+              dimension: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(isLast ? Icons.check_rounded : Icons.arrow_forward_rounded),
+      label: Text(
+        _saving
+            ? 'Saving locally…'
+            : isLast
+            ? 'Save to Perfect'
+            : 'Continue',
+      ),
+    );
+    return SafeArea(
+      top: false,
+      minimum: EdgeInsets.fromLTRB(
+        geometry.horizontalGutter,
+        PerfectSpace.xs,
+        geometry.horizontalGutter,
+        geometry.isShortLandscape ? PerfectSpace.xs : PerfectSpace.sm,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: scheme.surface.withValues(alpha: .82),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: scheme.outlineVariant.withValues(alpha: .9),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(PerfectSpace.xs),
+              child: ultraCompact
+                  ? Row(
+                      children: [
+                        ?backAction,
+                        if (backAction != null)
+                          const SizedBox(width: PerfectSpace.xs),
+                        Expanded(child: primaryAction),
+                      ],
+                    )
+                  : stackActions
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (backAction != null || quickAction != null) ...[
+                          Row(
+                            children: [
+                              ?backAction,
+                              const Spacer(),
+                              ?quickAction,
+                            ],
+                          ),
+                          const SizedBox(height: PerfectSpace.xs),
+                        ],
+                        SizedBox(width: double.infinity, child: primaryAction),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        ?backAction,
+                        const Spacer(),
+                        if (geometry.isCompact && quickAction != null) ...[
+                          quickAction,
+                          const SizedBox(width: PerfectSpace.xs),
+                        ],
+                        primaryAction,
+                      ],
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _kindPicker(BuildContext context) {
+    final options =
+        <
+          ({
+            PlannerEntityKind kind,
+            String title,
+            String description,
+            String pictogram,
+          })
+        >[
+          (
+            kind: PlannerEntityKind.oneOffTask,
+            title: 'Task',
+            description: 'A clear outcome you complete once.',
+            pictogram: 'task',
+          ),
+          (
+            kind: PlannerEntityKind.recurringTask,
+            title: 'Recurring task',
+            description: 'Repeating work without habit statistics.',
+            pictogram: 'compass',
+          ),
+          (
+            kind: PlannerEntityKind.habit,
+            title: 'Habit',
+            description: 'A repeated behavior with progress and history.',
+            pictogram: 'habit',
+          ),
+          (
+            kind: PlannerEntityKind.project,
+            title: 'Project',
+            description: 'A larger outcome that groups related work.',
+            pictogram: 'idea',
+          ),
+          (
+            kind: PlannerEntityKind.area,
+            title: 'Area',
+            description: 'An ongoing responsibility such as health or home.',
+            pictogram: 'label',
+          ),
+        ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 620 ? 2 : 1;
+        final tileWidth = columns == 1
+            ? constraints.maxWidth
+            : (constraints.maxWidth - PerfectSpace.sm) / columns;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: PerfectSpace.sm,
+              runSpacing: PerfectSpace.sm,
+              children: options
+                  .map((option) {
+                    final selected = option.kind == _kind;
+                    return SizedBox(
+                      width: tileWidth,
+                      child: PerfectInteractiveSurface(
+                        key: ValueKey<String>(
+                          'planner-kind-${option.kind.name}',
+                        ),
+                        selected: selected,
+                        semanticLabel: '${option.title}. ${option.description}',
+                        onTap: _saving || widget.existing != null
+                            ? null
+                            : () => _selectKind(option.kind),
+                        padding: const EdgeInsets.all(PerfectSpace.md),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            PerfectPictogram(
+                              name: option.pictogram,
+                              size: 38,
+                              framed: true,
+                            ),
+                            const SizedBox(width: PerfectSpace.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          option.title,
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.titleMedium,
+                                        ),
+                                      ),
+                                      AnimatedSwitcher(
+                                        duration: PerfectMotion.responsive(
+                                          context,
+                                          PerfectMotion.quick,
+                                        ),
+                                        child: selected
+                                            ? Icon(
+                                                Icons.check_circle_rounded,
+                                                key: const ValueKey<String>(
+                                                  'selected',
+                                                ),
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                              )
+                                            : const SizedBox.square(
+                                                key: ValueKey<String>('empty'),
+                                                dimension: 24,
+                                              ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: PerfectSpace.xxs),
+                                  Text(
+                                    option.description,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  })
+                  .toList(growable: false),
+            ),
+            if (widget.existing != null) ...[
+              const SizedBox(height: PerfectSpace.md),
+              _softNote(
+                context,
+                icon: Icons.lock_outline_rounded,
+                text:
+                    'Type is fixed after creation so every synced device keeps the same record identity.',
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  void _selectKind(PlannerEntityKind kind) {
+    setState(() {
+      _kind = kind;
+      _wizardStep = 0;
+      if (kind == PlannerEntityKind.habit && _recurrence == 'none') {
+        _recurrence = 'daily';
+      } else if (kind == PlannerEntityKind.recurringTask &&
+          _recurrence == 'none') {
+        _recurrence = 'weekly';
+        _weekdays.add(DateTime.now().weekday);
+      } else if (kind == PlannerEntityKind.oneOffTask) {
+        _recurrence = 'none';
+      }
+    });
+  }
+
+  Widget _categoryAndOrganizationStep(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _categorySection(context),
+      const SizedBox(height: PerfectSpace.lg),
+      _disclosure(
+        context,
+        title: 'Project & area',
+        subtitle: 'Optional placement for the same source item',
+        initiallyExpanded: _areaId != null || _projectId != null,
+        child: _organizationSection(context),
+      ),
+    ],
+  );
+
+  Widget _definitionStep(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      TextFormField(
+        key: const ValueKey<String>('planner-editor-title'),
+        controller: _title,
+        autofocus: widget.existing == null && _title.text.isEmpty,
+        maxLength: 160,
+        textDirection: _directionFor(_title.text),
+        onChanged: (_) => setState(() {}),
+        textInputAction: TextInputAction.next,
+        decoration: InputDecoration(
+          labelText: _isHabit ? 'Habit name' : 'What matters?',
+          hintText: _isHabit
+              ? 'e.g. Read before bed'
+              : 'e.g. Finish the portfolio case study',
+        ),
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Give this a clear title.';
+          }
+          return null;
+        },
+      ),
+      const SizedBox(height: PerfectSpace.sm),
+      TextFormField(
+        controller: _note,
+        minLines: 2,
+        maxLines: 5,
+        textDirection: _directionFor(_note.text),
+        onChanged: (_) => setState(() {}),
+        decoration: const InputDecoration(
+          labelText: 'Description (optional)',
+          hintText: 'Context, intention, or a helpful cue',
+          alignLabelWithHint: true,
+        ),
+      ),
+      if (_isHabit) ...[
+        const SizedBox(height: PerfectSpace.lg),
+        _trackingDefinitionFields(context),
+      ],
+    ],
+  );
+
+  Widget _planningStep(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _subsectionHeading(
+        context,
+        title: 'Timing',
+        subtitle: 'Plan time and deadlines stay independent.',
+      ),
+      _timeSection(context),
+      const SizedBox(height: PerfectSpace.xl),
+      _subsectionHeading(
+        context,
+        title: 'Priority',
+        subtitle: 'Use urgency sparingly so it remains meaningful.',
+      ),
+      DropdownButtonFormField<String>(
+        isExpanded: true,
+        initialValue: _priority,
+        decoration: const InputDecoration(labelText: 'Priority'),
+        items: const [
+          DropdownMenuItem(value: 'low', child: Text('Low')),
+          DropdownMenuItem(value: 'normal', child: Text('Normal')),
+          DropdownMenuItem(value: 'high', child: Text('High')),
+          DropdownMenuItem(value: 'critical', child: Text('Critical')),
+        ],
+        onChanged: (value) => setState(() => _priority = value ?? 'normal'),
+      ),
+      const SizedBox(height: PerfectSpace.xl),
+      _subsectionHeading(
+        context,
+        title: 'Reminders',
+        subtitle: 'Nothing notifies you unless you explicitly enable it.',
+      ),
+      _reminderSection(context),
+      const SizedBox(height: PerfectSpace.xl),
+      _subsectionHeading(
+        context,
+        title: 'Miss & recovery',
+        subtitle: 'Choose whether it stays pending, moves, or asks you.',
+      ),
+      _recoveryPolicySection(context),
+    ],
+  );
+
+  Widget _detailsStep(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _taskContextSection(context, includePriority: false),
+      if (_kind == PlannerEntityKind.oneOffTask) ...[
+        const SizedBox(height: PerfectSpace.xl),
+        _subsectionHeading(
+          context,
+          title: 'Current outcome',
+          subtitle: 'Useful when editing an item already in motion.',
+        ),
+        _taskOutcomeSection(context),
+      ],
+    ],
+  );
+
+  Widget _reviewStep(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _liveSummary(context),
+      const SizedBox(height: PerfectSpace.lg),
+      _disclosure(
+        context,
+        title: 'Advanced metadata',
+        subtitle: 'Typed fields and safe declarative formulas',
+        initiallyExpanded:
+            _customName.text.isNotEmpty || _formula.text.isNotEmpty,
+        child: _propertySection(context),
+      ),
+      const SizedBox(height: PerfectSpace.md),
+      _softNote(
+        context,
+        icon: Icons.cloud_done_outlined,
+        text:
+            'Perfect saves locally first. Your sync queue can finish safely when a connection is available.',
+      ),
+    ],
+  );
+
+  Widget _liveSummary(BuildContext context, {bool compact = false}) {
+    final scheme = Theme.of(context).colorScheme;
+    final title = _title.text.trim().isEmpty
+        ? (_isHabit
+              ? 'Untitled habit'
+              : 'Untitled ${_kindLabel(_kind).toLowerCase()}')
+        : _title.text.trim();
+    final category = _category.text.trim();
+    final chips = <String>[
+      _kindLabel(_kind),
+      if (category.isNotEmpty) category,
+      if (_isHabit) _trackingMethodLabel(_trackingMethod),
+      if (_recurrence != 'none') _recurrenceLabel(_recurrence),
+      if (_scheduledAt != null) _formatDateTime(_scheduledAt!, _allDay),
+    ];
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer.withValues(alpha: .52),
+        borderRadius: BorderRadius.circular(compact ? 20 : 24),
+        border: Border.all(color: scheme.primary.withValues(alpha: .22)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(compact ? PerfectSpace.sm : PerfectSpace.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              compact ? 'Live summary' : 'Your plan at a glance',
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge?.copyWith(color: scheme.primary),
+            ),
+            const SizedBox(height: PerfectSpace.xs),
+            Text(
+              title,
+              maxLines: compact ? 2 : 3,
+              overflow: TextOverflow.ellipsis,
+              textDirection: _directionFor(title),
+              style: compact
+                  ? Theme.of(context).textTheme.titleSmall
+                  : Theme.of(context).textTheme.titleLarge,
+            ),
+            if (!compact) ...[
+              const SizedBox(height: PerfectSpace.sm),
+              Wrap(
+                spacing: PerfectSpace.xs,
+                runSpacing: PerfectSpace.xs,
+                children: chips
+                    .map(
+                      (label) => Chip(
+                        visualDensity: VisualDensity.compact,
+                        label: Text(label),
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _subsectionHeading(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: PerfectSpace.sm),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: PerfectSpace.xxs),
+        Text(
+          subtitle,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _softNote(
+    BuildContext context, {
+    required IconData icon,
+    required String text,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.secondaryContainer.withValues(alpha: .54),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(PerfectSpace.sm),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 20, color: scheme.onSecondaryContainer),
+            const SizedBox(width: PerfectSpace.sm),
+            Expanded(
+              child: Text(
+                text,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: scheme.onSecondaryContainer,
                 ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _disclosure(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required bool initiallyExpanded,
+    required Widget child,
+  }) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+    ),
+    child: ExpansionTile(
+      expansionAnimationStyle: PerfectMotion.style(
+        context,
+        duration: PerfectMotion.standard,
+      ),
+      initiallyExpanded: initiallyExpanded,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+      ),
+      collapsedShape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+      ),
+      tilePadding: const EdgeInsets.symmetric(
+        horizontal: PerfectSpace.md,
+        vertical: PerfectSpace.xxs,
+      ),
+      childrenPadding: const EdgeInsets.fromLTRB(
+        PerfectSpace.md,
+        0,
+        PerfectSpace.md,
+        PerfectSpace.md,
+      ),
+      title: Text(title, style: Theme.of(context).textTheme.titleSmall),
+      subtitle: Text(subtitle),
+      children: [child],
     ),
   );
 
-  Widget _kindPicker(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      DropdownButtonFormField<PlannerEntityKind>(
-        initialValue: _kind,
-        decoration: const InputDecoration(labelText: 'Type'),
-        items: const [
-          DropdownMenuItem(
-            value: PlannerEntityKind.oneOffTask,
-            child: Text('One-off task'),
-          ),
-          DropdownMenuItem(
-            value: PlannerEntityKind.recurringTask,
-            child: Text('Recurring task'),
-          ),
-          DropdownMenuItem(
-            value: PlannerEntityKind.habit,
-            child: Text('Habit'),
-          ),
-          DropdownMenuItem(
-            value: PlannerEntityKind.project,
-            child: Text('Project'),
-          ),
-          DropdownMenuItem(value: PlannerEntityKind.area, child: Text('Area')),
-        ],
-        onChanged: _saving || widget.existing != null
-            ? null
-            : (value) => setState(() {
-                _kind = value ?? PlannerEntityKind.oneOffTask;
-                if (_kind == PlannerEntityKind.recurringTask &&
-                    _recurrence == 'none') {
-                  _recurrence = 'weekly';
-                }
-              }),
-      ),
-      if (widget.existing != null) ...[
-        const SizedBox(height: PerfectSpace.xs),
-        Text(
-          'Type is fixed after creation so every synced device keeps the same record identity.',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    ],
-  );
+  void _goBack() {
+    if (_wizardStep <= 0) {
+      widget.onDismiss?.call();
+      return;
+    }
+    _goToStep(_wizardStep - 1);
+  }
+
+  void _goNext() {
+    if (!_validateCurrentStep()) return;
+    final last = _wizardSteps.length - 1;
+    if (_wizardStep >= last) {
+      _save();
+      return;
+    }
+    _goToStep(_wizardStep + 1);
+  }
+
+  void _goToStep(int target) {
+    final bounded = target.clamp(0, _wizardSteps.length - 1);
+    if (bounded == _wizardStep) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _transitionDirection = bounded > _wizardStep ? 1 : -1;
+      _wizardStep = bounded;
+    });
+  }
+
+  bool _validateCurrentStep() {
+    final stepId = _wizardSteps[_wizardStep].id;
+    final formValid = _formKey.currentState?.validate() ?? true;
+    if (!formValid) return false;
+    if (stepId == 'define' && _title.text.trim().isEmpty) {
+      _showDraftIssue('Give this a clear title.');
+      return false;
+    }
+    if (stepId == 'define' && _isHabit) {
+      return _validateHabitDefinition();
+    }
+    if (stepId == 'frequency') return _validateFrequency();
+    if (stepId == 'plan') {
+      final timeBlockError = _timeBlockValidation();
+      if (timeBlockError != null) {
+        _showDraftIssue(timeBlockError);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _validateHabitDefinition() {
+    if (<String>{'count', 'duration', 'avoid'}.contains(_trackingMethod)) {
+      final target = double.tryParse(_targetValue.text.trim());
+      if (target == null || target < 0) {
+        _showDraftIssue('Enter a valid goal or limit.');
+        return false;
+      }
+      if (_goalDirection != 'at_most' && target == 0) {
+        _showDraftIssue('An “at least” target must be above zero.');
+        return false;
+      }
+    }
+    if (_trackingMethod == 'checklist') {
+      if (_habitChecklist.isEmpty) {
+        _showDraftIssue('Add at least one checklist item.');
+        return false;
+      }
+      if (_habitSuccessType != 'all') {
+        final value = int.tryParse(_habitSuccessValue.text.trim());
+        final maximum = _habitSuccessType == 'percent'
+            ? 100
+            : _habitMeasuredChecklistCount;
+        if (value == null || value < 1 || value > maximum) {
+          _showDraftIssue('Choose a success value from 1 to $maximum.');
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  bool _validateFrequency() {
+    if (_recurrence == 'flexible') {
+      final count = int.tryParse(_frequencyCount.text.trim());
+      final maximum = _frequencyPeriod == 'week' ? 7 : 31;
+      if (count == null || count < 1 || count > maximum) {
+        _showDraftIssue('Choose 1–$maximum completions per period.');
+        return false;
+      }
+    }
+    if (_recurrence == 'weekly' && _weekdays.isEmpty) {
+      _showDraftIssue('Choose at least one weekday.');
+      return false;
+    }
+    return true;
+  }
+
+  void _showDraftIssue(String message) {
+    ScaffoldMessenger.maybeOf(
+      context,
+    )?.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  int _stepIndex(String id) => _wizardSteps.indexWhere((step) => step.id == id);
+
+  String _kindLabel(PlannerEntityKind kind) => switch (kind) {
+    PlannerEntityKind.oneOffTask => 'Task',
+    PlannerEntityKind.recurringTask => 'Recurring task',
+    PlannerEntityKind.habit => 'Habit',
+    PlannerEntityKind.project => 'Project',
+    PlannerEntityKind.area => 'Area',
+  };
+
+  String _trackingMethodLabel(String method) => switch (method) {
+    'count' => 'Numeric goal',
+    'duration' => 'Timer',
+    'checklist' => 'Checklist',
+    'avoid' => 'Limit / avoid',
+    _ => 'Yes / no',
+  };
+
+  String _recurrenceLabel(String recurrence) => switch (recurrence) {
+    'daily' => 'Every day',
+    'weekdays' => 'Weekdays',
+    'weekly' => 'Selected weekdays',
+    'interval' => 'Every $_recurrenceInterval days',
+    'monthly' => 'Selected month dates',
+    'yearly' => 'Selected year dates',
+    'flexible' => '${_frequencyCount.text} per $_frequencyPeriod',
+    _ => 'Does not repeat',
+  };
 
   Widget _timeSection(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -846,6 +1888,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
   Widget _organizationSection(BuildContext context) => Column(
     children: [
       DropdownButtonFormField<String?>(
+        isExpanded: true,
         initialValue: _areaId,
         decoration: const InputDecoration(labelText: 'Area'),
         items: <DropdownMenuItem<String?>>[
@@ -858,6 +1901,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
       ),
       const SizedBox(height: PerfectSpace.sm),
       DropdownButtonFormField<String?>(
+        isExpanded: true,
         initialValue: _projectId,
         decoration: const InputDecoration(labelText: 'Project'),
         items: <DropdownMenuItem<String?>>[
@@ -994,9 +2038,13 @@ class _PlannerEditorState extends State<PlannerEditor> {
     ],
   );
 
-  Widget _recoverySection(BuildContext context) => Column(
+  Widget _recoverySection(
+    BuildContext context, {
+    bool showRecovery = true,
+  }) => Column(
     children: [
       DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: _recurrence,
         decoration: const InputDecoration(labelText: 'Schedule rule'),
         items: [
@@ -1045,6 +2093,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
             const SizedBox(width: PerfectSpace.sm),
             Expanded(
               child: DropdownButtonFormField<String>(
+                isExpanded: true,
                 initialValue: _frequencyPeriod,
                 decoration: const InputDecoration(labelText: 'Period'),
                 items: const [
@@ -1214,6 +2263,15 @@ class _PlannerEditorState extends State<PlannerEditor> {
       ],
       if (_recurrence != 'none') ...[
         const SizedBox(height: PerfectSpace.md),
+        SwitchListTile.adaptive(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Flexible within the valid window'),
+          subtitle: const Text(
+            'Keep it visible on valid days until completed instead of locking it to one moment.',
+          ),
+          value: _recurrenceFlexible,
+          onChanged: (value) => setState(() => _recurrenceFlexible = value),
+        ),
         Row(
           children: [
             Expanded(
@@ -1296,20 +2354,30 @@ class _PlannerEditorState extends State<PlannerEditor> {
                 .toList(),
           ),
       ],
-      const SizedBox(height: PerfectSpace.md),
+      if (showRecovery) ...[
+        const SizedBox(height: PerfectSpace.md),
+        _recoveryPolicySection(context),
+      ],
+    ],
+  );
+
+  Widget _recoveryPolicySection(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
       DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: _recovery,
         decoration: const InputDecoration(labelText: 'When this is missed'),
-        items: [
-          const DropdownMenuItem(
+        items: const [
+          DropdownMenuItem(
             value: 'pending',
             child: Text('Keep pending until I finish it'),
           ),
-          const DropdownMenuItem(
+          DropdownMenuItem(
             value: 'miss_then_next',
             child: Text('Record a miss, move to the next valid slot'),
           ),
-          const DropdownMenuItem(
+          DropdownMenuItem(
             value: 'ask',
             child: Text('Ask me before moving it'),
           ),
@@ -1318,60 +2386,176 @@ class _PlannerEditorState extends State<PlannerEditor> {
       ),
       if (_recovery == 'pending') ...[
         const SizedBox(height: PerfectSpace.sm),
-        Row(
-          children: [
-            const Expanded(child: Text('Carry cap before asking')),
-            IconButton(
-              tooltip: 'Reduce carry cap',
-              onPressed: _carryCap <= 1
-                  ? null
-                  : () => setState(() => _carryCap--),
-              icon: const Icon(Icons.remove_circle_outline),
-            ),
-            Text('$_carryCap d'),
-            IconButton(
-              tooltip: 'Increase carry cap',
-              onPressed: _carryCap >= 30
-                  ? null
-                  : () => setState(() => _carryCap++),
-              icon: const Icon(Icons.add_circle_outline),
-            ),
-          ],
+        _integerStepper(
+          label: 'Carry cap before asking',
+          value: _carryCap,
+          unit: 'days',
+          minimum: 1,
+          maximum: 30,
+          onChanged: (value) => setState(() => _carryCap = value),
         ),
       ],
     ],
   );
 
-  Widget _trackingSection(BuildContext context) => Column(
-    children: [
-      DropdownButtonFormField<String>(
-        initialValue: _trackingMethod,
-        decoration: const InputDecoration(labelText: 'How do you log it?'),
-        items: const [
-          DropdownMenuItem(value: 'check', child: Text('A simple check-in')),
-          DropdownMenuItem(value: 'count', child: Text('A number / amount')),
-          DropdownMenuItem(value: 'duration', child: Text('A duration')),
-          DropdownMenuItem(
+  Widget _trackingMethodChooser(BuildContext context) {
+    const options =
+        <
+          ({
+            String value,
+            String title,
+            String description,
+            IconData icon,
+            Color accent,
+          })
+        >[
+          (
+            value: 'check',
+            title: 'Yes or no',
+            description:
+                'A simple success, miss, pending, or partial check-in.',
+            icon: Icons.check_circle_outline_rounded,
+            accent: PerfectColors.mint,
+          ),
+          (
+            value: 'count',
+            title: 'Numeric value',
+            description:
+                'Measure pages, glasses, repetitions, distance, or any unit.',
+            icon: Icons.pin_outlined,
+            accent: PerfectColors.apricot,
+          ),
+          (
+            value: 'duration',
+            title: 'Timer',
+            description: 'Track a duration with a daily target or limit.',
+            icon: Icons.timer_outlined,
+            accent: PerfectColors.lilac,
+          ),
+          (
             value: 'checklist',
-            child: Text('A checklist with a success rule'),
+            title: 'Checklist',
+            description:
+                'Build a routine from sub-steps and define its success rule.',
+            icon: Icons.checklist_rounded,
+            accent: PerfectColors.mint,
           ),
-          DropdownMenuItem(
+          (
             value: 'avoid',
-            child: Text('Avoid / negative habit'),
+            title: 'Limit / avoid',
+            description: 'Keep a behavior at or below a limit—including zero.',
+            icon: Icons.do_not_disturb_alt_rounded,
+            accent: PerfectColors.lilac,
           ),
-        ],
-        onChanged: (value) => setState(() {
-          _trackingMethod = value ?? 'check';
-          if (_trackingMethod == 'avoid') _goalDirection = 'at_most';
-          if (_trackingMethod == 'duration' && _target < 1) {
-            _target = 25;
-            _targetValue.text = _formatNumericInput(_target);
-          }
-        }),
-      ),
+        ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 620 ? 2 : 1;
+        final width = columns == 1
+            ? constraints.maxWidth
+            : (constraints.maxWidth - PerfectSpace.sm) / columns;
+        return Wrap(
+          spacing: PerfectSpace.sm,
+          runSpacing: PerfectSpace.sm,
+          children: options
+              .map((option) {
+                final selected = _trackingMethod == option.value;
+                return SizedBox(
+                  width: width,
+                  child: PerfectInteractiveSurface(
+                    key: ValueKey<String>('habit-evaluation-${option.value}'),
+                    selected: selected,
+                    semanticLabel: '${option.title}. ${option.description}',
+                    onTap: () => _selectTrackingMethod(option.value),
+                    padding: const EdgeInsets.all(PerfectSpace.md),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: option.accent.withValues(alpha: .18),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: SizedBox.square(
+                            dimension: 44,
+                            child: Icon(option.icon, color: option.accent),
+                          ),
+                        ),
+                        const SizedBox(width: PerfectSpace.sm),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      option.title,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleMedium,
+                                    ),
+                                  ),
+                                  if (selected)
+                                    Icon(
+                                      Icons.check_circle_rounded,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: PerfectSpace.xxs),
+                              Text(
+                                option.description,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              })
+              .toList(growable: false),
+        );
+      },
+    );
+  }
+
+  void _selectTrackingMethod(String value) {
+    setState(() {
+      _trackingMethod = value;
+      if (value == 'avoid') _goalDirection = 'at_most';
+      if (value != 'avoid' && _goalDirection == 'at_most') {
+        _goalDirection = 'at_least';
+      }
+      if (value == 'duration' && _target < 1) {
+        _target = 25;
+        _targetValue.text = _formatNumericInput(_target);
+      }
+    });
+  }
+
+  Widget _trackingDefinitionFields(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      if (_trackingMethod == 'check')
+        _softNote(
+          context,
+          icon: Icons.touch_app_outlined,
+          text:
+              'A tap cycles through completed, missed, partial and empty—inside both Perfect and its Today widget.',
+        ),
       if (<String>{'count', 'duration', 'avoid'}.contains(_trackingMethod)) ...[
-        const SizedBox(height: PerfectSpace.sm),
         DropdownButtonFormField<String>(
+          isExpanded: true,
           initialValue: _goalDirection,
           decoration: const InputDecoration(labelText: 'Goal direction'),
           items: const [
@@ -1452,10 +2636,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
           ),
         ],
       ],
-      if (_trackingMethod == 'checklist') ...[
-        const SizedBox(height: PerfectSpace.sm),
-        _habitChecklistEditor(context),
-      ],
+      if (_trackingMethod == 'checklist') ...[_habitChecklistEditor(context)],
     ],
   );
 
@@ -1565,6 +2746,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
       ),
       const SizedBox(height: PerfectSpace.sm),
       DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: _habitSuccessType,
         decoration: const InputDecoration(labelText: 'Success rule'),
         items: const [
@@ -1630,6 +2812,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       DropdownButtonFormField<PlannerTaskProgressState>(
+        isExpanded: true,
         initialValue: _taskProgressState,
         decoration: const InputDecoration(labelText: 'Current outcome'),
         items: PlannerTaskProgressState.values
@@ -1663,20 +2846,26 @@ class _PlannerEditorState extends State<PlannerEditor> {
     ],
   );
 
-  Widget _taskContextSection(BuildContext context) => Column(
+  Widget _taskContextSection(
+    BuildContext context, {
+    bool includePriority = true,
+  }) => Column(
     children: [
-      DropdownButtonFormField<String>(
-        initialValue: _priority,
-        decoration: const InputDecoration(labelText: 'Priority'),
-        items: const [
-          DropdownMenuItem(value: 'low', child: Text('Low')),
-          DropdownMenuItem(value: 'normal', child: Text('Normal')),
-          DropdownMenuItem(value: 'high', child: Text('High')),
-          DropdownMenuItem(value: 'critical', child: Text('Critical')),
-        ],
-        onChanged: (value) => setState(() => _priority = value ?? 'normal'),
-      ),
-      const SizedBox(height: PerfectSpace.sm),
+      if (includePriority) ...[
+        DropdownButtonFormField<String>(
+          isExpanded: true,
+          initialValue: _priority,
+          decoration: const InputDecoration(labelText: 'Priority'),
+          items: const [
+            DropdownMenuItem(value: 'low', child: Text('Low')),
+            DropdownMenuItem(value: 'normal', child: Text('Normal')),
+            DropdownMenuItem(value: 'high', child: Text('High')),
+            DropdownMenuItem(value: 'critical', child: Text('Critical')),
+          ],
+          onChanged: (value) => setState(() => _priority = value ?? 'normal'),
+        ),
+        const SizedBox(height: PerfectSpace.sm),
+      ],
       TextFormField(
         controller: _estimateMinutes,
         keyboardType: TextInputType.number,
@@ -1697,6 +2886,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
       ),
       const SizedBox(height: PerfectSpace.sm),
       DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: _energy,
         decoration: const InputDecoration(labelText: 'Energy needed'),
         items: const [
@@ -1729,6 +2919,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
       if (_focusEnabled) ...[
         const SizedBox(height: PerfectSpace.xs),
         DropdownButtonFormField<String>(
+          isExpanded: true,
           initialValue: _focusMode,
           decoration: const InputDecoration(labelText: 'Focus mode'),
           items: const [
@@ -1768,6 +2959,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
           ),
         const SizedBox(height: PerfectSpace.sm),
         DropdownButtonFormField<String>(
+          isExpanded: true,
           initialValue: _focusBreakPolicy,
           decoration: const InputDecoration(labelText: 'Break policy'),
           items: const [
@@ -1921,6 +3113,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
       if (_reminderEnabled) ...[
         const SizedBox(height: PerfectSpace.sm),
         DropdownButtonFormField<int>(
+          isExpanded: true,
           initialValue: _reminderLeadMinutes,
           decoration: const InputDecoration(labelText: 'Remind me'),
           items: const [
@@ -2061,6 +3254,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
       ),
       const SizedBox(height: PerfectSpace.sm),
       DropdownButtonFormField<String>(
+        isExpanded: true,
         initialValue: _customType,
         decoration: const InputDecoration(labelText: 'Property type'),
         items: const [
@@ -2161,34 +3355,6 @@ class _PlannerEditorState extends State<PlannerEditor> {
       ),
     );
   }
-
-  Widget _section(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required Widget child,
-  }) => Card(
-    margin: const EdgeInsets.only(top: PerfectSpace.md),
-    child: ExpansionTile(
-      expansionAnimationStyle: PerfectMotion.style(
-        context,
-        duration: PerfectMotion.emphasized,
-      ),
-      tilePadding: const EdgeInsets.symmetric(
-        horizontal: PerfectSpace.md,
-        vertical: PerfectSpace.xs,
-      ),
-      childrenPadding: const EdgeInsets.fromLTRB(
-        PerfectSpace.md,
-        0,
-        PerfectSpace.md,
-        PerfectSpace.lg,
-      ),
-      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
-      subtitle: Text(subtitle),
-      children: [child],
-    ),
-  );
 
   Future<void> _pickDateTime() async {
     final now = DateTime.now();
@@ -2466,8 +3632,89 @@ class _PlannerEditorState extends State<PlannerEditor> {
     });
   }
 
+  bool _validateWholeDraft() {
+    if (_title.text.trim().isEmpty) {
+      return _failAtStep('define', 'Give this a clear title.');
+    }
+    if (_isHabit &&
+        <String>{'count', 'duration', 'avoid'}.contains(_trackingMethod)) {
+      final target = double.tryParse(_targetValue.text.trim());
+      if (target == null || target < 0) {
+        return _failAtStep('define', 'Enter a valid goal or limit.');
+      }
+      if (_goalDirection != 'at_most' && target == 0) {
+        return _failAtStep(
+          'define',
+          'An “at least” target must be above zero.',
+        );
+      }
+    }
+    if (_isHabit && _trackingMethod == 'checklist') {
+      if (_habitChecklist.isEmpty) {
+        return _failAtStep('define', 'Add at least one checklist item.');
+      }
+      if (_habitSuccessType != 'all') {
+        final value = int.tryParse(_habitSuccessValue.text.trim());
+        final maximum = _habitSuccessType == 'percent'
+            ? 100
+            : _habitMeasuredChecklistCount;
+        if (value == null || value < 1 || value > maximum) {
+          return _failAtStep(
+            'define',
+            'Choose a success value from 1 to $maximum.',
+          );
+        }
+      }
+    }
+    if (_recurrence == 'flexible') {
+      final count = int.tryParse(_frequencyCount.text.trim());
+      final maximum = _frequencyPeriod == 'week' ? 7 : 31;
+      if (count == null || count < 1 || count > maximum) {
+        return _failAtStep(
+          'frequency',
+          'Choose 1–$maximum completions per period.',
+        );
+      }
+    }
+    if (_recurrence == 'weekly' && _weekdays.isEmpty) {
+      return _failAtStep('frequency', 'Choose at least one weekday.');
+    }
+    final timeBlockError = _timeBlockValidation();
+    if (timeBlockError != null) {
+      return _failAtStep('plan', timeBlockError);
+    }
+    final estimate = _estimateMinutes.text.trim();
+    if (_isTask && estimate.isNotEmpty) {
+      final parsed = int.tryParse(estimate);
+      if (parsed == null || parsed < 1 || parsed > 10080) {
+        return _failAtStep(
+          'details',
+          'Choose an estimate from 1–10080 minutes.',
+        );
+      }
+    }
+    final customValue = _customValue.text.trim();
+    if (_customType == 'number' &&
+        customValue.isNotEmpty &&
+        num.tryParse(customValue) == null) {
+      return _failAtStep('review', 'A number property needs a valid number.');
+    }
+    return true;
+  }
+
+  bool _failAtStep(String stepId, String message) {
+    final index = _stepIndex(stepId);
+    if (index >= 0 && index != _wizardStep) _goToStep(index);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _showDraftIssue(message);
+    });
+    return false;
+  }
+
   Future<void> _save() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (!_validateWholeDraft()) return;
+    if (!(_formKey.currentState?.validate() ?? true)) return;
     final pendingLabel = _labelEntry.text.trim();
     if (pendingLabel.isNotEmpty &&
         !_labels.any(
@@ -2690,6 +3937,23 @@ class _PlannerEditorState extends State<PlannerEditor> {
       if (mounted) setState(() => _saving = false);
     }
   }
+}
+
+@immutable
+class _PlannerWizardStep {
+  const _PlannerWizardStep({
+    required this.id,
+    required this.label,
+    required this.title,
+    required this.subtitle,
+    required this.pictogram,
+  });
+
+  final String id;
+  final String label;
+  final String title;
+  final String subtitle;
+  final String pictogram;
 }
 
 class _HabitChecklistDraftItem {

@@ -7,6 +7,7 @@ import 'package:perfect/presentation/perfect_theme.dart';
 
 void main() {
   test('motion tokens keep the intended interaction hierarchy', () {
+    expect(PerfectMotion.micro, lessThan(PerfectMotion.quick));
     expect(PerfectMotion.quick, lessThan(PerfectMotion.standard));
     expect(PerfectMotion.standard, lessThan(PerfectMotion.emphasized));
     expect(PerfectMotion.emphasized, lessThan(PerfectMotion.feedback));
@@ -20,6 +21,8 @@ void main() {
   ) async {
     Duration? enabled;
     Duration? disabled;
+    Offset? disabledOffset;
+    double? disabledScale;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -50,12 +53,107 @@ void main() {
               context,
               PerfectMotion.emphasized,
             );
+            disabledOffset = PerfectMotion.responsiveOffset(
+              context,
+              const Offset(12, 8),
+            );
+            disabledScale = PerfectMotion.responsiveScale(context, .96);
             return const SizedBox.shrink();
           },
         ),
       ),
     );
     expect(disabled, Duration.zero);
+    expect(disabledOffset, Offset.zero);
+    expect(disabledScale, 1);
+  });
+
+  testWidgets(
+    'shared switcher uses one vocabulary and removes spatial motion',
+    (tester) async {
+      late StateSetter setState;
+      var second = false;
+
+      Widget host({required bool reduced}) => MaterialApp(
+        theme: PerfectTheme.light(),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: reduced),
+          child: child ?? const SizedBox.shrink(),
+        ),
+        home: StatefulBuilder(
+          builder: (context, setter) {
+            setState = setter;
+            return PerfectMotionSwitcher(
+              kind: PerfectTransitionKind.sharedAxisHorizontal,
+              child: Text(
+                second ? 'Second' : 'First',
+                key: ValueKey<bool>(second),
+              ),
+            );
+          },
+        ),
+      );
+
+      await tester.pumpWidget(host(reduced: false));
+      setState(() => second = true);
+      await tester.pump();
+      final animated = tester.widget<AnimatedSwitcher>(
+        find.byType(AnimatedSwitcher),
+      );
+      expect(animated.duration, PerfectMotion.emphasized);
+      expect(find.byType(SlideTransition), findsWidgets);
+
+      await tester.pumpWidget(host(reduced: true));
+      setState(() => second = false);
+      await tester.pump();
+      final reduced = tester.widget<AnimatedSwitcher>(
+        find.byType(AnimatedSwitcher),
+      );
+      expect(reduced.duration, Duration.zero);
+      expect(find.byType(SlideTransition), findsNothing);
+    },
+  );
+
+  testWidgets('glass has a strong high-contrast fallback without blur', (
+    tester,
+  ) async {
+    Widget host({required bool highContrast}) => MaterialApp(
+      theme: PerfectTheme.light(),
+      home: MediaQuery(
+        data: MediaQueryData(highContrast: highContrast),
+        child: const PerfectGlassSurface(
+          surfaceKey: ValueKey<String>('glass-material'),
+          child: SizedBox(width: 240, height: 80),
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(host(highContrast: false));
+    expect(find.byType(BackdropFilter), findsOneWidget);
+    var decoration =
+        tester
+                .widget<DecoratedBox>(
+                  find.byKey(const ValueKey<String>('glass-material')),
+                )
+                .decoration
+            as BoxDecoration;
+    expect(decoration.border!.top.width, 1);
+
+    await tester.pumpWidget(host(highContrast: true));
+    expect(find.byType(BackdropFilter), findsNothing);
+    decoration =
+        tester
+                .widget<DecoratedBox>(
+                  find.byKey(const ValueKey<String>('glass-material')),
+                )
+                .decoration
+            as BoxDecoration;
+    expect(decoration.color, PerfectSurfaceTheme.light.surfaceRaised);
+    expect(decoration.border!.top.width, 2);
+    expect(
+      decoration.border!.top.color,
+      PerfectSurfaceTheme.light.strokeStrong,
+    );
   });
 
   test('geometry mixes intrinsic bounds, fractions and semantic tokens', () {
@@ -120,6 +218,9 @@ void main() {
       final focusNode = FocusNode();
       addTearDown(focusNode.dispose);
       var taps = 0;
+      final hoverChanges = <bool>[];
+      final focusChanges = <bool>[];
+      final pressChanges = <bool>[];
 
       await tester.pumpWidget(
         MaterialApp(
@@ -131,7 +232,12 @@ void main() {
                 tooltip: 'Open details',
                 focusNode: focusNode,
                 statesController: states,
+                tone: PerfectInteractiveTone.tertiary,
+                selected: true,
                 onTap: () => taps += 1,
+                onHoverChanged: hoverChanges.add,
+                onFocusChanged: focusChanges.add,
+                onPressedChanged: pressChanges.add,
                 child: const Text('Details'),
               ),
             ),
@@ -152,16 +258,23 @@ void main() {
       await mouse.moveTo(tester.getCenter(surface));
       await tester.pump(PerfectMotion.standard);
       expect(states.value, contains(WidgetState.hovered));
+      expect(hoverChanges, contains(true));
       expect(tester.getSize(surface), initialSize);
 
       focusNode.requestFocus();
       await tester.pump();
       expect(states.value, contains(WidgetState.focused));
+      expect(focusChanges, contains(true));
       expect(tester.getSize(surface), initialSize);
+      final focusedDecoration =
+          tester.widget<AnimatedContainer>(surface).decoration as BoxDecoration;
+      expect(focusedDecoration.border!.top.color, PerfectColors.apricotAction);
+      expect(focusedDecoration.boxShadow, isNotEmpty);
 
       final gesture = await tester.startGesture(tester.getCenter(surface));
       await tester.pump(kPressTimeout);
       expect(states.value, contains(WidgetState.pressed));
+      expect(pressChanges, contains(true));
       expect(tester.getSize(surface), initialSize);
       await gesture.up();
       await tester.pumpAndSettle();
@@ -172,6 +285,54 @@ void main() {
       expect(taps, 2);
     },
   );
+
+  testWidgets('interactive surface remains usable at 200 percent text', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 220));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    var taps = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: PerfectTheme.light(),
+        home: MediaQuery(
+          data: const MediaQueryData(textScaler: TextScaler.linear(2)),
+          child: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 280,
+                child: PerfectInteractiveSurface(
+                  autofocus: true,
+                  onTap: () => taps += 1,
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Icon(Icons.auto_awesome_rounded),
+                      SizedBox(width: 8),
+                      Flexible(child: Text('Open the complete planner wizard')),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(taps, 1);
+    expect(
+      tester
+          .getSize(
+            find.byKey(const ValueKey<String>('perfect-interaction-surface')),
+          )
+          .height,
+      greaterThanOrEqualTo(48),
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('interactive surface removes spatial motion when requested', (
     tester,

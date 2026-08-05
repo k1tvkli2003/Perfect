@@ -1,4 +1,7 @@
+import 'dart:ui' show PointerDeviceKind;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/presentation/orbit_stage.dart';
@@ -8,7 +11,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('OrbitStage adaptive geometry', () {
-    testWidgets('keeps every clock label inside the circular stage', (
+    testWidgets('keeps every painted dial layer inside the circular stage', (
       tester,
     ) async {
       await _pumpOrbit(tester, size: const Size.square(360), items: _items());
@@ -16,12 +19,18 @@ void main() {
       final frame = tester.getRect(
         find.byKey(const ValueKey<String>('orbit-test-frame')),
       );
-      for (final label in <String>['12:00', '3:00', '6:00', '9:00']) {
-        final labelRect = tester.getRect(find.text(label));
-        expect(labelRect.left, greaterThanOrEqualTo(frame.left));
-        expect(labelRect.top, greaterThanOrEqualTo(frame.top));
-        expect(labelRect.right, lessThanOrEqualTo(frame.right));
-        expect(labelRect.bottom, lessThanOrEqualTo(frame.bottom));
+      final stage = tester.getRect(
+        find.byKey(const ValueKey<String>('orbit-circular-stage')),
+      );
+      expect(stage.left, greaterThanOrEqualTo(frame.left));
+      expect(stage.top, greaterThanOrEqualTo(frame.top));
+      expect(stage.right, lessThanOrEqualTo(frame.right));
+      expect(stage.bottom, lessThanOrEqualTo(frame.bottom));
+      for (final key in <String>['orbit-dial-backdrop', 'orbit-dial-overlay']) {
+        expect(
+          tester.getSize(find.byKey(ValueKey<String>(key))),
+          const Size.square(360),
+        );
       }
       expect(tester.takeException(), isNull);
     });
@@ -36,21 +45,20 @@ void main() {
         compact: true,
       );
 
-      expect(find.text('Your day,\nin orbit.'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('orbit-linear-summary')),
+        findsOneWidget,
+      );
       final frame = tester.getRect(
         find.byKey(const ValueKey<String>('orbit-test-frame')),
       );
-      final paintedStage = tester.getRect(
-        find
-            .descendant(
-              of: find.byType(OrbitStage),
-              matching: find.byType(CustomPaint),
-            )
-            .first,
+      final summary = tester.getRect(
+        find.byKey(const ValueKey<String>('orbit-linear-summary')),
       );
-      expect(paintedStage.width, lessThanOrEqualTo(frame.width));
-      expect(paintedStage.height, lessThanOrEqualTo(frame.height));
-      expect(paintedStage.width, closeTo(240, .01));
+      expect(summary.left, greaterThanOrEqualTo(frame.left));
+      expect(summary.top, greaterThanOrEqualTo(frame.top));
+      expect(summary.right, lessThanOrEqualTo(frame.right));
+      expect(summary.bottom, lessThanOrEqualTo(frame.bottom));
       expect(tester.takeException(), isNull);
     });
 
@@ -64,12 +72,11 @@ void main() {
         textScaler: const TextScaler.linear(2),
       );
 
-      expect(find.text('Your day,\nin orbit.'), findsNothing);
-      expect(find.text('Today, in orbit'), findsOneWidget);
+      expect(find.text('Today’s rhythm'), findsOneWidget);
       expect(find.text('2 open items'), findsOneWidget);
       expect(
         tester
-            .getRect(find.text('Today, in orbit'))
+            .getRect(find.text('Today’s rhythm'))
             .overlaps(tester.getRect(find.text('2 open items'))),
         isFalse,
       );
@@ -94,6 +101,24 @@ void main() {
           detail.data,
           contains('\u2068برنامهٔ Deep Work (Phase 2)\u2069'),
         );
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'dense orbit keeps the first three plans legible and counts the rest',
+      (tester) async {
+        await _pumpOrbit(
+          tester,
+          size: const Size.square(420),
+          items: _denseItems(),
+        );
+
+        expect(find.text('6 tasks remaining'), findsOneWidget);
+        final semantics = tester.getSemantics(
+          find.bySemanticsLabel('Today in orbit'),
+        );
+        expect(semantics.value, contains('6 open items'));
         expect(tester.takeException(), isNull);
       },
     );
@@ -157,6 +182,41 @@ void main() {
       expect(inkWell.splashFactory, same(NoSplash.splashFactory));
       expect(inkWell.highlightColor, Colors.transparent);
     });
+
+    testWidgets('mouse hover and keyboard activation share the tap contract', (
+      tester,
+    ) async {
+      var taps = 0;
+      await _pumpOrbit(
+        tester,
+        size: const Size.square(360),
+        items: _items(),
+        onTap: () => taps++,
+      );
+
+      final center = tester.getCenter(
+        find.byKey(const ValueKey<String>('orbit-circular-stage')),
+      );
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: Offset.zero);
+      await mouse.moveTo(center);
+      await tester.pump(PerfectMotion.standard);
+      expect(
+        tester
+            .widget<AnimatedScale>(
+              find.byKey(const ValueKey<String>('orbit-interactive-scale')),
+            )
+            .scale,
+        greaterThan(1),
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pump();
+      expect(taps, 1);
+      await mouse.removePointer();
+    });
   });
 }
 
@@ -219,4 +279,19 @@ List<PlannerEntity> _items() {
       updatedAt: now,
     ),
   ];
+}
+
+List<PlannerEntity> _denseItems() {
+  final now = DateTime.utc(2026, 7, 30, 9);
+  return List<PlannerEntity>.generate(
+    6,
+    (index) => PlannerEntity(
+      id: 'plan-$index',
+      ownerId: 'owner',
+      kind: PlannerEntityKind.oneOffTask,
+      payload: defaultPlannerPayload(title: 'Plan ${index + 1}'),
+      createdAt: now,
+      updatedAt: now,
+    ),
+  );
 }

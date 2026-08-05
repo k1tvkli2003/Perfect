@@ -9,26 +9,37 @@ void main() {
     tester,
   ) async {
     for (final testCase
-        in <({PlannerSyncPhase phase, String label, IconData icon})>[
+        in <
+          ({
+            PlannerSyncPhase phase,
+            String label,
+            IconData cloudIcon,
+            Color color,
+          })
+        >[
           (
             phase: PlannerSyncPhase.idle,
-            label: 'Up to date',
-            icon: Icons.cloud_done_rounded,
+            label: 'Synced',
+            cloudIcon: Icons.cloud_done_outlined,
+            color: PerfectColors.sync,
           ),
           (
             phase: PlannerSyncPhase.syncing,
             label: 'Syncing',
-            icon: Icons.cloud_sync_rounded,
+            cloudIcon: Icons.cloud_sync_outlined,
+            color: PerfectColors.apricot,
           ),
           (
             phase: PlannerSyncPhase.offline,
             label: 'Retrying',
-            icon: Icons.cloud_queue_rounded,
+            cloudIcon: Icons.cloud_upload_outlined,
+            color: PerfectColors.apricot,
           ),
           (
             phase: PlannerSyncPhase.needsAttention,
             label: 'Sync issue',
-            icon: Icons.cloud_off_rounded,
+            cloudIcon: Icons.cloud_off_outlined,
+            color: PerfectColors.danger,
           ),
         ]) {
       await _pumpIndicator(
@@ -36,16 +47,24 @@ void main() {
         status: PlannerSyncStatus(phase: testCase.phase),
       );
       expect(find.text(testCase.label), findsOneWidget);
-      expect(find.byIcon(testCase.icon), findsOneWidget);
+      final cloudIcon = tester.widget<Icon>(find.byIcon(testCase.cloudIcon));
+      expect(cloudIcon.color, testCase.color);
+      expect(
+        find.byKey(
+          ValueKey<String>('perfect-sync-mark-${testCase.phase.name}'),
+        ),
+        findsOneWidget,
+      );
       final semantics = tester.getSemantics(
         find.byKey(const ValueKey<String>('perfect-sync-indicator')),
       );
       expect(semantics.label, contains(testCase.label));
-      expect(semantics.label, contains('Tap for sync details and retry'));
+      expect(semantics.label, contains('Sync status'));
+      expect(semantics.hint, contains('Open sync details and retry'));
     }
   });
 
-  testWidgets('yellow flow pulses unless reduced motion is requested', (
+  testWidgets('yellow flow rotates unless reduced motion is requested', (
     tester,
   ) async {
     await _pumpIndicator(
@@ -104,7 +123,7 @@ void main() {
   );
 
   testWidgets(
-    'compact phone state hides text but keeps a 48dp semantic target',
+    'compact phone state keeps concise text and a 48dp semantic target',
     (tester) async {
       await _pumpIndicator(
         tester,
@@ -112,7 +131,7 @@ void main() {
         compact: true,
       );
 
-      expect(find.text('Retrying'), findsNothing);
+      expect(find.text('Retrying'), findsOneWidget);
       final size = tester.getSize(
         find.byKey(const ValueKey<String>('perfect-sync-indicator')),
       );
@@ -126,6 +145,13 @@ void main() {
       control.focusNode!.requestFocus();
       await tester.pump();
       expect(control.focusNode!.hasFocus, isTrue);
+      final surface = tester.widget<AnimatedContainer>(
+        find.byKey(const ValueKey<String>('perfect-sync-surface')),
+      );
+      expect(
+        ((surface.decoration! as BoxDecoration).border! as Border).top.color,
+        PerfectTheme.light().colorScheme.primary,
+      );
       expect(
         tester
             .getSemantics(

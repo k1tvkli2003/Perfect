@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <defs>
+    <linearGradient id="track" x1="120" y1="110" x2="880" y2="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFDF9"/>
+      <stop offset=".48" stop-color="#F8F2EA"/>
+      <stop offset="1" stop-color="#EEE6DC"/>
+    </linearGradient>
+    <linearGradient id="morning" x1="70" y1="520" x2="510" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8CCFAB"/>
+      <stop offset=".44" stop-color="#B9E5CF"/>
+      <stop offset=".72" stop-color="#DAF3E5"/>
+      <stop offset="1" stop-color="#A7DDBF"/>
+    </linearGradient>
+    <linearGradient id="afternoon" x1="490" y1="55" x2="945" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE0B8"/>
+      <stop offset=".43" stop-color="#FFD3A0"/>
+      <stop offset=".72" stop-color="#FFC17C"/>
+      <stop offset="1" stop-color="#F7AA5C"/>
+    </linearGradient>
+    <linearGradient id="evening" x1="945" y1="490" x2="490" y2="945" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D7CCF5"/>
+      <stop offset=".42" stop-color="#C9BCEC"/>
+      <stop offset=".72" stop-color="#B9A9E4"/>
+      <stop offset="1" stop-color="#9F8DD5"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="500" cy="506" r="440" fill="none" stroke="#5F4B3C" stroke-opacity=".09" stroke-width="82"/>
+  <circle cx="500" cy="500" r="440" fill="none" stroke="#FFFFFF" stroke-opacity=".92" stroke-width="80"/>
+  <circle cx="500" cy="500" r="440" fill="none" stroke="url(#track)" stroke-width="70"/>
+  <circle cx="500" cy="500" r="476" fill="none" stroke="#D8CFC5" stroke-opacity=".56" stroke-width="2"/>
+  <circle cx="500" cy="500" r="404" fill="none" stroke="#FFFFFF" stroke-opacity=".88" stroke-width="3"/>
+
+  <path d="M60.32 488.11 A440 440 0 0 1 488.11 60.32" fill="none" stroke="#4F9B72" stroke-opacity=".14" stroke-width="82" stroke-linecap="round"/>
+  <path d="M60.32 483.11 A440 440 0 0 1 483.11 60.32" fill="none" stroke="#FFFFFF" stroke-opacity=".88" stroke-width="78" stroke-linecap="round"/>
+  <path d="M60.32 483.11 A440 440 0 0 1 483.11 60.32" fill="none" stroke="url(#morning)" stroke-width="70" stroke-linecap="round"/>
+  <path d="M30.35 481.95 A470 470 0 0 1 481.95 30.35" fill="none" stroke="#4C8D69" stroke-opacity=".12" stroke-width="4" stroke-linecap="round"/>
+  <path d="M90.30 484.26 A410 410 0 0 1 484.26 90.30" fill="none" stroke="#FFFFFF" stroke-opacity=".58" stroke-width="6" stroke-linecap="round"/>
+  <path d="M64 480 A436 436 0 0 1 480 64" fill="none" stroke="#FFFFFF" stroke-opacity=".20" stroke-width="16" stroke-linecap="round"/>
+
+  <path d="M511.89 60.32 A440 440 0 0 1 939.68 488.11" fill="none" stroke="#B96D32" stroke-opacity=".14" stroke-width="82" stroke-linecap="round"/>
+  <path d="M516.89 60.32 A440 440 0 0 1 939.68 483.11" fill="none" stroke="#FFFFFF" stroke-opacity=".88" stroke-width="78" stroke-linecap="round"/>
+  <path d="M516.89 60.32 A440 440 0 0 1 939.68 483.11" fill="none" stroke="url(#afternoon)" stroke-width="70" stroke-linecap="round"/>
+  <path d="M518.05 30.35 A470 470 0 0 1 969.65 481.95" fill="none" stroke="#B96D32" stroke-opacity=".12" stroke-width="4" stroke-linecap="round"/>
+  <path d="M515.74 90.30 A410 410 0 0 1 909.70 484.26" fill="none" stroke="#FFFFFF" stroke-opacity=".58" stroke-width="6" stroke-linecap="round"/>
+  <path d="M520 64 A436 436 0 0 1 936 480" fill="none" stroke="#FFFFFF" stroke-opacity=".20" stroke-width="16" stroke-linecap="round"/>
+
+  <path d="M939.68 511.89 A440 440 0 0 1 511.89 939.68" fill="none" stroke="#68579E" stroke-opacity=".16" stroke-width="82" stroke-linecap="round"/>
+  <path d="M939.68 516.89 A440 440 0 0 1 516.89 939.68" fill="none" stroke="#FFFFFF" stroke-opacity=".86" stroke-width="78" stroke-linecap="round"/>
+  <path d="M939.68 516.89 A440 440 0 0 1 516.89 939.68" fill="none" stroke="url(#evening)" stroke-width="70" stroke-linecap="round"/>
+  <path d="M969.65 518.05 A470 470 0 0 1 518.05 969.65" fill="none" stroke="#68579E" stroke-opacity=".13" stroke-width="4" stroke-linecap="round"/>
+  <path d="M909.70 515.74 A410 410 0 0 1 515.74 909.70" fill="none" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="6" stroke-linecap="round"/>
+  <path d="M936 520 A436 436 0 0 1 520 936" fill="none" stroke="#FFFFFF" stroke-opacity=".18" stroke-width="16" stroke-linecap="round"/>
+</svg>

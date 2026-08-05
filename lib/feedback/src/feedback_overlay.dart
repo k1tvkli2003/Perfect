@@ -7,9 +7,36 @@ import 'package:perfect/feedback/src/feedback_controller.dart';
 import 'package:perfect/feedback/src/feedback_exporter.dart';
 import 'package:perfect/feedback/src/feedback_models.dart';
 import 'package:perfect/feedback/src/feedback_repository.dart';
+import 'package:perfect/presentation/perfect_theme.dart';
 
 typedef ReadyFeedbackScreenshotProvider =
     Future<ReadyFeedbackScreenshotCapture> Function();
+
+/// Lets a host expose feedback from an intentional, contextual command rather
+/// than keeping a draggable affordance over everyday content. The overlay
+/// owns the actual capture flow so screenshots still omit the launcher.
+class ReadyFeedbackOverlayController extends ChangeNotifier {
+  Future<void> Function()? _open;
+
+  bool get isAttached => _open != null;
+
+  Future<void> open() async {
+    final callback = _open;
+    if (callback != null) await callback();
+  }
+
+  void _attach(Future<void> Function() callback) {
+    if (identical(_open, callback)) return;
+    _open = callback;
+    notifyListeners();
+  }
+
+  void _detach(Future<void> Function() callback) {
+    if (!identical(_open, callback)) return;
+    _open = null;
+    notifyListeners();
+  }
+}
 
 class ReadyFeedbackOverlay extends StatefulWidget {
   const ReadyFeedbackOverlay({
@@ -18,12 +45,24 @@ class ReadyFeedbackOverlay extends StatefulWidget {
     required this.routeName,
     required this.child,
     this.screenshotProvider,
+    this.launcherVisible = true,
+    this.launcherController,
   });
 
   final ReadyFeedbackController controller;
   final String routeName;
   final Widget child;
   final ReadyFeedbackScreenshotProvider? screenshotProvider;
+
+  /// A host can temporarily remove the edge tab while an owned, focused
+  /// workspace surface (for example an editor or AI dock) is open. Feedback
+  /// remains enabled and available again as soon as that surface closes; this
+  /// only prevents a nonessential control from competing with the active task.
+  final bool launcherVisible;
+
+  /// Optional bridge for a host-owned menu or settings command. It can expose
+  /// the same private capture flow with no persistent overlay on primary UI.
+  final ReadyFeedbackOverlayController? launcherController;
 
   @override
   State<ReadyFeedbackOverlay> createState() => _ReadyFeedbackOverlayState();
@@ -33,18 +72,49 @@ class _ReadyFeedbackOverlayState extends State<ReadyFeedbackOverlay> {
   final GlobalKey _captureBoundaryKey = GlobalKey();
   Offset? _position;
   bool _capturing = false;
+  late final Future<void> Function() _openCallback;
+
+  @override
+  void initState() {
+    super.initState();
+    _openCallback = _showMenu;
+    widget.launcherController?._attach(_openCallback);
+  }
+
+  @override
+  void didUpdateWidget(covariant ReadyFeedbackOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.launcherController == widget.launcherController) return;
+    oldWidget.launcherController?._detach(_openCallback);
+    widget.launcherController?._attach(_openCallback);
+  }
+
+  @override
+  void dispose() {
+    widget.launcherController?._detach(_openCallback);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final media = MediaQuery.of(context);
-      const buttonExtent = 52.0;
+      const buttonExtent = 48.0;
+      final maxX = constraints.maxWidth - buttonExtent - media.padding.right;
       final fallback = Offset(
-        constraints.maxWidth - buttonExtent - 18 - media.padding.right,
-        constraints.maxHeight * .48,
+        Directionality.of(context) == TextDirection.rtl
+            ? media.padding.left
+            : maxX,
+        (constraints.maxHeight * .62) - (buttonExtent / 2),
       );
       final position = _clampPosition(
         _position ?? fallback,
+        constraints.biggest,
+        media.padding,
+        buttonExtent,
+      );
+      final attachedEdge = _attachedEdge(
+        position,
         constraints.biggest,
         media.padding,
         buttonExtent,
@@ -59,7 +129,8 @@ class _ReadyFeedbackOverlayState extends State<ReadyFeedbackOverlay> {
             builder: (context, _) {
               if (!widget.controller.initialized ||
                   !widget.controller.enabled ||
-                  _capturing) {
+                  _capturing ||
+                  !widget.launcherVisible) {
                 return const SizedBox.shrink();
               }
               return Positioned(
@@ -67,32 +138,32 @@ class _ReadyFeedbackOverlayState extends State<ReadyFeedbackOverlay> {
                 top: position.dy,
                 width: buttonExtent,
                 height: buttonExtent,
-                child: Semantics(
-                  button: true,
-                  label: 'Capture private feedback',
-                  hint: 'Drag to move or activate to add a note and screenshot',
-                  child: GestureDetector(
-                    onPanUpdate: (details) {
-                      setState(() {
-                        _position = _clampPosition(
-                          position + details.delta,
-                          constraints.biggest,
-                          media.padding,
-                          buttonExtent,
-                        );
-                      });
-                    },
-                    child: FloatingActionButton.small(
-                      heroTag: 'ready-feedback-capture',
-                      tooltip: 'Capture feedback',
-                      onPressed: widget.controller.busy ? null : _showMenu,
-                      child: widget.controller.busy
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.bug_report_outlined),
-                    ),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onPanUpdate: (details) {
+                    setState(() {
+                      _position = _clampPosition(
+                        position + details.delta,
+                        constraints.biggest,
+                        media.padding,
+                        buttonExtent,
+                      );
+                    });
+                  },
+                  onPanEnd: (_) {
+                    setState(() {
+                      _position = _snapToEdge(
+                        _position ?? position,
+                        constraints.biggest,
+                        media.padding,
+                        buttonExtent,
+                      );
+                    });
+                  },
+                  child: _FeedbackEdgeTab(
+                    edge: attachedEdge,
+                    busy: widget.controller.busy,
+                    onPressed: widget.controller.busy ? null : _showMenu,
                   ),
                 ),
               );
@@ -109,14 +180,40 @@ class _ReadyFeedbackOverlayState extends State<ReadyFeedbackOverlay> {
     EdgeInsets padding,
     double extent,
   ) {
-    final minX = padding.left + 8;
-    final maxX = size.width - extent - padding.right - 8;
+    final minX = padding.left;
+    final maxX = size.width - extent - padding.right;
     final minY = padding.top + 8;
     final maxY = size.height - extent - padding.bottom - 8;
     return Offset(
       _clampAxis(value.dx, minX, maxX, size.width - extent),
       _clampAxis(value.dy, minY, maxY, size.height - extent),
     );
+  }
+
+  Offset _snapToEdge(
+    Offset value,
+    Size size,
+    EdgeInsets padding,
+    double extent,
+  ) {
+    final clamped = _clampPosition(value, size, padding, extent);
+    final minX = padding.left;
+    final maxX = size.width - extent - padding.right;
+    final x = clamped.dx <= (minX + maxX) / 2 ? minX : maxX;
+    return Offset(x, clamped.dy);
+  }
+
+  _FeedbackEdge _attachedEdge(
+    Offset value,
+    Size size,
+    EdgeInsets padding,
+    double extent,
+  ) {
+    final minX = padding.left;
+    final maxX = size.width - extent - padding.right;
+    if ((value.dx - minX).abs() < 1) return _FeedbackEdge.left;
+    if ((value.dx - maxX).abs() < 1) return _FeedbackEdge.right;
+    return _FeedbackEdge.floating;
   }
 
   double _clampAxis(
@@ -232,6 +329,183 @@ class _ReadyFeedbackOverlayState extends State<ReadyFeedbackOverlay> {
     } finally {
       if (mounted) setState(() => _capturing = false);
     }
+  }
+}
+
+enum _FeedbackEdge { left, right, floating }
+
+class _FeedbackEdgeTab extends StatefulWidget {
+  const _FeedbackEdgeTab({
+    required this.edge,
+    required this.busy,
+    required this.onPressed,
+  });
+
+  final _FeedbackEdge edge;
+  final bool busy;
+  final VoidCallback? onPressed;
+
+  @override
+  State<_FeedbackEdgeTab> createState() => _FeedbackEdgeTabState();
+}
+
+class _FeedbackEdgeTabState extends State<_FeedbackEdgeTab> {
+  final FocusNode _focusNode = FocusNode(
+    debugLabel: 'Perfect private feedback shortcut',
+  );
+  bool _hovered = false;
+  bool _focused = false;
+  bool _pressed = false;
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final duration = PerfectMotion.responsive(context, PerfectMotion.quick);
+    final visualWidth = widget.edge == _FeedbackEdge.floating ? 40.0 : 34.0;
+    final alignment = switch (widget.edge) {
+      _FeedbackEdge.left => Alignment.centerLeft,
+      _FeedbackEdge.right => Alignment.centerRight,
+      _FeedbackEdge.floating => Alignment.center,
+    };
+    final radius = switch (widget.edge) {
+      _FeedbackEdge.left => const BorderRadius.horizontal(
+        left: Radius.circular(8),
+        right: Radius.circular(15),
+      ),
+      _FeedbackEdge.right => const BorderRadius.horizontal(
+        left: Radius.circular(15),
+        right: Radius.circular(8),
+      ),
+      _FeedbackEdge.floating => BorderRadius.circular(15),
+    };
+    final borderColor = _focused
+        ? scheme.primary
+        : _hovered
+        ? scheme.outline
+        : scheme.outlineVariant.withValues(alpha: .68);
+    final surfaceColor = Color.alphaBlend(
+      scheme.primary.withValues(
+        alpha: _pressed
+            ? .10
+            : _hovered
+            ? .055
+            : .02,
+      ),
+      scheme.surface.withValues(alpha: .86),
+    );
+    final translation = reduceMotion
+        ? Offset.zero
+        : switch (widget.edge) {
+            _FeedbackEdge.left when _hovered => const Offset(2, 0),
+            _FeedbackEdge.right when _hovered => const Offset(-2, 0),
+            _FeedbackEdge.floating when _hovered => const Offset(0, -1),
+            _ => Offset.zero,
+          };
+    final scale = reduceMotion || !_pressed ? 1.0 : .96;
+
+    return Tooltip(
+      message: 'Capture feedback',
+      child: Semantics(
+        button: true,
+        enabled: widget.onPressed != null,
+        label: 'Capture private feedback',
+        hint:
+            'Drag along the screen edge, or activate to add a private note, screenshot, or review saved entries.',
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            key: const ValueKey<String>('ready-feedback-affordance'),
+            focusNode: _focusNode,
+            canRequestFocus: widget.onPressed != null,
+            mouseCursor: widget.onPressed == null
+                ? SystemMouseCursors.basic
+                : SystemMouseCursors.click,
+            borderRadius: BorderRadius.circular(16),
+            onTap: widget.onPressed,
+            onHover: (value) => _setState(hovered: value),
+            onFocusChange: (value) => _setState(focused: value),
+            onHighlightChanged: (value) => _setState(pressed: value),
+            hoverColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            splashColor: scheme.primary.withValues(alpha: .10),
+            child: TweenAnimationBuilder<double>(
+              duration: duration,
+              curve: PerfectMotion.productive,
+              tween: Tween<double>(end: scale),
+              builder: (context, value, child) => Transform.translate(
+                offset: translation,
+                child: Transform.scale(scale: value, child: child),
+              ),
+              child: Align(
+                alignment: alignment,
+                child: AnimatedContainer(
+                  key: const ValueKey<String>('ready-feedback-edge-tab'),
+                  duration: duration,
+                  curve: PerfectMotion.productive,
+                  width: visualWidth,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: surfaceColor,
+                    borderRadius: radius,
+                    border: Border.all(color: borderColor),
+                    boxShadow: (_hovered || _focused) && !reduceMotion
+                        ? <BoxShadow>[
+                            BoxShadow(
+                              color: scheme.shadow.withValues(alpha: .08),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : const <BoxShadow>[],
+                  ),
+                  child: Center(
+                    child: ExcludeSemantics(
+                      child: widget.busy
+                          ? SizedBox.square(
+                              dimension: 16,
+                              child: CircularProgressIndicator(
+                                color: scheme.onSurfaceVariant,
+                                strokeWidth: 1.8,
+                              ),
+                            )
+                          : Icon(
+                              Icons.feedback_outlined,
+                              color: scheme.onSurfaceVariant,
+                              size: 18,
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _setState({bool? hovered, bool? focused, bool? pressed}) {
+    final nextHovered = hovered ?? _hovered;
+    final nextFocused = focused ?? _focused;
+    final nextPressed = pressed ?? _pressed;
+    if (nextHovered == _hovered &&
+        nextFocused == _focused &&
+        nextPressed == _pressed) {
+      return;
+    }
+    setState(() {
+      _hovered = nextHovered;
+      _focused = nextFocused;
+      _pressed = nextPressed;
+    });
   }
 }
 
@@ -1040,9 +1314,14 @@ class _FeedbackEntryDetailsDialogState
 }
 
 class ReadyFeedbackSettingsTile extends StatelessWidget {
-  const ReadyFeedbackSettingsTile({super.key, required this.controller});
+  const ReadyFeedbackSettingsTile({
+    super.key,
+    required this.controller,
+    this.onCapture,
+  });
 
   final ReadyFeedbackController controller;
+  final VoidCallback? onCapture;
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
@@ -1050,10 +1329,10 @@ class ReadyFeedbackSettingsTile extends StatelessWidget {
     builder: (context, _) => Column(
       children: [
         SwitchListTile.adaptive(
-          secondary: const Icon(Icons.bug_report_outlined),
-          title: const Text('Feedback capture button'),
+          secondary: const Icon(Icons.feedback_outlined),
+          title: const Text('Feedback capture'),
           subtitle: const Text(
-            'Floating button for errors, screenshots, suggestions, and criticism.',
+            'Private screenshots, notes, suggestions, and criticism.',
           ),
           value: controller.enabled,
           onChanged: controller.initialized && !controller.busy
@@ -1071,6 +1350,21 @@ class ReadyFeedbackSettingsTile extends StatelessWidget {
                 }
               : null,
         ),
+        if (onCapture != null) ...[
+          const Divider(indent: 16, endIndent: 16),
+          ListTile(
+            leading: const Icon(Icons.add_comment_outlined),
+            title: const Text('Capture feedback now'),
+            subtitle: const Text(
+              'Open the private note and screenshot capture flow.',
+            ),
+            trailing: const Icon(Icons.arrow_forward_rounded),
+            onTap:
+                controller.initialized && controller.enabled && !controller.busy
+                ? onCapture
+                : null,
+          ),
+        ],
         const Divider(indent: 16, endIndent: 16),
         ListTile(
           leading: const Icon(Icons.folder_copy_outlined),

@@ -18,6 +18,8 @@ import 'package:perfect/planner/sync/planner_sync_repository.dart';
 import 'package:perfect/presentation/focus_session_sheet.dart';
 import 'package:perfect/presentation/orbit_stage.dart';
 import 'package:perfect/presentation/perfect_brand.dart';
+import 'package:perfect/presentation/perfect_motion.dart';
+import 'package:perfect/presentation/perfect_pictogram.dart';
 import 'package:perfect/presentation/perfect_today_widget_settings_sheet.dart';
 import 'package:perfect/presentation/perfect_sync_indicator.dart';
 import 'package:perfect/presentation/planner_conflict_center_sheet.dart';
@@ -67,10 +69,12 @@ class PerfectWorkspacePage extends StatefulWidget {
     required this.themeMode,
     required this.onThemeModeChanged,
     this.now = DateTime.now,
+    this.ownerDisplayName,
     this.navigationController,
     this.aiClient,
     this.aiVoiceRecorder,
     this.feedbackController,
+    this.orbitMotionEnabled = true,
   });
 
   final PlannerWorkspaceController controller;
@@ -78,10 +82,12 @@ class PerfectWorkspacePage extends StatefulWidget {
   final ThemeMode themeMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
   final DateTime Function() now;
+  final String? ownerDisplayName;
   final PerfectWorkspaceNavigationController? navigationController;
   final PerfectAiClient? aiClient;
   final PerfectVoiceRecorder? aiVoiceRecorder;
   final ReadyFeedbackController? feedbackController;
+  final bool orbitMotionEnabled;
 
   @override
   State<PerfectWorkspacePage> createState() => _PerfectWorkspacePageState();
@@ -99,11 +105,17 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
   final TextEditingController _quickCaptureController = TextEditingController();
   final GlobalKey<_QuickCaptureDockState> _quickCaptureDockKey =
       GlobalKey<_QuickCaptureDockState>();
+  final GlobalKey<PerfectAiDockState> _aiDockKey =
+      GlobalKey<PerfectAiDockState>();
+  final ReadyFeedbackOverlayController _feedbackOverlayController =
+      ReadyFeedbackOverlayController();
   _WorkspaceLayoutTier? _lastLayoutTier;
   bool _editorSurfaceOpen = false;
   bool _focusSurfaceOpen = false;
   bool _tabletNavigationExtended = false;
   bool _desktopNavigationExtended = true;
+  bool _aiOpen = false;
+  int _navigationDirection = 1;
   bool _navigationConsumptionScheduled = false;
   int _handledNavigationRequestSerial = 0;
   String? _requestedTodayProjection;
@@ -155,6 +167,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     _workspaceFocusNode.dispose();
     _quickCaptureFocusNode.dispose();
     _quickCaptureController.dispose();
+    _feedbackOverlayController.dispose();
     super.dispose();
   }
 
@@ -313,58 +326,55 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     return ReadyFeedbackOverlay(
       controller: feedbackController,
       routeName: _destination.label,
+      // Feedback lives in the contextual command menu and the More settings
+      // page. Keeping it out of the primary canvas prevents a nonessential
+      // draggable tab from intercepting task rows or visual rhythm.
+      launcherVisible: false,
+      launcherController: _feedbackOverlayController,
       child: workspace,
     );
   }
 
   Widget _compact(BuildContext context) => Scaffold(
+    // The footer remains visually glassy, but Today content must finish above
+    // it. Letting the first live task sit under an actionable capture field
+    // makes neither the task nor the field trustworthy.
+    extendBody: false,
     body: SafeArea(
+      bottom: false,
       child: Column(
         children: [
           _Header(
             compact: true,
+            destination: _destination,
+            now: widget.now().toLocal(),
             status: widget.controller.syncStatus,
             onSync: widget.controller.refresh,
-            onSignOut: widget.onSignOut,
-            onShowKeyboardShortcuts: _showKeyboardShortcuts,
           ),
           Expanded(
-            child: _pageContent(
+            child: _destinationSurface(
               context,
-              includeOrbit: _destination == _PerfectDestination.today,
+              _pageContent(
+                context,
+                includeOrbit: _destination == _PerfectDestination.today,
+              ),
             ),
           ),
         ],
       ),
     ),
     bottomNavigationBar: Column(
+      key: const ValueKey<String>('perfect-compact-bottom-dock'),
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (widget.aiClient case final client?)
-          PerfectAiDock(
-            client: client,
-            voiceRecorder: widget.aiVoiceRecorder,
-            onProposalApplied: widget.controller.refresh,
+        if (_destination == _PerfectDestination.today)
+          _WorkspaceComposerStack(
+            aiPanel: _aiPanel(desktop: false),
+            capture: _quickCapture(desktop: false),
           ),
-        _QuickCaptureDock(
-          key: _quickCaptureDockKey,
-          controller: widget.controller,
-          onOpenEditor: () => _openEditor(),
-          captureController: _quickCaptureController,
-          focusNode: _quickCaptureFocusNode,
-        ),
-        NavigationBar(
+        _CompactWorkspaceFooter(
           selectedIndex: _destination.index,
           onDestinationSelected: _selectDestination,
-          destinations: _destinations
-              .map(
-                (destination) => NavigationDestination(
-                  icon: Icon(destination.icon),
-                  selectedIcon: Icon(destination.selectedIcon),
-                  label: destination.label,
-                ),
-              )
-              .toList(growable: false),
         ),
       ],
     ),
@@ -376,16 +386,11 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
           child: Row(
             children: [
               if (shortLandscape)
-                SingleChildScrollView(
-                  child: SizedBox(
-                    height: 500,
-                    child: _NavigationRail(
-                      selected: _destination,
-                      onSelect: _selectDestination,
-                      extended: _tabletNavigationExtended,
-                      onToggleExtended: _toggleTabletNavigationWidth,
-                    ),
-                  ),
+                _ShortLandscapeNavigationRail(
+                  selected: _destination,
+                  onSelect: _selectDestination,
+                  extended: _tabletNavigationExtended,
+                  onToggleExtended: _toggleTabletNavigationWidth,
                 )
               else
                 _NavigationRail(
@@ -403,43 +408,38 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
                       // in both compact and extended states. Keep the header
                       // contextual instead of repeating the brand.
                       showWordmark: false,
+                      showContext: _destination != _PerfectDestination.today,
+                      destination: _destination,
+                      now: widget.now().toLocal(),
                       status: widget.controller.syncStatus,
                       onSync: widget.controller.refresh,
-                      onSignOut: widget.onSignOut,
-                      onShowKeyboardShortcuts: _showKeyboardShortcuts,
                     ),
                     Expanded(
-                      child: _destination == _PerfectDestination.today
-                          ? _MediumTodayDeck(
-                              controller: widget.controller,
-                              now: widget.now().toLocal(),
-                              items: _todayItems,
-                              eligibilityById: _displayTodayEligibility,
-                              habitSummaryById: _displayHabitSummaries,
-                              onInspect: _inspect,
-                              onAdd: _openEditor,
-                              onOpenPlan: () => _selectDestination(
-                                _PerfectDestination.plan.index,
-                              ),
-                              shortLandscape: shortLandscape,
-                            )
-                          : _pageContent(context, includeOrbit: false),
-                    ),
-                    if (widget.aiClient case final client?)
-                      PerfectAiDock(
-                        client: client,
-                        voiceRecorder: widget.aiVoiceRecorder,
-                        onProposalApplied: widget.controller.refresh,
-                        desktop: true,
+                      child: _destinationSurface(
+                        context,
+                        _destination == _PerfectDestination.today
+                            ? _MediumTodayDeck(
+                                controller: widget.controller,
+                                now: widget.now().toLocal(),
+                                items: _todayItems,
+                                eligibilityById: _displayTodayEligibility,
+                                habitSummaryById: _displayHabitSummaries,
+                                orbitMotionEnabled: widget.orbitMotionEnabled,
+                                onInspect: _inspect,
+                                onAdd: _openEditor,
+                                onOpenPlan: () => _selectDestination(
+                                  _PerfectDestination.plan.index,
+                                ),
+                                shortLandscape: shortLandscape,
+                              )
+                            : _pageContent(context, includeOrbit: false),
                       ),
-                    _QuickCaptureDock(
-                      key: _quickCaptureDockKey,
-                      controller: widget.controller,
-                      onOpenEditor: () => _openEditor(),
-                      captureController: _quickCaptureController,
-                      focusNode: _quickCaptureFocusNode,
-                      desktop: true,
                     ),
+                    if (_destination == _PerfectDestination.today)
+                      _WorkspaceComposerStack(
+                        aiPanel: _aiPanel(desktop: true),
+                        capture: _quickCapture(desktop: true),
+                      ),
                   ],
                 ),
               ),
@@ -476,69 +476,64 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
                   children: [
                     _Header(
                       showWordmark: _destination != _PerfectDestination.today,
+                      showContext: _destination != _PerfectDestination.today,
+                      destination: _destination,
+                      now: widget.now().toLocal(),
                       status: widget.controller.syncStatus,
                       onSync: widget.controller.refresh,
-                      onSignOut: widget.onSignOut,
-                      onShowKeyboardShortcuts: _showKeyboardShortcuts,
                     ),
                     Expanded(
-                      child: _destination == _PerfectDestination.today
-                          ? _ExpandedTodayDeck(
-                              controller: widget.controller,
-                              now: widget.now().toLocal(),
-                              items: _todayItems,
-                              eligibilityById: _displayTodayEligibility,
-                              habitSummaryById: _displayHabitSummaries,
-                              inspected: _inspected,
-                              onInspect: _inspect,
-                              onAdd: _openEditor,
-                              onOpenPlan: () => _selectDestination(
-                                _PerfectDestination.plan.index,
-                              ),
-                              onEditInspected: () =>
-                                  _openEditor(existing: _inspected),
-                              onClearInspection: () =>
-                                  setState(() => _inspected = null),
-                            )
-                          : Row(
-                              children: [
-                                Expanded(
-                                  child: _pageContent(
-                                    context,
-                                    includeOrbit: false,
-                                  ),
+                      child: _destinationSurface(
+                        context,
+                        _destination == _PerfectDestination.today
+                            ? _ExpandedTodayDeck(
+                                controller: widget.controller,
+                                now: widget.now().toLocal(),
+                                items: _todayItems,
+                                eligibilityById: _displayTodayEligibility,
+                                habitSummaryById: _displayHabitSummaries,
+                                orbitMotionEnabled: widget.orbitMotionEnabled,
+                                inspected: _inspected,
+                                onInspect: _inspect,
+                                onAdd: _openEditor,
+                                onOpenPlan: () => _selectDestination(
+                                  _PerfectDestination.plan.index,
                                 ),
-                                if (showAdjacentInspector)
-                                  SizedBox(
-                                    width: inspectorWidth,
-                                    child: _Inspector(
-                                      entity: _inspected,
-                                      controller: widget.controller,
-                                      onEdit: () =>
-                                          _openEditor(existing: _inspected),
-                                      onReveal: _inspect,
-                                      onClear: () =>
-                                          setState(() => _inspected = null),
+                                onEditInspected: () =>
+                                    _openEditor(existing: _inspected),
+                                onClearInspection: () =>
+                                    setState(() => _inspected = null),
+                              )
+                            : Row(
+                                children: [
+                                  Expanded(
+                                    child: _pageContent(
+                                      context,
+                                      includeOrbit: false,
                                     ),
                                   ),
-                              ],
-                            ),
-                    ),
-                    if (widget.aiClient case final client?)
-                      PerfectAiDock(
-                        client: client,
-                        voiceRecorder: widget.aiVoiceRecorder,
-                        onProposalApplied: widget.controller.refresh,
-                        desktop: true,
+                                  if (showAdjacentInspector)
+                                    SizedBox(
+                                      width: inspectorWidth,
+                                      child: _Inspector(
+                                        entity: _inspected,
+                                        controller: widget.controller,
+                                        onEdit: () =>
+                                            _openEditor(existing: _inspected),
+                                        onReveal: _inspect,
+                                        onClear: () =>
+                                            setState(() => _inspected = null),
+                                      ),
+                                    ),
+                                ],
+                              ),
                       ),
-                    _QuickCaptureDock(
-                      key: _quickCaptureDockKey,
-                      controller: widget.controller,
-                      onOpenEditor: () => _openEditor(),
-                      captureController: _quickCaptureController,
-                      focusNode: _quickCaptureFocusNode,
-                      desktop: true,
                     ),
+                    if (_destination == _PerfectDestination.today)
+                      _WorkspaceComposerStack(
+                        aiPanel: _aiPanel(desktop: true),
+                        capture: _quickCapture(desktop: true),
+                      ),
                   ],
                 );
               },
@@ -549,15 +544,59 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     ),
   );
 
+  Widget _aiPanel({required bool desktop}) {
+    final client = widget.aiClient;
+    if (client == null) return const SizedBox.shrink();
+    return PerfectAiDock(
+      key: _aiDockKey,
+      client: client,
+      voiceRecorder: widget.aiVoiceRecorder,
+      onProposalApplied: widget.controller.refresh,
+      desktop: desktop,
+      showCollapsedLauncher: false,
+      onOpenChanged: (open) {
+        if (!mounted || _aiOpen == open) return;
+        setState(() => _aiOpen = open);
+      },
+    );
+  }
+
+  Widget _quickCapture({required bool desktop}) => _QuickCaptureDock(
+    key: _quickCaptureDockKey,
+    controller: widget.controller,
+    onOpenEditor: () => _openEditor(),
+    captureController: _quickCaptureController,
+    focusNode: _quickCaptureFocusNode,
+    desktop: desktop,
+    aiAvailable: widget.aiClient != null,
+    aiOpen: _aiOpen,
+    onToggleAi: _toggleAi,
+    onOpenAiVoice: _openAiVoice,
+  );
+
+  Widget _destinationSurface(BuildContext context, Widget child) {
+    return PerfectMotionSwitcher(
+      kind: PerfectTransitionKind.sharedAxisVertical,
+      direction: _navigationDirection,
+      alignment: Alignment.topCenter,
+      child: KeyedSubtree(
+        key: ValueKey<_PerfectDestination>(_destination),
+        child: child,
+      ),
+    );
+  }
+
   Widget _pageContent(BuildContext context, {required bool includeOrbit}) =>
       switch (_destination) {
         _PerfectDestination.today => _TodayPage(
           controller: widget.controller,
           includeOrbit: includeOrbit,
           now: widget.now().toLocal(),
+          ownerDisplayName: widget.ownerDisplayName,
           items: _todayItems,
           eligibilityById: _displayTodayEligibility,
           habitSummaryById: _displayHabitSummaries,
+          orbitMotionEnabled: widget.orbitMotionEnabled,
           onInspect: _inspect,
           onAdd: _openEditor,
           onOpenPlan: () => _selectDestination(_PerfectDestination.plan.index),
@@ -582,6 +621,9 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         _PerfectDestination.more => _MorePage(
           controller: widget.controller,
           feedbackController: widget.feedbackController,
+          onOpenFeedback: widget.feedbackController == null
+              ? null
+              : _openFeedbackCapture,
           themeMode: widget.themeMode,
           onThemeModeChanged: widget.onThemeModeChanged,
           onSignOut: widget.onSignOut,
@@ -707,16 +749,34 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
   void _selectDestination(int value) {
     final next = _PerfectDestination.values[value];
     if (next == _destination) return;
+    if (next != _PerfectDestination.today && _aiOpen) {
+      _aiDockKey.currentState?.close();
+    }
     setState(() {
+      _navigationDirection = value >= _destination.index ? 1 : -1;
       _destination = next;
       _inspected = null;
     });
   }
 
+  void _toggleAi() => _aiDockKey.currentState?.toggleOpen();
+
+  void _openAiVoice() => unawaited(_aiDockKey.currentState?.openVoice());
+
+  void _openFeedbackCapture() {
+    unawaited(_feedbackOverlayController.open());
+  }
+
   void _focusQuickCapture() {
+    final dock = _quickCaptureDockKey.currentState;
+    if (dock != null) {
+      dock.expandAndFocus();
+      return;
+    }
     if (_quickCaptureFocusNode.context == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _quickCaptureFocusNode.requestFocus();
+        if (!mounted) return;
+        _quickCaptureDockKey.currentState?.expandAndFocus();
       });
       return;
     }
@@ -747,8 +807,17 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
   }
 
   void _dismissLocalContext() {
+    if (_aiOpen) {
+      _aiDockKey.currentState?.close();
+      return;
+    }
     if (_inspected != null) {
       setState(() => _inspected = null);
+      return;
+    }
+    final capture = _quickCaptureDockKey.currentState;
+    if (capture?.isExpanded == true) {
+      capture!.collapse();
       return;
     }
     FocusManager.instance.primaryFocus?.unfocus();
@@ -778,6 +847,13 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       return false;
     }
     final keyboard = HardwareKeyboard.instance;
+    if (event.logicalKey == LogicalKeyboardKey.escape &&
+        (_aiOpen ||
+            _inspected != null ||
+            _quickCaptureDockKey.currentState?.isExpanded == true)) {
+      _dismissLocalContext();
+      return true;
+    }
     if (event.logicalKey == LogicalKeyboardKey.keyF &&
         keyboard.isControlPressed &&
         keyboard.isShiftPressed) {
@@ -785,22 +861,6 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       return true;
     }
     return false;
-  }
-
-  void _showKeyboardShortcuts() {
-    unawaited(
-      showDialog<void>(
-        context: context,
-        builder: (dialogContext) => Dialog(
-          clipBehavior: Clip.antiAlias,
-          insetPadding: const EdgeInsets.all(PerfectSpace.xl),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520, maxHeight: 680),
-            child: const _KeyboardShortcutsDialog(),
-          ),
-        ),
-      ),
-    );
   }
 
   void _inspect(PlannerEntity entity) {
@@ -884,6 +944,53 @@ class _WorkspaceLoading extends StatelessWidget {
   );
 }
 
+class _ShortLandscapeNavigationRail extends StatelessWidget {
+  const _ShortLandscapeNavigationRail({
+    required this.selected,
+    required this.onSelect,
+    required this.extended,
+    required this.onToggleExtended,
+  });
+
+  final _PerfectDestination selected;
+  final ValueChanged<int> onSelect;
+  final bool extended;
+  final VoidCallback onToggleExtended;
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final viewportHeight = math.max(
+      0.0,
+      media.size.height - media.padding.vertical,
+    );
+    final labelScale = media.textScaler.scale(14) / 14;
+    final destinationExtent = 56.0 * labelScale.clamp(1.0, 1.5).toDouble();
+    final leadingExtent =
+        PerfectSpace.md + 40 + PerfectSpace.xs + 48 + PerfectSpace.md;
+    final contentHeight =
+        PerfectSpace.xl * 2 +
+        leadingExtent +
+        _destinations.length * destinationExtent;
+
+    return SizedBox(
+      height: viewportHeight,
+      child: SingleChildScrollView(
+        key: const ValueKey<String>('perfect-short-navigation-scroll'),
+        child: SizedBox(
+          height: math.max(viewportHeight, contentHeight),
+          child: _NavigationRail(
+            selected: selected,
+            onSelect: onSelect,
+            extended: extended,
+            onToggleExtended: onToggleExtended,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _NavigationRail extends StatelessWidget {
   const _NavigationRail({
     required this.selected,
@@ -903,84 +1010,105 @@ class _NavigationRail extends StatelessWidget {
     final availableWidth = MediaQuery.sizeOf(context).width;
     final expandedWidth =
         (availableWidth * (availableWidth < 1280 ? .22 : .155)).clamp(
-          176.0,
+          188.0,
           224.0,
         );
-    return ClipRect(
-      child: AnimatedContainer(
-        key: const ValueKey<String>('perfect-navigation-rail-layout'),
-        duration: duration,
-        curve: PerfectMotion.productive,
-        width: extended ? expandedWidth : 78,
-        child: NavigationRail(
-          extended: extended,
-          minExtendedWidth: expandedWidth,
-          minWidth: 78,
-          selectedIndex: selected.index,
-          onDestinationSelected: onSelect,
-          leading: Padding(
-            padding: const EdgeInsets.only(top: PerfectSpace.lg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AnimatedSwitcher(
-                  duration: duration,
-                  child: extended
-                      ? const SizedBox(
-                          key: ValueKey<String>('rail-wordmark'),
-                          width: 174,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: PerfectWordmark(
-                              fontSize: 26,
-                              includeMark: true,
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(12, 12, 4, 12),
+      child: ClipRect(
+        child: AnimatedContainer(
+          key: const ValueKey<String>('perfect-navigation-rail-layout'),
+          duration: duration,
+          curve: PerfectMotion.productive,
+          width: extended ? expandedWidth : 76,
+          child: PerfectGlassSurface(
+            borderRadius: const BorderRadius.all(
+              Radius.circular(PerfectRadius.dock),
+            ),
+            blur: 22,
+            strength: PerfectGlassStrength.strong,
+            child: Material(
+              color: Colors.transparent,
+              child: NavigationRail(
+                extended: extended,
+                minExtendedWidth: expandedWidth,
+                minWidth: 76,
+                backgroundColor: Colors.transparent,
+                groupAlignment: -.18,
+                selectedIndex: selected.index,
+                onDestinationSelected: onSelect,
+                leading: Padding(
+                  padding: const EdgeInsets.only(top: PerfectSpace.md),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedSwitcher(
+                        duration: duration,
+                        switchInCurve: PerfectMotion.enter,
+                        switchOutCurve: PerfectMotion.exit,
+                        child: extended
+                            ? const SizedBox(
+                                key: ValueKey<String>('rail-wordmark'),
+                                width: 168,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: PerfectWordmark(
+                                    fontSize: 25,
+                                    includeMark: true,
+                                  ),
+                                ),
+                              )
+                            : const PerfectMark(
+                                key: ValueKey<String>('rail-mark'),
+                                size: 40,
+                              ),
+                      ),
+                      const SizedBox(height: PerfectSpace.xs),
+                      Semantics(
+                        button: true,
+                        label: extended
+                            ? 'Collapse navigation rail'
+                            : 'Expand navigation rail',
+                        child: IconButton(
+                          key: const ValueKey<String>(
+                            'perfect-navigation-rail-toggle',
+                          ),
+                          tooltip: extended
+                              ? 'Collapse navigation'
+                              : 'Expand navigation',
+                          onPressed: onToggleExtended,
+                          icon: AnimatedRotation(
+                            turns: extended ? .5 : 0,
+                            duration: duration,
+                            curve: PerfectMotion.productive,
+                            child: const Icon(
+                              Icons.keyboard_double_arrow_right_rounded,
                             ),
                           ),
-                        )
-                      : const PerfectMark(
-                          key: ValueKey<String>('rail-mark'),
-                          size: 44,
                         ),
-                ),
-                const SizedBox(height: PerfectSpace.xs),
-                Semantics(
-                  button: true,
-                  label: extended
-                      ? 'Collapse navigation rail'
-                      : 'Expand navigation rail',
-                  child: IconButton(
-                    key: const ValueKey<String>(
-                      'perfect-navigation-rail-toggle',
-                    ),
-                    tooltip: extended
-                        ? 'Collapse navigation'
-                        : 'Expand navigation',
-                    onPressed: onToggleExtended,
-                    icon: Icon(
-                      extended
-                          ? Icons.keyboard_double_arrow_left_rounded
-                          : Icons.keyboard_double_arrow_right_rounded,
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+                destinations: _destinations.indexed
+                    .map(
+                      (entry) => NavigationRailDestination(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        icon: Tooltip(
+                          message: '${entry.$2.label} (Ctrl+${entry.$1 + 1})',
+                          child: Icon(entry.$2.icon),
+                        ),
+                        selectedIcon: Tooltip(
+                          message: '${entry.$2.label} (Ctrl+${entry.$1 + 1})',
+                          child: Icon(entry.$2.selectedIcon),
+                        ),
+                        label: Text(entry.$2.label),
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
             ),
           ),
-          destinations: _destinations.indexed
-              .map(
-                (entry) => NavigationRailDestination(
-                  icon: Tooltip(
-                    message: '${entry.$2.label} (Ctrl+${entry.$1 + 1})',
-                    child: Icon(entry.$2.icon),
-                  ),
-                  selectedIcon: Tooltip(
-                    message: '${entry.$2.label} (Ctrl+${entry.$1 + 1})',
-                    child: Icon(entry.$2.selectedIcon),
-                  ),
-                  label: Text(entry.$2.label),
-                ),
-              )
-              .toList(growable: false),
         ),
       ),
     );
@@ -989,164 +1117,124 @@ class _NavigationRail extends StatelessWidget {
 
 class _Header extends StatelessWidget {
   const _Header({
+    required this.destination,
+    required this.now,
     required this.status,
     required this.onSync,
-    required this.onSignOut,
-    required this.onShowKeyboardShortcuts,
     this.compact = false,
     this.showWordmark = true,
+    this.showContext = true,
   });
 
+  final _PerfectDestination destination;
+  final DateTime now;
   final PlannerSyncStatus status;
   final Future<void> Function() onSync;
-  final Future<void> Function() onSignOut;
-  final VoidCallback onShowKeyboardShortcuts;
   final bool compact;
   final bool showWordmark;
+  final bool showContext;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.fromLTRB(
+    padding: EdgeInsetsDirectional.fromSTEB(
       compact ? PerfectSpace.md : PerfectSpace.xl,
-      PerfectSpace.md,
+      compact ? PerfectSpace.sm : PerfectSpace.sm,
       compact ? PerfectSpace.md : PerfectSpace.xl,
-      PerfectSpace.sm,
+      compact ? 0 : PerfectSpace.xs,
     ),
-    child: Row(
-      children: [
-        if (showWordmark) ...[
-          Expanded(
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: AlignmentDirectional.centerStart,
-                child: PerfectWordmark(
-                  fontSize: compact ? 24 : 30,
-                  includeMark: !compact,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: PerfectSpace.xs),
-        ] else
-          const Spacer(),
-        PerfectSyncIndicator(status: status, onRetry: onSync, compact: compact),
-        const SizedBox(width: PerfectSpace.xs),
-        PopupMenuButton<String>(
-          tooltip: 'Account and commands',
-          onSelected: (value) {
-            if (value == 'shortcuts') onShowKeyboardShortcuts();
-            if (value == 'sign_out') onSignOut();
-          },
-          itemBuilder: (context) => const [
-            PopupMenuItem(
-              value: 'shortcuts',
-              child: _ContextMenuLabel(
-                icon: Icons.keyboard_alt_outlined,
-                label: 'Keyboard shortcuts',
-              ),
-            ),
-            PopupMenuDivider(),
-            PopupMenuItem(
-              value: 'sign_out',
-              child: _ContextMenuLabel(
-                icon: Icons.logout_rounded,
-                label: 'Sign out',
-              ),
-            ),
-          ],
-          icon: const Icon(Icons.more_horiz_rounded),
-        ),
-      ],
-    ),
-  );
-}
-
-class _KeyboardShortcutsDialog extends StatelessWidget {
-  const _KeyboardShortcutsDialog();
-
-  static const _shortcuts = <(String, String)>[
-    ('New task', 'Ctrl + N'),
-    ('Today', 'Ctrl + 1'),
-    ('Tasks', 'Ctrl + 2'),
-    ('Plan', 'Ctrl + 3'),
-    ('Habits', 'Ctrl + 4'),
-    ('More', 'Ctrl + 5'),
-    ('Quick capture', 'Ctrl + K'),
-    ('Open focus', 'Ctrl + Shift + F'),
-    ('Close local context', 'Esc'),
-    ('Item actions', 'Menu or Shift + F10'),
-  ];
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    namesRoute: true,
-    label: 'Keyboard shortcuts',
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(
-        PerfectSpace.xl,
-        PerfectSpace.lg,
-        PerfectSpace.lg,
-        PerfectSpace.lg,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+    // Keep the greeting's calm vertical rhythm while optically lifting the
+    // brand into the safe-area gap, matching the reference header.
+    child: Transform.translate(
+      offset: Offset(0, compact ? -20 : 0),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Keyboard shortcuts',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-              ),
-              IconButton(
-                tooltip: 'Close shortcuts',
-                onPressed: Navigator.of(context).pop,
-                icon: const Icon(Icons.close_rounded),
-              ),
-            ],
-          ),
-          const SizedBox(height: PerfectSpace.xs),
-          Text(
-            'Everything important stays reachable without leaving the keyboard.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: PerfectSpace.lg),
-          Flexible(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  for (final (index, shortcut) in _shortcuts.indexed) ...[
-                    Semantics(
-                      label: '${shortcut.$1}, ${shortcut.$2}',
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: PerfectSpace.sm,
-                        ),
+          Expanded(
+            child: compact
+                ? Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          PerfectMark(size: 54),
+                          SizedBox(width: PerfectSpace.sm),
+                          PerfectWordmark(fontSize: 26.5),
+                        ],
+                      ),
+                    ),
+                  )
+                : !showContext
+                ? const SizedBox.shrink()
+                : PerfectMotionSwitcher(
+                    kind: PerfectTransitionKind.fade,
+                    duration: PerfectMotion.standard,
+                    reverseDuration: PerfectMotion.quick,
+                    layoutBuilder: (currentChild, previousChildren) => Stack(
+                      alignment: AlignmentDirectional.centerStart,
+                      children: <Widget>[...previousChildren, ?currentChild],
+                    ),
+                    child: KeyedSubtree(
+                      key: ValueKey<String>(
+                        'header-context-${destination.name}',
+                      ),
+                      child: PerfectStagedEntrance(
+                        rise: 12,
+                        scaleBegin: .995,
+                        duration: PerfectMotion.standard,
                         child: Row(
                           children: [
-                            Expanded(
-                              child: Text(
-                                shortcut.$1,
-                                style: Theme.of(context).textTheme.bodyLarge,
+                            if (showWordmark) ...[
+                              const PerfectMark(size: 32),
+                              const SizedBox(width: PerfectSpace.sm),
+                            ],
+                            Flexible(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    destination.label,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.w900),
+                                  ),
+                                  if (MediaQuery.textScalerOf(
+                                            context,
+                                          ).scale(14) /
+                                          14 <
+                                      1.35) ...[
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      _headerSupportText(destination, now),
+                                      maxLines: 2,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                            const SizedBox(width: PerfectSpace.md),
-                            _ShortcutKeyLabel(shortcut.$2),
                           ],
                         ),
                       ),
                     ),
-                    if (index < _shortcuts.length - 1) const Divider(height: 1),
-                  ],
-                ],
-              ),
-            ),
+                  ),
+          ),
+          const SizedBox(width: PerfectSpace.sm),
+          PerfectSyncIndicator(
+            status: status,
+            onRetry: onSync,
+            compact: compact,
           ),
         ],
       ),
@@ -1154,31 +1242,88 @@ class _KeyboardShortcutsDialog extends StatelessWidget {
   );
 }
 
-class _ShortcutKeyLabel extends StatelessWidget {
-  const _ShortcutKeyLabel(this.label);
+String _headerSupportText(_PerfectDestination destination, DateTime now) =>
+    switch (destination) {
+      _PerfectDestination.today => _todayLabel(now),
+      _PerfectDestination.tasks => 'Capture, shape, and finish the work',
+      _PerfectDestination.plan => 'Make time visible before it fills up',
+      _PerfectDestination.habits => 'Build the rhythm, not the pressure',
+      _PerfectDestination.more => 'Your workspace, rules, and data',
+    };
 
-  final String label;
+class _WorkspaceComposerStack extends StatelessWidget {
+  const _WorkspaceComposerStack({required this.aiPanel, required this.capture});
+
+  final Widget aiPanel;
+  final Widget capture;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      border: Border.all(color: Theme.of(context).colorScheme.outline),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: PerfectSpace.sm,
-        vertical: PerfectSpace.xs,
-      ),
-      child: Text(
-        label,
-        style: Theme.of(
-          context,
-        ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-      ),
-    ),
+  Widget build(BuildContext context) => RepaintBoundary(
+    child: Column(mainAxisSize: MainAxisSize.min, children: [aiPanel, capture]),
   );
+}
+
+class _CompactWorkspaceFooter extends StatelessWidget {
+  const _CompactWorkspaceFooter({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final labelSize = Theme.of(context).textTheme.labelMedium?.fontSize ?? 12;
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(labelSize) / labelSize;
+    final navigationHeight = (66 + math.max(0, textScale - 1) * 28)
+        .clamp(66.0, 96.0)
+        .toDouble();
+    return Material(
+      color: Colors.transparent,
+      child: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.only(bottom: PerfectSpace.xs),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            PerfectSpace.sm,
+            2,
+            PerfectSpace.sm,
+            0,
+          ),
+          child: PerfectGlassSurface(
+            surfaceKey: const ValueKey<String>('perfect-compact-glass-footer'),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(PerfectRadius.panel),
+            ),
+            blur: 24,
+            strength: PerfectGlassStrength.strong,
+            child: Material(
+              color: Colors.transparent,
+              child: NavigationBar(
+                height: navigationHeight,
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onDestinationSelected,
+                destinations: _destinations
+                    .map(
+                      (destination) => NavigationDestination(
+                        icon: Icon(destination.icon),
+                        selectedIcon: Icon(destination.selectedIcon),
+                        label: destination.label,
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _QuickCaptureDock extends StatefulWidget {
@@ -1189,6 +1334,10 @@ class _QuickCaptureDock extends StatefulWidget {
     required this.captureController,
     required this.focusNode,
     this.desktop = false,
+    this.aiAvailable = false,
+    this.aiOpen = false,
+    this.onToggleAi,
+    this.onOpenAiVoice,
   });
 
   final PlannerWorkspaceController controller;
@@ -1196,15 +1345,138 @@ class _QuickCaptureDock extends StatefulWidget {
   final TextEditingController captureController;
   final FocusNode focusNode;
   final bool desktop;
+  final bool aiAvailable;
+  final bool aiOpen;
+  final VoidCallback? onToggleAi;
+  final VoidCallback? onOpenAiVoice;
 
   @override
   State<_QuickCaptureDock> createState() => _QuickCaptureDockState();
 }
 
-class _QuickCaptureDockState extends State<_QuickCaptureDock> {
+class _QuickCaptureDockState extends State<_QuickCaptureDock>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1680),
+  );
+  Timer? _heartbeatTimer;
   bool _sending = false;
+  bool _hovered = false;
+  bool _fieldFocused = false;
+  bool _expanded = false;
+  bool _reduceMotion = false;
 
   TextEditingController get _capture => widget.captureController;
+  bool get isExpanded => _expanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _fieldFocused = widget.focusNode.hasFocus;
+    _expanded = _fieldFocused || _capture.text.trim().isNotEmpty;
+    widget.focusNode.addListener(_handleFocusChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = PerfectMotion.reduced(context);
+    _syncPulseAnimation();
+  }
+
+  @override
+  void didUpdateWidget(covariant _QuickCaptureDock oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      oldWidget.focusNode.removeListener(_handleFocusChanged);
+      _fieldFocused = widget.focusNode.hasFocus;
+      _expanded =
+          _fieldFocused ||
+          _expanded ||
+          widget.captureController.text.trim().isNotEmpty;
+      widget.focusNode.addListener(_handleFocusChanged);
+    }
+    _syncPulseAnimation();
+  }
+
+  @override
+  void dispose() {
+    widget.focusNode.removeListener(_handleFocusChanged);
+    _heartbeatTimer?.cancel();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  void _handleFocusChanged() {
+    if (!mounted) return;
+    final focused = widget.focusNode.hasFocus;
+    setState(() {
+      _fieldFocused = focused;
+      if (focused) _expanded = true;
+    });
+    _syncPulseAnimation();
+  }
+
+  void _syncPulseAnimation() {
+    if (!mounted) return;
+    final shouldPulse =
+        !_expanded && !_reduceMotion && TickerMode.valuesOf(context).enabled;
+    if (shouldPulse) {
+      if (!_pulseController.isAnimating && _heartbeatTimer == null) {
+        _playHeartbeat();
+      }
+    } else {
+      _heartbeatTimer?.cancel();
+      _heartbeatTimer = null;
+      _pulseController
+        ..stop()
+        ..value = 0;
+    }
+  }
+
+  void _playHeartbeat() {
+    if (!mounted ||
+        _expanded ||
+        _reduceMotion ||
+        !TickerMode.valuesOf(context).enabled) {
+      return;
+    }
+    _pulseController.forward(from: 0).whenComplete(() {
+      if (!mounted) return;
+      _pulseController.value = 0;
+      if (_expanded || _reduceMotion) return;
+      _heartbeatTimer = Timer(const Duration(milliseconds: 2200), () {
+        _heartbeatTimer = null;
+        _playHeartbeat();
+      });
+    });
+  }
+
+  void expandAndFocus() {
+    _expand();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.focusNode.requestFocus();
+    });
+  }
+
+  void _expand() {
+    if (!_expanded) setState(() => _expanded = true);
+    _syncPulseAnimation();
+  }
+
+  void _collapse() {
+    widget.focusNode.unfocus();
+    if (_expanded) setState(() => _expanded = false);
+    _syncPulseAnimation();
+  }
+
+  void collapse() => _collapse();
+
+  void _openFullEditor() {
+    _collapse();
+    widget.onOpenEditor();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1214,125 +1486,475 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock> {
         16;
     final effectiveTextScale =
         MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          widget.desktop ? PerfectSpace.xl : PerfectSpace.md,
-          PerfectSpace.xs,
-          widget.desktop ? PerfectSpace.xl : PerfectSpace.md,
-          PerfectSpace.xs,
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final showPlanShortcut =
-                widget.desktop ||
-                (constraints.maxWidth >= 350 && effectiveTextScale < 1.35);
-            final hintText = widget.desktop
-                ? 'Capture a task, before it disappears…'
-                : effectiveTextScale >= 1.35
-                ? 'New task…'
-                : 'Capture a task…';
-            return DecoratedBox(
-              key: const ValueKey<String>('perfect-quick-capture-surface'),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: .07),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+    final duration = PerfectMotion.responsive(context, PerfectMotion.quick);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.hasBoundedWidth
+            ? constraints.maxWidth
+            : MediaQuery.sizeOf(context).width;
+        final hintText = widget.desktop
+            ? 'Capture a task, before it disappears…'
+            : effectiveTextScale >= 1.35
+            ? 'New task…'
+            : 'Capture a task…';
+        final horizontalPadding = widget.desktop
+            ? PerfectSpace.xl
+            : PerfectSpace.xxs;
+        final maxDockWidth = widget.desktop
+            ? math.min(980.0, availableWidth - horizontalPadding * 2)
+            : math.max(0.0, availableWidth - horizontalPadding * 2);
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            4,
+            horizontalPadding,
+            6,
+          ),
+          child: Align(
+            alignment: AlignmentDirectional.bottomCenter,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxDockWidth),
+              child: TapRegion(
+                onTapOutside: (_) => _collapse(),
+                child: AnimatedSize(
+                  alignment: AlignmentDirectional.bottomCenter,
+                  duration: PerfectMotion.responsive(
+                    context,
+                    PerfectMotion.emphasized,
                   ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: PerfectSpace.xs,
+                  curve: PerfectMotion.modalEnter,
+                  clipBehavior: Clip.none,
+                  child: AnimatedSwitcher(
+                    duration: PerfectMotion.responsive(
+                      context,
+                      PerfectMotion.emphasized,
                     ),
-                    child: IconButton.filled(
-                      tooltip: widget.desktop
-                          ? 'New task in full editor (Ctrl+N)'
-                          : 'Open full editor',
-                      style: IconButton.styleFrom(
-                        minimumSize: const Size.square(48),
-                        backgroundColor: PerfectColors.apricotSoft,
-                        foregroundColor: PerfectColors.ink,
-                      ),
-                      onPressed: widget.onOpenEditor,
-                      icon: const Icon(Icons.add_rounded),
+                    reverseDuration: duration,
+                    switchInCurve: PerfectMotion.modalEnter,
+                    switchOutCurve: PerfectMotion.exit,
+                    layoutBuilder: (currentChild, previousChildren) => Stack(
+                      alignment: AlignmentDirectional.bottomCenter,
+                      clipBehavior: Clip.none,
+                      children: <Widget>[...previousChildren, ?currentChild],
                     ),
-                  ),
-                  Expanded(
-                    child: Tooltip(
-                      message: widget.desktop
-                          ? 'Quick capture (Ctrl+K)'
-                          : 'Quick capture',
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(minHeight: 48),
-                        child: TextField(
-                          key: const ValueKey<String>('perfect_quick_capture'),
-                          controller: _capture,
-                          focusNode: widget.focusNode,
-                          maxLength: 160,
-                          textDirection: _directionForCapture(
-                            context,
-                            _capture.text,
-                          ),
-                          textInputAction: TextInputAction.done,
-                          onChanged: (_) => setState(() {}),
-                          onSubmitted: (_) => _submit(),
-                          decoration: InputDecoration(
-                            counterText: '',
-                            hintText: hintText,
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            fillColor: Colors.transparent,
+                    transitionBuilder: (child, animation) {
+                      if (_reduceMotion) {
+                        return FadeTransition(opacity: animation, child: child);
+                      }
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, .12),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: ScaleTransition(
+                            alignment: Alignment.bottomCenter,
+                            scale: Tween<double>(
+                              begin: .94,
+                              end: 1,
+                            ).animate(animation),
+                            child: child,
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                  if (showPlanShortcut)
-                    IconButton(
-                      tooltip: 'Plan in the full editor',
-                      constraints: const BoxConstraints.tightFor(
-                        width: 48,
-                        height: 48,
-                      ),
-                      onPressed: widget.onOpenEditor,
-                      icon: const Icon(Icons.calendar_month_outlined),
-                    ),
-                  IconButton(
-                    tooltip: 'Save quick capture',
-                    constraints: const BoxConstraints.tightFor(
-                      width: 48,
-                      height: 48,
-                    ),
-                    onPressed: _sending || _capture.text.trim().isEmpty
-                        ? null
-                        : _submit,
-                    icon: _sending
-                        ? const SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                      );
+                    },
+                    child: _expanded
+                        ? _buildExpandedComposer(
+                            context,
+                            key: const ValueKey<String>(
+                              'quick-capture-expanded',
+                            ),
+                            maxWidth: maxDockWidth,
+                            effectiveTextScale: effectiveTextScale,
+                            hintText: hintText,
+                            duration: duration,
                           )
-                        : const Icon(Icons.arrow_upward_rounded),
+                        : _buildCollapsedLauncher(
+                            context,
+                            key: const ValueKey<String>(
+                              'quick-capture-collapsed',
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCollapsedLauncher(BuildContext context, {required Key key}) {
+    final scheme = Theme.of(context).colorScheme;
+    final hasDraft = _capture.text.trim().isNotEmpty;
+    return MouseRegion(
+      key: key,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          final phase = _pulseController.value;
+          final first = math.exp(-math.pow((phase - .18) / .055, 2));
+          final second = math.exp(-math.pow((phase - .31) / .045, 2));
+          final heartbeat = _reduceMotion ? 0.0 : first * .72 + second;
+          final scale = 1 + heartbeat * .046 + (_hovered ? .035 : 0);
+          return Transform.scale(
+            scale: scale,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: PerfectColors.sync.withValues(
+                      alpha: .14 + heartbeat * .12,
+                    ),
+                    blurRadius: 18 + heartbeat * 16,
+                    spreadRadius: heartbeat * 2.5,
+                  ),
+                  BoxShadow(
+                    color: PerfectColors.lilac.withValues(
+                      alpha: .12 + heartbeat * .10,
+                    ),
+                    blurRadius: 22 + heartbeat * 14,
+                    offset: const Offset(0, 7),
                   ),
                 ],
               ),
-            );
-          },
+              child: PerfectGlassSurface(
+                surfaceKey: const ValueKey<String>(
+                  'perfect-quick-capture-surface',
+                ),
+                borderRadius: const BorderRadius.all(Radius.circular(999)),
+                strength: PerfectGlassStrength.strong,
+                blur: 22,
+                tint: scheme.surface.withValues(alpha: .76),
+                borderColor: Colors.white.withValues(alpha: .68),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    key: const ValueKey<String>('perfect-quick-capture-toggle'),
+                    customBorder: const CircleBorder(),
+                    onTap: _expand,
+                    child: SizedBox.square(
+                      dimension: 64,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: <Color>[
+                                  PerfectColors.mint.withValues(alpha: .92),
+                                  PerfectColors.lilacAction.withValues(
+                                    alpha: .96,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            child: const SizedBox.square(
+                              dimension: 54,
+                              child: Center(
+                                child: PerfectPictogram(
+                                  name: 'capture',
+                                  size: 30,
+                                  semanticLabel: 'Open quick capture',
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (hasDraft)
+                            PositionedDirectional(
+                              top: 5,
+                              end: 5,
+                              child: Container(
+                                width: 11,
+                                height: 11,
+                                decoration: BoxDecoration(
+                                  color: PerfectColors.apricot,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: scheme.surface,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildExpandedComposer(
+    BuildContext context, {
+    required Key key,
+    required double maxWidth,
+    required double effectiveTextScale,
+    required String hintText,
+    required Duration duration,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    final stacked = maxWidth < 620 || effectiveTextScale >= 1.25;
+    final showOptionLabels = maxWidth >= 330 && effectiveTextScale < 1.42;
+    final field = _buildCaptureField(
+      context,
+      hintText: hintText,
+      duration: duration,
+    );
+    final collapse = IconButton(
+      key: const ValueKey<String>('perfect-quick-capture-collapse'),
+      tooltip: 'Collapse quick capture',
+      onPressed: _collapse,
+      style: IconButton.styleFrom(
+        minimumSize: const Size.square(48),
+        shape: const CircleBorder(),
+        backgroundColor: scheme.surface.withValues(alpha: .52),
+        foregroundColor: scheme.onSurfaceVariant,
+      ),
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 27),
+    );
+    final send = _buildSendAction(context, duration: duration);
+    final plan = _CaptureOptionButton(
+      key: const ValueKey<String>('perfect-capture-plan'),
+      tooltip: widget.desktop
+          ? 'Plan a task or habit (Ctrl+N)'
+          : 'Plan a task or habit',
+      label: 'Plan',
+      showLabel: stacked && showOptionLabels,
+      onPressed: _openFullEditor,
+      icon: const PerfectPictogram(
+        name: 'calendar',
+        size: 23,
+        semanticLabel: 'Plan a task or habit',
+      ),
+    );
+    final ai = _CaptureOptionButton(
+      key: const ValueKey<String>('perfect-ai-toggle'),
+      tooltip: widget.aiOpen ? 'Close Perfect AI' : 'Ask Perfect AI',
+      label: 'AI',
+      selected: widget.aiOpen,
+      showLabel: stacked && showOptionLabels,
+      onPressed: widget.onToggleAi,
+      icon: const PerfectPictogram(
+        name: 'ai',
+        size: 28,
+        semanticLabel: 'Perfect AI',
+      ),
+    );
+    final voice = _CaptureOptionButton(
+      key: const ValueKey<String>('perfect-ai-voice-toggle'),
+      tooltip: 'Start a private voice note with Perfect AI',
+      label: 'Voice',
+      showLabel: stacked && showOptionLabels,
+      onPressed: widget.onOpenAiVoice,
+      icon: const PerfectPictogram(
+        name: 'voice',
+        size: 24,
+        semanticLabel: 'Voice with Perfect AI',
+      ),
+    );
+    final options = <Widget>[
+      plan,
+      if (widget.aiAvailable) ai,
+      if (widget.aiAvailable) voice,
+    ];
+
+    return MouseRegion(
+      key: key,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedScale(
+        scale: _hovered && !_fieldFocused ? 1.002 : 1,
+        duration: duration,
+        curve: PerfectMotion.productive,
+        child: PerfectGlassSurface(
+          surfaceKey: const ValueKey<String>('perfect-quick-capture-surface'),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(PerfectRadius.dock),
+          ),
+          strength: PerfectGlassStrength.strong,
+          blur: 26,
+          tint: scheme.surface.withValues(alpha: .80),
+          borderColor: _fieldFocused
+              ? PerfectColors.lilac.withValues(alpha: .62)
+              : Colors.white.withValues(alpha: .58),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: AlignmentDirectional.topStart,
+                end: AlignmentDirectional.bottomEnd,
+                colors: <Color>[
+                  PerfectColors.mintSoft.withValues(alpha: .22),
+                  Colors.transparent,
+                  PerfectColors.lilacSoft.withValues(alpha: .26),
+                ],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(7),
+              child: stacked
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            collapse,
+                            const SizedBox(width: PerfectSpace.xs),
+                            Expanded(child: field),
+                            const SizedBox(width: PerfectSpace.xs),
+                            send,
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: options,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        collapse,
+                        const SizedBox(width: 6),
+                        plan,
+                        const SizedBox(width: PerfectSpace.xs),
+                        Expanded(child: field),
+                        const SizedBox(width: PerfectSpace.xs),
+                        if (widget.aiAvailable) ...[
+                          ai,
+                          const SizedBox(width: 4),
+                          voice,
+                          const SizedBox(width: PerfectSpace.xs),
+                        ],
+                        send,
+                      ],
+                    ),
+            ),
+          ),
         ),
       ),
     );
   }
+
+  Widget _buildCaptureField(
+    BuildContext context, {
+    required String hintText,
+    required Duration duration,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: widget.desktop ? 'Quick capture (Ctrl+K)' : 'Quick capture',
+      child: AnimatedContainer(
+        duration: duration,
+        curve: PerfectMotion.productive,
+        constraints: const BoxConstraints(minHeight: 52),
+        decoration: BoxDecoration(
+          color: scheme.surface.withValues(alpha: _fieldFocused ? .94 : .70),
+          borderRadius: BorderRadius.circular(27),
+          border: Border.all(
+            color: _fieldFocused
+                ? PerfectColors.lilac.withValues(alpha: .78)
+                : scheme.outline.withValues(alpha: .25),
+          ),
+          boxShadow: _fieldFocused
+              ? <BoxShadow>[
+                  BoxShadow(
+                    color: PerfectColors.lilac.withValues(alpha: .12),
+                    blurRadius: 16,
+                  ),
+                ]
+              : const <BoxShadow>[],
+        ),
+        child: TextField(
+          key: const ValueKey<String>('perfect_quick_capture'),
+          controller: _capture,
+          focusNode: widget.focusNode,
+          maxLength: 160,
+          textDirection: _directionForCapture(context, _capture.text),
+          textInputAction: TextInputAction.done,
+          onChanged: (_) => setState(() {}),
+          onSubmitted: (_) => _submit(),
+          decoration: InputDecoration(
+            counterText: '',
+            hintText: hintText,
+            contentPadding: const EdgeInsetsDirectional.symmetric(
+              horizontal: PerfectSpace.md,
+            ),
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            fillColor: Colors.transparent,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSendAction(BuildContext context, {required Duration duration}) =>
+      AnimatedSwitcher(
+        duration: duration,
+        switchInCurve: PerfectMotion.enter,
+        switchOutCurve: PerfectMotion.exit,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: .86, end: 1).animate(animation),
+            child: child,
+          ),
+        ),
+        child: _sending
+            ? const Padding(
+                key: ValueKey<String>('quick-capture-sending'),
+                padding: EdgeInsets.all(15),
+                child: SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            : IconButton(
+                key: ValueKey<bool>(_capture.text.trim().isNotEmpty),
+                tooltip: _capture.text.trim().isEmpty
+                    ? 'Type a task to save it'
+                    : 'Save quick capture',
+                constraints: const BoxConstraints.tightFor(
+                  width: 48,
+                  height: 48,
+                ),
+                style: IconButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: const CircleBorder(),
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: _capture.text.trim().isEmpty
+                    ? widget.focusNode.requestFocus
+                    : _submit,
+                icon: const _CaptureActionDisc(
+                  color: PerfectColors.lilacAction,
+                  child: PerfectPictogram(
+                    name: 'send',
+                    size: 23,
+                    semanticLabel: 'Save quick capture',
+                  ),
+                ),
+              ),
+      );
 
   Future<void> _submit() async {
     final title = _capture.text.trim();
@@ -1341,7 +1963,10 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock> {
     try {
       await widget.controller.quickCapture(title);
       _capture.clear();
+      widget.focusNode.unfocus();
       if (mounted) {
+        setState(() => _expanded = false);
+        _syncPulseAnimation();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Captured locally. Sync will follow.')),
         );
@@ -1350,6 +1975,106 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock> {
       if (mounted) setState(() => _sending = false);
     }
   }
+}
+
+class _CaptureOptionButton extends StatelessWidget {
+  const _CaptureOptionButton({
+    super.key,
+    required this.tooltip,
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+    this.showLabel = false,
+    this.selected = false,
+  });
+
+  final String tooltip;
+  final String label;
+  final Widget icon;
+  final VoidCallback? onPressed;
+  final bool showLabel;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(24);
+    return Tooltip(
+      message: tooltip,
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: tooltip,
+        child: Material(
+          color: selected
+              ? PerfectColors.lilacSoft
+              : scheme.surface.withValues(alpha: .62),
+          borderRadius: radius,
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: radius,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+              padding: EdgeInsetsDirectional.symmetric(
+                horizontal: showLabel ? 12 : 10,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                border: Border.all(
+                  color: selected
+                      ? PerfectColors.lilac.withValues(alpha: .48)
+                      : scheme.outline.withValues(alpha: .22),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  icon,
+                  if (showLabel) ...[
+                    const SizedBox(width: 7),
+                    Text(
+                      label,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CaptureActionDisc extends StatelessWidget {
+  const _CaptureActionDisc({required this.color, required this.child});
+
+  final Color color;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 42,
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: color.withValues(alpha: .18),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Center(child: child),
+    ),
+  );
 }
 
 /// The expanded Windows surface is a single working instrument rather than a
@@ -1363,6 +2088,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
     required this.items,
     required this.eligibilityById,
     required this.habitSummaryById,
+    required this.orbitMotionEnabled,
     required this.inspected,
     required this.onInspect,
     required this.onAdd,
@@ -1376,6 +2102,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
+  final bool orbitMotionEnabled;
   final PlannerEntity? inspected;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
@@ -1460,7 +2187,9 @@ class _ExpandedTodayDeck extends StatelessWidget {
                                     flex: 10,
                                     child: _DayCompassPanel(
                                       items: items,
+                                      now: now,
                                       onOpenPlan: onOpenPlan,
+                                      motionEnabled: orbitMotionEnabled,
                                     ),
                                   )
                                 else
@@ -1468,7 +2197,9 @@ class _ExpandedTodayDeck extends StatelessWidget {
                                     width: compassWidth,
                                     child: _DayCompassPanel(
                                       items: items,
+                                      now: now,
                                       onOpenPlan: onOpenPlan,
+                                      motionEnabled: orbitMotionEnabled,
                                     ),
                                   ),
                                 const SizedBox(width: PerfectSpace.lg),
@@ -1491,7 +2222,26 @@ class _ExpandedTodayDeck extends StatelessWidget {
                                 ],
                               ],
                             ),
-                            if (inspected != null && !inlineInspector)
+                            if (inspected != null && !inlineInspector) ...[
+                              Positioned.fill(
+                                child: BlockSemantics(
+                                  child: Semantics(
+                                    button: true,
+                                    label:
+                                        'Close inspector and return to Today',
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: onClearInspection,
+                                      child: ColoredBox(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .scrim
+                                            .withValues(alpha: .1),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                               PositionedDirectional(
                                 key: const ValueKey<String>(
                                   'expanded-focus-panel',
@@ -1502,6 +2252,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
                                 width: floatingInspectorWidth,
                                 child: inspectorPanel(),
                               ),
+                            ],
                           ],
                         ),
                       )
@@ -1518,7 +2269,9 @@ class _ExpandedTodayDeck extends StatelessWidget {
                                 .toDouble(),
                             child: _DayCompassPanel(
                               items: items,
+                              now: now,
                               onOpenPlan: onOpenPlan,
+                              motionEnabled: orbitMotionEnabled,
                             ),
                           ),
                           const SizedBox(height: PerfectSpace.lg),
@@ -1568,6 +2321,7 @@ class _MediumTodayDeck extends StatelessWidget {
     required this.items,
     required this.eligibilityById,
     required this.habitSummaryById,
+    required this.orbitMotionEnabled,
     required this.onInspect,
     required this.onAdd,
     required this.onOpenPlan,
@@ -1579,6 +2333,7 @@ class _MediumTodayDeck extends StatelessWidget {
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
+  final bool orbitMotionEnabled;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
   final VoidCallback onOpenPlan;
@@ -1648,7 +2403,9 @@ class _MediumTodayDeck extends StatelessWidget {
                                 width: compassWidth,
                                 child: _DayCompassPanel(
                                   items: items,
+                                  now: now,
                                   onOpenPlan: onOpenPlan,
+                                  motionEnabled: orbitMotionEnabled,
                                 ),
                               ),
                               const SizedBox(width: PerfectSpace.lg),
@@ -1678,7 +2435,9 @@ class _MediumTodayDeck extends StatelessWidget {
                                   : (contentWidth * .72).clamp(390.0, 530.0),
                               child: _DayCompassPanel(
                                 items: items,
+                                now: now,
                                 onOpenPlan: onOpenPlan,
+                                motionEnabled: orbitMotionEnabled,
                               ),
                             ),
                             const SizedBox(height: PerfectSpace.lg),
@@ -1857,10 +2616,17 @@ class _DeckMetric extends StatelessWidget {
 }
 
 class _DayCompassPanel extends StatelessWidget {
-  const _DayCompassPanel({required this.items, required this.onOpenPlan});
+  const _DayCompassPanel({
+    required this.items,
+    required this.now,
+    required this.onOpenPlan,
+    required this.motionEnabled,
+  });
 
   final List<PlannerEntity> items;
+  final DateTime now;
   final VoidCallback onOpenPlan;
+  final bool motionEnabled;
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
@@ -1872,310 +2638,32 @@ class _DayCompassPanel extends StatelessWidget {
     ),
     child: Padding(
       padding: const EdgeInsets.all(PerfectSpace.md),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final circularFloor =
-              constraints.maxHeight >= 390 && constraints.maxWidth >= 240
-              ? 240.0
-              : 0.0;
-          final orbitHeight = math.min(
-            constraints.maxWidth,
-            math.max(circularFloor, constraints.maxHeight * .52),
-          );
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _DayZoneHeading(
-                eyebrow: 'DAY COMPASS',
-                title: 'Your rhythm, at a glance',
-                icon: Icons.explore_outlined,
-                color: PerfectColors.apricot,
-                action: IconButton(
-                  tooltip: 'Open day plan',
-                  onPressed: onOpenPlan,
-                  icon: const Icon(Icons.arrow_outward_rounded),
-                ),
-              ),
-              const SizedBox(height: PerfectSpace.sm),
-              SizedBox(
-                height: orbitHeight,
-                child: OrbitStage(
-                  items: items,
-                  compact: true,
-                  onTap: onOpenPlan,
-                ),
-              ),
-              const SizedBox(height: PerfectSpace.sm),
-              Expanded(child: _CompassRunway(items: items)),
-            ],
-          );
-        },
-      ),
-    ),
-  );
-}
-
-class _CompassRunway extends StatelessWidget {
-  const _CompassRunway({required this.items});
-
-  final List<PlannerEntity> items;
-
-  @override
-  Widget build(BuildContext context) {
-    final completed = items.where((item) {
-      if (item.kind == PlannerEntityKind.oneOffTask) {
-        return PlannerTaskProgress.fromEntity(item).isComplete;
-      }
-      return item.status == PlannerEntityStatus.completed;
-    }).length;
-    final timed = items.where((item) => item.scheduledAt != null).toList();
-    final progress = items.isEmpty ? 0.0 : completed / items.length;
-    final firstTime = timed.isEmpty
-        ? 'Open'
-        : _shortTime(timed.first.scheduledAt!.toLocal());
-    final lastTime = timed.length < 2
-        ? 'Open'
-        : _shortTime(timed.last.scheduledAt!.toLocal());
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxHeight < 190;
-        return DecoratedBox(
-          key: const ValueKey<String>('day-compass-runway'),
-          decoration: BoxDecoration(
-            color: PerfectColors.apricotSoft,
-            borderRadius: BorderRadius.circular(22),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(
-              compact ? PerfectSpace.xs : PerfectSpace.md,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: compact
-                  ? MainAxisAlignment.center
-                  : MainAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.route_rounded,
-                      size: 18,
-                      color: PerfectColors.apricotAction,
-                    ),
-                    const SizedBox(width: PerfectSpace.xs),
-                    Expanded(
-                      child: Text(
-                        'Today’s runway',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      '$completed/${items.length}',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: PerfectSpace.xs),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(99),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 8,
-                    color: PerfectColors.apricot,
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.surface.withValues(alpha: .72),
-                  ),
-                ),
-                if (compact && constraints.maxHeight >= 100) ...[
-                  const SizedBox(height: PerfectSpace.xs),
-                  Text(
-                    '$firstTime → $lastTime · ${timed.length} timed',
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ] else if (!compact) ...[
-                  const SizedBox(height: PerfectSpace.sm),
-                  Wrap(
-                    spacing: PerfectSpace.xs,
-                    runSpacing: PerfectSpace.xs,
-                    children: [
-                      _RunwayFact(label: 'First', value: firstTime),
-                      _RunwayFact(label: 'Last', value: lastTime),
-                      _RunwayFact(
-                        label: 'Rhythm',
-                        value: '${timed.length} timed',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: PerfectSpace.sm),
-                  Expanded(child: _RunwaySchedule(items: items)),
-                ],
-              ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _DayZoneHeading(
+            eyebrow: 'DAY COMPASS',
+            title: 'Your rhythm, at a glance',
+            icon: Icons.explore_outlined,
+            color: PerfectColors.apricot,
+            action: IconButton(
+              tooltip: 'Open day plan',
+              onPressed: onOpenPlan,
+              icon: const Icon(Icons.arrow_outward_rounded),
             ),
           ),
-        );
-      },
-    );
-  }
-}
-
-class _RunwaySchedule extends StatelessWidget {
-  const _RunwaySchedule({required this.items});
-
-  final List<PlannerEntity> items;
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) {
-      return Center(
-        child: Text(
-          'No fixed moments yet',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      );
-    }
-    final visible = items.take(3).toList(growable: false);
-    return Column(
-      children: [
-        for (final entity in visible)
+          const SizedBox(height: PerfectSpace.sm),
           Expanded(
-            child: _RunwayScheduleEntry(
-              entity: entity,
-              drawTail: entity != visible.last,
+            child: OrbitStage(
+              items: items,
+              compact: true,
+              now: now,
+              onTap: onOpenPlan,
+              motionEnabled: motionEnabled,
             ),
           ),
-        if (items.length > visible.length)
-          Text(
-            '+${items.length - visible.length} more in the Day Stream',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _RunwayScheduleEntry extends StatelessWidget {
-  const _RunwayScheduleEntry({required this.entity, required this.drawTail});
-
-  final PlannerEntity entity;
-  final bool drawTail;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      SizedBox(
-        width: 18,
-        child: Column(
-          children: [
-            const Spacer(),
-            Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: _colorFor(entity),
-                shape: BoxShape.circle,
-              ),
-            ),
-            if (drawTail)
-              Expanded(
-                child: Container(
-                  width: 2,
-                  color: Theme.of(context).colorScheme.surface,
-                ),
-              )
-            else
-              const Spacer(),
-          ],
-        ),
+        ],
       ),
-      const SizedBox(width: PerfectSpace.xs),
-      Expanded(
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: PerfectSpace.sm,
-            vertical: PerfectSpace.xs,
-          ),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface.withValues(alpha: .78),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                entity.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(
-                  context,
-                ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
-              ),
-              Text(
-                entity.scheduledAt == null
-                    ? 'Flexible'
-                    : _shortTime(entity.scheduledAt!.toLocal()),
-                maxLines: 1,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ],
-  );
-}
-
-class _RunwayFact extends StatelessWidget {
-  const _RunwayFact({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: PerfectSpace.sm,
-      vertical: 7,
-    ),
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: .78),
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        Text(
-          value,
-          style: Theme.of(
-            context,
-          ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w900),
-        ),
-      ],
     ),
   );
 }
@@ -2248,40 +2736,43 @@ class _DayStreamPanel extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(PerfectSpace.md),
         child: constrained
-            ? Stack(
+            ? Column(
                 children: [
-                  CustomScrollView(
-                    key: const PageStorageKey<String>('day-stream-scroll'),
-                    slivers: [
-                      SliverList.list(children: body),
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              top: dense ? PerfectSpace.xs : PerfectSpace.sm,
-                              bottom: dense
-                                  ? PerfectSpace.sm
-                                  : PerfectSpace.xxs,
-                            ),
-                            child: _DayCompletionZone(
-                              items: items,
-                              habitSummaryById: habitSummaryById,
-                              dense: dense,
-                              fill: !dense,
+                  Expanded(
+                    child: CustomScrollView(
+                      key: const PageStorageKey<String>('day-stream-scroll'),
+                      slivers: [
+                        SliverList.list(children: body),
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                top: dense ? PerfectSpace.xs : PerfectSpace.sm,
+                                bottom: dense
+                                    ? PerfectSpace.sm
+                                    : PerfectSpace.xxs,
+                              ),
+                              child: _DayCompletionZone(
+                                items: items,
+                                habitSummaryById: habitSummaryById,
+                                dense: dense,
+                                fill: !dense,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  if (dense)
-                    const PositionedDirectional(
-                      end: PerfectSpace.xs,
-                      bottom: 0,
+                  if (dense) ...[
+                    const SizedBox(height: PerfectSpace.xxs),
+                    const Align(
+                      alignment: AlignmentDirectional.centerEnd,
                       child: IgnorePointer(child: _StreamContinuationCue()),
                     ),
+                  ],
                 ],
               )
             : Column(
@@ -2784,9 +3275,11 @@ class _TodayPage extends StatelessWidget {
     required this.controller,
     required this.includeOrbit,
     required this.now,
+    required this.ownerDisplayName,
     required this.items,
     required this.eligibilityById,
     required this.habitSummaryById,
+    required this.orbitMotionEnabled,
     required this.onInspect,
     required this.onAdd,
     required this.onOpenPlan,
@@ -2795,76 +3288,358 @@ class _TodayPage extends StatelessWidget {
   final PlannerWorkspaceController controller;
   final bool includeOrbit;
   final DateTime now;
+  final String? ownerDisplayName;
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
+  final bool orbitMotionEnabled;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
   final VoidCallback onOpenPlan;
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: controller.refresh,
-      child: ListView(
-        key: const ValueKey<String>('perfect-today-scroll'),
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: const EdgeInsets.fromLTRB(
-          PerfectSpace.lg,
-          PerfectSpace.sm,
-          PerfectSpace.lg,
-          PerfectSpace.giant,
-        ),
-        children: [
-          Text(
-            _greeting(now),
-            style: Theme.of(context).textTheme.headlineMedium,
+    final bodySize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // The dial is the primary orienting surface on Today. It earns a real
+        // circular budget on a phone, then explicitly becomes a compact linear
+        // summary once live constraints or enlarged type can no longer carry it.
+        final availableOrbitWidth = math.max(
+          0.0,
+          constraints.maxWidth - PerfectSpace.lg * 2,
+        );
+        // The dial is deliberately allowed to reach the viewport edges while
+        // the cards retain their readable inset. That reproduces the visual
+        // instrument of the approved reference without hard-coding a phone
+        // width, and still lets the layout fall back for enlarged text.
+        final viewportOrbitWidth = availableOrbitWidth + PerfectSpace.lg * 2;
+        final canCarryDial = viewportOrbitWidth >= 300 && textScale < 1.42;
+        final orbitHeight = canCarryDial
+            ? math
+                  .min(viewportOrbitWidth * .91, constraints.maxHeight * .56)
+                  .clamp(300.0, 440.0)
+                  .toDouble()
+            : math
+                  .max(
+                    constraints.maxHeight * .22,
+                    170 + math.max(0, textScale - 1) * 80,
+                  )
+                  .clamp(170.0, 280.0)
+                  .toDouble();
+        return ListView(
+          key: const ValueKey<String>('perfect-today-scroll'),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.fromLTRB(
+            PerfectSpace.lg,
+            0,
+            PerfectSpace.lg,
+            math.max(144, MediaQuery.paddingOf(context).bottom + 128),
           ),
-          const SizedBox(height: PerfectSpace.xs),
-          Text(
-            _todayLabel(now),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          if (includeOrbit) ...[
-            const SizedBox(height: PerfectSpace.lg),
-            SizedBox(
-              height: 360,
-              child: OrbitStage(items: items, compact: true, onTap: onOpenPlan),
-            ),
-          ],
-          const SizedBox(height: PerfectSpace.lg),
-          _SectionHeader(
-            title: 'Today’s flow',
-            trailing: TextButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Plan'),
-            ),
-          ),
-          if (items.isEmpty)
-            _EmptyState(
-              icon: Icons.wb_sunny_outlined,
-              title: 'A quiet orbit.',
-              body: 'Capture the first thing you want to make space for.',
-              actionLabel: 'Add a task',
-              onAction: onAdd,
-            )
-          else
-            ...items.map(
-              (entity) => _AgendaRow(
-                entity: entity,
-                controller: controller,
-                onInspect: onInspect,
-                todayEligibility: eligibilityById[entity.id],
-                habitSummary: habitSummaryById[entity.id],
+          children: [
+            PerfectStagedEntrance(
+              order: 0,
+              child: _CompactTodayIntro(
+                now: now,
+                ownerDisplayName: ownerDisplayName,
               ),
             ),
-          const SizedBox(height: PerfectSpace.xl),
-          _SectionHeader(title: 'Habit pulse'),
-          _HabitPulse(controller: controller, summaries: habitSummaryById),
+            if (includeOrbit) ...[
+              PerfectStagedEntrance(
+                order: 1,
+                rise: 22,
+                child: SizedBox(
+                  height: orbitHeight,
+                  child: OverflowBox(
+                    alignment: Alignment.topCenter,
+                    minWidth: viewportOrbitWidth,
+                    maxWidth: viewportOrbitWidth,
+                    child: SizedBox(
+                      width: viewportOrbitWidth,
+                      height: orbitHeight,
+                      child: OrbitStage(
+                        items: items,
+                        compact: true,
+                        now: now,
+                        onTap: onOpenPlan,
+                        motionEnabled: orbitMotionEnabled,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: PerfectSpace.sm),
+            PerfectStagedEntrance(
+              order: 2,
+              child: _TodayNextUpCard(
+                now: now,
+                items: items,
+                onInspect: onInspect,
+              ),
+            ),
+            const SizedBox(height: 0),
+            if (items.isEmpty)
+              PerfectStagedEntrance(
+                order: 3,
+                child: _EmptyState(
+                  icon: Icons.wb_sunny_outlined,
+                  title: 'A quiet orbit.',
+                  body: 'Capture the first thing you want to make space for.',
+                  actionLabel: 'Add a task',
+                  onAction: onAdd,
+                ),
+              )
+            else
+              ...items.indexed.map(
+                (entry) => PerfectStagedEntrance(
+                  order: math.min(6, entry.$1 + 3),
+                  child: _AgendaRow(
+                    entity: entry.$2,
+                    controller: controller,
+                    onInspect: onInspect,
+                    todayEligibility: eligibilityById[entry.$2.id],
+                    habitSummary: habitSummaryById[entry.$2.id],
+                    referenceStyle: true,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _CompactTodayIntro extends StatelessWidget {
+  const _CompactTodayIntro({required this.now, required this.ownerDisplayName});
+
+  final DateTime now;
+  final String? ownerDisplayName;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bodySize = theme.textTheme.bodyMedium?.fontSize ?? 14;
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _greeting(now, ownerDisplayName: ownerDisplayName),
+          maxLines: 2,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontSize: textScale >= 1.35 ? null : 21.5,
+            // The greeting leads with the same warm, rounded confidence as
+            // the approved reference—not a dashboard-style black weight.
+            fontWeight: FontWeight.w600,
+            letterSpacing: -.7,
+            height: 1.1,
+          ),
+        ),
+        const SizedBox(height: PerfectSpace.xxs),
+        Text(
+          _todayLabel(now),
+          maxLines: 2,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontSize: textScale >= 1.35 ? null : 14.5,
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+            height: 1.18,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The hand-off from the time dial to the actionable list. It intentionally
+/// repeats only the single next commitment, so the page reads dial → next move
+/// → complete day without introducing a generic card grid.
+class _TodayNextUpCard extends StatelessWidget {
+  const _TodayNextUpCard({
+    required this.now,
+    required this.items,
+    required this.onInspect,
+  });
+
+  final DateTime now;
+  final List<PlannerEntity> items;
+  final ValueChanged<PlannerEntity> onInspect;
+
+  PlannerEntity? get _next {
+    final open =
+        items
+            .where((item) => item.status != PlannerEntityStatus.completed)
+            .toList(growable: false)
+          ..sort((a, b) {
+            final first = a.scheduledAt?.toLocal();
+            final second = b.scheduledAt?.toLocal();
+            if (first == null && second == null) return 0;
+            if (first == null) return 1;
+            if (second == null) return -1;
+            return first.compareTo(second);
+          });
+    for (final item in open) {
+      final scheduled = item.scheduledAt?.toLocal();
+      if (scheduled != null && !scheduled.isBefore(now)) return item;
+    }
+    return open.isEmpty ? null : open.first;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entity = _next;
+    final scheme = Theme.of(context).colorScheme;
+    final time = entity?.scheduledAt?.toLocal();
+    final label = entity == null ? 'SPACE OPEN' : 'NEXT UP';
+    final title = entity?.title ?? 'Create room for what matters';
+    final detail = entity == null
+        ? 'Your day is clear'
+        : time == null
+        ? 'When you are ready'
+        : _shortTime(time);
+    final baseSize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(baseSize) / baseSize;
+    final reflow = textScale >= 1.45;
+    Widget leadingIcon() => Container(
+      width: 38,
+      height: 38,
+      decoration: const BoxDecoration(
+        color: PerfectColors.lilac,
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.track_changes_rounded,
+        color: Colors.white,
+        size: 21,
+      ),
+    );
+    Widget detailLine({bool includeChevron = false}) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          Icons.schedule_outlined,
+          size: 17,
+          color: PerfectColors.lilac,
+        ),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            detail,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: PerfectColors.lilac,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        if (includeChevron) ...[
+          const SizedBox(width: PerfectSpace.xxs),
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 24,
+            color: scheme.onSurfaceVariant,
+          ),
         ],
+      ],
+    );
+    Widget titleBlock({required bool includeDetail}) => Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          maxLines: 1,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: PerfectColors.lilac,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: .9,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          title,
+          maxLines: includeDetail ? 3 : 1,
+          overflow: TextOverflow.ellipsis,
+          textDirection: _textDirection(title),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontSize: 15,
+            height: 1.1,
+            letterSpacing: -.35,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        if (includeDetail) ...[const SizedBox(height: 6), detailLine()],
+      ],
+    );
+    return Semantics(
+      button: entity != null,
+      label: '$label. $title. $detail',
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(30),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: entity == null ? null : () => onInspect(entity),
+          borderRadius: BorderRadius.circular(30),
+          child: Ink(
+            // This is a hand-off, not a dashboard card. At ordinary type it
+            // stays compact; enlarged type earns intrinsic height and a
+            // vertical information flow instead of clipping primary copy.
+            height: reflow ? null : 60,
+            decoration: BoxDecoration(
+              color: scheme.surface.withValues(alpha: .76),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: scheme.outlineVariant),
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: scheme.shadow.withValues(alpha: .035),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            padding: EdgeInsetsDirectional.fromSTEB(
+              PerfectSpace.sm,
+              reflow ? PerfectSpace.sm : 6,
+              PerfectSpace.xs,
+              reflow ? PerfectSpace.sm : 6,
+            ),
+            child: reflow
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      leadingIcon(),
+                      const SizedBox(width: PerfectSpace.sm),
+                      Expanded(child: titleBlock(includeDetail: true)),
+                      const SizedBox(width: PerfectSpace.xxs),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 28,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      leadingIcon(),
+                      const SizedBox(width: PerfectSpace.xs),
+                      Expanded(child: titleBlock(includeDetail: false)),
+                      const SizedBox(width: PerfectSpace.xs),
+                      Flexible(child: detailLine(includeChevron: true)),
+                    ],
+                  ),
+          ),
+        ),
       ),
     );
   }
@@ -2930,9 +3705,8 @@ class _TasksPageState extends State<_TasksPage> {
               .contains(query);
         })
         .toList(growable: false);
-    return ListView(
-      key: const ValueKey<String>('perfect-tasks-scroll'),
-      padding: const EdgeInsets.all(PerfectSpace.lg),
+    return _PageScrollFrame(
+      scrollKey: const ValueKey<String>('perfect-tasks-scroll'),
       children: [
         _PageTitle(
           title: 'Tasks',
@@ -2940,63 +3714,14 @@ class _TasksPageState extends State<_TasksPage> {
           onAdd: widget.onAdd,
         ),
         const SizedBox(height: PerfectSpace.md),
-        TextField(
-          controller: _search,
-          onChanged: (_) => setState(() {}),
-          textDirection: _textDirection(_search.text),
-          decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.search_rounded),
-            suffixIcon: _search.text.isEmpty
-                ? null
-                : IconButton(
-                    tooltip: 'Clear search',
-                    onPressed: () => setState(_search.clear),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-            labelText: 'Search tasks',
-          ),
-        ),
-        const SizedBox(height: PerfectSpace.sm),
-        Text('Task type', style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: PerfectSpace.xs),
-        Wrap(
-          spacing: PerfectSpace.xs,
-          runSpacing: PerfectSpace.xs,
-          children: _TaskKindFilter.values
-              .map(
-                (filter) => ChoiceChip(
-                  avatar: Icon(_taskKindFilterIcon(filter), size: 17),
-                  label: Text(_taskKindFilterLabel(filter)),
-                  selected: _kindFilter == filter,
-                  onSelected: (_) => setState(() => _kindFilter = filter),
-                ),
-              )
-              .toList(growable: false),
-        ),
-        const SizedBox(height: PerfectSpace.sm),
-        Text('Status', style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: PerfectSpace.xs),
-        Wrap(
-          spacing: PerfectSpace.xs,
-          runSpacing: PerfectSpace.xs,
-          children: _TaskFilter.values
-              .map(
-                (filter) => ChoiceChip(
-                  label: Text(_taskFilterLabel(filter)),
-                  selected: _filter == filter,
-                  onSelected: (_) => setState(() => _filter = filter),
-                ),
-              )
-              .toList(growable: false),
-        ),
-        const SizedBox(height: PerfectSpace.xs),
-        Text(
-          '${tasks.length} ${tasks.length == 1 ? 'item' : 'items'} · '
-          '${_taskKindFilterLabel(_kindFilter)} · '
-          '${_taskFilterLabel(_filter)}',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+        _TaskFilterDeck(
+          search: _search,
+          filter: _filter,
+          kindFilter: _kindFilter,
+          resultCount: tasks.length,
+          onSearchChanged: () => setState(() {}),
+          onFilterChanged: (value) => setState(() => _filter = value),
+          onKindChanged: (value) => setState(() => _kindFilter = value),
         ),
         const SizedBox(height: PerfectSpace.md),
         if (tasks.isEmpty)
@@ -3025,6 +3750,178 @@ class _TasksPageState extends State<_TasksPage> {
       ],
     );
   }
+}
+
+class _TaskFilterDeck extends StatelessWidget {
+  const _TaskFilterDeck({
+    required this.search,
+    required this.filter,
+    required this.kindFilter,
+    required this.resultCount,
+    required this.onSearchChanged,
+    required this.onFilterChanged,
+    required this.onKindChanged,
+  });
+
+  final TextEditingController search;
+  final _TaskFilter filter;
+  final _TaskKindFilter kindFilter;
+  final int resultCount;
+  final VoidCallback onSearchChanged;
+  final ValueChanged<_TaskFilter> onFilterChanged;
+  final ValueChanged<_TaskKindFilter> onKindChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(PerfectSpace.md),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= 700;
+            final searchField = TextField(
+              controller: search,
+              onChanged: (_) => onSearchChanged(),
+              textDirection: _textDirection(search.text),
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: search.text.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Clear search',
+                        onPressed: () {
+                          search.clear();
+                          onSearchChanged();
+                        },
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                hintText: 'Find a task, note, or category…',
+              ),
+            );
+            final controls = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _FilterGroup<_TaskKindFilter>(
+                  label: 'TYPE',
+                  values: _TaskKindFilter.values,
+                  selected: kindFilter,
+                  labelFor: _taskKindFilterLabel,
+                  iconFor: _taskKindFilterIcon,
+                  onChanged: onKindChanged,
+                ),
+                const SizedBox(height: PerfectSpace.sm),
+                _FilterGroup<_TaskFilter>(
+                  label: 'STATUS',
+                  values: _TaskFilter.values,
+                  selected: filter,
+                  labelFor: _taskFilterLabel,
+                  onChanged: onFilterChanged,
+                ),
+              ],
+            );
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (wide)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 4, child: searchField),
+                      const SizedBox(width: PerfectSpace.lg),
+                      Expanded(flex: 6, child: controls),
+                    ],
+                  )
+                else ...[
+                  searchField,
+                  const SizedBox(height: PerfectSpace.md),
+                  controls,
+                ],
+                const SizedBox(height: PerfectSpace.sm),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.filter_alt_outlined,
+                      size: 17,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        '$resultCount ${resultCount == 1 ? 'result' : 'results'} · '
+                        '${_taskKindFilterLabel(kindFilter)} · '
+                        '${_taskFilterLabel(filter)}',
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterGroup<T> extends StatelessWidget {
+  const _FilterGroup({
+    required this.label,
+    required this.values,
+    required this.selected,
+    required this.labelFor,
+    required this.onChanged,
+    this.iconFor,
+  });
+
+  final String label;
+  final Iterable<T> values;
+  final T selected;
+  final String Function(T) labelFor;
+  final IconData Function(T)? iconFor;
+  final ValueChanged<T> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          fontWeight: FontWeight.w900,
+          letterSpacing: .8,
+        ),
+      ),
+      const SizedBox(height: 6),
+      Wrap(
+        spacing: PerfectSpace.xs,
+        runSpacing: PerfectSpace.xs,
+        children: values
+            .map(
+              (value) => ChoiceChip(
+                avatar: iconFor == null
+                    ? null
+                    : Icon(iconFor!(value), size: 17),
+                label: Text(labelFor(value)),
+                selected: selected == value,
+                onSelected: (_) => onChanged(value),
+              ),
+            )
+            .toList(growable: false),
+      ),
+    ],
+  );
 }
 
 String _taskFilterLabel(_TaskFilter filter) => switch (filter) {
@@ -3074,8 +3971,7 @@ class _PlanPageState extends State<_PlanPage> {
     _ensureProjection();
     final planned = _plannedItems;
     final isToday = _isSameDate(_selectedDay, widget.now);
-    return ListView(
-      padding: const EdgeInsets.all(PerfectSpace.lg),
+    return _PageScrollFrame(
       children: [
         _PageTitle(
           title: 'Plan',
@@ -3083,61 +3979,16 @@ class _PlanPageState extends State<_PlanPage> {
           onAdd: widget.onAdd,
         ),
         const SizedBox(height: PerfectSpace.md),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(PerfectSpace.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      tooltip: 'Previous day',
-                      onPressed: () => _moveDay(-1),
-                      icon: const Icon(Icons.chevron_left_rounded),
-                    ),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _pickDay,
-                        icon: const Icon(Icons.calendar_month_outlined),
-                        label: Text(
-                          MaterialLocalizations.of(
-                            context,
-                          ).formatFullDate(_selectedDay),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: 'Next day',
-                      onPressed: () => _moveDay(1),
-                      icon: const Icon(Icons.chevron_right_rounded),
-                    ),
-                  ],
-                ),
-                if (!isToday)
-                  Align(
-                    alignment: AlignmentDirectional.center,
-                    child: TextButton.icon(
-                      onPressed: () =>
-                          setState(() => _selectedDay = _dateOnly(widget.now)),
-                      icon: const Icon(Icons.today_outlined),
-                      label: const Text('Back to today'),
-                    ),
-                  ),
-                const SizedBox(height: PerfectSpace.sm),
-                Text(
-                  'Time blocks · ${planned.length}',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Only timed items appear here. Unscheduled work stays safely in Tasks until you choose a slot.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          ),
+        _PlannerDateDeck(
+          selectedDay: _selectedDay,
+          today: _dateOnly(widget.now),
+          itemCount: planned.length,
+          onMove: _moveDay,
+          onPick: _pickDay,
+          onSelectDay: (day) => setState(() => _selectedDay = _dateOnly(day)),
+          onToday: isToday
+              ? null
+              : () => setState(() => _selectedDay = _dateOnly(widget.now)),
         ),
         const SizedBox(height: PerfectSpace.md),
         if (planned.isEmpty)
@@ -3243,6 +4094,239 @@ class _PlanPageState extends State<_PlanPage> {
   }
 }
 
+class _PlannerDateDeck extends StatelessWidget {
+  const _PlannerDateDeck({
+    required this.selectedDay,
+    required this.today,
+    required this.itemCount,
+    required this.onMove,
+    required this.onPick,
+    required this.onSelectDay,
+    this.onToday,
+  });
+
+  final DateTime selectedDay;
+  final DateTime today;
+  final int itemCount;
+  final ValueChanged<int> onMove;
+  final Future<void> Function() onPick;
+  final ValueChanged<DateTime> onSelectDay;
+  final VoidCallback? onToday;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final localizations = MaterialLocalizations.of(context);
+    final labelScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+    final selectedDayLabel = labelScale >= 1.3
+        ? localizations.formatMediumDate(selectedDay)
+        : localizations.formatFullDate(selectedDay);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(PerfectSpace.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  tooltip: 'Previous day',
+                  onPressed: () => onMove(-1),
+                  icon: const Icon(Icons.chevron_left_rounded),
+                ),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: onPick,
+                    icon: const Icon(Icons.calendar_month_outlined, size: 19),
+                    label: Text(selectedDayLabel, maxLines: 2),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Next day',
+                  onPressed: () => onMove(1),
+                  icon: const Icon(Icons.chevron_right_rounded),
+                ),
+              ],
+            ),
+            const SizedBox(height: PerfectSpace.xs),
+            _PlannerWeekStrip(
+              selectedDay: selectedDay,
+              today: today,
+              onSelectDay: onSelectDay,
+            ),
+            const SizedBox(height: PerfectSpace.md),
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: PerfectSpace.md,
+              runSpacing: PerfectSpace.xs,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: PerfectColors.apricot,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: PerfectSpace.xs),
+                    Text(
+                      '$itemCount ${itemCount == 1 ? 'time block' : 'time blocks'}',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+                if (onToday != null)
+                  TextButton.icon(
+                    key: const ValueKey<String>('planner-back-to-today'),
+                    onPressed: onToday,
+                    icon: const Icon(Icons.today_outlined, size: 18),
+                    label: const Text('Today'),
+                  ),
+              ],
+            ),
+            Text(
+              'Timed work lands here. Unscheduled work stays safely in Tasks.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PlannerWeekStrip extends StatelessWidget {
+  const _PlannerWeekStrip({
+    required this.selectedDay,
+    required this.today,
+    required this.onSelectDay,
+  });
+
+  final DateTime selectedDay;
+  final DateTime today;
+  final ValueChanged<DateTime> onSelectDay;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final labelScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+      final chipWidth = 48.0 * labelScale.clamp(1.0, 1.5).toDouble();
+      final requiredWidth = chipWidth * 7 + 4 * 6;
+      final days = [
+        for (var offset = -3; offset <= 3; offset++)
+          selectedDay.add(Duration(days: offset)),
+      ];
+
+      Widget chip(DateTime day) => _PlannerDayChip(
+        day: day,
+        selected: _isSameDate(day, selectedDay),
+        today: _isSameDate(day, today),
+        onTap: onSelectDay,
+      );
+
+      if (constraints.maxWidth >= requiredWidth) {
+        return Row(
+          children: [
+            for (final (index, day) in days.indexed) ...[
+              if (index > 0) const SizedBox(width: 4),
+              Expanded(child: chip(day)),
+            ],
+          ],
+        );
+      }
+
+      return SingleChildScrollView(
+        key: const ValueKey<String>('planner-week-strip-scroll'),
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final (index, day) in days.indexed) ...[
+              if (index > 0) const SizedBox(width: 4),
+              SizedBox(width: chipWidth, child: chip(day)),
+            ],
+          ],
+        ),
+      );
+    },
+  );
+}
+
+class _PlannerDayChip extends StatelessWidget {
+  const _PlannerDayChip({
+    required this.day,
+    required this.selected,
+    required this.today,
+    required this.onTap,
+  });
+
+  final DateTime day;
+  final bool selected;
+  final bool today;
+  final ValueChanged<DateTime> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final localizations = MaterialLocalizations.of(context);
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: localizations.formatFullDate(day),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: () => onTap(day),
+        child: AnimatedContainer(
+          duration: PerfectMotion.responsive(context, PerfectMotion.quick),
+          curve: PerfectMotion.productive,
+          constraints: const BoxConstraints(minHeight: 62),
+          padding: const EdgeInsets.symmetric(vertical: PerfectSpace.xs),
+          decoration: BoxDecoration(
+            color: selected ? PerfectColors.apricotSoft : Colors.transparent,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: selected
+                  ? PerfectColors.apricot.withValues(alpha: .72)
+                  : today
+                  ? scheme.secondary.withValues(alpha: .66)
+                  : Colors.transparent,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                localizations.narrowWeekdays[day.weekday % 7],
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                '${day.day}',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _HabitsPage extends StatelessWidget {
   const _HabitsPage({
     required this.controller,
@@ -3259,8 +4343,16 @@ class _HabitsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final habits = controller.habits;
-    return ListView(
-      padding: const EdgeInsets.all(PerfectSpace.lg),
+    final completed = habits
+        .where(
+          (habit) =>
+              summaries[habit.id]?.state == PlannerHabitDayState.completed,
+        )
+        .length;
+    final logged = habits
+        .where((habit) => summaries[habit.id]?.hasLog ?? false)
+        .length;
+    return _PageScrollFrame(
       children: [
         _PageTitle(
           title: 'Habits',
@@ -3269,6 +4361,14 @@ class _HabitsPage extends StatelessWidget {
           onAdd: onAdd,
         ),
         const SizedBox(height: PerfectSpace.md),
+        if (habits.isNotEmpty) ...[
+          _HabitOverviewBand(
+            total: habits.length,
+            logged: logged,
+            completed: completed,
+          ),
+          const SizedBox(height: PerfectSpace.md),
+        ],
         if (habits.isEmpty)
           _EmptyState(
             icon: Icons.eco_outlined,
@@ -3292,6 +4392,108 @@ class _HabitsPage extends StatelessWidget {
   }
 }
 
+class _HabitOverviewBand extends StatelessWidget {
+  const _HabitOverviewBand({
+    required this.total,
+    required this.logged,
+    required this.completed,
+  });
+
+  final int total;
+  final int logged;
+  final int completed;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = total == 0 ? 0.0 : completed / total;
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            scheme.secondaryContainer.withValues(alpha: .76),
+            scheme.tertiaryContainer.withValues(alpha: .60),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(PerfectSpace.md),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final copy = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  completed == total
+                      ? 'Today’s rhythm is complete.'
+                      : 'Keep the rhythm gentle and visible.',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '$logged logged · $completed reached · $total active',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            );
+            final meter = SizedBox(
+              width: constraints.maxWidth < 540 ? double.infinity : 220,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.spa_outlined, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${(progress * 100).round()}%',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: PerfectSpace.xs),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(99),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 9,
+                      color: PerfectColors.mint,
+                      backgroundColor: scheme.surface.withValues(alpha: .72),
+                    ),
+                  ),
+                ],
+              ),
+            );
+            if (constraints.maxWidth < 540) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  copy,
+                  const SizedBox(height: PerfectSpace.md),
+                  meter,
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: copy),
+                const SizedBox(width: PerfectSpace.lg),
+                meter,
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class _MorePage extends StatelessWidget {
   const _MorePage({
     required this.controller,
@@ -3301,6 +4503,7 @@ class _MorePage extends StatelessWidget {
     required this.onAddProject,
     required this.onAddArea,
     this.feedbackController,
+    this.onOpenFeedback,
   });
 
   final PlannerWorkspaceController controller;
@@ -3310,10 +4513,11 @@ class _MorePage extends StatelessWidget {
   final VoidCallback onAddProject;
   final VoidCallback onAddArea;
   final ReadyFeedbackController? feedbackController;
+  final VoidCallback? onOpenFeedback;
 
   @override
-  Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(PerfectSpace.lg),
+  Widget build(BuildContext context) => _PageScrollFrame(
+    maxWidth: 1120,
     children: [
       _PageTitle(
         title: 'More',
@@ -3326,7 +4530,10 @@ class _MorePage extends StatelessWidget {
           label: 'Private feedback and diagnostics settings',
           child: Card(
             clipBehavior: Clip.antiAlias,
-            child: ReadyFeedbackSettingsTile(controller: feedback),
+            child: ReadyFeedbackSettingsTile(
+              controller: feedback,
+              onCapture: onOpenFeedback,
+            ),
           ),
         ),
         const SizedBox(height: PerfectSpace.md),
@@ -3357,101 +4564,91 @@ class _MorePage extends StatelessWidget {
         ),
       ),
       const SizedBox(height: PerfectSpace.md),
-      Card(
-        child: Column(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.folder_outlined),
-              title: const Text('Projects'),
-              subtitle: Text('${controller.projects.length} active'),
-              trailing: IconButton(
-                tooltip: 'Create project',
-                onPressed: onAddProject,
-                icon: const Icon(Icons.add_rounded),
-              ),
+      _MoreCommandGroup(
+        title: 'Workspace structure',
+        commands: [
+          _MoreCommand(
+            icon: Icons.folder_outlined,
+            title: 'Projects',
+            subtitle: '${controller.projects.length} active · create or edit',
+            tint: PerfectColors.apricotSoft,
+            onTap: onAddProject,
+          ),
+          _MoreCommand(
+            icon: Icons.grid_view_rounded,
+            title: 'Areas',
+            subtitle: '${controller.areas.length} active · organize contexts',
+            tint: PerfectColors.mintSoft,
+            onTap: onAddArea,
+          ),
+        ],
+      ),
+      const SizedBox(height: PerfectSpace.md),
+      _MoreCommandGroup(
+        title: 'Focus and review',
+        commands: [
+          _MoreCommand(
+            icon: Icons.timer_outlined,
+            title: 'Focus',
+            subtitle: 'Pomodoro, countdown, and stopwatch',
+            tint: PerfectColors.apricotSoft,
+            onTap: () =>
+                FocusSessionSheet.show(context, controller: controller),
+          ),
+          _MoreCommand(
+            icon: Icons.insights_outlined,
+            title: 'Your rhythm',
+            subtitle: 'Private insight from tasks, habits, and focus',
+            tint: PerfectColors.lilacSoft,
+            onTap: () =>
+                PlannerInsightsSheet.show(context, controller: controller),
+          ),
+          _MoreCommand(
+            icon: Icons.inventory_2_outlined,
+            title: 'Archive',
+            subtitle: 'Restore anything you archived',
+            tint: Theme.of(context).colorScheme.surfaceContainerHigh,
+            onTap: () =>
+                PlannerArchiveSheet.show(context, controller: controller),
+          ),
+        ],
+      ),
+      const SizedBox(height: PerfectSpace.md),
+      _MoreCommandGroup(
+        title: 'Devices and resilience',
+        commands: [
+          _MoreCommand(
+            icon: Icons.notifications_none_rounded,
+            title: 'Reminders & quiet hours',
+            subtitle: 'Multiple alerts with device-local delivery',
+            tint: PerfectColors.apricotSoft,
+            onTap: () => PlannerReminderSettingsSheet.show(
+              context,
+              controller: controller,
             ),
-            const Divider(indent: PerfectSpace.md, endIndent: PerfectSpace.md),
-            ListTile(
-              leading: const Icon(Icons.grid_view_rounded),
-              title: const Text('Areas'),
-              subtitle: Text('${controller.areas.length} active'),
-              trailing: IconButton(
-                tooltip: 'Create area',
-                onPressed: onAddArea,
-                icon: const Icon(Icons.add_rounded),
-              ),
-            ),
-            const Divider(indent: PerfectSpace.md, endIndent: PerfectSpace.md),
-            ListTile(
-              leading: const Icon(Icons.timer_outlined),
-              title: const Text('Focus'),
-              subtitle: const Text(
-                'Pomodoro, countdown, and stopwatch sessions',
-              ),
-              onTap: () =>
-                  FocusSessionSheet.show(context, controller: controller),
-            ),
-            const Divider(indent: PerfectSpace.md, endIndent: PerfectSpace.md),
-            ListTile(
-              leading: const Icon(Icons.insights_outlined),
-              title: const Text('Your rhythm'),
-              subtitle: const Text(
-                'Private insight from your recorded tasks, habits, and focus.',
-              ),
-              onTap: () =>
-                  PlannerInsightsSheet.show(context, controller: controller),
-            ),
-            const Divider(indent: PerfectSpace.md, endIndent: PerfectSpace.md),
-            ListTile(
-              leading: const Icon(Icons.inventory_2_outlined),
-              title: const Text('Archive'),
-              subtitle: const Text('Restore any planning item you archived.'),
-              onTap: () =>
-                  PlannerArchiveSheet.show(context, controller: controller),
-            ),
-            const Divider(indent: PerfectSpace.md, endIndent: PerfectSpace.md),
-            ListTile(
-              leading: const Icon(Icons.notifications_none_rounded),
-              title: const Text('Reminders & quiet hours'),
-              subtitle: const Text(
-                'Multiple alerts, device-local delivery, and gentle silence.',
-              ),
-              onTap: () => PlannerReminderSettingsSheet.show(
+          ),
+          if (controller.todayWidgetSettings.isAvailable)
+            _MoreCommand(
+              icon: Icons.widgets_outlined,
+              title: 'Perfect Today widget',
+              subtitle: 'Resize, scroll, complete, and quick-add',
+              tint: PerfectColors.mintSoft,
+              onTap: () => PerfectTodayWidgetSettingsSheet.show(
                 context,
                 controller: controller,
               ),
             ),
-            if (controller.todayWidgetSettings.isAvailable) ...[
-              const Divider(
-                indent: PerfectSpace.md,
-                endIndent: PerfectSpace.md,
-              ),
-              ListTile(
-                leading: const Icon(Icons.widgets_outlined),
-                title: const Text('Perfect Today widget'),
-                subtitle: const Text(
-                  'Resizable, scrollable, and directly actionable.',
-                ),
-                onTap: () => PerfectTodayWidgetSettingsSheet.show(
-                  context,
-                  controller: controller,
-                ),
-              ),
-            ],
-            const Divider(indent: PerfectSpace.md, endIndent: PerfectSpace.md),
-            ListTile(
-              leading: const Icon(Icons.merge_type_rounded),
-              title: const Text('Conflict center'),
-              subtitle: const Text(
-                'Review only simultaneous edits that cannot merge safely.',
-              ),
-              onTap: () => PlannerConflictCenterSheet.show(
-                context,
-                controller: controller,
-              ),
+          _MoreCommand(
+            icon: Icons.merge_type_rounded,
+            title: 'Conflict center',
+            subtitle: 'Review simultaneous edits that need you',
+            tint: PerfectColors.lilacSoft,
+            onTap: () => PlannerConflictCenterSheet.show(
+              context,
+              controller: controller,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       const SizedBox(height: PerfectSpace.md),
       Card(
@@ -3478,6 +4675,168 @@ class _MorePage extends StatelessWidget {
   );
 }
 
+@immutable
+class _MoreCommand {
+  const _MoreCommand({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.tint,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color tint;
+  final VoidCallback onTap;
+}
+
+class _MoreCommandGroup extends StatelessWidget {
+  const _MoreCommandGroup({required this.title, required this.commands});
+
+  final String title;
+  final List<_MoreCommand> commands;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Padding(
+        padding: const EdgeInsetsDirectional.only(start: 2, bottom: 8),
+        child: Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+        ),
+      ),
+      LayoutBuilder(
+        builder: (context, constraints) {
+          final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
+          final twoColumns = constraints.maxWidth >= 700 && textScale < 1.5;
+          final itemWidth = twoColumns
+              ? (constraints.maxWidth - PerfectSpace.sm) / 2
+              : constraints.maxWidth;
+          return Wrap(
+            spacing: PerfectSpace.sm,
+            runSpacing: PerfectSpace.sm,
+            children: [
+              for (final command in commands)
+                SizedBox(
+                  width: itemWidth,
+                  child: _MoreCommandTile(command: command),
+                ),
+            ],
+          );
+        },
+      ),
+    ],
+  );
+}
+
+class _MoreCommandTile extends StatelessWidget {
+  const _MoreCommandTile({required this.command});
+
+  final _MoreCommand command;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: '${command.title}. ${command.subtitle}',
+    child: Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: command.onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(PerfectSpace.md),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: command.tint,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(command.icon, color: PerfectColors.ink),
+              ),
+              const SizedBox(width: PerfectSpace.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      command.title,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      command.subtitle,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: PerfectSpace.xs),
+              const Icon(Icons.arrow_outward_rounded, size: 20),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _PageScrollFrame extends StatelessWidget {
+  const _PageScrollFrame({
+    required this.children,
+    this.scrollKey,
+    this.maxWidth = 980,
+  });
+
+  final List<Widget> children;
+  final Key? scrollKey;
+  final double maxWidth;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final compact = constraints.maxWidth < 640;
+      final horizontal = compact
+          ? PerfectSpace.md
+          : constraints.maxWidth >= 1200
+          ? PerfectSpace.xxl
+          : PerfectSpace.xl;
+      return ListView(
+        key: scrollKey,
+        padding: EdgeInsets.fromLTRB(
+          horizontal,
+          PerfectSpace.md,
+          horizontal,
+          compact ? 168 : PerfectSpace.xxl,
+        ),
+        children: [
+          Align(
+            alignment: AlignmentDirectional.topCenter,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: children,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 class _PageTitle extends StatelessWidget {
   const _PageTitle({required this.title, required this.subtitle, this.onAdd});
 
@@ -3493,35 +4852,43 @@ class _PageTitle extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(context).textTheme.headlineMedium),
+            PerfectStagedEntrance(
+              key: ValueKey<String>('page-title-$title'),
+              rise: 20,
+              scaleBegin: .99,
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+            ),
             const SizedBox(height: PerfectSpace.xs),
-            Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+            PerfectStagedEntrance(
+              key: ValueKey<String>('page-subtitle-$title'),
+              order: 1,
+              rise: 12,
+              scaleBegin: .995,
+              duration: PerfectMotion.standard,
+              child: Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
           ],
         ),
       ),
       if (onAdd != null)
-        IconButton.filled(
-          tooltip: 'Add $title',
-          onPressed: onAdd,
-          icon: const Icon(Icons.add_rounded),
+        PerfectStagedEntrance(
+          key: ValueKey<String>('page-add-$title'),
+          order: 1,
+          rise: 10,
+          scaleBegin: .96,
+          duration: PerfectMotion.standard,
+          child: IconButton.filled(
+            tooltip: 'Add $title',
+            onPressed: onAdd,
+            icon: const Icon(Icons.add_rounded),
+          ),
         ),
-    ],
-  );
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, this.trailing});
-
-  final String title;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(
-        child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-      ),
-      ...?(trailing == null ? null : <Widget>[trailing!]),
     ],
   );
 }
@@ -3534,6 +4901,7 @@ class _AgendaRow extends StatelessWidget {
     this.showKind = false,
     this.todayEligibility,
     this.habitSummary,
+    this.referenceStyle = false,
   });
 
   final PlannerEntity entity;
@@ -3542,6 +4910,7 @@ class _AgendaRow extends StatelessWidget {
   final bool showKind;
   final PlannerTodayEligibility? todayEligibility;
   final PlannerHabitDaySummary? habitSummary;
+  final bool referenceStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -3558,6 +4927,31 @@ class _AgendaRow extends StatelessWidget {
     final requiresRecoveryDecision =
         todayEligibility?.requiresDecision ?? false;
     final color = _colorFor(entity);
+    if (referenceStyle) {
+      return _DesktopEntityContextRegion(
+        key: ValueKey<String>('entity-context-${entity.id}'),
+        semanticLabel: '${entity.title}. Item actions available.',
+        onOpen: (anchorContext, globalPosition) => _showEntityContextMenu(
+          anchorContext,
+          entity: entity,
+          controller: controller,
+          onInspect: () => onInspect(entity),
+          onOpenEntity: onInspect,
+          eligibility: todayEligibility,
+          globalPosition: globalPosition,
+        ),
+        child: _ReferenceAgendaRow(
+          entity: entity,
+          controller: controller,
+          onInspect: onInspect,
+          todayEligibility: todayEligibility,
+          habitSummary: habitSummary,
+          completed: completed,
+          missed: missed,
+          color: color,
+        ),
+      );
+    }
     final row = Card(
       margin: const EdgeInsets.only(bottom: PerfectSpace.sm),
       child: InkWell(
@@ -3649,8 +5043,7 @@ class _AgendaRow extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     'Decision needed · tap to resolve',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
                                     style: Theme.of(context)
                                         .textTheme
                                         .labelSmall
@@ -3808,6 +5201,306 @@ class _AgendaRow extends StatelessWidget {
   }
 }
 
+/// The compact Day Stream row deliberately follows the reference's readable
+/// time → title → category hierarchy. It remains a live task control: the
+/// leading control cycles status, the row opens details, and desktop context
+/// actions are retained by the parent region.
+class _ReferenceAgendaRow extends StatelessWidget {
+  const _ReferenceAgendaRow({
+    required this.entity,
+    required this.controller,
+    required this.onInspect,
+    required this.todayEligibility,
+    required this.habitSummary,
+    required this.completed,
+    required this.missed,
+    required this.color,
+  });
+
+  final PlannerEntity entity;
+  final PlannerWorkspaceController controller;
+  final ValueChanged<PlannerEntity> onInspect;
+  final PlannerTodayEligibility? todayEligibility;
+  final PlannerHabitDaySummary? habitSummary;
+  final bool completed;
+  final bool missed;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheduled = entity.scheduledAt?.toLocal();
+    final category =
+        safeNullableJsonString(entity.payload['category']) ??
+        _kindLabel(entity.kind);
+    final progress = entity.kind == PlannerEntityKind.oneOffTask
+        ? PlannerTaskProgress.fromEntity(entity).percent
+        : habitSummary?.progressPercent ?? 0;
+    final requiresRecoveryDecision =
+        todayEligibility?.requiresDecision ?? false;
+    final scheme = Theme.of(context).colorScheme;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bodySize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+        final textScale =
+            MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
+        // A regular phone has enough room for the progress ring beside its
+        // row. Only a truly narrow split pane or enlarged type turns it into
+        // a second line; otherwise that split destroys the day-stream rhythm.
+        final stackedTrailing = constraints.maxWidth < 330 || textScale >= 1.32;
+        final detail = Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  scheduled == null
+                      ? Icons.inbox_outlined
+                      : progress > 0 && !missed
+                      ? Icons.calendar_month_outlined
+                      : Icons.schedule_rounded,
+                  size: 15,
+                  color: color,
+                ),
+                const SizedBox(width: 5),
+                Flexible(
+                  child: Text(
+                    scheduled == null ? 'INBOX' : _shortTime(scheduled),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: color,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              entity.title,
+              maxLines: stackedTrailing ? 2 : 1,
+              overflow: TextOverflow.ellipsis,
+              textDirection: _textDirection(entity.title),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                height: 1.1,
+                letterSpacing: -.35,
+                decoration: completed ? TextDecoration.lineThrough : null,
+                color: completed ? scheme.onSurfaceVariant : null,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.sell_outlined,
+                  size: 14,
+                  color: scheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    category,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 12.5,
+                      color: scheme.onSurfaceVariant,
+                      height: 1.1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+        final trailing = entity.kind == PlannerEntityKind.recurringTask
+            ? FutureBuilder<PlannerTaskProgress>(
+                future: controller.taskProgressForDay(entity),
+                builder: (context, snapshot) {
+                  final recurringProgress =
+                      snapshot.data ?? const PlannerTaskProgress.pending();
+                  return _ReferenceAgendaStatus(
+                    progress: recurringProgress.percent,
+                    completed: recurringProgress.isComplete,
+                    missed: recurringProgress.isMissed,
+                    color: color,
+                  );
+                },
+              )
+            : _ReferenceAgendaStatus(
+                progress: progress,
+                completed: completed,
+                missed: missed,
+                color: color,
+              );
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => onInspect(entity),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _AgendaCompletionButton(
+                        entity: entity,
+                        controller: controller,
+                        habitSummary: habitSummary,
+                        referenceStyle: true,
+                      ),
+                      const SizedBox(width: PerfectSpace.xxs),
+                      Expanded(child: detail),
+                      if (!stackedTrailing) ...[
+                        const SizedBox(width: PerfectSpace.xs),
+                        trailing,
+                      ],
+                      const SizedBox(width: PerfectSpace.xxs),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: scheme.onSurfaceVariant,
+                        size: 27,
+                      ),
+                    ],
+                  ),
+                  if (stackedTrailing) ...[
+                    const SizedBox(height: PerfectSpace.xs),
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: trailing,
+                    ),
+                  ],
+                  if (requiresRecoveryDecision) ...[
+                    const SizedBox(height: PerfectSpace.xxs),
+                    Semantics(
+                      button: true,
+                      label: 'Resolve missed task recovery',
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: () => _showOneOffRecoverySheet(
+                          context,
+                          entity: entity,
+                          controller: controller,
+                          eligibility: todayEligibility!,
+                        ),
+                        child: Ink(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: PerfectSpace.sm,
+                            vertical: 7,
+                          ),
+                          decoration: BoxDecoration(
+                            color: scheme.tertiaryContainer.withValues(
+                              alpha: .54,
+                            ),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.schedule_send_outlined,
+                                size: 16,
+                                color: scheme.onTertiaryContainer,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  'Decision needed · tap to resolve',
+                                  maxLines: 2,
+                                  style: Theme.of(context).textTheme.labelMedium
+                                      ?.copyWith(
+                                        color: scheme.onTertiaryContainer,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                size: 18,
+                                color: scheme.onTertiaryContainer,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 2),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: scheme.outlineVariant.withValues(alpha: .78),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ReferenceAgendaStatus extends StatelessWidget {
+  const _ReferenceAgendaStatus({
+    required this.progress,
+    required this.completed,
+    required this.missed,
+    required this.color,
+  });
+
+  final int progress;
+  final bool completed;
+  final bool missed;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    if (missed) {
+      return Text(
+        'MISSED',
+        maxLines: 1,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: PerfectColors.danger,
+          fontWeight: FontWeight.w900,
+          letterSpacing: .6,
+        ),
+      );
+    }
+    final value = completed ? 1.0 : progress.clamp(0, 100) / 100;
+    return SizedBox.square(
+      dimension: 60,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CircularProgressIndicator(
+            value: value,
+            strokeWidth: 5,
+            strokeCap: StrokeCap.round,
+            color: color,
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+          ),
+          Text(
+            '${completed ? 100 : progress}%',
+            maxLines: 1,
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _OpenEntityContextMenuIntent extends Intent {
   const _OpenEntityContextMenuIntent();
 }
@@ -3891,6 +5584,8 @@ class _DesktopEntityContextRegionState
           onPointerDown: (_) => _focusNode.requestFocus(),
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
+            onLongPressStart: (details) =>
+                unawaited(_open(details.globalPosition)),
             onSecondaryTapUp: (details) =>
                 unawaited(_open(details.globalPosition)),
             child: AnimatedContainer(
@@ -4383,6 +6078,7 @@ Future<void> _showOneOffRecoverySheet(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
+    sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
     builder: buildSurface,
   );
 }
@@ -4429,6 +6125,7 @@ Future<void> _showRecurringPercentageSheet(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
+    sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
     builder: (_) => surface,
   );
 }
@@ -4613,11 +6310,13 @@ class _AgendaCompletionButton extends StatelessWidget {
     required this.entity,
     required this.controller,
     this.habitSummary,
+    this.referenceStyle = false,
   });
 
   final PlannerEntity entity;
   final PlannerWorkspaceController controller;
   final PlannerHabitDaySummary? habitSummary;
+  final bool referenceStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -4631,7 +6330,7 @@ class _AgendaCompletionButton extends StatelessWidget {
           habit: entity,
           controller: controller,
         ),
-        icon: _habitSummaryVisual(habitSummary),
+        icon: _habitSummaryVisual(habitSummary, referenceStyle: referenceStyle),
       );
     }
     if (entity.kind == PlannerEntityKind.recurringTask) {
@@ -4647,6 +6346,7 @@ class _AgendaCompletionButton extends StatelessWidget {
               context,
               progress,
               fallback: _colorFor(entity),
+              referenceStyle: referenceStyle,
             ),
           );
         },
@@ -4661,6 +6361,7 @@ class _AgendaCompletionButton extends StatelessWidget {
         context,
         progress,
         fallback: _colorFor(entity),
+        referenceStyle: referenceStyle,
       ),
     );
   }
@@ -4670,6 +6371,7 @@ Widget _animatedTaskProgressVisual(
   BuildContext context,
   PlannerTaskProgress progress, {
   required Color fallback,
+  bool referenceStyle = false,
 }) => AnimatedSwitcher(
   duration: PerfectMotion.responsive(context, PerfectMotion.quick),
   switchInCurve: PerfectMotion.productive,
@@ -4682,7 +6384,12 @@ Widget _animatedTaskProgressVisual(
   ),
   child: KeyedSubtree(
     key: ValueKey<String>('${progress.state.name}-${progress.percent}'),
-    child: _taskProgressVisual(context, progress, fallback: fallback),
+    child: _taskProgressVisual(
+      context,
+      progress,
+      fallback: fallback,
+      referenceStyle: referenceStyle,
+    ),
   ),
 );
 
@@ -4990,8 +6697,23 @@ class _HabitDayStatus extends StatelessWidget {
   }
 }
 
-Widget _habitSummaryVisual(PlannerHabitDaySummary? summary) {
+Widget _habitSummaryVisual(
+  PlannerHabitDaySummary? summary, {
+  bool referenceStyle = false,
+}) {
   if (summary?.state == PlannerHabitDayState.partial) {
+    if (referenceStyle) {
+      return SizedBox.square(
+        dimension: 30,
+        child: CircularProgressIndicator(
+          value: summary!.progressPercent / 100,
+          strokeWidth: 2.8,
+          strokeCap: StrokeCap.round,
+          color: PerfectColors.lilac,
+          backgroundColor: PerfectColors.lilac.withValues(alpha: .16),
+        ),
+      );
+    }
     return SizedBox(
       width: 31,
       child: FittedBox(
@@ -5728,14 +7450,27 @@ void _sortAgenda(List<PlannerEntity> items) => items.sort((a, b) {
   return a.updatedAt.compareTo(b.updatedAt);
 });
 
-String _greeting(DateTime now) {
+String _greeting(DateTime now, {String? ownerDisplayName}) {
   final hour = now.hour;
-  if (hour < 12) return 'Good morning.';
-  if (hour < 18) return 'Good afternoon.';
-  return 'Good evening.';
+  final period = hour < 12
+      ? 'Good morning'
+      : hour < 18
+      ? 'Good afternoon'
+      : 'Good evening';
+  final name = ownerDisplayName?.trim();
+  return name == null || name.isEmpty ? period : '$period, $name';
 }
 
 String _todayLabel(DateTime now) {
+  const weekdays = <String>[
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
   const months = <String>[
     'January',
     'February',
@@ -5750,7 +7485,7 @@ String _todayLabel(DateTime now) {
     'November',
     'December',
   ];
-  return '${months[now.month - 1]} ${now.day} · ${now.year}';
+  return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
 }
 
 String _agendaMeta(PlannerEntity entity, {required bool showKind}) {
@@ -5810,7 +7545,7 @@ IconData _taskProgressIcon(PlannerTaskProgress progress) =>
     switch (progress.state) {
       PlannerTaskProgressState.pending => Icons.radio_button_unchecked_rounded,
       PlannerTaskProgressState.completed => Icons.check_circle_rounded,
-      PlannerTaskProgressState.missed => Icons.cancel_rounded,
+      PlannerTaskProgressState.missed => Icons.cancel_outlined,
       PlannerTaskProgressState.partial => Icons.percent_rounded,
     };
 
@@ -5818,8 +7553,21 @@ Widget _taskProgressVisual(
   BuildContext context,
   PlannerTaskProgress progress, {
   required Color fallback,
+  bool referenceStyle = false,
 }) {
   final color = _taskProgressColor(progress, fallback: fallback);
+  if (referenceStyle && progress.isPartial) {
+    return SizedBox.square(
+      dimension: 30,
+      child: CircularProgressIndicator(
+        value: progress.percent / 100,
+        strokeWidth: 2.8,
+        strokeCap: StrokeCap.round,
+        color: color,
+        backgroundColor: color.withValues(alpha: .15),
+      ),
+    );
+  }
   if (!progress.isPartial) {
     return Icon(_taskProgressIcon(progress), color: color);
   }
@@ -5845,7 +7593,7 @@ Color _taskProgressColor(
   PlannerTaskProgressState.pending => fallback,
   PlannerTaskProgressState.completed => PerfectColors.mint,
   PlannerTaskProgressState.missed => PerfectColors.danger,
-  PlannerTaskProgressState.partial => PerfectColors.lilac,
+  PlannerTaskProgressState.partial => fallback,
 };
 
 String _taskProgressTooltip(
@@ -5859,12 +7607,31 @@ String _taskProgressTooltip(
     '${progress.percent}% progress · clear task outcome',
 };
 
-Color _colorFor(PlannerEntity entity) => switch (entity.kind) {
-  PlannerEntityKind.habit => PerfectColors.mint,
-  PlannerEntityKind.project => PerfectColors.lilac,
-  PlannerEntityKind.area => PerfectColors.lilac,
-  _ => _categoryColor(entity),
-};
+Color _colorFor(PlannerEntity entity) {
+  // The editor persists the owner’s explicit swatch at the payload root. Use
+  // it before any category fallback so a Work task can legitimately be mint
+  // while another Work task stays apricot—category and color are separate
+  // choices, not two competing meanings.
+  final explicit = safeJsonString(
+    entity.payload[PlannerTaskMetadataKeys.color],
+    fallback: '',
+  ).toLowerCase();
+  final explicitColor = switch (explicit) {
+    'mint' => PerfectColors.mint,
+    'lilac' => PerfectColors.lilac,
+    'rose' => PerfectColors.danger,
+    'ink' => PerfectColors.ink,
+    'apricot' || 'orange' => PerfectColors.apricot,
+    _ => null,
+  };
+  if (explicitColor != null) return explicitColor;
+  return switch (entity.kind) {
+    PlannerEntityKind.habit => PerfectColors.mint,
+    PlannerEntityKind.project => PerfectColors.lilac,
+    PlannerEntityKind.area => PerfectColors.lilac,
+    _ => _categoryColor(entity),
+  };
+}
 
 Color _categoryColor(PlannerEntity entity) {
   final category = safeJsonString(

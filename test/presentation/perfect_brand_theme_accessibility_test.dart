@@ -26,7 +26,9 @@ void main() {
       );
 
       final markRect = tester.getRect(find.byType(PerfectMark));
-      final wordRect = tester.getRect(find.text('Perfect!'));
+      final wordRect = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-wordmark-visual')),
+      );
       expect(markRect.right, lessThan(wordRect.left));
       expect(tester.takeException(), isNull);
     });
@@ -56,10 +58,12 @@ void main() {
         find.byKey(const ValueKey<String>('wordmark-frame')),
       );
       final mark = tester.getRect(find.byType(PerfectMark));
-      final word = tester.getRect(find.text('Perfect!'));
+      final word = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-wordmark-visual')),
+      );
       expect(mark.left, greaterThanOrEqualTo(frame.left));
       expect(word.right, lessThanOrEqualTo(frame.right));
-      expect(mark.height / word.height, closeTo(.98, .08));
+      expect(mark.height / word.height, inInclusiveRange(.78, .92));
       expect(tester.takeException(), isNull);
     });
 
@@ -202,6 +206,66 @@ void main() {
       expect(theme.textTheme.bodyMedium?.letterSpacing, 0);
       expect(theme.textTheme.headlineMedium?.letterSpacing, 0);
       expect(theme.textTheme.bodyMedium?.height, greaterThanOrEqualTo(1.4));
+    });
+
+    test('theme exposes one interpolatable surface language', () {
+      final light = PerfectTheme.light();
+      final dark = PerfectTheme.dark();
+      final lightSurfaces = light.extension<PerfectSurfaceTheme>();
+      final darkSurfaces = dark.extension<PerfectSurfaceTheme>();
+
+      expect(lightSurfaces, PerfectSurfaceTheme.light);
+      expect(darkSurfaces, PerfectSurfaceTheme.dark);
+      expect(lightSurfaces!.glass.a, lessThan(1));
+      expect(darkSurfaces!.glass.a, lessThan(1));
+      expect(lightSurfaces.glassBlur, lessThan(lightSurfaces.glassBlurStrong));
+      expect(darkSurfaces.glassBlur, lessThan(darkSurfaces.glassBlurStrong));
+
+      final midpoint = lightSurfaces.lerp(darkSurfaces, .5);
+      expect(midpoint.canvas, isNot(lightSurfaces.canvas));
+      expect(midpoint.canvas, isNot(darkSurfaces.canvas));
+      expect(midpoint.glassBlur, lightSurfaces.glassBlur);
+    });
+
+    test('control themes share motion and perceivable pointer states', () {
+      final theme = PerfectTheme.light();
+      final filled = theme.filledButtonTheme.style!;
+      final icon = theme.iconButtonTheme.style!;
+      const rest = <WidgetState>{};
+      const hover = <WidgetState>{WidgetState.hovered};
+      const focus = <WidgetState>{WidgetState.focused};
+      const press = <WidgetState>{WidgetState.pressed};
+      const selected = <WidgetState>{WidgetState.selected};
+
+      expect(filled.animationDuration, PerfectMotion.standard);
+      expect(icon.animationDuration, PerfectMotion.quick);
+      expect(
+        filled.overlayColor!.resolve(hover),
+        isNot(filled.overlayColor!.resolve(rest)),
+      );
+      expect(
+        filled.overlayColor!.resolve(press),
+        isNot(filled.overlayColor!.resolve(hover)),
+      );
+      expect(
+        filled.side!.resolve(focus)!.color,
+        PerfectSurfaceTheme.light.focusRing,
+      );
+      expect(
+        icon.backgroundColor!.resolve(selected),
+        theme.colorScheme.primaryContainer,
+      );
+    });
+
+    test('Android and Windows routes use the Perfect transition system', () {
+      final transitions = PerfectTheme.light().pageTransitionsTheme.builders;
+      final android = transitions[TargetPlatform.android];
+      final windows = transitions[TargetPlatform.windows];
+
+      expect(android, isA<PerfectPageTransitionsBuilder>());
+      expect(windows, isA<PerfectPageTransitionsBuilder>());
+      expect((android! as PerfectPageTransitionsBuilder).axis, Axis.vertical);
+      expect((windows! as PerfectPageTransitionsBuilder).axis, Axis.horizontal);
     });
 
     test('all global button families retain at least a 48dp target', () {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:perfect/presentation/perfect_pictogram.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 
 /// The approved Perfect! mark, shared verbatim with Android and Windows.
@@ -28,6 +29,12 @@ class PerfectMark extends StatelessWidget {
             gaplessPlayback: true,
             cacheWidth: physicalPixels,
             cacheHeight: physicalPixels,
+            frameBuilder: (context, child, frame, loadedSynchronously) {
+              if (loadedSynchronously || frame != null) return child;
+              return PerfectPictogram(name: 'compass', size: size);
+            },
+            errorBuilder: (context, error, stackTrace) =>
+                PerfectPictogram(name: 'compass', size: size),
           ),
         ),
       ),
@@ -47,19 +54,24 @@ class PerfectWordmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ink = Theme.of(context).colorScheme.onSurface;
     final scaledFontSize =
         (MediaQuery.maybeTextScalerOf(context) ?? TextScaler.noScaling).scale(
           fontSize,
         );
-    final baseStyle = TextStyle(
-      color: ink,
-      fontFamily: 'PlusJakarta',
-      fontFamilyFallback: const <String>['Vazirmatn'],
-      fontSize: fontSize,
-      height: 1,
-      fontWeight: FontWeight.w800,
-      letterSpacing: -fontSize * .032,
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final wordmark = SizedBox(
+      key: const ValueKey<String>('perfect-wordmark-visual'),
+      height: scaledFontSize * 1.16,
+      child: Image.asset(
+        dark
+            ? 'assets/brand/perfect-wordmark-dark.png'
+            : 'assets/brand/perfect-wordmark.png',
+        fit: BoxFit.contain,
+        alignment: AlignmentDirectional.centerStart,
+        filterQuality: FilterQuality.high,
+        gaplessPlayback: true,
+        excludeFromSemantics: true,
+      ),
     );
     return Semantics(
       label: 'Perfect!',
@@ -79,24 +91,7 @@ class PerfectWordmark extends StatelessWidget {
                   PerfectMark(size: scaledFontSize * .98),
                   const SizedBox(width: PerfectSpace.xs),
                 ],
-                Text.rich(
-                  TextSpan(
-                    text: 'Perfect',
-                    style: baseStyle,
-                    children: <InlineSpan>[
-                      TextSpan(
-                        text: '!',
-                        style: baseStyle.copyWith(
-                          color: PerfectColors.lilac,
-                          letterSpacing: 0,
-                        ),
-                      ),
-                    ],
-                  ),
-                  textDirection: TextDirection.ltr,
-                  maxLines: 1,
-                  softWrap: false,
-                ),
+                wordmark,
               ],
             ),
           ),

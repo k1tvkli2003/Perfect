@@ -32,6 +32,11 @@ class PerfectPictogram extends StatelessWidget {
     'home',
     'idea',
     'star',
+    'ai',
+    'voice',
+    'send',
+    'capture',
+    'calendar',
     'finance',
     'label',
   };

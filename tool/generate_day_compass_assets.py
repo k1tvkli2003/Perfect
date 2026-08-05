@@ -2,8 +2,9 @@
 
 The selected ImageGen source deliberately uses a flat magenta chroma canvas.
 This script turns that comparison asset into one transparent 512px source of
-truth, then derives the Windows multi-resolution ICO. Android raster resources
-are generated from the same master by `flutter_launcher_icons`.
+truth, then derives the Windows multi-resolution ICO and the density-aware
+Android widget/splash mark. Android launcher resources are generated from the
+same master by `flutter_launcher_icons`.
 
 Run from the repository root:
 
@@ -33,9 +34,18 @@ MASTER = ROOT / "assets" / "brand" / "perfect-launcher.png"
 MONOCHROME = ROOT / "assets" / "brand" / "perfect-launcher-monochrome.png"
 PREVIEW = SELECTION_DIR / "day-compass-transparent-512.png"
 WINDOWS_ICO = ROOT / "windows" / "runner" / "resources" / "app_icon.ico"
+ANDROID_RES = ROOT / "android" / "app" / "src" / "main" / "res"
 
 MASTER_SIZE = 512
 MASTER_MARGIN = 8
+WIDGET_MARK_DP = 36
+ANDROID_DENSITIES = {
+    "mdpi": 1.0,
+    "hdpi": 1.5,
+    "xhdpi": 2.0,
+    "xxhdpi": 3.0,
+    "xxxhdpi": 4.0,
+}
 
 
 def _smoothstep(edge0: float, edge1: float, value: float) -> float:
@@ -265,6 +275,33 @@ def _validate_master(master: Image.Image) -> None:
         raise ValueError(f"Selected mark is too small inside its master: {bounds}.")
 
 
+def _write_android_widget_marks(master: Image.Image) -> list[Path]:
+    """Export one exact Day Compass raster at a stable 36dp intrinsic size.
+
+    The widget header displays this drawable inside a 24dp ImageView while the
+    quick-add and splash surfaces use the full 36dp intrinsic size. Supplying a
+    raster per Android density keeps those hosts from treating a 512px nodpi
+    bitmap as a giant intrinsic drawable, and preserves the selected gradients
+    that the former flat VectorDrawable could only approximate.
+    """
+
+    outputs: list[Path] = []
+    for density, scale in ANDROID_DENSITIES.items():
+        pixels = round(WIDGET_MARK_DP * scale)
+        output = (
+            ANDROID_RES
+            / f"drawable-{density}"
+            / "perfect_widget_mark_raster.png"
+        )
+        output.parent.mkdir(parents=True, exist_ok=True)
+        _resize_rgba_premultiplied(master, (pixels, pixels)).save(
+            output,
+            optimize=True,
+        )
+        outputs.append(output)
+    return outputs
+
+
 def main() -> None:
     if not SOURCE.is_file():
         raise FileNotFoundError(SOURCE)
@@ -297,6 +334,7 @@ def main() -> None:
             (256, 256),
         ],
     )
+    android_widget_marks = _write_android_widget_marks(master)
 
     bounds = master.getchannel("A").getbbox()
     print(f"source_chroma={_sample_chroma(source)}")
@@ -304,6 +342,8 @@ def main() -> None:
     print(f"monochrome={MONOCHROME}")
     print(f"preview={PREVIEW}")
     print(f"windows_ico={WINDOWS_ICO}")
+    for widget_mark in android_widget_marks:
+        print(f"android_widget_mark={widget_mark}")
 
 
 if __name__ == "__main__":

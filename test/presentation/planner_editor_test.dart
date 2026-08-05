@@ -5,6 +5,7 @@ import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/sync/planner_sync_repository.dart';
+import 'package:perfect/presentation/perfect_theme.dart';
 import 'package:perfect/presentation/planner_editor.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
 
@@ -12,13 +13,18 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets(
-    'sectioned editor exposes advanced capability without a wizard',
+    'creation is a full-screen multi-step wizard with a quick task path',
     (tester) async {
+      tester.view.physicalSize = const Size(900, 760);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       final controller = _RecordingPlannerController();
       addTearDown(controller.disposeAsync);
 
       await tester.pumpWidget(
         MaterialApp(
+          theme: PerfectTheme.light(),
           home: Builder(
             builder: (context) => Scaffold(
               body: Center(
@@ -33,52 +39,141 @@ void main() {
         ),
       );
       await tester.tap(find.text('Open'));
-      // The sheet deliberately owns long-lived input/scroll affordances. A
-      // bounded transition pump proves the editor is visible without coupling
-      // this contract test to every ambient Material animation.
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
 
-      expect(find.text('Make it yours'), findsOneWidget);
-      expect(find.text('Organization'), findsOneWidget);
-      expect(find.text('Save to Perfect'), findsOneWidget);
+      expect(find.byType(PlannerEditor), findsOneWidget);
+      expect(find.byType(Dialog), findsNothing);
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(find.byKey(const ValueKey<String>('planner-step-type')), findsOne);
+      expect(find.text('What are you shaping?'), findsOneWidget);
 
+      await _tapStep(tester, 'category');
+      expect(find.text('Where does it belong?'), findsOneWidget);
+      await _tapStep(tester, 'define');
       await tester.enterText(
-        find.byType(TextFormField).first,
+        find.byKey(const ValueKey<String>('planner-editor-title')),
         'A complete but calm task',
       );
-      final editorScrolls = find.descendant(
-        of: find.byType(PlannerEditor),
-        matching: find.byType(Scrollable),
+      await _tapStep(tester, 'plan');
+      await tester.tap(
+        find.byKey(const ValueKey<String>('planner-editor-back')),
       );
-      expect(editorScrolls, findsWidgets);
-      final editorScroll = editorScrolls.first;
-      await tester.scrollUntilVisible(
-        find.text('Repeat & recovery'),
-        260,
-        scrollable: editorScroll,
+      await tester.pumpAndSettle();
+      expect(find.text('A complete but calm task'), findsWidgets);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('planner-editor-quick-save')),
       );
-      expect(find.text('Repeat & recovery'), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('Custom properties'),
-        260,
-        scrollable: editorScroll,
-      );
-      expect(find.text('Custom properties'), findsOneWidget);
-      await tester.tap(find.text('Save to Perfect'));
-      await tester.pumpAndSettle(const Duration(milliseconds: 20));
+      await tester.pumpAndSettle();
       expect(
         controller.savedPayload?[PlannerPayloadKeys.title],
         'A complete but calm task',
       );
     },
-    timeout: const Timeout(Duration(minutes: 1)),
   );
 
   testWidgets(
-    'task identity, planning context, time block, and break policy round-trip',
+    'habit flow follows category evaluation definition frequency plan review',
     (tester) async {
-      tester.view.physicalSize = const Size(800, 900);
+      tester.view.physicalSize = const Size(1100, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final controller = _RecordingPlannerController();
+      addTearDown(controller.disposeAsync);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: PerfectTheme.light(),
+          home: Scaffold(
+            body: PlannerEditor(
+              controller: controller,
+              initialKind: PlannerEntityKind.habit,
+            ),
+          ),
+        ),
+      );
+
+      for (final id in <String>[
+        'type',
+        'category',
+        'evaluate',
+        'define',
+        'frequency',
+        'plan',
+        'review',
+      ]) {
+        expect(
+          find.byKey(ValueKey<String>('planner-step-$id')),
+          findsOneWidget,
+        );
+      }
+
+      await _tapStep(tester, 'evaluate');
+      expect(find.byKey(const ValueKey('habit-evaluation-check')), findsOne);
+      expect(find.byKey(const ValueKey('habit-evaluation-count')), findsOne);
+      expect(find.byKey(const ValueKey('habit-evaluation-duration')), findsOne);
+      expect(
+        find.byKey(const ValueKey('habit-evaluation-checklist')),
+        findsOne,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('habit-evaluation-checklist')),
+      );
+      await tester.pumpAndSettle();
+
+      await _tapStep(tester, 'define');
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('planner-editor-title')),
+        'Morning reset',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Checklist item'),
+        'Drink water',
+      );
+      await tester.tap(find.byTooltip('Add habit checklist item'));
+      await tester.pump();
+      expect(find.text('Drink water'), findsOneWidget);
+
+      await _tapStep(tester, 'evaluate');
+      await _tapStep(tester, 'define');
+      expect(find.text('Morning reset'), findsWidgets);
+      expect(find.text('Drink water'), findsOneWidget);
+
+      await _tapStep(tester, 'frequency');
+      expect(find.text('Every day'), findsOneWidget);
+      expect(find.text('Flexible within the valid window'), findsOneWidget);
+      await _tapStep(tester, 'plan');
+      expect(find.text('Miss & recovery'), findsOneWidget);
+      expect(find.text('Priority'), findsWidgets);
+      await _tapStep(tester, 'review');
+      expect(find.text('Your plan at a glance'), findsOneWidget);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('planner-editor-save')),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'type');
+
+      final payload = controller.savedPayload!;
+      expect(payload[PlannerPayloadKeys.title], 'Morning reset');
+      final tracking = safeJsonMap(payload[PlannerPayloadKeys.tracking]);
+      expect(tracking['method'], 'checklist');
+      expect(
+        safeJsonMapList(tracking[PlannerHabitTrackingKeys.checklist]),
+        hasLength(1),
+      );
+      expect(
+        safeJsonMap(payload[PlannerPayloadKeys.recurrence])['rule'],
+        'daily',
+      );
+    },
+  );
+
+  testWidgets(
+    'task identity timing reminders focus and labels survive wizard editing',
+    (tester) async {
+      tester.view.physicalSize = const Size(1000, 900);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -124,12 +219,6 @@ void main() {
               'snooze_minutes': 35,
               'respect_quiet_hours': true,
             },
-            <String, dynamic>{
-              'enabled': true,
-              'lead_minutes': 30,
-              'snooze_minutes': 2000,
-              'respect_quiet_hours': true,
-            },
           ],
         },
         createdAt: start,
@@ -138,25 +227,15 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          theme: PerfectTheme.light(),
           home: Scaffold(
             body: PlannerEditor(controller: controller, existing: existing),
           ),
         ),
       );
 
-      final editorScroll = find
-          .descendant(
-            of: find.byType(PlannerEditor),
-            matching: find.byType(Scrollable),
-          )
-          .first;
-      await tester.scrollUntilVisible(
-        find.text('Category & identity'),
-        220,
-        scrollable: editorScroll,
-      );
-      await tester.tap(find.text('Category & identity'));
-      await tester.pumpAndSettle();
+      expect(find.textContaining('Type is fixed after creation'), findsOne);
+      await _tapStep(tester, 'category');
       final categoryField = find.byWidgetPredicate(
         (widget) =>
             widget is TextField &&
@@ -166,8 +245,6 @@ void main() {
         tester.widget<TextField>(categoryField).controller?.text,
         'Health',
       );
-      expect(find.widgetWithText(InputChip, 'Work'), findsOneWidget);
-      expect(find.widgetWithText(InputChip, 'Deep'), findsOneWidget);
       final labelsField = find.byWidgetPredicate(
         (widget) =>
             widget is TextField && widget.decoration?.labelText == 'Labels',
@@ -175,15 +252,8 @@ void main() {
       await tester.enterText(labelsField, 'Laptop');
       await tester.tap(find.byTooltip('Add label'));
       await tester.pump();
-      expect(find.widgetWithText(InputChip, 'Laptop'), findsOneWidget);
 
-      await tester.scrollUntilVisible(
-        find.text('Task context'),
-        260,
-        scrollable: editorScroll,
-      );
-      await tester.tap(find.text('Task context'));
-      await tester.pumpAndSettle();
+      await _tapStep(tester, 'details');
       expect(find.text('High energy'), findsOneWidget);
       expect(find.text('Short breaks + a long cycle break'), findsOneWidget);
       final estimateField = find.byWidgetPredicate(
@@ -193,31 +263,12 @@ void main() {
       );
       expect(tester.widget<TextField>(estimateField).controller?.text, '90');
 
-      await tester.scrollUntilVisible(
-        find.text('Reminders'),
-        260,
-        scrollable: editorScroll,
-      );
-      await tester.tap(find.text('Reminders'));
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.byTooltip('Increase snooze for 15 min before'),
-        160,
-        scrollable: editorScroll,
-      );
-      await tester.drag(editorScroll, const Offset(0, -120));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Increase snooze for 15 min before'));
-      await tester.pump();
-      expect(find.text('25 min'), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('35 min'),
-        180,
-        scrollable: editorScroll,
-      );
+      await _tapStep(tester, 'plan');
+      expect(find.text('15 min before · snooze'), findsOneWidget);
       expect(find.text('35 min'), findsOneWidget);
-
-      await tester.tap(find.text('Save to Perfect'));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('planner-editor-quick-save')),
+      );
       await tester.pump();
 
       final payload = controller.savedPayload!;
@@ -238,34 +289,17 @@ void main() {
       );
       final focus = safeJsonMap(payload['focus']);
       expect(focus[PlannerFocusPresetKeys.breakPolicy], 'pomodoro_cycle');
-      expect(focus[PlannerFocusPresetKeys.shortBreakMinutes], 7);
-      expect(focus[PlannerFocusPresetKeys.longBreakMinutes], 20);
-      expect(focus[PlannerFocusPresetKeys.longBreakAfterCycles], 3);
-      final reminders = safeJsonMapList(payload['reminders']);
-      expect(reminders, hasLength(3));
-      expect(
-        reminders.singleWhere(
-          (reminder) => reminder['lead_minutes'] == 15,
-        )['snooze_minutes'],
-        25,
-      );
-      expect(
-        reminders.singleWhere(
-          (reminder) => reminder['lead_minutes'] == 60,
-        )['snooze_minutes'],
-        35,
-      );
-      expect(
-        reminders.singleWhere(
-          (reminder) => reminder['lead_minutes'] == 30,
-        )['snooze_minutes'],
-        1440,
-      );
+      expect(safeJsonMapList(payload['reminders']), hasLength(2));
     },
-    timeout: const Timeout(Duration(minutes: 1)),
   );
 
-  testWidgets('time-block end must be after start', (tester) async {
+  testWidgets('invalid time block reveals the Plan step and keeps draft', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(900, 760);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final controller = _RecordingPlannerController();
     addTearDown(controller.disposeAsync);
     final start = DateTime.utc(2026, 7, 27, 10);
@@ -288,30 +322,34 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        theme: PerfectTheme.light(),
         home: Scaffold(
           body: PlannerEditor(controller: controller, existing: existing),
         ),
       ),
     );
-    await tester.tap(find.text('Save to Perfect'));
+    await tester.tap(
+      find.byKey(const ValueKey<String>('planner-editor-quick-save')),
+    );
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
 
     expect(controller.savedPayload, isNull);
-    expect(
-      find.text('Time-block end must be after its start.'),
-      findsOneWidget,
-    );
+    expect(find.text('Place it in your day'), findsOneWidget);
+    expect(find.text('Time-block end must be after its start.'), findsWidgets);
+    await _tapStep(tester, 'define');
+    expect(find.text('Invalid block'), findsWidgets);
   });
 
   testWidgets(
-    'editor remains usable across phone tablet desktop and short landscape',
+    'wizard remains usable across phone tablet desktop and short landscape',
     (tester) async {
       addTearDown(() => tester.binding.setSurfaceSize(null));
       final cases = <({Size size, double textScale, String name})>[
         (size: const Size(360, 780), textScale: 1, name: 'narrow phone'),
         (size: const Size(800, 1280), textScale: 1.3, name: 'portrait tablet'),
         (
-          size: const Size(1024, 600),
+          size: const Size(1024, 520),
           textScale: 1,
           name: 'short tablet landscape',
         ),
@@ -328,6 +366,7 @@ void main() {
         try {
           await tester.pumpWidget(
             MaterialApp(
+              theme: PerfectTheme.light(),
               builder: (context, child) => MediaQuery(
                 data: MediaQuery.of(context).copyWith(
                   textScaler: TextScaler.linear(testCase.textScale),
@@ -342,14 +381,22 @@ void main() {
 
           expect(tester.takeException(), isNull, reason: testCase.name);
           expect(find.text('Make it yours'), findsOneWidget);
-          expect(find.text('Save to Perfect'), findsOneWidget);
+          expect(find.text('What are you shaping?'), findsOneWidget);
           expect(
-            tester.getRect(find.text('Save to Perfect')).bottom,
+            find.byKey(const ValueKey<String>('planner-editor-next')),
+            findsOneWidget,
+          );
+          expect(
+            tester
+                .getRect(
+                  find.byKey(const ValueKey<String>('planner-editor-next')),
+                )
+                .bottom,
             lessThanOrEqualTo(testCase.size.height),
             reason: testCase.name,
           );
           expect(
-            find.byKey(const ValueKey<String>('planner-editor-scroll')),
+            find.byKey(const ValueKey<String>('planner-editor-type')),
             findsOneWidget,
           );
         } finally {
@@ -358,6 +405,123 @@ void main() {
       }
     },
   );
+
+  testWidgets(
+    'compact 200 percent RTL habit flow keeps every action visible and hittable',
+    (tester) async {
+      final previousHitTestWarningPolicy =
+          WidgetController.hitTestWarningShouldBeFatal;
+      WidgetController.hitTestWarningShouldBeFatal = true;
+      addTearDown(
+        () => WidgetController.hitTestWarningShouldBeFatal =
+            previousHitTestWarningPolicy,
+      );
+      await tester.binding.setSurfaceSize(const Size(320, 700));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final controller = _RecordingPlannerController();
+      addTearDown(controller.disposeAsync);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: PerfectTheme.light(),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: const TextScaler.linear(2),
+              disableAnimations: true,
+            ),
+            child: Directionality(
+              textDirection: TextDirection.rtl,
+              child: child ?? const SizedBox.shrink(),
+            ),
+          ),
+          home: Scaffold(
+            body: PlannerEditor(
+              controller: controller,
+              initialKind: PlannerEntityKind.habit,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      Future<void> continueTo(String nextStep) async {
+        final action = find.byKey(
+          const ValueKey<String>('planner-editor-next'),
+        );
+        expect(action, findsOneWidget);
+        expect(action.hitTestable(), findsOneWidget);
+        final rect = tester.getRect(action);
+        expect(rect.left, greaterThanOrEqualTo(0));
+        expect(rect.right, lessThanOrEqualTo(320));
+        expect(rect.top, greaterThanOrEqualTo(0));
+        expect(rect.bottom, lessThanOrEqualTo(700));
+        await tester.tap(action);
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(ValueKey<String>('planner-editor-$nextStep')),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull, reason: nextStep);
+      }
+
+      await continueTo('category');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Category (optional)'),
+        'سلامت و آرامش ذهنی بلندمدت',
+      );
+      await continueTo('evaluate');
+      final checklistEvaluation = find.byKey(
+        const ValueKey<String>('habit-evaluation-checklist'),
+      );
+      await tester.ensureVisible(checklistEvaluation);
+      await tester.pumpAndSettle();
+      expect(checklistEvaluation.hitTestable(), findsOneWidget);
+      await tester.tap(checklistEvaluation);
+      await tester.pump();
+      await continueTo('define');
+      expect(
+        find.widgetWithText(TextFormField, 'Checklist item'),
+        findsOneWidget,
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('planner-editor-title')),
+        'روتین آرام و کامل صبحگاهی برای روزهای خیلی شلوغ',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Description (optional)'),
+        'این توضیح عمداً بلند و فارسی است تا چینش راست‌به‌چپ و بزرگ‌نمایی متن بدون برش یا هم‌پوشانی بماند.',
+      );
+      final checklistField = find.widgetWithText(
+        TextFormField,
+        'Checklist item',
+      );
+      await tester.ensureVisible(checklistField);
+      await tester.enterText(checklistField, 'نوشیدن یک لیوان آب');
+      final addChecklist = find.byTooltip('Add habit checklist item');
+      await tester.ensureVisible(addChecklist);
+      await tester.tap(addChecklist);
+      await tester.pump();
+      expect(find.text('نوشیدن یک لیوان آب'), findsOneWidget);
+      await continueTo('frequency');
+      await continueTo('plan');
+      await continueTo('review');
+
+      final save = find.byKey(const ValueKey<String>('planner-editor-save'));
+      expect(save, findsOneWidget);
+      expect(save.hitTestable(), findsOneWidget);
+      final saveRect = tester.getRect(save);
+      expect(saveRect.right, lessThanOrEqualTo(320));
+      expect(saveRect.bottom, lessThanOrEqualTo(700));
+      expect(tester.takeException(), isNull);
+    },
+  );
+}
+
+Future<void> _tapStep(WidgetTester tester, String id) async {
+  final finder = find.byKey(ValueKey<String>('planner-step-$id'));
+  await tester.ensureVisible(finder);
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
 }
 
 class _RecordingPlannerController extends PlannerWorkspaceController {

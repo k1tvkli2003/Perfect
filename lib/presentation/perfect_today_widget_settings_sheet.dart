@@ -35,6 +35,7 @@ class PerfectTodayWidgetSettingsSheet extends StatefulWidget {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
       builder: (_) => PerfectTodayWidgetSettingsSheet(controller: controller),
     );
   }

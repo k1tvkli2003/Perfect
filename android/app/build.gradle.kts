@@ -63,6 +63,14 @@ android {
     }
 
     buildTypes {
+        debug {
+            // The continuously refreshed emulator preview is intentionally a
+            // sibling install. It can be replaced many times while the
+            // private production package keeps its signing lineage, session,
+            // widgets, and local database untouched.
+            applicationIdSuffix = ".preview"
+            versionNameSuffix = "-preview"
+        }
         release {
             // CI supplies a stable private key through environment-backed
             // GitHub secrets. Local verification remains buildable with the

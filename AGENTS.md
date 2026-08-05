@@ -23,6 +23,12 @@ global Codex protocol.
 - Tablet and desktop navigation must collapse. Tablet defaults to a compact
   icon rail; Windows may remember the owner's last rail state. Reflow content
   without overlap, focus loss, or scroll jumps.
+- Primary phrases and actions must remain whole, readable, and reachable. At
+  narrow widths, short heights, long RTL/mixed copy, or 200% text, recompose
+  cramped rows into Wrap/Column layouts before allowing clipping, accidental
+  overlap, split labels, or tiny side-by-side controls. Ellipsis is reserved
+  for genuinely secondary or user-authored preview text and must not hide the
+  meaning or the only available action.
 - Build geometry from live constraints and content with a deliberate mixed
   model: intrinsic sizing for copy/controls, flex for distribution, bounded
   fractions for panes, aspect ratios for meaningful compositions, and fixed
@@ -35,6 +41,12 @@ global Codex protocol.
   panel adjacency, and action continuity. Orbit, day stream, AI, capture, and
   navigation must compose as one instrument; reject tiny floating content and
   unrelated full-width bars appended to the viewport.
+- Treat proportion as a product contract: typography hierarchy, icon/control
+  scale, readable line length, card weight, radius, spacing rhythm, optical
+  alignment, density, and negative space must feel deliberately related across
+  every surface. Automated bounds checks cannot certify this; compare sparse
+  and dense screenshots at every layout class and reject compositions that
+  merely fit while looking imbalanced, cramped, oversized, or generic.
 - Treat motion as a system: hover, press, focus, expand/collapse, breakpoint
   transition, loading, completion feedback, and reduced-motion behavior must be
   designed and verified, not left to component defaults.
@@ -56,7 +68,8 @@ global Codex protocol.
 - Stress both axes, including short landscape, tall/narrow, split-screen,
   intermediate Windows resize, IME intrusion, and transitions across every
   breakpoint. Reject overflow, clipped required actions, excessive empty space,
-  unstable line length, or geometry that only passes a single golden viewport.
+  unstable line length, intersecting critical bounds, unreachable visible
+  controls, or geometry that only passes a single golden viewport.
 - Inspect animation continuity, hover/focus/pressed states, resize behavior,
   clipping, scroll retention, and frame jank in real runtime screenshots or
   recordings before final handoff.
