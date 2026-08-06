@@ -134,3 +134,38 @@ Exact-HEAD run [`30721214315`](https://github.com/k1tvkli2003/Perfect/actions/ru
 1. Exercise the signed-in main workspace on Android phone/tablet/Windows and record Windows hover/focus semantics and frame jank.
 2. Prove authenticated Android↔Windows convergence/session retention، signed-in widget Quick Add and physical notification/OEM/reboot behavior.
 3. Run positive AI text/voice/proposal-apply only after a rotated provider key is stored through the secure Supabase secret path.
+
+## 2026-08-06 — 50-stage plan and preview-first production gate
+
+### Completed in this planning checkpoint
+
+- Created one canonical 50-stage master plan and one separate detailed work-order file
+  for each Stage 01–50.
+- Added a whole-product propagation ledger covering every entrypoint, page, workflow,
+  state, platform consumer, local/Supabase/AI/widget path and release lifecycle.
+- Rebuilt Stage 03 as an autonomous evidence/generative-direction gate with broad
+  concept exploration and internal, recorded selection rather than owner voting.
+- Rebuilt Stage 04 as an exhaustive component preview library: foundations, anatomy,
+  all domain/interaction/system states, responsive variants, assets, semantics and
+  motion boards before code.
+- Rebuilt Stage 05 as a full page/overlay/widget preview corpus plus deterministic
+  fixture, Copy side-by-side/diff and automated quality harness.
+- Added `stages/preview-production-gate.md` with stable component/page IDs, artifact
+  paths, viewport/state matrices, asset/motion manifests, internal acceptance schema
+  and runtime mismatch severity/repair loop.
+- Added a specific mandatory Preview+Copy entry gate to every runtime Stage 06–35 and
+  normalized Stages 36–50 to the same owner-delegated autonomous acceptance model.
+- Fixed README links for Stages 42, 45, 49 and 50 and updated Stage 04/05 titles in
+  both the README and master plan.
+- Preserved all unrelated/unaccepted source prototypes without staging or claiming
+  them. No implementation, test or release result was inferred from documentation.
+
+### Next executable work
+
+1. Finish Stage 01 by freezing current Git/release/signing/schema/storage/session and
+   two-version continuity evidence without mutating live data.
+2. Complete Stage 02 source-backed route/interaction/action inventory and friction
+   table, including widget, notification, protocol and AI entrypoints.
+3. Execute Stage 03 research and design direction artifacts; then create the complete
+   Stage 04 component plates and Stage 05 page compositions before accepting any
+   runtime UI work.

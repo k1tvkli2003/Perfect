@@ -1,7 +1,7 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-06T03:34:50+03:30
+- Last updated: 2026-08-06T23:07:55+03:30
 - Owner: Codex
 
 ## Current State
@@ -89,3 +89,36 @@ Perfect Cycle 1 روی commit `a793531279174f735ad1e247f96a5213613dabb1` با wo
 - convergence واقعی Android↔Windows روی دو نصب نهایی با همان حساب owner.
 - signed-in phone/tablet main workspace، signed-in Windows workspace/hover/jank، signed-in widget Quick Add و notification/OEM/reboot روی سخت‌افزار فیزیکی هنوز runtime proof ندارند.
 - AI text/voice/proposal-apply مثبت فقط پس از تنظیم provider key rotateشده end-to-end اجرا شود.
+
+## Canonical 50-stage rebuild rebase — 2026-08-06
+
+- `11-master-50-stage-plan.md` and exactly 50 separate work-order files under
+  `stages/` are now the canonical forward execution contract. Older Cycle 3
+  “Remaining” items remain historical evidence but no longer override the numbered
+  sequence.
+- Stage 01 is the active gate. Existing uncommitted workspace/date/test changes are
+  retained as unaccepted prototypes mapped to later stages; they are not proof and
+  will not bypass preservation, route inventory or preview gates.
+- Orbit is explicitly retired in Stage 11. The approved brand mark/wordmark remain;
+  Today is rebuilt around a compact Today Pulse and actionable day stream.
+- Stages 03–05 are design-only and block production UI mutation: evidence-led
+  direction → exhaustive individual component previews → complete page/overlay/widget
+  compositions → frozen hashes/manifests and normalized Copy comparison tooling.
+- Ordinary design decisions are autonomous. No stage waits for owner concept voting;
+  Modernize, Integrity, Anatomy, Style and Critics evidence records select and freeze
+  the strongest direction. Privacy, authorization and destructive user actions still
+  retain explicit in-product consent where required.
+- The mandatory `coverage-ledger.md` makes each stage title a primary owner rather
+  than a scope boundary. Every decision propagates through Android phone/tablet,
+  Windows, widget, notification/deep link, local DB/outbox, Supabase, AI, settings,
+  recovery, accessibility, performance and upgrade consumers as applicable.
+- The mandatory `preview-production-gate.md` explicitly inventories foundations,
+  reusable components, full pages, states, layout classes, assets, motion IDs,
+  acceptance records and the Copy mismatch workflow. Stages 06–50 may implement only
+  from those frozen references.
+- Planning validation currently proves exactly 50 numbered files, no missing or
+  duplicate stage number, no broken local links across the canonical 54-file plan
+  set, and a Preview+Copy gate in every runtime stage. No runtime test or release is
+  claimed for this documentation checkpoint.
+- All delegated subagents are closed. Continued work is owned by the root agent only,
+  per the latest explicit instruction.

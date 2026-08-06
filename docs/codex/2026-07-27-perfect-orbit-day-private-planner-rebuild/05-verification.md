@@ -268,3 +268,29 @@ session retention and owner Supabase convergence remain separate gates.
 | Android open/close stability | `Codex_API35`, API 35, `-gpu host`, secret-free preview | passed | ADB `device`, QEMU `Responding=True`, working set stayed about 3.1GB after four open/close cycles; screenshots `.codex-tmp/critics-cycle1/android-home-cycle3-host-before.png` and `android-home-cycle3-host-expanded.png` |
 | Legacy renderer comparison | `-gpu swiftshader_indirect` | rejected as environment proof | current Emulator help no longer lists this deprecated mode; AVD exited independently, so it is not used to claim an app failure or success |
 | Release | exact-SHA hosted workflow | pending | source is locally green; commit/push/three-asset immutable release follows this documentation checkpoint |
+
+## 2026-08-06 — canonical plan-structure verification
+
+This checkpoint verifies documentation structure only. It does not validate the
+uncommitted Flutter prototypes, a device runtime or a release artifact.
+
+| Check | Method | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| Exact stage count | numbered-file enumeration `^\d{2}-.*\.md$` | passed | 50 files; sequence 01–50; zero missing and zero duplicate numbers |
+| Canonical local links | Markdown target resolution across master, README, ledgers and 50 stage files | passed | 54 files checked; zero broken local links |
+| Stage structure | required Mission and Reject headings | passed | zero structural issues across all 50 stage files |
+| Preview-before-code coverage | scan Stages 06–50 for Preview and Copy contracts | passed | 45/45 runtime stages contain both gates |
+| Autonomous design authority | stale owner-approval phrase scan | passed | zero remaining design dependencies on owner voting; in-product destructive/AI Apply consent remains intentionally separate |
+| Formatting hygiene | `git diff --check` scoped to master/stages | passed | no whitespace errors |
+| Platform scope | canonical plan scan | passed | Android phone/tablet and Windows only; Web appears only in Stage 01 as explicitly out of scope |
+| Secret hygiene | literal credential scan | passed | no private password/API value in the 50-stage plan; server-only provider and safe auth boundaries remain explicit |
+
+### Explicit limits
+
+- Canonical preview image files and Stage 03–05 manifests are planned but not yet
+  generated; their absence keeps Stage 06 blocked exactly as intended.
+- Existing `perfect_workspace_page.dart`, its test changes and
+  `perfect_date_format.dart` are unaccepted prototypes. No analyze/test/device/release
+  claim is made for them in this checkpoint.
+- Old Cycle 3 Orbit evidence remains historical only and cannot supersede the new
+  Stage 11 removal decision or manufacture a current Preview/Copy acceptance.
