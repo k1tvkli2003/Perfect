@@ -595,7 +595,9 @@ class _OrbitGraphicRing extends StatelessWidget {
       child: Opacity(
         opacity: progress,
         child: Transform.scale(
-          scale: .975 + progress * .025,
+          // Reserve a real label gutter. The graphic remains visually large,
+          // while the 6 AM / 6 PM anchors no longer fight the canvas edge.
+          scale: .92625 + progress * .02375,
           child: SvgPicture.asset(
             dark
                 ? 'assets/brand/orbit_period_ring_dark.svg'
@@ -638,14 +640,13 @@ class _DayPulseDialPainter extends CustomPainter {
         ? const Color(0xff292c3d)
         : PerfectColors.creamElevated;
     final stroke = dark ? const Color(0xff494d61) : PerfectColors.creamStroke;
-    // The project-owned SVG owns the crafted period ring, while this painter
-    // keeps live clock geometry, labels, and interaction states semantic.
-    // The authored ring asset uses a 440/1000 centre-line radius. Keeping the
-    // live geometry on that exact radius prevents labels and the now marker
-    // from drifting toward the outer rim.
-    final outerRadius = shortest * .440;
-    final bandWidth = shortest * .070;
-    final innerTickRadius = shortest * .395;
+    // The authored ring is rendered at 95% so its live clock labels have a
+    // deliberate gutter. These values are the asset's 440/70/395 geometry at
+    // the same scale; the marker, arc copy and ticks therefore stay locked to
+    // the artwork instead of drifting independently.
+    final outerRadius = shortest * .418;
+    final bandWidth = shortest * .0665;
+    final innerTickRadius = shortest * .37525;
 
     if (layer == _DayPulseDialLayer.backdrop) {
       canvas.drawCircle(
@@ -726,7 +727,7 @@ class _DayPulseDialPainter extends CustomPainter {
     _drawClockLabel(
       canvas,
       center: center,
-      radius: innerTickRadius,
+      radius: innerTickRadius - shortest * .05525,
       angle: _clockAngle(12),
       primary: '12',
       secondary: 'NOON',
@@ -736,12 +737,9 @@ class _DayPulseDialPainter extends CustomPainter {
     _drawClockLabel(
       canvas,
       center: center,
-      // Side labels belong at the dial edge, never over the next-action copy.
-      // `_drawClockLabel` deliberately offsets its glyphs inward by a small
-      // tick-safe amount. This larger radial budget therefore lands the
-      // 6 AM / 6 PM pair just outside the color bands, as on an actual clock,
-      // rather than in the centre's reading lane.
-      radius: outerRadius + bandWidth * 1.50,
+      // Side clocks share one explicit anchor radius. The 95% ring leaves
+      // enough canvas for the complete two-line label on both sides.
+      radius: outerRadius + bandWidth * .78,
       angle: _clockAngle(18),
       primary: '6',
       secondary: 'PM',
@@ -751,7 +749,7 @@ class _DayPulseDialPainter extends CustomPainter {
     _drawClockLabel(
       canvas,
       center: center,
-      radius: innerTickRadius,
+      radius: innerTickRadius - shortest * .05525,
       angle: _clockAngle(24),
       primary: '12',
       secondary: 'MIDNIGHT',
@@ -762,7 +760,7 @@ class _DayPulseDialPainter extends CustomPainter {
       canvas,
       center: center,
       // See the symmetric 6 PM label above.
-      radius: outerRadius + bandWidth * 1.50,
+      radius: outerRadius + bandWidth * .78,
       angle: _clockAngle(6),
       primary: '6',
       secondary: 'AM',
@@ -948,7 +946,7 @@ class _DayPulseDialPainter extends CustomPainter {
     required double shortest,
     required Color color,
   }) {
-    final point = _point(center, radius - shortest * .075, angle);
+    final point = _point(center, radius, angle);
     final primaryPainter = _textPainter(
       primary,
       TextStyle(

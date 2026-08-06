@@ -1274,12 +1274,7 @@ class _CompactWorkspaceFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labelSize = Theme.of(context).textTheme.labelMedium?.fontSize ?? 12;
-    final textScale =
-        MediaQuery.textScalerOf(context).scale(labelSize) / labelSize;
-    final navigationHeight = (66 + math.max(0, textScale - 1) * 28)
-        .clamp(66.0, 96.0)
-        .toDouble();
+    final theme = Theme.of(context);
     return Material(
       color: Colors.transparent,
       child: SafeArea(
@@ -1299,24 +1294,60 @@ class _CompactWorkspaceFooter extends StatelessWidget {
             ),
             blur: 24,
             strength: PerfectGlassStrength.strong,
-            child: Material(
-              color: Colors.transparent,
-              child: NavigationBar(
-                height: navigationHeight,
-                elevation: 0,
-                backgroundColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
-                selectedIndex: selectedIndex,
-                onDestinationSelected: onDestinationSelected,
-                destinations: _destinations
-                    .map(
-                      (destination) => NavigationDestination(
-                        icon: Icon(destination.icon),
-                        selectedIcon: Icon(destination.selectedIcon),
-                        label: destination.label,
-                      ),
-                    )
-                    .toList(growable: false),
+            child: NavigationBarTheme(
+              key: const ValueKey<String>('perfect-compact-navigation-theme'),
+              data: theme.navigationBarTheme.copyWith(
+                // The Material indicator stays disabled. Perfect paints a
+                // compact prismatic tile, not the stock stadium.
+                indicatorColor: Colors.transparent,
+                indicatorShape: const StadiumBorder(),
+                labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+              ),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: AlignmentDirectional.topStart,
+                    end: AlignmentDirectional.bottomEnd,
+                    colors: <Color>[
+                      Colors.white.withValues(alpha: .20),
+                      theme.colorScheme.surface.withValues(alpha: .06),
+                      PerfectColors.lilacSoft.withValues(alpha: .09),
+                    ],
+                  ),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: NavigationBar(
+                    key: const ValueKey<String>('perfect-compact-navigation'),
+                    height: 68,
+                    elevation: 0,
+                    backgroundColor: Colors.transparent,
+                    surfaceTintColor: Colors.transparent,
+                    labelBehavior:
+                        NavigationDestinationLabelBehavior.alwaysHide,
+                    selectedIndex: selectedIndex,
+                    onDestinationSelected: onDestinationSelected,
+                    destinations: _destinations
+                        .map(
+                          (destination) => NavigationDestination(
+                            key: ValueKey<String>(
+                              'perfect-footer-${destination.name}',
+                            ),
+                            tooltip: destination.label,
+                            icon: _CompactDestinationGlyph(
+                              destination: destination,
+                              selected: false,
+                            ),
+                            selectedIcon: _CompactDestinationGlyph(
+                              destination: destination,
+                              selected: true,
+                            ),
+                            label: destination.label,
+                          ),
+                        )
+                        .toList(growable: false),
+                  ),
+                ),
               ),
             ),
           ),
@@ -1325,6 +1356,156 @@ class _CompactWorkspaceFooter extends StatelessWidget {
     );
   }
 }
+
+class _CompactDestinationGlyph extends StatelessWidget {
+  const _CompactDestinationGlyph({
+    required this.destination,
+    required this.selected,
+  });
+
+  final _PerfectDestination destination;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final accent = _destinationAccent(destination);
+    final companion = _destinationCompanion(destination);
+    final duration = PerfectMotion.responsive(context, PerfectMotion.standard);
+    final icon = selected ? destination.selectedIcon : destination.icon;
+
+    return TweenAnimationBuilder<double>(
+      key: selected
+          ? ValueKey<String>('perfect-footer-selected-${destination.name}')
+          : null,
+      tween: Tween<double>(begin: 0, end: selected ? 1 : 0),
+      duration: duration,
+      curve: PerfectMotion.modalEnter,
+      builder: (context, progress, child) => SizedBox(
+        width: 54,
+        height: 54,
+        child: Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            Opacity(
+              opacity: progress,
+              child: Transform.translate(
+                offset: Offset(0, 2 - progress * 4),
+                child: Transform.scale(
+                  scale: .76 + progress * .24,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: ShapeDecoration(
+                      shape: ContinuousRectangleBorder(
+                        borderRadius: BorderRadius.circular(22),
+                        side: BorderSide(
+                          color: Colors.white.withValues(alpha: .88),
+                          width: 1.2,
+                        ),
+                      ),
+                      gradient: LinearGradient(
+                        begin: AlignmentDirectional.topStart,
+                        end: AlignmentDirectional.bottomEnd,
+                        colors: <Color>[
+                          accent.withValues(alpha: .34),
+                          companion.withValues(alpha: .22),
+                          scheme.surface.withValues(alpha: .92),
+                        ],
+                        stops: const <double>[0, .56, 1],
+                      ),
+                      shadows: <BoxShadow>[
+                        BoxShadow(
+                          color: accent.withValues(alpha: .24),
+                          blurRadius: 18,
+                          spreadRadius: -3,
+                          offset: const Offset(0, 7),
+                        ),
+                        BoxShadow(
+                          color: scheme.shadow.withValues(alpha: .08),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Align(
+                      alignment: const Alignment(-.58, -.62),
+                      child: Container(
+                        width: 14,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(99),
+                          gradient: LinearGradient(
+                            colors: <Color>[
+                              Colors.white.withValues(alpha: .78),
+                              Colors.white.withValues(alpha: 0),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Transform.translate(
+              offset: Offset(0, selected ? -2.3 * progress : 0),
+              child: Transform.scale(
+                scale: selected ? .88 + progress * .12 : 1,
+                child: Icon(
+                  icon,
+                  size: selected ? 24 : 23,
+                  color: selected ? PerfectColors.ink : scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            if (selected)
+              PositionedDirectional(
+                bottom: -1,
+                child: Opacity(
+                  opacity: progress,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: <Color>[accent, accent.withValues(alpha: .12)],
+                      ),
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: accent.withValues(alpha: .45),
+                          blurRadius: 7,
+                        ),
+                      ],
+                    ),
+                    child: const SizedBox.square(dimension: 5),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Color _destinationAccent(_PerfectDestination destination) =>
+    switch (destination) {
+      _PerfectDestination.today => PerfectColors.apricot,
+      _PerfectDestination.tasks => PerfectColors.sync,
+      _PerfectDestination.plan => PerfectColors.lilacAction,
+      _PerfectDestination.habits => PerfectColors.mint,
+      _PerfectDestination.more => PerfectColors.lilac,
+    };
+
+Color _destinationCompanion(_PerfectDestination destination) =>
+    switch (destination) {
+      _PerfectDestination.today => PerfectColors.lilac,
+      _PerfectDestination.tasks => PerfectColors.mint,
+      _PerfectDestination.plan => PerfectColors.apricot,
+      _PerfectDestination.habits => PerfectColors.lilac,
+      _PerfectDestination.more => PerfectColors.sync,
+    };
 
 class _QuickCaptureDock extends StatefulWidget {
   const _QuickCaptureDock({
@@ -1506,7 +1687,7 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
         return Padding(
           padding: EdgeInsets.fromLTRB(
             horizontalPadding,
-            4,
+            _expanded ? 4 : 10,
             horizontalPadding,
             6,
           ),
@@ -1524,36 +1705,34 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
                   ),
                   curve: PerfectMotion.modalEnter,
                   clipBehavior: Clip.none,
-                  child: AnimatedSwitcher(
+                  child: TweenAnimationBuilder<double>(
+                    key: ValueKey<String>(
+                      _expanded
+                          ? 'quick-capture-one-surface-expanded'
+                          : 'quick-capture-one-surface-collapsed',
+                    ),
+                    tween: Tween<double>(begin: 0, end: 1),
                     duration: PerfectMotion.responsive(
                       context,
-                      PerfectMotion.emphasized,
+                      _expanded
+                          ? PerfectMotion.emphasized
+                          : PerfectMotion.quick,
                     ),
-                    reverseDuration: duration,
-                    switchInCurve: PerfectMotion.modalEnter,
-                    switchOutCurve: PerfectMotion.exit,
-                    layoutBuilder: (currentChild, previousChildren) => Stack(
-                      alignment: AlignmentDirectional.bottomCenter,
-                      clipBehavior: Clip.none,
-                      children: <Widget>[...previousChildren, ?currentChild],
-                    ),
-                    transitionBuilder: (child, animation) {
-                      if (_reduceMotion) {
-                        return FadeTransition(opacity: animation, child: child);
-                      }
-                      return FadeTransition(
-                        opacity: animation,
-                        child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0, .12),
-                            end: Offset.zero,
-                          ).animate(animation),
-                          child: ScaleTransition(
+                    curve: PerfectMotion.modalEnter,
+                    // This is intentionally a one-child morph. AnimatedSwitcher
+                    // retains the outgoing subtree even with a custom layout;
+                    // that doubled the compositor load and could terminate a
+                    // SwiftShader emulator. Size, fade, rise and scale remain,
+                    // but only the current dock is ever painted.
+                    builder: (context, progress, child) {
+                      if (_reduceMotion) return child!;
+                      return Opacity(
+                        opacity: progress,
+                        child: Transform.translate(
+                          offset: Offset(0, (1 - progress) * 10),
+                          child: Transform.scale(
                             alignment: Alignment.bottomCenter,
-                            scale: Tween<double>(
-                              begin: .94,
-                              end: 1,
-                            ).animate(animation),
+                            scale: .96 + progress * .04,
                             child: child,
                           ),
                         ),
@@ -1609,17 +1788,17 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
                 boxShadow: <BoxShadow>[
                   BoxShadow(
                     color: PerfectColors.sync.withValues(
-                      alpha: .14 + heartbeat * .12,
+                      alpha: .10 + heartbeat * .08,
                     ),
-                    blurRadius: 18 + heartbeat * 16,
-                    spreadRadius: heartbeat * 2.5,
+                    blurRadius: 14 + heartbeat * 10,
+                    offset: const Offset(0, 6),
                   ),
                   BoxShadow(
                     color: PerfectColors.lilac.withValues(
-                      alpha: .12 + heartbeat * .10,
+                      alpha: .10 + heartbeat * .07,
                     ),
-                    blurRadius: 22 + heartbeat * 14,
-                    offset: const Offset(0, 7),
+                    blurRadius: 18 + heartbeat * 8,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
@@ -1628,9 +1807,9 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
                   'perfect-quick-capture-surface',
                 ),
                 borderRadius: const BorderRadius.all(Radius.circular(999)),
-                strength: PerfectGlassStrength.strong,
-                blur: 22,
-                tint: scheme.surface.withValues(alpha: .76),
+                strength: PerfectGlassStrength.soft,
+                enableBlur: false,
+                tint: scheme.surface.withValues(alpha: .94),
                 borderColor: Colors.white.withValues(alpha: .68),
                 child: Material(
                   color: Colors.transparent,
@@ -1708,7 +1887,10 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
   }) {
     final scheme = Theme.of(context).colorScheme;
     final stacked = maxWidth < 620 || effectiveTextScale >= 1.25;
-    final showOptionLabels = maxWidth >= 330 && effectiveTextScale < 1.42;
+    final showOptionLabels =
+        effectiveTextScale < 1.42 &&
+        (stacked ? maxWidth >= 350 : maxWidth >= 740);
+    final showIdentitySupport = effectiveTextScale < 1.32 && maxWidth >= 350;
     final field = _buildCaptureField(
       context,
       hintText: hintText,
@@ -1719,12 +1901,13 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
       tooltip: 'Collapse quick capture',
       onPressed: _collapse,
       style: IconButton.styleFrom(
-        minimumSize: const Size.square(48),
+        minimumSize: const Size.square(44),
         shape: const CircleBorder(),
-        backgroundColor: scheme.surface.withValues(alpha: .52),
+        backgroundColor: scheme.surface.withValues(alpha: .62),
         foregroundColor: scheme.onSurfaceVariant,
+        side: BorderSide(color: scheme.outline.withValues(alpha: .20)),
       ),
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 27),
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 23),
     );
     final send = _buildSendAction(context, duration: duration);
     final plan = _CaptureOptionButton(
@@ -1733,7 +1916,9 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
           ? 'Plan a task or habit (Ctrl+N)'
           : 'Plan a task or habit',
       label: 'Plan',
-      showLabel: stacked && showOptionLabels,
+      tone: _CaptureOptionTone.plan,
+      showLabel: showOptionLabels,
+      vertical: stacked,
       onPressed: _openFullEditor,
       icon: const PerfectPictogram(
         name: 'calendar',
@@ -1744,9 +1929,11 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
     final ai = _CaptureOptionButton(
       key: const ValueKey<String>('perfect-ai-toggle'),
       tooltip: widget.aiOpen ? 'Close Perfect AI' : 'Ask Perfect AI',
-      label: 'AI',
+      label: 'Perfect AI',
+      tone: _CaptureOptionTone.ai,
       selected: widget.aiOpen,
-      showLabel: stacked && showOptionLabels,
+      showLabel: showOptionLabels,
+      vertical: stacked,
       onPressed: widget.onToggleAi,
       icon: const PerfectPictogram(
         name: 'ai',
@@ -1758,7 +1945,9 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
       key: const ValueKey<String>('perfect-ai-voice-toggle'),
       tooltip: 'Start a private voice note with Perfect AI',
       label: 'Voice',
-      showLabel: stacked && showOptionLabels,
+      tone: _CaptureOptionTone.voice,
+      showLabel: showOptionLabels,
+      vertical: stacked,
       onPressed: widget.onOpenAiVoice,
       icon: const PerfectPictogram(
         name: 'voice',
@@ -1771,6 +1960,78 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
       if (widget.aiAvailable) ai,
       if (widget.aiAvailable) voice,
     ];
+    final compactActionShelf = SizedBox(
+      key: const ValueKey<String>('perfect-capture-action-shelf'),
+      child: Row(
+        children: [
+          for (var index = 0; index < options.length; index++) ...[
+            if (index > 0) const SizedBox(width: 7),
+            Expanded(child: options[index]),
+          ],
+        ],
+      ),
+    );
+    final identity = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 38,
+          height: 38,
+          decoration: ShapeDecoration(
+            gradient: LinearGradient(
+              begin: AlignmentDirectional.topStart,
+              end: AlignmentDirectional.bottomEnd,
+              colors: <Color>[
+                PerfectColors.mintSoft.withValues(alpha: .92),
+                PerfectColors.lilacSoft.withValues(alpha: .82),
+              ],
+            ),
+            shape: ContinuousRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: BorderSide(color: Colors.white.withValues(alpha: .76)),
+            ),
+          ),
+          child: const Center(
+            child: PerfectPictogram(
+              name: 'task',
+              size: 23,
+              semanticLabel: 'Quick capture',
+            ),
+          ),
+        ),
+        const SizedBox(width: 9),
+        Flexible(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Quick capture',
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.fade,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -.18,
+                ),
+              ),
+              if (showIdentitySupport)
+                Text(
+                  'Type · plan · ask · speak',
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.fade,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 10.5,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
 
     return MouseRegion(
       key: key,
@@ -1785,9 +2046,13 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
           borderRadius: const BorderRadius.all(
             Radius.circular(PerfectRadius.dock),
           ),
-          strength: PerfectGlassStrength.strong,
-          blur: 26,
-          tint: scheme.surface.withValues(alpha: .80),
+          strength: PerfectGlassStrength.soft,
+          // Animating a large BackdropFilter inside Scaffold.bottomNavigationBar
+          // can balloon SwiftShader memory and stall low-end Android GPUs. The
+          // authored tint, highlight border and inner gradients keep the glass
+          // read without re-blurring the entire Today surface every frame.
+          enableBlur: false,
+          tint: scheme.surface.withValues(alpha: .94),
           borderColor: _fieldFocused
               ? PerfectColors.lilac.withValues(alpha: .62)
               : Colors.white.withValues(alpha: .58),
@@ -1797,42 +2062,43 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
                 begin: AlignmentDirectional.topStart,
                 end: AlignmentDirectional.bottomEnd,
                 colors: <Color>[
-                  PerfectColors.mintSoft.withValues(alpha: .22),
-                  Colors.transparent,
-                  PerfectColors.lilacSoft.withValues(alpha: .26),
+                  PerfectColors.mintSoft.withValues(alpha: .34),
+                  scheme.surface.withValues(alpha: .18),
+                  PerfectColors.lilacSoft.withValues(alpha: .38),
                 ],
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(7),
+              padding: const EdgeInsets.all(10),
               child: stacked
                   ? Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Row(
                           children: [
+                            Expanded(child: identity),
+                            const SizedBox(width: 8),
                             collapse,
-                            const SizedBox(width: PerfectSpace.xs),
+                          ],
+                        ),
+                        const SizedBox(height: 9),
+                        Row(
+                          children: [
                             Expanded(child: field),
-                            const SizedBox(width: PerfectSpace.xs),
+                            const SizedBox(width: 8),
                             send,
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          child: Wrap(
-                            spacing: 6,
-                            runSpacing: 6,
-                            children: options,
-                          ),
-                        ),
+                        const SizedBox(height: 9),
+                        compactActionShelf,
                       ],
                     )
                   : Row(
                       children: [
                         collapse,
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
+                        identity,
+                        const SizedBox(width: PerfectSpace.md),
                         plan,
                         const SizedBox(width: PerfectSpace.xs),
                         Expanded(child: field),
@@ -1894,8 +2160,19 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
           decoration: InputDecoration(
             counterText: '',
             hintText: hintText,
+            prefixIcon: const Center(
+              child: PerfectPictogram(
+                name: 'task',
+                size: 20,
+                semanticLabel: 'Write a quick task',
+              ),
+            ),
+            prefixIconConstraints: const BoxConstraints.tightFor(
+              width: 44,
+              height: 44,
+            ),
             contentPadding: const EdgeInsetsDirectional.symmetric(
-              horizontal: PerfectSpace.md,
+              horizontal: PerfectSpace.sm,
             ),
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
@@ -1977,71 +2254,137 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
   }
 }
 
+enum _CaptureOptionTone { plan, ai, voice }
+
 class _CaptureOptionButton extends StatelessWidget {
   const _CaptureOptionButton({
     super.key,
     required this.tooltip,
     required this.label,
+    required this.tone,
     required this.icon,
     required this.onPressed,
     this.showLabel = false,
     this.selected = false,
+    this.vertical = false,
   });
 
   final String tooltip;
   final String label;
+  final _CaptureOptionTone tone;
   final Widget icon;
   final VoidCallback? onPressed;
   final bool showLabel;
   final bool selected;
+  final bool vertical;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(24);
+    final accent = switch (tone) {
+      _CaptureOptionTone.plan => PerfectColors.apricot,
+      _CaptureOptionTone.ai => PerfectColors.lilacAction,
+      _CaptureOptionTone.voice => PerfectColors.sync,
+    };
+    final companion = switch (tone) {
+      _CaptureOptionTone.plan => PerfectColors.mint,
+      _CaptureOptionTone.ai => PerfectColors.mint,
+      _CaptureOptionTone.voice => PerfectColors.lilac,
+    };
+    final radius = BorderRadius.circular(vertical ? 20 : 18);
+    final duration = PerfectMotion.responsive(context, PerfectMotion.standard);
     return Tooltip(
       message: tooltip,
       child: Semantics(
         button: true,
         selected: selected,
         label: tooltip,
-        child: Material(
-          color: selected
-              ? PerfectColors.lilacSoft
-              : scheme.surface.withValues(alpha: .62),
-          borderRadius: radius,
-          child: InkWell(
-            onTap: onPressed,
+        child: AnimatedContainer(
+          duration: duration,
+          curve: PerfectMotion.productive,
+          constraints: BoxConstraints(
+            minWidth: 48,
+            minHeight: vertical ? 66 : 48,
+          ),
+          decoration: BoxDecoration(
+            color: selected ? null : accent.withValues(alpha: .075),
+            gradient: selected
+                ? LinearGradient(
+                    begin: AlignmentDirectional.topStart,
+                    end: AlignmentDirectional.bottomEnd,
+                    colors: <Color>[
+                      accent.withValues(alpha: .24),
+                      companion.withValues(alpha: .15),
+                      scheme.surface.withValues(alpha: .84),
+                    ],
+                  )
+                : null,
             borderRadius: radius,
-            child: Container(
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              padding: EdgeInsetsDirectional.symmetric(
-                horizontal: showLabel ? 12 : 10,
-              ),
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                border: Border.all(
-                  color: selected
-                      ? PerfectColors.lilac.withValues(alpha: .48)
-                      : scheme.outline.withValues(alpha: .22),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  icon,
-                  if (showLabel) ...[
-                    const SizedBox(width: 7),
-                    Text(
-                      label,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
-                      ),
+            border: Border.all(
+              color: selected
+                  ? accent.withValues(alpha: .44)
+                  : accent.withValues(alpha: .18),
+            ),
+            boxShadow: selected
+                ? <BoxShadow>[
+                    BoxShadow(
+                      color: accent.withValues(alpha: .14),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
-                  ],
-                ],
+                  ]
+                : const <BoxShadow>[],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: radius,
+            child: InkWell(
+              onTap: onPressed,
+              borderRadius: radius,
+              child: Padding(
+                padding: EdgeInsetsDirectional.symmetric(
+                  horizontal: showLabel ? 8 : 4,
+                  vertical: vertical ? 7 : 4,
+                ),
+                child: vertical
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _CaptureOptionIconPlate(
+                            accent: accent,
+                            selected: selected,
+                            icon: icon,
+                          ),
+                          if (showLabel) ...[
+                            const SizedBox(height: 4),
+                            _CaptureOptionLabel(
+                              label: label,
+                              selected: selected,
+                            ),
+                          ],
+                        ],
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _CaptureOptionIconPlate(
+                            accent: accent,
+                            selected: selected,
+                            icon: icon,
+                          ),
+                          if (showLabel) ...[
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: _CaptureOptionLabel(
+                                label: label,
+                                selected: selected,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
               ),
             ),
           ),
@@ -2049,6 +2392,58 @@ class _CaptureOptionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _CaptureOptionIconPlate extends StatelessWidget {
+  const _CaptureOptionIconPlate({
+    required this.accent,
+    required this.selected,
+    required this.icon,
+  });
+
+  final Color accent;
+  final bool selected;
+  final Widget icon;
+
+  @override
+  Widget build(BuildContext context) => AnimatedContainer(
+    duration: PerfectMotion.responsive(context, PerfectMotion.standard),
+    curve: PerfectMotion.productive,
+    width: 36,
+    height: 36,
+    decoration: ShapeDecoration(
+      color: selected
+          ? Theme.of(context).colorScheme.surface.withValues(alpha: .88)
+          : accent.withValues(alpha: .11),
+      shape: ContinuousRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: accent.withValues(alpha: selected ? .26 : .14)),
+      ),
+    ),
+    child: Center(child: icon),
+  );
+}
+
+class _CaptureOptionLabel extends StatelessWidget {
+  const _CaptureOptionLabel({required this.label, required this.selected});
+
+  final String label;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    label,
+    maxLines: 1,
+    softWrap: false,
+    overflow: TextOverflow.fade,
+    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+      color: selected
+          ? Theme.of(context).colorScheme.onSurface
+          : Theme.of(context).colorScheme.onSurfaceVariant,
+      fontWeight: selected ? FontWeight.w900 : FontWeight.w800,
+      fontSize: 11.5,
+    ),
+  );
 }
 
 class _CaptureActionDisc extends StatelessWidget {
@@ -5652,23 +6047,42 @@ class _ReferenceAgendaStatus extends StatelessWidget {
     }
     final value = completed ? 1.0 : progress.clamp(0, 100) / 100;
     return SizedBox.square(
-      dimension: 60,
+      dimension: 62,
       child: Stack(
         alignment: Alignment.center,
         children: [
           CircularProgressIndicator(
             value: value,
-            strokeWidth: 5,
+            strokeWidth: 4.5,
             strokeCap: StrokeCap.round,
             color: color,
             backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
           ),
-          Text(
-            '${completed ? 100 : progress}%',
-            maxLines: 1,
-            style: Theme.of(
-              context,
-            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          Container(
+            key: const ValueKey<String>('perfect-agenda-progress-safe-core'),
+            width: 43,
+            height: 43,
+            padding: const EdgeInsets.symmetric(horizontal: 7),
+            decoration: BoxDecoration(
+              color: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: .88),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '${completed ? 100 : progress}%',
+                maxLines: 1,
+                softWrap: false,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
+              ),
+            ),
           ),
         ],
       ),

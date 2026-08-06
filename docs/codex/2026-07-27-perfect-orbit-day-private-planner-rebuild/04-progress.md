@@ -103,6 +103,15 @@ Exact-HEAD run [`30721214315`](https://github.com/k1tvkli2003/Perfect/actions/ru
 
 ورود مالک خصوصی در همان Supabase user متصل به `planner_owner_profiles` تثبیت شد: نام کاربری اپ `keyvan` است، ایمیل انتقالی فقط از Secret بیلد می‌آید و رمز در سورس/Workflow ذخیره نمی‌شود. Admin API حساب موجود را بدون تغییر UUID به‌روزرسانی کرد؛ password sign-in واقعی، تطابق UUID مالک و metadata نام کاربری پاس شد و نشست آزمایشی بلافاصله revoke شد.
 
+## Continuous perfection checkpoints — 2026-08-06
+
+- Cycle 2 روی commit `5f49334a82189d976fa926b31b8f9c0488113a06` و exact-SHA run [`31051013501`](https://github.com/k1tvkli2003/Perfect/actions/runs/31051013501) بسته شد. Release immutable [`v1.1.0-build.2037`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2037) دقیقاً APK، Windows Setup و Windows Portable دارد؛ install-over و LocalState پاس‌اند.
+- Cycle 3 فوتر compact را icon-only کرد، indicator بیضی Material را حذف و یک tile پاستلی ۴۸dp با motion/hover/semantics جایگزین کرد. مقصدها همچنان tooltip/semantic label و target کامل دارند.
+- Quick Capture از یک ردیف فشرده و کم‌معنا به یک composer سلسله‌مراتبی تبدیل شد: هویت/بستن، field صریح، send و سه action هم‌اندازهٔ Plan، Perfect AI و Voice. AI و Voice اکنون SVG اختصاصی، text-free و transparent دارند؛ toggle اولیه هیچ IME را باز نمی‌کند.
+- morph داک از `AnimatedSwitcher` دو-subtree به یک child جاری با AnimatedSize + fade/rise/scale منتقل شد. روی `Codex_API35` با renderer رسمی `host` چهار باز/بسته‌شدن متوالی، ADB و QEMU responsive ماندند؛ renderer منسوخ `swiftshader_indirect` خود AVD را حتی بدون لمس پایدار نگه نمی‌داشت و به‌عنوان proof اپ استفاده نشد.
+- Orbit graphic و painter با scale مشترک ۹۵٪ یک gutter واقعی برای clock labels گرفتند؛ 6 AM/PM روی یک شعاع صریح و قرینه‌اند. حلقه‌های درصد ۶۲dp، stroke 4.5 و هستهٔ ۴۳dp با padding ۷ دارند؛ تست ۲۰۰٪ ثابت می‌کند copy از safe core عبور نمی‌کند.
+- گیت محلی Cycle 3: analyzer clean، full Flutter ۳۵۸/۳۵۸، Workspace ۵۵/۵۵، AI Dock ۲۱/۲۱ و SVG/emoji contract ۳/۳. push/release این checkpoint هنوز pending است.
+
 ## Done So Far
 - Durable task record and master plan.
 - Preservation/compatibility contract before mutation.

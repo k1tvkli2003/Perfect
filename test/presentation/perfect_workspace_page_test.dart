@@ -137,23 +137,76 @@ void main() {
         isFalse,
         reason: 'Opening the composer must not summon the keyboard.',
       );
+      final actionShelfFinder = find.byKey(
+        const ValueKey<String>('perfect-capture-action-shelf'),
+      );
+      expect(
+        find.descendant(of: actionShelfFinder, matching: find.text('Plan')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: actionShelfFinder,
+          matching: find.text('Perfect AI'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: actionShelfFinder, matching: find.text('Voice')),
+        findsOneWidget,
+      );
 
       final capture = tester.getRect(
         find.byKey(const ValueKey<String>('perfect-quick-capture-surface')),
       );
+      final actionShelf = tester.getRect(actionShelfFinder);
+      final planToggle = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-capture-plan')),
+      );
       final aiToggle = tester.getRect(
         find.byKey(const ValueKey<String>('perfect-ai-toggle')),
+      );
+      final voiceToggle = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-ai-voice-toggle')),
       );
       expect(
         capture.contains(aiToggle.center),
         isTrue,
         reason: 'AI is one command inside the quick capture composer.',
       );
+      expect(actionShelf.contains(planToggle.center), isTrue);
+      expect(actionShelf.contains(aiToggle.center), isTrue);
+      expect(actionShelf.contains(voiceToggle.center), isTrue);
+      expect(planToggle.width, closeTo(aiToggle.width, 1));
+      expect(aiToggle.width, closeTo(voiceToggle.width, 1));
+      expect(planToggle.height, greaterThanOrEqualTo(48));
+      expect(aiToggle.height, greaterThanOrEqualTo(48));
+      expect(voiceToggle.height, greaterThanOrEqualTo(48));
       expect(
         find.byKey(const ValueKey<String>('perfect-ai-surface')),
         findsNothing,
       );
       expect(find.byType(NavigationBar), findsOneWidget);
+      final navigation = find.byType(NavigationBar);
+      final navigationRect = tester.getRect(navigation);
+      expect(navigationRect.bottom, lessThanOrEqualTo(844));
+      expect(capture.bottom, lessThanOrEqualTo(navigationRect.top));
+      expect(
+        tester.widget<NavigationBar>(navigation).labelBehavior,
+        NavigationDestinationLabelBehavior.alwaysHide,
+      );
+      for (final destination in <String>[
+        'today',
+        'tasks',
+        'plan',
+        'habits',
+        'more',
+      ]) {
+        final footerAction = _footerDestination(destination);
+        final actionRect = tester.getRect(footerAction);
+        expect(actionRect.top, greaterThanOrEqualTo(navigationRect.top));
+        expect(actionRect.bottom, lessThanOrEqualTo(navigationRect.bottom));
+      }
       await expectLater(
         find.byType(PerfectWorkspacePage),
         matchesGoldenFile('../goldens/perfect_compact_ai_closed.png'),
@@ -186,6 +239,44 @@ void main() {
       );
     },
     tags: 'windows-golden',
+  );
+
+  testWidgets(
+    'compact footer replaces the stock oval with one prismatic tile',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      await _pump(tester, freezeOrbitMotion: true);
+
+      final navigationTheme = tester.widget<NavigationBarTheme>(
+        find.byKey(const ValueKey<String>('perfect-compact-navigation-theme')),
+      );
+      expect(navigationTheme.data.indicatorColor, Colors.transparent);
+      expect(
+        navigationTheme.data.labelBehavior,
+        NavigationDestinationLabelBehavior.alwaysHide,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('perfect-footer-selected-today')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('perfect-footer-selected-tasks')),
+        findsNothing,
+      );
+
+      await tester.tap(_footerDestination('tasks'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('perfect-footer-selected-today')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('perfect-footer-selected-tasks')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
   );
 
   testWidgets(
@@ -227,7 +318,9 @@ void main() {
           ),
           matching: find.byType(BackdropFilter),
         ),
-        findsOneWidget,
+        findsNothing,
+        reason:
+            'The animated capture dock uses authored glass tint without re-blurring the full Today surface on low-end Android GPUs.',
       );
       expect(
         find.ancestor(
@@ -496,23 +589,18 @@ void main() {
       expect(tester.takeException(), isNull);
 
       final navigation = find.byType(NavigationBar);
-      for (final label in <String>[
-        'Today',
-        'Tasks',
-        'Plan',
-        'Habits',
-        'More',
+      expect(
+        tester.widget<NavigationBar>(navigation).labelBehavior,
+        NavigationDestinationLabelBehavior.alwaysHide,
+      );
+      for (final destination in <String>[
+        'today',
+        'tasks',
+        'plan',
+        'habits',
+        'more',
       ]) {
-        final labelFinder = find.descendant(
-          of: navigation,
-          matching: find.text(label),
-        );
-        expect(labelFinder, findsOneWidget);
-        expect(
-          tester.renderObject<RenderParagraph>(labelFinder).didExceedMaxLines,
-          isFalse,
-          reason: '$label is a primary destination and cannot be truncated.',
-        );
+        expect(_footerDestination(destination), findsOneWidget);
       }
 
       for (final key in <String>[
@@ -667,12 +755,8 @@ void main() {
         disableAnimations: true,
       );
 
-      final navigation = find.byType(NavigationBar);
-      final today = find.descendant(
-        of: navigation,
-        matching: find.text('Today'),
-      );
-      final more = find.descendant(of: navigation, matching: find.text('More'));
+      final today = _footerDestination('today');
+      final more = _footerDestination('more');
       expect(
         tester.getCenter(today).dx,
         greaterThan(tester.getCenter(more).dx),
@@ -688,9 +772,7 @@ void main() {
         Duration.zero,
       );
 
-      await tester.tap(
-        find.descendant(of: navigation, matching: find.text('Tasks')),
-      );
+      await tester.tap(_footerDestination('tasks'));
       await tester.pump();
       expect(
         find.text('All open work first. Narrow only when you need to.'),
@@ -702,37 +784,94 @@ void main() {
     },
   );
 
-  testWidgets('the final Today task scrolls fully above the persistent dock', (
+  testWidgets(
+    'the final Today task scrolls fully above collapsed and expanded capture',
+    (tester) async {
+      const finalTitle = 'Water plants';
+      final finalTask = _controller.habits.singleWhere(
+        (item) => item.title == finalTitle,
+      );
+
+      await tester.binding.setSurfaceSize(const Size(320, 700));
+      await _pump(tester);
+      await tester.scrollUntilVisible(
+        find.text(finalTitle),
+        280,
+        scrollable: find.descendant(
+          of: find.byKey(const ValueKey<String>('perfect-today-scroll')),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final finalRow = find.byKey(
+        ValueKey<String>('entity-context-${finalTask.id}'),
+      );
+      final dock = find.byKey(
+        const ValueKey<String>('perfect-quick-capture-surface'),
+      );
+      expect(find.text(finalTitle), findsOneWidget);
+      expect(
+        tester.getBottomRight(finalRow).dy,
+        lessThanOrEqualTo(tester.getTopLeft(dock).dy),
+      );
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text(finalTitle),
+        280,
+        scrollable: find.descendant(
+          of: find.byKey(const ValueKey<String>('perfect-today-scroll')),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.getBottomRight(finalRow).dy,
+        lessThanOrEqualTo(tester.getTopLeft(dock).dy),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('agenda percentage copy keeps an optical safe area inside ring', (
     tester,
   ) async {
-    const finalTitle = 'Water plants';
-    final finalTask = _controller.habits.singleWhere(
-      (item) => item.title == finalTitle,
-    );
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester, textScaler: const TextScaler.linear(2));
 
-    await tester.binding.setSurfaceSize(const Size(320, 700));
-    await _pump(tester);
-    await tester.scrollUntilVisible(
-      find.text(finalTitle),
-      280,
-      scrollable: find.descendant(
-        of: find.byKey(const ValueKey<String>('perfect-today-scroll')),
-        matching: find.byType(Scrollable),
-      ),
+    final cores = find.byKey(
+      const ValueKey<String>('perfect-agenda-progress-safe-core'),
     );
-    await tester.pumpAndSettle();
-
-    final finalRow = find.byKey(
-      ValueKey<String>('entity-context-${finalTask.id}'),
-    );
-    final dock = find.byKey(
-      const ValueKey<String>('perfect-quick-capture-surface'),
-    );
-    expect(find.text(finalTitle), findsOneWidget);
-    expect(
-      tester.getBottomRight(finalRow).dy,
-      lessThanOrEqualTo(tester.getTopLeft(dock).dy),
-    );
+    expect(cores, findsWidgets);
+    for (final element in cores.evaluate()) {
+      final core = find.byWidget(element.widget);
+      final percentage = find.descendant(
+        of: core,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is Text && (widget.data?.trim().endsWith('%') ?? false),
+        ),
+      );
+      expect(percentage, findsOneWidget);
+      final safeCore = tester.getRect(core).deflate(5);
+      final percentageRect = tester.getRect(percentage);
+      expect(
+        safeCore.contains(percentageRect.topLeft),
+        isTrue,
+        reason: 'percentage $percentageRect must start inside $safeCore',
+      );
+      expect(
+        safeCore.contains(percentageRect.bottomRight),
+        isTrue,
+        reason: 'percentage $percentageRect must end inside $safeCore',
+      );
+    }
     expect(tester.takeException(), isNull);
   });
 
@@ -1113,7 +1252,7 @@ void main() {
 
     expect(find.text('Three times this week'), findsNothing);
 
-    await tester.tap(find.text('Plan').last);
+    await tester.tap(_footerDestination('plan'));
     await tester.pumpAndSettle();
     expect(find.text('Three times this week'), findsNothing);
   });
@@ -1249,7 +1388,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(390, 844));
       await _pump(tester, navigationController: navigation);
 
-      await tester.tap(find.text('More'));
+      await tester.tap(_footerDestination('more'));
       await tester.pumpAndSettle();
       expect(
         find.text('Private controls, not public settings.'),
@@ -1382,7 +1521,7 @@ void main() {
 
       await tester.binding.setSurfaceSize(const Size(390, 844));
       await _pump(tester, textScaler: const TextScaler.linear(2));
-      await tester.tap(find.text('More').last);
+      await tester.tap(_footerDestination('more'));
       await tester.pumpAndSettle();
       expect(find.text('Workspace structure'), findsOneWidget);
       expect(find.text('Focus and review'), findsOneWidget);
@@ -1495,7 +1634,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     await _pump(tester);
 
-    await tester.tap(find.text('Plan').last);
+    await tester.tap(_footerDestination('plan'));
     await tester.pumpAndSettle();
     expect(find.text('Focus Deep Work'), findsOneWidget);
     expect(find.text('Water plants'), findsNothing);
@@ -1546,7 +1685,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(390, 844));
       await _pump(tester);
 
-      await tester.tap(find.text('Tasks'));
+      await tester.tap(_footerDestination('tasks'));
       await tester.pumpAndSettle();
       expect(find.text('Focus Deep Work'), findsOneWidget);
       expect(find.text('TYPE'), findsNothing);
@@ -1617,7 +1756,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(390, 844));
       await _pump(tester);
 
-      await tester.tap(find.text('Tasks'));
+      await tester.tap(_footerDestination('tasks'));
       await tester.pumpAndSettle();
 
       expect(find.text('Focus Deep Work'), findsOneWidget);
@@ -1662,7 +1801,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     await _pump(tester);
 
-    await tester.tap(find.text('Habits'));
+    await tester.tap(_footerDestination('habits'));
     await tester.pumpAndSettle();
     expect(find.text('Water plants'), findsOneWidget);
     expect(find.text('Every day'), findsOneWidget);
@@ -1700,7 +1839,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     await _pump(tester);
 
-    await tester.tap(find.text('Habits'));
+    await tester.tap(_footerDestination('habits'));
     await tester.pumpAndSettle();
 
     expect(find.text('Drink water'), findsOneWidget);
@@ -3021,6 +3160,9 @@ Future<void> _pumpEditor(WidgetTester tester, PlannerEntity entity) async {
   );
   await tester.pumpAndSettle();
 }
+
+Finder _footerDestination(String destination) =>
+    find.byKey(ValueKey<String>('perfect-footer-$destination'));
 
 Future<void> _pumpNewEditor(
   WidgetTester tester, {

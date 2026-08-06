@@ -251,3 +251,20 @@
 The live preview is deterministic local development evidence, not a signed private
 release and not authenticated cross-device convergence proof. Release signing،
 session retention and owner Supabase convergence remain separate gates.
+
+## 2026-08-06 Cycle 3 — compact footer and capture instrument
+
+| Check | Method | Result | Evidence / limit |
+|---|---|---|---|
+| Static analysis | `flutter analyze` | passed | `No issues found` after footer, Orbit, percentage and capture edits |
+| Full Flutter suite | `flutter test` | passed | 358/358 |
+| Workspace responsive suite | `flutter test test/presentation/perfect_workspace_page_test.dart --update-goldens` | passed | 55/55 across phone/tablet/Windows, RTL, 200% text, short height and all golden layouts |
+| AI Dock focused suite | `flutter test test/ai/perfect_ai_dock_test.dart` | passed | 21/21; review-before-apply, voice, retry, resize and reduced motion retained |
+| Pictogram contract | `flutter test test/presentation/no_raw_ui_emoji_contract_test.dart` | passed | 3/3; AI/Voice SVGs remain scalable, transparent and text-free; no raw keyboard emoji |
+| Footer contract | widget geometry + compact goldens | passed | labels are always hidden, stock indicator is transparent, exactly one 48dp prismatic selected tile moves with destination and semantic labels remain |
+| Quick Capture behavior | widget tests + Android runtime | passed | toggle does not focus the field; Plan/Perfect AI/Voice are equal 48dp+ actions; final Today row scrolls above collapsed and expanded composer |
+| Percentage ring safe area | 200% widget geometry + Android screenshot | passed | 43dp inner core with 7dp horizontal padding keeps `0%`/`60%` copy away from the 4.5dp ring |
+| Orbit clocks | compact/tablet/Windows goldens + Android screenshot | passed for geometry | 6 AM/PM share one symmetric anchor and no longer fight canvas edges; full authored joint/fidelity closure remains tracked under C11 |
+| Android open/close stability | `Codex_API35`, API 35, `-gpu host`, secret-free preview | passed | ADB `device`, QEMU `Responding=True`, working set stayed about 3.1GB after four open/close cycles; screenshots `.codex-tmp/critics-cycle1/android-home-cycle3-host-before.png` and `android-home-cycle3-host-expanded.png` |
+| Legacy renderer comparison | `-gpu swiftshader_indirect` | rejected as environment proof | current Emulator help no longer lists this deprecated mode; AVD exited independently, so it is not used to claim an app failure or success |
+| Release | exact-SHA hosted workflow | pending | source is locally green; commit/push/three-asset immutable release follows this documentation checkpoint |

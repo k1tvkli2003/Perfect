@@ -80,3 +80,23 @@ The existing Pomodoro, Countdown, Stopwatch, session recovery and task linkage r
 - Task Type/Status chips use selected color and shape with `showCheckmark=false`; the Single icon is now a numeral rather than a check-like glyph.
 - Semantics still announces the selected state.
 - Category, icon and color pickers remain open under C5 and will be closed with the editor/category cycle.
+
+### C3 and compact shell continuity — closed locally in Perfect Cycle 3
+
+- The compact footer is now icon-only. Material's stock stadium is transparent and one destination-specific prismatic tile carries selection through color, surface, elevation and motion; there is no duplicated selected checkmark or visible menu label.
+- Quick Capture keeps a standalone circular launcher above the footer. Opening it never requests focus or summons the IME; the owner explicitly taps the field, Plan, Perfect AI or Voice.
+- The expanded composer has one visual hierarchy and three equal action targets. Dedicated text-free `ai.svg` and `voice.svg` replace ambiguous generic marks.
+- The composer transition retains only the current surface. `AnimatedSize` plus one-child fade/rise/scale preserves motion without the outgoing composited glass subtree that destabilized software rendering.
+- The final Today row clears both collapsed and expanded surfaces in a 320×700 scroll test. Android API 35 screenshots show the live collapsed and expanded compositions, and four open/close cycles leave ADB/QEMU responsive on the supported `host` renderer.
+- Gates: Workspace 55/55، AI Dock 21/21، pictogram/emoji 3/3، analyzer clean and full suite 358/358. Hosted release proof is still pending at this checkpoint.
+
+### C11 — clock placement improved; full graphic-fidelity finding remains open
+
+- Orbit artwork and live painter now share a 95% geometry scale, reserving a real outer gutter rather than pushing side clocks against canvas bounds.
+- 6 AM and 6 PM use the same explicit radial anchor; noon/midnight keep a matched inner anchor. Compact, tablet and Windows goldens plus the Android screenshot show symmetric placement.
+- This closes the reported clock-placement defect. C11 remains open for a later side-by-side gate on authored band joints, full curved-label fidelity and final Photoshop-grade surface treatment.
+
+### Adjacent percentage-ring defect — closed in Perfect Cycle 3
+
+- Agenda percentages render inside a 43dp opaque safe core, separated from a 4.5dp ring; horizontal padding increased to 7dp after the first 200% test proved exact boundary contact.
+- A dedicated regression asserts every percentage glyph rectangle starts and ends inside the deflated core at 200% text. The live Android `60%` and `0%` states retain visible breathing room.
