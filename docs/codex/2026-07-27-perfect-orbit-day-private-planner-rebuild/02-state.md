@@ -144,3 +144,29 @@ Perfect Cycle 1 روی commit `a793531279174f735ad1e247f96a5213613dabb1` با wo
   Windows contract tests passed. Analyzer and workflow syntax checks are clean.
 - Hosted artifact/release success is still pending the Stage 01 push and will be
   associated only with that exact commit SHA.
+
+## Stage 02 route and interaction inventory — 2026-08-09
+
+- Stage 02 is complete locally. The canonical evidence is
+  `stages/evidence/02-interaction-route-inventory.md` and no production UI was
+  changed by this stage.
+- The product hierarchy is frozen as view-first: a Task/Habit body opens live
+  detail/history; explicit status/log controls mutate; Edit is a named action;
+  only create and Quick Capture intentionally enter an editor directly.
+- Every current Flutter surface, adaptive inspector, modal/sheet/dialog/context
+  menu, Android widget intent, reminder callback, Windows shortcut/protocol and AI
+  action was assigned a trigger, destination and mutation owner.
+- Ten core jobs now have current and target interaction budgets. Fifteen stable
+  route debts (`IR-001`–`IR-015`) cover direct-to-edit mobile behavior, stale
+  inspector objects, lost native navigation, destination-state loss, expensive
+  habit logging, inconsistent context actions and unowned Windows planner URIs.
+- Seven executable cross-layer contracts prove complete ledger classification,
+  centralized native ingress,
+  local-first mutation order, pull→push→pull sync, confirmed persisted AI writes
+  and durable widget replay without declaring the current direct-to-edit defect as
+  desirable behavior.
+- Stage 03 receives this map as a hard design input. It may not conceal route debt
+  with styling, and Stages 03–05 still block production UI mutation.
+- Hosted run `#39` for Stage 01 failed only because its post-rename secret scan used
+  the stale MSIX path. Commit `eaad6b2` fixes and regression-locks the final-path
+  scan; exact-SHA run `#40` is pending and no release success is claimed yet.

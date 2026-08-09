@@ -1,6 +1,6 @@
 # Stage 02 — Complete interaction and route inventory
 
-Status: pending  
+Status: complete locally on 2026-08-09; Stage 02 exact-SHA hosted gate pending
 Depends on: Stage 01  
 Blocks: navigation, Today, details, editor, AI and widget routing
 
@@ -71,3 +71,17 @@ entrypoints.
 Stage 03 receives the friction list, route contract and top opportunity ranking.
 Update project state/progress, commit the map/tests, push and keep Git clean.
 
+## Execution record — 2026-08-09
+
+- The source-backed inventory is frozen in
+  [`evidence/02-interaction-route-inventory.md`](evidence/02-interaction-route-inventory.md).
+- It maps Flutter routes/surfaces, every Task/Habit row input, Android widget and
+  notification ingress, Windows shortcuts/protocols, AI proposals and the full
+  local-first mutation path.
+- Ten core jobs have measured current costs and explicit target budgets; fifteen
+  route/interaction debts have stable IDs and numbered-stage owners.
+- `test/presentation/interaction_route_inventory_contract_test.dart` adds seven
+  executable cross-layer contracts without freezing the known compact
+  direct-to-editor defect as desired behavior.
+- Focused Stage 02 verification is green locally. Hosted proof must be attached
+  only to the commit that contains this record; no production UI changed here.

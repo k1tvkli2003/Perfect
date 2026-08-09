@@ -206,3 +206,18 @@ modified PowerShell blocks compile through `ScriptBlock.Create`.
   the real N→N+1 proof.
 - Stage 02 may inventory routes and behavior, but production UI mutation remains
   blocked until Stages 03–05 freeze the component/page previews and Copy manifests.
+
+## 9. Hosted transport follow-up — 2026-08-09
+
+- Run `#39` (`31331588125`) targeted the exact Stage 01 SHA `e0840c1`. The
+  Quality/Android job passed completely, including trusted APK creation and upload.
+- Windows successfully built the desktop app, Portable archive, signed MSIX and
+  signed Setup. The security scan then used `$packages[0].FullName`, whose source
+  path no longer existed after the MSIX had been renamed, so upload, install-over
+  and Release were correctly blocked.
+- Commit `eaad6b2` changes the scan input to the final `$package.FullName` and adds a
+  regression assertion that rejects the stale pre-rename expression. The related
+  local suite passes `18/18`; replacement run `#40` (`31332512462`) is pending.
+- This section deliberately does not claim a current release. Stage 01 hosted
+  closure requires all jobs, signed in-place upgrade proof and exactly three
+  install-ready release assets from the replacement exact SHA.

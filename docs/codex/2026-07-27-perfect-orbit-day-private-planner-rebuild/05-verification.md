@@ -316,3 +316,28 @@ uncommitted Flutter prototypes, a device runtime or a release artifact.
 The local fixture is strong code/storage evidence, but it does not prove a signed-in
 physical Android session, real signed-in Windows upgrade, OEM widget behavior or
 Android↔Windows convergence. Those remain milestone runtime gates.
+
+### Stage 01 hosted follow-up
+
+| Check | Method | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| Exact Stage 01 SHA | hosted run `#39` / `31331588125` | inspected | `e0840c1f34de37fb78af4101be0ef684f6800256` |
+| Quality and Android | hosted job `93290608499` | passed | format, analyze, full tests, trusted APK build, package verification and upload all succeeded |
+| Windows desktop build | hosted job `93290608519` | failed after successful build/signing | final MSIX and Setup signatures were created; the new secret scan referenced the pre-rename `Perfect-private.msix` path, so upload/install-over/release correctly stayed blocked |
+| Final-path regression | local focused suite after `eaad6b2` | passed, 18/18 | scan now receives `$package.FullName`; test rejects `$packages[0].FullName` after rename |
+| Replacement hosted gate | run `#40` / `31332512462` | pending | exact SHA `eaad6b21bb136712e5ac51d10d6b6e2bf254e5f0`; no release claim until all jobs and three assets pass |
+
+## 2026-08-09 — Stage 02 interaction/route verification
+
+| Check | Method | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| Complete surface inventory | source walk across Flutter, Android native, Windows package/notifications, AI and sync | passed locally | evidence lists trigger, destination, mutation and risk for every discovered entrypoint |
+| Required diagrams | static contract over Stage 02 evidence | passed | application route tree, entity lifecycle, local-first mutation, AI proposal and widget action sequences present |
+| Ten core jobs | static contract and manual source trace | passed | current costs plus explicit target budgets recorded for jobs 1–10 |
+| Stable findings/owners | static contract | passed | `IR-001`–`IR-015` each have severity, consequence and numbered-stage owner |
+| Cross-layer behavior | `interaction_route_inventory_contract_test.dart` | passed, 7/7 | full ledger classification, native ingress, local-first ordering, sync convergence order, AI confirmation and widget replay checked |
+| Related integration contracts | focused widget/reminder/sync/AI suite | passed, 74/74 | native scrolling/actions, durable replay, reminders, retry/conflict and proposal review remained green |
+| Static analysis | focused Flutter analyzer | passed | no issue in the new Stage 02 test |
+| Coverage propagation | 27-row classification | passed locally | every shared product-system row is changed/checked with evidence or a specific reason |
+| Runtime visual/release proof | not applicable to documentation-only Stage 02 | not claimed | Stage 03–05 preview gates and later runtime stages remain mandatory |
+| Stage 02 exact-SHA hosted gate | workflow after Stage 02 push | pending | attach only after the commit exists on `main` |

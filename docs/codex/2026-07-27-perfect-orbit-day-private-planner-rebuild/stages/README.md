@@ -32,8 +32,10 @@ all later runtime work is accepted through normalized Copy side-by-side comparis
 - Runtime stages end with commit, push, successful CI/release, install-ready
   artifacts and a clean `main`-only branch state.
 
-Current execution: Stage 01 passed its local contract on 2026-08-09; Stage 02 is
-next after the Stage 01 commit/push and exact-SHA hosted verification. The root
+Current execution: Stage 01 passed locally and its first hosted attempt exposed a
+stale pre-rename MSIX scan path; commit `eaad6b2` fixes and regression-locks that
+transport defect, with exact-SHA run `#40` pending. Stage 02 is complete locally
+and awaits its own commit/push/hosted gate before Stage 03 is accepted. The root
 agent owns execution alone; no subagent work is active.
 
 ## Whole-product coverage ledger

@@ -197,3 +197,30 @@ exact-secret absence scan.
 
 Local evidence is green. Commit/push and exact-SHA hosted verification are the final
 Stage 01 transport actions; Stage 02 route inventory follows immediately afterward.
+
+## 2026-08-09 — Stage 02 interaction and route checkpoint
+
+### Before
+
+Perfect! had many tested callbacks but no single source-backed model connecting row
+taps, adaptive inspectors, native widget/reminder launches, shortcuts, AI writes,
+local outbox mutations and sync. On compact/tablet layouts even copy labelled “Open
+details” entered Edit directly, while destination-local filters, selected dates and
+AI drafts could disappear during normal navigation.
+
+### After
+
+- Added the complete application/route tree, entity lifecycle, local-first, AI and
+  Android-widget sequence diagrams.
+- Mapped every Task/Habit input modality and every create/view/log/progress/edit/
+  duplicate/archive/restore/delete/focus mutation to its current and canonical owner.
+- Measured ten core jobs and set explicit target tap/keystroke budgets.
+- Registered fifteen source-backed debts with priorities and later-stage owners.
+- Classified all 27 whole-product coverage rows; none was omitted by silence.
+- Added seven executable route/mutation contracts; the focused suite passes locally
+  and focused analysis reports no issue.
+- Preserved all unrelated UI/date prototypes, `.vscode`, `NUL` and the retained
+  stash without staging or treating them as accepted work.
+
+Stage 02 has no production UI mutation. Its commit/push and exact-SHA hosted result
+are the final gate before Stage 03 research and reference decomposition.

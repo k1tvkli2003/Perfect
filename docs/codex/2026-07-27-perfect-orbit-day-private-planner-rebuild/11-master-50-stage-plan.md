@@ -611,9 +611,14 @@ or behavioral acceptance.
 ## Current mapping
 
 - Stage 01 is complete locally with executable preservation, interrupted-migration,
-  protected-runtime-define and artifact-secret-scan gates. Stage 02 becomes active
-  after the Stage 01 SHA is pushed; hosted signing/release evidence is attached to
-  that exact SHA rather than inferred locally.
+  protected-runtime-define and artifact-secret-scan gates. Hosted run `#39` proved
+  Android/tests but found that the Windows secret scan still referenced the MSIX
+  pre-rename path; commit `eaad6b2` corrects that exact defect and run `#40` is the
+  pending exact-SHA signing/release gate.
+- Stage 02 is complete locally. Its source-backed evidence freezes a view-first
+  route hierarchy, maps all in-app/native/AI entrypoints and mutations, budgets ten
+  core jobs, and assigns fifteen interaction debts to later numbered stages. Stage
+  03 begins only after the Stage 02 map/tests are committed and pushed.
 - Existing uncommitted Quick Capture, date formatter and Today changes are
   prototypes mapped to stages 08, 11 and 16–19; they are not accepted until the
   earlier contracts/harness and their own stage gates pass.
