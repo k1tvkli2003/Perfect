@@ -1035,7 +1035,7 @@ jobs:
             try {
               & python tool/verify_artifact_secret_absence.py `
                 --artifact $portableArchives[0].FullName `
-                --artifact $packages[0].FullName `
+                --artifact $package.FullName `
                 --artifact $setup.FullName `
                 --secret-env PERFECT_ARTIFACT_SECRET_WINDOWS_PFX_PASSWORD
               if ($LASTEXITCODE -ne 0) {

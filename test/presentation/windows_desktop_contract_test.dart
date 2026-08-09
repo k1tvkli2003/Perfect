@@ -121,6 +121,16 @@ void main() {
       reason: 'The final portable/MSIX/Setup scan must finish before upload.',
     );
     expect(
+      packageStep,
+      contains(r'--artifact $package.FullName'),
+      reason: 'The scan must follow the renamed final MSIX path.',
+    );
+    expect(
+      packageStep,
+      isNot(contains(r'--artifact $packages[0].FullName')),
+      reason: 'The pre-rename FileInfo points at a path that no longer exists.',
+    );
+    expect(
       workflow,
       contains(r'Microsoft Visual Studio\Installer\vswhere.exe'),
     );
