@@ -1,6 +1,6 @@
 # Stage 01 — Preservation and personal-product contract
 
-Status: in progress  
+Status: completed locally; hosted exact-SHA release verification follows push
 Depends on: none  
 Blocks: every structural UI, data, auth, AI, widget and release change
 
@@ -80,3 +80,19 @@ Record immutable preservation identifiers and test entrypoints for Stage 02.
 Commit only contract/tests/docs changes, push `main`, verify workflow/release when
 runtime artifacts changed, and leave the tree clean with only `main`.
 
+## Completion record — 2026-08-09
+
+- The complete Git/release/identity/storage/schema/reset-path inventory is frozen in
+  [`evidence/01-preservation-baseline.md`](evidence/01-preservation-baseline.md).
+- `test/preservation/personal_product_preservation_contract_test.dart` now rejects
+  production fixture seeding, destructive sign-out, identity drift, local
+  task/habit/occurrence/outbox loss and unrecoverable interrupted migration.
+- Trusted build-time values use a protected temporary JSON file and
+  `--dart-define-from-file`; they no longer travel in Flutter command arguments.
+- APK, Portable ZIP, MSIX and Setup receive exact-value signing-secret scans before
+  upload. The scanner itself is tested to fail without printing the protected value.
+- Focused preservation/release tests, analyzer, YAML parsing, Bash syntax and both
+  PowerShell workflow blocks pass locally. Signed artifact continuity is claimed
+  only after the pushed SHA completes hosted CI.
+- The retained stash and unrelated/unaccepted workspace files remain deliberately
+  untouched; they are not hidden inside this stage's commit.

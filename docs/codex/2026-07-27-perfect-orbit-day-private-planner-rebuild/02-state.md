@@ -122,3 +122,25 @@ Perfect Cycle 1 روی commit `a793531279174f735ad1e247f96a5213613dabb1` با wo
   claimed for this documentation checkpoint.
 - All delegated subagents are closed. Continued work is owned by the root agent only,
   per the latest explicit instruction.
+
+## Stage 01 preservation gate — 2026-08-09
+
+- Stage 01 is locally complete. The immutable inventory and honest proof boundary
+  live in `stages/evidence/01-preservation-baseline.md`.
+- A new file-backed regression suite proves explicit sign-out/session disposal
+  preserves Task, Habit, completed occurrence, owner isolation, settings and every
+  pending outbox mutation after database reopen.
+- A deliberately interrupted Drift v1→v2 migration rolls back; the normal v2 open
+  then recovers the original entity and pending operation.
+- Production cannot import the seeded preview; Android preview remains the sibling
+  `.preview` package. Sign-out clears widget projection before auth and has no
+  database/preferences wipe API.
+- Trusted runtime values no longer appear in Flutter argv. Android/Windows builds
+  create a temporary JSON consumed through `--dart-define-from-file` and remove it
+  on both success and failure.
+- APK, Portable ZIP, signed MSIX and Setup now receive an exact-value signing-secret
+  scan before upload; the verifier never logs the protected value.
+- Local expanded gate: 59/59 preservation/config/migration/AI/signing/release/
+  Windows contract tests passed. Analyzer and workflow syntax checks are clean.
+- Hosted artifact/release success is still pending the Stage 01 push and will be
+  associated only with that exact commit SHA.

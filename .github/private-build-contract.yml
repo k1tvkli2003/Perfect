@@ -66,6 +66,8 @@ constraints:
   - CI rejects a semantic-version regression against the previous commit so the four-part MSIX version remains install-over compatible.
   - Trusted builds fail closed when a signing secret or public certificate pin is missing; verification-only PR builds use the debug key and are never labeled update-compatible.
   - Secret values are supplied through protected environment/stdin boundaries and never placed in a child process command line.
+  - Trusted runtime defines are serialized to a permission-restricted runner-temp JSON file and consumed through --dart-define-from-file; the file is removed on success or failure, and no private value appears in Flutter argv.
+  - Before upload, the APK, portable ZIP, signed MSIX, and Setup EXE are scanned for the exact configured signing-password values in UTF-8 and UTF-16 forms; ZIP entries are decompressed for inspection and the scanner reports only environment labels, never secret values.
   - The Android application ID, JKS alias/certificate fingerprint, Windows package identity/publisher, and PFX thumbprint are immutable update-lineage fields.
   - Every trusted main/manual-main workflow publishes exactly one immutable-version private GitHub Release after all quality, Android, Windows, installer, and install-over gates pass; pull requests never publish.
   - The three user-facing release assets are exactly one signed universal APK, one signed self-contained Windows Setup EXE, and one portable runtime ZIP. CER, raw MSIX, checksum files, logs, and transport wrappers are never release assets.

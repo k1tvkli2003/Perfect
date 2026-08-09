@@ -610,7 +610,10 @@ or behavioral acceptance.
 
 ## Current mapping
 
-- Stage 01 is the active gate.
+- Stage 01 is complete locally with executable preservation, interrupted-migration,
+  protected-runtime-define and artifact-secret-scan gates. Stage 02 becomes active
+  after the Stage 01 SHA is pushed; hosted signing/release evidence is attached to
+  that exact SHA rather than inferred locally.
 - Existing uncommitted Quick Capture, date formatter and Today changes are
   prototypes mapped to stages 08, 11 and 16–19; they are not accepted until the
   earlier contracts/harness and their own stage gates pass.

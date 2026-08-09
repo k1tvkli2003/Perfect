@@ -201,13 +201,33 @@ jobs:
           PERFECT_ANDROID_KEY_PASSWORD: ${{ needs.prepare.outputs.trusted_build == 'true' && secrets.PERFECT_ANDROID_KEY_PASSWORD || '' }}
         run: |
           if [[ -n "$PERFECT_SUPABASE_URL" && -n "$PERFECT_SUPABASE_PUBLISHABLE_KEY" && -n "$PERFECT_OWNER_AUTH_EMAIL" ]]; then
+            runtime_defines="$RUNNER_TEMP/perfect-android-runtime-defines.json"
+            export PERFECT_RUNTIME_DEFINES_PATH="$runtime_defines"
+            umask 077
+            python3 - <<'PY'
+          import json
+          import os
+
+          path = os.environ["PERFECT_RUNTIME_DEFINES_PATH"]
+          payload = {
+              "SUPABASE_URL": os.environ["PERFECT_SUPABASE_URL"],
+              "SUPABASE_PUBLISHABLE_KEY": os.environ["PERFECT_SUPABASE_PUBLISHABLE_KEY"],
+              "PERFECT_OWNER_AUTH_EMAIL": os.environ["PERFECT_OWNER_AUTH_EMAIL"],
+              "SUPABASE_AUTH_REDIRECT_URI": "perfect://login-callback",
+          }
+          descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+          with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+              json.dump(payload, handle, ensure_ascii=True, separators=(",", ":"))
+          PY
+            trap 'rm -f "$runtime_defines"' EXIT
             flutter build apk --release \
               --build-name="$PERFECT_SEMANTIC_VERSION" \
               --build-number="$PERFECT_ANDROID_VERSION_CODE" \
-              --dart-define="SUPABASE_URL=$PERFECT_SUPABASE_URL" \
-              --dart-define="SUPABASE_PUBLISHABLE_KEY=$PERFECT_SUPABASE_PUBLISHABLE_KEY" \
-              --dart-define="PERFECT_OWNER_AUTH_EMAIL=$PERFECT_OWNER_AUTH_EMAIL" \
-              --dart-define="SUPABASE_AUTH_REDIRECT_URI=perfect://login-callback"
+              --dart-define-from-file="$runtime_defines"
+            python3 tool/verify_artifact_secret_absence.py \
+              --artifact build/app/outputs/flutter-apk/app-release.apk \
+              --secret-env PERFECT_ANDROID_KEYSTORE_PASSWORD \
+              --secret-env PERFECT_ANDROID_KEY_PASSWORD
             echo "mode=configured-private" >> "$GITHUB_OUTPUT"
           else
             flutter build apk --release \
@@ -396,13 +416,31 @@ jobs:
           PERFECT_WINDOWS_BUILD_NUMBER: ${{ needs.prepare.outputs.android_version_code }}
         run: |
           if ($env:PERFECT_SUPABASE_URL -and $env:PERFECT_SUPABASE_PUBLISHABLE_KEY -and $env:PERFECT_OWNER_AUTH_EMAIL) {
-            flutter build windows --release `
-              --build-name="$env:PERFECT_SEMANTIC_VERSION" `
-              --build-number="$env:PERFECT_WINDOWS_BUILD_NUMBER" `
-              --dart-define="SUPABASE_URL=$env:PERFECT_SUPABASE_URL" `
-              --dart-define="SUPABASE_PUBLISHABLE_KEY=$env:PERFECT_SUPABASE_PUBLISHABLE_KEY" `
-              --dart-define="PERFECT_OWNER_AUTH_EMAIL=$env:PERFECT_OWNER_AUTH_EMAIL" `
-              --dart-define="SUPABASE_AUTH_REDIRECT_URI=perfect://login-callback"
+            $runtimeDefinesPath = Join-Path `
+              $env:RUNNER_TEMP `
+              'perfect-windows-runtime-defines.json'
+            try {
+              $runtimeDefines = [ordered]@{
+                SUPABASE_URL = $env:PERFECT_SUPABASE_URL
+                SUPABASE_PUBLISHABLE_KEY = $env:PERFECT_SUPABASE_PUBLISHABLE_KEY
+                PERFECT_OWNER_AUTH_EMAIL = $env:PERFECT_OWNER_AUTH_EMAIL
+                SUPABASE_AUTH_REDIRECT_URI = 'perfect://login-callback'
+              } | ConvertTo-Json -Compress
+              [IO.File]::WriteAllText(
+                $runtimeDefinesPath,
+                $runtimeDefines,
+                [Text.UTF8Encoding]::new($false)
+              )
+              flutter build windows --release `
+                --build-name="$env:PERFECT_SEMANTIC_VERSION" `
+                --build-number="$env:PERFECT_WINDOWS_BUILD_NUMBER" `
+                "--dart-define-from-file=$runtimeDefinesPath"
+            } finally {
+              Remove-Item `
+                -LiteralPath $runtimeDefinesPath `
+                -Force `
+                -ErrorAction SilentlyContinue
+            }
             "mode=configured-private" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           } else {
             flutter build windows --release `
@@ -562,15 +600,9 @@ jobs:
             $archive.Dispose()
           }
           Write-Output "Portable release asset: $portablePath"
-      # msix cleans its temporary VC runtime files from the shared Release
-      # directory after packaging. Preserve the complete portable bundle first.
-      - name: Preserve private Windows build
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: perfect-${{ needs.prepare.outputs.artifact_version }}-windows-x64-portable-${{ steps.windows-build.outputs.mode }}
-          path: build/windows/x64/portable/Perfect-*-Windows-Portable.zip
-          if-no-files-found: error
-          retention-days: 14
+      # Complete the portable ZIP before MSIX packaging cleans temporary VC
+      # runtime files. Upload is deliberately delayed until the trusted
+      # artifact-secret scan has inspected the final ZIP.
       - name: Package signed private MSIX
         id: windows-msix
         if: needs.prepare.outputs.trusted_build == 'true'
@@ -599,6 +631,7 @@ jobs:
 
           $certificate = $null
           $securePfxPassword = $null
+          $pfxPasswordBytes = $null
           $signingCertificatePath = $null
           try {
             [IO.File]::WriteAllBytes(
@@ -606,6 +639,9 @@ jobs:
               [Convert]::FromBase64String($env:PERFECT_WINDOWS_PFX_BASE64)
             )
             $env:PERFECT_WINDOWS_PFX_BASE64 = $null
+            $pfxPasswordBytes = [Text.Encoding]::UTF8.GetBytes(
+              $env:PERFECT_WINDOWS_PFX_PASSWORD
+            )
             $securePfxPassword = ConvertTo-SecureString `
               $env:PERFECT_WINDOWS_PFX_PASSWORD `
               -AsPlainText `
@@ -985,6 +1021,30 @@ jobs:
               $global:LASTEXITCODE = 0
             }
 
+            $portableArchives = @(
+              Get-ChildItem `
+                -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'build/windows/x64/portable') `
+                -File `
+                -Filter 'Perfect-*-Windows-Portable.zip'
+            )
+            if ($portableArchives.Count -ne 1) {
+              throw 'Artifact secret scan expected exactly one portable ZIP.'
+            }
+            $env:PERFECT_ARTIFACT_SECRET_WINDOWS_PFX_PASSWORD = `
+              [Text.Encoding]::UTF8.GetString($pfxPasswordBytes)
+            try {
+              & python tool/verify_artifact_secret_absence.py `
+                --artifact $portableArchives[0].FullName `
+                --artifact $packages[0].FullName `
+                --artifact $setup.FullName `
+                --secret-env PERFECT_ARTIFACT_SECRET_WINDOWS_PFX_PASSWORD
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Windows release artifacts failed the private secret scan.'
+              }
+            } finally {
+              $env:PERFECT_ARTIFACT_SECRET_WINDOWS_PFX_PASSWORD = $null
+            }
+
             $checksumPath = Join-Path $msixOutput "SHA256SUMS.txt"
             $checksumInputs = @(
               Get-ChildItem -LiteralPath $msixOutput -File |
@@ -1017,8 +1077,18 @@ jobs:
             if ($securePfxPassword) {
               $securePfxPassword.Dispose()
             }
+            if ($pfxPasswordBytes) {
+              [Array]::Clear($pfxPasswordBytes, 0, $pfxPasswordBytes.Length)
+            }
             Remove-Item -LiteralPath $pfxPath,$cerPath -Force -ErrorAction SilentlyContinue
           }
+      - name: Preserve private Windows build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: perfect-${{ needs.prepare.outputs.artifact_version }}-windows-x64-portable-${{ steps.windows-build.outputs.mode }}
+          path: build/windows/x64/portable/Perfect-*-Windows-Portable.zip
+          if-no-files-found: error
+          retention-days: 14
       - name: Preserve signed private Windows installer
         if: steps.windows-msix.outputs.mode == 'signed-private'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

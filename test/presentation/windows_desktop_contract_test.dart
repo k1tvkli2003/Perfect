@@ -112,8 +112,13 @@ void main() {
     expect(workflow, contains('ci-setup-update-marker.json'));
     expect(workflow, contains('Setup proof passed'));
     expect(
-      workflow.indexOf('Preserve private Windows build'),
+      workflow.indexOf('Complete and package the portable Windows'),
       lessThan(workflow.indexOf('Package signed private MSIX')),
+    );
+    expect(
+      packageStep.indexOf('verify_artifact_secret_absence.py'),
+      lessThan(packageStep.indexOf('Preserve private Windows build')),
+      reason: 'The final portable/MSIX/Setup scan must finish before upload.',
     );
     expect(
       workflow,

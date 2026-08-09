@@ -294,3 +294,25 @@ uncommitted Flutter prototypes, a device runtime or a release artifact.
   claim is made for them in this checkpoint.
 - Old Cycle 3 Orbit evidence remains historical only and cannot supersede the new
   Stage 11 removal decision or manufacture a current Preview/Copy acceptance.
+
+## 2026-08-09 — Stage 01 preservation verification
+
+| Check | Method | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| Production fixture isolation | static entrypoint/package contract | passed | seed exists only under `lib/dev`; Android debug uses `.preview`; production `main.dart` imports neither |
+| Sign-out safety | static call-order + forbidden durable API scan | passed | widget projection clears before Supabase sign-out; no DB/store/preferences global clear/delete/reset path |
+| Session-scope persistence | file-backed Drift close/reopen | passed | Task, Habit, completed occurrence, owner isolation and 3/3 pending mutations preserved |
+| Preference canaries | SharedPreferences lifecycle fixture | passed | theme, rail state and session canary unchanged across controller disposal/reopen |
+| Interrupted migration recovery | injected failure after v2 DDL then normal reopen | passed | migration transaction rolled back; original entity/outbox recovered and v2 opened normally |
+| Artifact secret scanner | safe and leaking dummy binaries | passed | safe payload accepted; exact leak rejected; output contains only env label, never protected value |
+| Focused cross-contract suite | ten preservation/config/migration/AI/signing/release/Windows files | passed | final expanded gate 59/59 |
+| Static analysis | focused Flutter analyzer | passed | no issues in preservation gate |
+| Workflow YAML | PyYAML safe load | passed | `.github/workflows/verify.yml` parses |
+| Android shell | extracted build step + `bash -n` | passed | heredoc/temp-file/trap/scanner block is syntactically valid |
+| Windows shell | extracted build/package steps + `ScriptBlock.Create` | passed | both modified PowerShell blocks parse |
+| Prior Windows install-over | hosted run `31059011394` log | passed, historical baseline | `1.1.0.37 → 1.1.0.38`, package family + LocalState preserved; Setup proof passed |
+| Current exact-SHA signed artifacts | hosted workflow after Stage 01 push | pending | no local check can substitute for signed GitHub artifacts and release |
+
+The local fixture is strong code/storage evidence, but it does not prove a signed-in
+physical Android session, real signed-in Windows upgrade, OEM widget behavior or
+Android↔Windows convergence. Those remain milestone runtime gates.

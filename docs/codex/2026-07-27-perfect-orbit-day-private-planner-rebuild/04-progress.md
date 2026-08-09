@@ -169,3 +169,31 @@ Exact-HEAD run [`30721214315`](https://github.com/k1tvkli2003/Perfect/actions/ru
 3. Execute Stage 03 research and design direction artifacts; then create the complete
    Stage 04 component plates and Stage 05 page compositions before accepting any
    runtime UI work.
+
+## 2026-08-09 — Stage 01 executable preservation checkpoint
+
+### Before
+
+The project already had stable package/signing contracts and a v1→v2 happy-path
+migration test, but it lacked a direct negative proof that explicit sign-out and
+auth-scope disposal cannot erase planner/history/outbox data. Runtime values were
+also passed to Flutter as command arguments, and final installables had no
+exact-secret absence scan.
+
+### After
+
+- Added six preservation tests covering fixture isolation, destructive sign-out
+  rejection, identity pins, artifact scanner behavior, file-backed lifecycle reopen
+  and rollback/recovery after a simulated migration interruption.
+- Replaced Android/Windows secret-bearing `--dart-define=...` arguments with protected
+  temporary JSON and `--dart-define-from-file`.
+- Added a cross-platform release scanner for exact protected values in raw artifacts
+  and decompressed ZIP/APK/MSIX entries; wired it to Android and Windows trusted jobs.
+- Froze Git, release, identity, asset hashes, local storage keys, Drift schema,
+  Supabase migrations/RPC/RLS/function inventory and reset/delete classification in
+  the Stage 01 evidence record.
+- Preserved the retained stash, unaccepted UI/date prototypes and unrelated
+  `.vscode`/`NUL` workspace files without staging or deleting them.
+
+Local evidence is green. Commit/push and exact-SHA hosted verification are the final
+Stage 01 transport actions; Stage 02 route inventory follows immediately afterward.

@@ -138,17 +138,14 @@ void main() {
         r"secrets.PERFECT_OWNER_AUTH_EMAIL || '' }}",
       ),
     );
+    expect(workflow, contains('--dart-define-from-file="\$runtime_defines"'));
     expect(
       workflow,
-      contains(
-        '--dart-define="PERFECT_OWNER_AUTH_EMAIL=\$PERFECT_OWNER_AUTH_EMAIL"',
-      ),
+      contains('"--dart-define-from-file=\$runtimeDefinesPath"'),
     );
     expect(
       workflow,
-      contains(
-        '--dart-define="PERFECT_OWNER_AUTH_EMAIL=\$env:PERFECT_OWNER_AUTH_EMAIL"',
-      ),
+      isNot(contains('--dart-define="PERFECT_OWNER_AUTH_EMAIL=')),
     );
     expect(
       workflow,
@@ -185,6 +182,20 @@ void main() {
     expect(workflow, contains('Import-PfxCertificate'));
     expect(workflow, contains(r'Cert:\CurrentUser\My'));
     expect(workflow, contains('--signtool-options \$signToolOptions'));
+    expect(workflow, contains('verify_artifact_secret_absence.py'));
+    expect(
+      workflow,
+      contains('--secret-env PERFECT_ANDROID_KEYSTORE_PASSWORD'),
+    );
+    expect(
+      workflow,
+      contains('--secret-env PERFECT_ARTIFACT_SECRET_WINDOWS_PFX_PASSWORD'),
+    );
+    expect(workflow, isNot(contains('--dart-define="SUPABASE_URL=')));
+    expect(
+      workflow,
+      isNot(contains('--dart-define="SUPABASE_PUBLISHABLE_KEY=')),
+    );
     expect(workflow, contains(r'$securePfxPassword.Dispose()'));
     expect(workflow, contains(r'$env:PERFECT_WINDOWS_PFX_PASSWORD = $null'));
     expect(workflow, contains(r'$env:PERFECT_WINDOWS_PFX_BASE64 = $null'));

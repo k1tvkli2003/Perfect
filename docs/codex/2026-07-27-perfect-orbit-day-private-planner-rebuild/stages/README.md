@@ -32,6 +32,10 @@ all later runtime work is accepted through normalized Copy side-by-side comparis
 - Runtime stages end with commit, push, successful CI/release, install-ready
   artifacts and a clean `main`-only branch state.
 
+Current execution: Stage 01 passed its local contract on 2026-08-09; Stage 02 is
+next after the Stage 01 commit/push and exact-SHA hosted verification. The root
+agent owns execution alone; no subagent work is active.
+
 ## Whole-product coverage ledger
 
 The stage title identifies its primary ownership, not a boundary that permits
