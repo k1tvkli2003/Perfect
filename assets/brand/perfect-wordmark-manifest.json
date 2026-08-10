@@ -1,0 +1,192 @@
+{
+  "contract": {
+    "android_widget_canvas_dp": [
+      96,
+      24
+    ],
+    "android_widget_visible_dp": [
+      88,
+      20
+    ],
+    "dark": {
+      "accent": "#B9AAEB",
+      "ink": "#FFF9F1"
+    },
+    "high_contrast_dark": "#FFFDF8",
+    "high_contrast_light": "#111218",
+    "light": {
+      "accent": "#A99ADE",
+      "ink": "#1D2030"
+    },
+    "runtime_text_nodes": false,
+    "text": "Perfect!"
+  },
+  "font_source": {
+    "path": "assets/fonts/PlusJakartaSans-Variable.ttf",
+    "sha256": "89b3fb38aa0d275d7a731d0d817a4f1622b316b4d7fbdedcf02ee9099ff68bc8",
+    "weight": 660
+  },
+  "identity": "Perfect! authored wordmark",
+  "outputs": [
+    {
+      "alpha_bounds": [
+        6,
+        4,
+        138,
+        31
+      ],
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-hdpi/perfect_widget_wordmark_raster.png",
+      "pixels": [
+        144,
+        36
+      ],
+      "sha256": "805be65be5f522e138a72383f7c882d30ed7dabc5e1e9fbcf017acaa6ea9d324"
+    },
+    {
+      "alpha_bounds": [
+        4,
+        3,
+        92,
+        21
+      ],
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-mdpi/perfect_widget_wordmark_raster.png",
+      "pixels": [
+        96,
+        24
+      ],
+      "sha256": "bcf3ffaecd16f5c5e19d766de47827456e99f26e2b552c1bbe818370939d2224"
+    },
+    {
+      "alpha_bounds": [
+        8,
+        6,
+        184,
+        41
+      ],
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xhdpi/perfect_widget_wordmark_raster.png",
+      "pixels": [
+        192,
+        48
+      ],
+      "sha256": "c89d78ebaaa26162cfd6bce29932d39bc55dd0d2777092281eab7d921d075cc8"
+    },
+    {
+      "alpha_bounds": [
+        12,
+        9,
+        276,
+        62
+      ],
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xxhdpi/perfect_widget_wordmark_raster.png",
+      "pixels": [
+        288,
+        72
+      ],
+      "sha256": "8ecd40a380ccad11dc284119755747f4c6c5adbee7df81cfce8b10c053c4e107"
+    },
+    {
+      "alpha_bounds": [
+        16,
+        12,
+        368,
+        83
+      ],
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xxxhdpi/perfect_widget_wordmark_raster.png",
+      "pixels": [
+        384,
+        96
+      ],
+      "sha256": "af67600b1b0d33cc0379879775271b3e91b7155fd13507857582fbb3fa7ca790"
+    },
+    {
+      "alpha_bounds": [
+        24,
+        24,
+        1627,
+        347
+      ],
+      "kind": "raster-fallback",
+      "path": "assets/brand/perfect-wordmark-dark.png",
+      "pixels": [
+        1651,
+        371
+      ],
+      "sha256": "3a5eefc491e2e1bb9ef51ecd279d3c8d1016f00a11abe3bf3ed0b72af3e3a0cf"
+    },
+    {
+      "glyph_paths": 8,
+      "kind": "path-svg-master",
+      "path": "assets/brand/perfect-wordmark-dark.svg",
+      "sha256": "d86d4b712287e51bb2e12aa40f920d3faeacf2939baf133d9ca67672f4f70c9f"
+    },
+    {
+      "alpha_bounds": [
+        24,
+        24,
+        1627,
+        347
+      ],
+      "kind": "raster-fallback",
+      "path": "assets/brand/perfect-wordmark-high-contrast-dark.png",
+      "pixels": [
+        1651,
+        371
+      ],
+      "sha256": "536df1ec3dc62f96d45e43fc088c283b17cd7213692a77be6ebd6b48fc0f4803"
+    },
+    {
+      "glyph_paths": 8,
+      "kind": "path-svg-master",
+      "path": "assets/brand/perfect-wordmark-high-contrast-dark.svg",
+      "sha256": "0c837ded73c1b5f7ceccfc8a5bd1a64e62e1a3d6d471323af1f926a9ba0e3921"
+    },
+    {
+      "alpha_bounds": [
+        24,
+        24,
+        1627,
+        347
+      ],
+      "kind": "raster-fallback",
+      "path": "assets/brand/perfect-wordmark-high-contrast-light.png",
+      "pixels": [
+        1651,
+        371
+      ],
+      "sha256": "1df06dc853d8dd2eef17a49716bd40ea1475fda1e3e278354df60378005ae038"
+    },
+    {
+      "glyph_paths": 8,
+      "kind": "path-svg-master",
+      "path": "assets/brand/perfect-wordmark-high-contrast-light.svg",
+      "sha256": "0d460b7fae9aef850ca828a1d9744085a6f504d2aea6a43e7534460237fe728f"
+    },
+    {
+      "alpha_bounds": [
+        24,
+        24,
+        1627,
+        347
+      ],
+      "kind": "raster-fallback",
+      "path": "assets/brand/perfect-wordmark.png",
+      "pixels": [
+        1651,
+        371
+      ],
+      "sha256": "89a010f6d60f414c144045f2aeddd81a023b4e9cd9bf67c7262a77813a06e87b"
+    },
+    {
+      "glyph_paths": 8,
+      "kind": "path-svg-master",
+      "path": "assets/brand/perfect-wordmark.svg",
+      "sha256": "02edeeeeab557abe3dff364925b5e1ad69a5bb55483562bc3331414e0d199583"
+    }
+  ],
+  "schema_version": 1
+}

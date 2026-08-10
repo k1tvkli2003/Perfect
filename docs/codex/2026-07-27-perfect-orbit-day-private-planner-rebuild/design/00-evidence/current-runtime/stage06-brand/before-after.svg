@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="900" height="3180" viewBox="0 0 900 3180">
+  <rect width="900" height="3180" fill="#F7F4EF"/>
+  <style>
+    .title { font: 700 28px sans-serif; fill: #1D2030; }
+    .label { font: 650 20px sans-serif; fill: #1D2030; }
+    .note { font: 400 15px sans-serif; fill: #686579; }
+    .frame { fill: #FFFFFB; stroke: #E3DDD4; stroke-width: 2; }
+  </style>
+  <text class="title" x="48" y="52">Perfect! Stage 06 — installed identity comparison</text>
+
+  <text class="label" x="90" y="94">Before</text>
+  <text class="label" x="490" y="94">After</text>
+  <text class="note" x="90" y="120">Android 12+ splash — clipped system disk</text>
+  <text class="note" x="490" y="120">Dedicated 288dp / 192dp-safe composition</text>
+  <rect class="frame" x="88" y="138" width="324" height="716" rx="22"/>
+  <rect class="frame" x="488" y="138" width="324" height="716" rx="22"/>
+  <image x="90" y="140" width="320" height="711" preserveAspectRatio="xMidYMid meet"
+         xlink:href="android-splash-before.png"/>
+  <image x="490" y="140" width="320" height="711" preserveAspectRatio="xMidYMid meet"
+         xlink:href="android-splash-after.png"/>
+
+  <text class="label" x="90" y="902">Before</text>
+  <text class="label" x="490" y="902">After</text>
+  <text class="note" x="90" y="928">Existing masked launcher identity</text>
+  <text class="note" x="490" y="928">Regenerated safe inset; old/new coexist for comparison</text>
+  <rect class="frame" x="88" y="946" width="324" height="716" rx="22"/>
+  <rect class="frame" x="488" y="946" width="324" height="716" rx="22"/>
+  <image x="90" y="948" width="320" height="711" preserveAspectRatio="xMidYMid meet"
+         xlink:href="android-app-drawer-before.png"/>
+  <image x="490" y="948" width="320" height="711" preserveAspectRatio="xMidYMid meet"
+         xlink:href="android-app-drawer-after.png"/>
+
+  <text class="label" x="90" y="1710">Before</text>
+  <text class="label" x="490" y="1710">After</text>
+  <text class="note" x="90" y="1736">Raster wordmark and underscaled companion mark</text>
+  <text class="note" x="490" y="1736">Path wordmark and optically aligned mark</text>
+  <rect class="frame" x="88" y="1754" width="324" height="516" rx="22"/>
+  <rect class="frame" x="488" y="1754" width="324" height="516" rx="22"/>
+  <image x="90" y="1756" width="320" height="511" preserveAspectRatio="xMidYMin slice"
+         xlink:href="android-first-frame-before.png"/>
+  <image x="490" y="1756" width="320" height="511" preserveAspectRatio="xMidYMin slice"
+         xlink:href="android-first-frame-after.png"/>
+
+  <text class="label" x="90" y="2330">Before</text>
+  <text class="label" x="490" y="2330">After</text>
+  <text class="note" x="90" y="2356">Dark splash — owner core merges into #171821</text>
+  <text class="note" x="490" y="2356">Night-qualified asset lifts only the owner core</text>
+  <rect class="frame" x="88" y="2374" width="324" height="716" rx="22"/>
+  <rect class="frame" x="488" y="2374" width="324" height="716" rx="22"/>
+  <image x="90" y="2376" width="320" height="711" preserveAspectRatio="xMidYMid meet"
+         xlink:href="android-splash-dark-before.png"/>
+  <image x="490" y="2376" width="320" height="711" preserveAspectRatio="xMidYMid meet"
+         xlink:href="android-splash-dark-after.png"/>
+</svg>

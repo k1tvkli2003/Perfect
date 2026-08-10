@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Keep the public drawable name stable for widgets and both splash paths while
-  delegating to the density-specific raster generated from the approved
-  transparent Day Compass master. This preserves the selected gradients and
-  36dp intrinsic frame instead of approximating the brand with flat paths.
+  Keep the public drawable name stable for native widget surfaces while
+  delegating to the dedicated density-specific 48dp canvas. Splash uses its
+  own 288dp safe-zone composition and must never route through this drawable.
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@drawable/perfect_widget_mark_raster" />

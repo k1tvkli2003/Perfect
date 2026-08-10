@@ -7,7 +7,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test(
-    'selected launcher source is transparent and fills its 512 box',
+    'selected launcher source is transparent with a deliberate optical inset',
     () async {
       final data = await rootBundle.load('assets/brand/perfect-launcher.png');
       final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
@@ -78,10 +78,12 @@ void main() {
         rgba[(((image.height - 1) * image.width) * 4) + 3],
         rgba[((image.width * image.height) - 1) * 4 + 3],
       ], everyElement(0));
-      expect(minX, lessThanOrEqualTo(45));
-      expect(maxX, greaterThanOrEqualTo(467));
-      expect(maxX - minX + 1, greaterThanOrEqualTo(420));
-      expect(maxY - minY + 1, greaterThanOrEqualTo(495));
+      expect(minX, greaterThanOrEqualTo(26));
+      expect(minY, greaterThanOrEqualTo(26));
+      expect(image.width - 1 - maxX, greaterThanOrEqualTo(26));
+      expect(image.height - 1 - maxY, greaterThanOrEqualTo(26));
+      expect(maxX - minX + 1, greaterThanOrEqualTo(385));
+      expect(maxY - minY + 1, greaterThanOrEqualTo(450));
       expect((minY - (image.height - 1 - maxY)).abs(), lessThanOrEqualTo(2));
       expect(
         components,

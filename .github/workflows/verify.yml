@@ -126,6 +126,20 @@ jobs:
           cache: true
       - name: Resolve locked dependencies
         run: flutter pub get --enforce-lockfile
+      - name: Verify deterministic Perfect brand assets
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check -r tool/requirements.txt
+          python3 tool/verify_perfect_brand_assets.py
+          python3 tool/generate_day_compass_assets.py
+          python3 tool/generate_perfect_wordmark.py
+          dart run flutter_launcher_icons
+          python3 tool/verify_perfect_brand_assets.py
+          git diff --exit-code -- \
+            assets/brand \
+            android/app/src/main/res \
+            windows/runner/resources/app_icon.ico \
+            docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/icon-concepts-v2/selected/day-compass-transparent-512.png
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed lib test
       - name: Analyze

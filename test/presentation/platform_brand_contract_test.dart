@@ -367,7 +367,7 @@ void main() {
   });
 
   test(
-    'Android widgets render the exact selected Day Compass at 36dp',
+    'Android widgets render a dedicated inset Day Compass at 48dp',
     () async {
       final publicMark = File(
         'android/app/src/main/res/drawable/perfect_widget_mark.xml',
@@ -376,11 +376,11 @@ void main() {
       expect(publicMark, isNot(contains('pathData=')));
 
       const rasterSizes = <String, int>{
-        'mdpi': 36,
-        'hdpi': 54,
-        'xhdpi': 72,
-        'xxhdpi': 108,
-        'xxxhdpi': 144,
+        'mdpi': 48,
+        'hdpi': 72,
+        'xhdpi': 96,
+        'xxhdpi': 144,
+        'xxxhdpi': 192,
       };
       for (final raster in rasterSizes.entries) {
         final bitmap = File(
@@ -406,8 +406,22 @@ void main() {
           rgba[(((image.height - 1) * image.width) * 4) + 3],
           rgba[((image.width * image.height) - 1) * 4 + 3],
         ], everyElement(0));
+        final bounds = _alphaBounds(
+          rgba,
+          image.width,
+          image.height,
+          threshold: 8,
+        );
+        final scale = raster.value / 48;
+        expect(bounds.left / scale, greaterThanOrEqualTo(3.5));
+        expect(bounds.top / scale, greaterThanOrEqualTo(3.5));
+        expect((image.width - bounds.right) / scale, greaterThanOrEqualTo(3.5));
         expect(
-          _alphaComponents(rgba, image.width, image.height),
+          (image.height - bounds.bottom) / scale,
+          greaterThanOrEqualTo(3.5),
+        );
+        expect(
+          _alphaComponents(rgba, image.width, image.height, threshold: 192),
           7,
           reason:
               '${raster.key} widget mark must preserve all six selected pastel '
@@ -429,13 +443,21 @@ void main() {
         'perfect_today_widget_tall.xml',
         'perfect_today_widget_wide.xml',
         'perfect_today_widget_large.xml',
-        'perfect_widget_quick_add.xml',
       ]) {
         final source = File(
           'android/app/src/main/res/layout/$layout',
         ).readAsStringSync();
         expect(source, contains('@drawable/perfect_widget_mark'));
+        expect(source, contains('@drawable/perfect_widget_wordmark_raster'));
+        expect(source, isNot(contains('android:text="Perfect!"')));
+        expect(source, isNot(contains('android:text="Perfect! Today"')));
       }
+      expect(
+        File(
+          'android/app/src/main/res/layout/perfect_widget_quick_add.xml',
+        ).readAsStringSync(),
+        contains('@drawable/perfect_widget_mark'),
+      );
     },
   );
 
@@ -458,10 +480,11 @@ void main() {
         launchSurface,
         allOf(
           contains('@color/perfect_splash_background'),
-          contains('@drawable/perfect_widget_mark'),
+          contains('@drawable/perfect_splash_mark_raster'),
           contains('android:gravity="center"'),
         ),
       );
+      expect(launchSurface, isNot(contains('@drawable/perfect_widget_mark')));
       expect(launchSurface, isNot(contains('@android:color/white')));
     }
     for (final platformSplash in <String>[splashV31, splashNightV31]) {
@@ -471,10 +494,128 @@ void main() {
           contains('android:windowSplashScreenBackground'),
           contains('@color/perfect_splash_background'),
           contains('android:windowSplashScreenAnimatedIcon'),
-          contains('@drawable/perfect_widget_mark'),
+          contains('@drawable/perfect_splash_mark_raster'),
           contains('android:windowSplashScreenIconBackgroundColor'),
           contains('@android:color/transparent'),
         ),
+      );
+      expect(platformSplash, isNot(contains('@drawable/perfect_widget_mark')));
+    }
+
+    final dayColors = File(
+      'android/app/src/main/res/values/colors.xml',
+    ).readAsStringSync();
+    final nightColors = File(
+      'android/app/src/main/res/values-night/colors.xml',
+    ).readAsStringSync();
+    expect(dayColors, contains('#FFFFFBF6'));
+    expect(nightColors, contains('#FF171821'));
+  });
+
+  test(
+    'Android splash keeps the complete mark inside the 192dp safe circle',
+    () async {
+      const rasterSizes = <String, int>{
+        'mdpi': 288,
+        'hdpi': 432,
+        'xhdpi': 576,
+        'xxhdpi': 864,
+        'xxxhdpi': 1152,
+      };
+      for (final raster in rasterSizes.entries) {
+        final bitmap = File(
+          'android/app/src/main/res/drawable-${raster.key}/'
+          'perfect_splash_mark_raster.png',
+        );
+        expect(bitmap.existsSync(), isTrue);
+        final codec = await ui.instantiateImageCodec(
+          await bitmap.readAsBytes(),
+        );
+        final frame = await codec.getNextFrame();
+        final image = frame.image;
+        final pixels = await image.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
+        final rgba = pixels!.buffer.asUint8List();
+        final bounds = _alphaBounds(
+          rgba,
+          image.width,
+          image.height,
+          threshold: 8,
+        );
+        final scale = raster.value / 288;
+        final widthDp = (bounds.right - bounds.left) / scale;
+        final heightDp = (bounds.bottom - bounds.top) / scale;
+
+        expect(image.width, raster.value);
+        expect(image.height, raster.value);
+        expect(widthDp, lessThanOrEqualTo(170));
+        expect(heightDp, lessThanOrEqualTo(170));
+        expect(
+          (bounds.left / scale - (image.width - bounds.right) / scale).abs(),
+          lessThanOrEqualTo(1.25),
+        );
+        expect(
+          (bounds.top / scale - (image.height - bounds.bottom) / scale).abs(),
+          lessThanOrEqualTo(1.25),
+        );
+        expect(
+          _alphaComponents(rgba, image.width, image.height, threshold: 192),
+          7,
+        );
+        image.dispose();
+        codec.dispose();
+
+        final nightBitmap = File(
+          'android/app/src/main/res/drawable-night-${raster.key}/'
+          'perfect_splash_mark_raster.png',
+        );
+        expect(nightBitmap.existsSync(), isTrue);
+        final nightCodec = await ui.instantiateImageCodec(
+          await nightBitmap.readAsBytes(),
+        );
+        final nightFrame = await nightCodec.getNextFrame();
+        final nightImage = nightFrame.image;
+        final nightPixels = await nightImage.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
+        final nightRgba = nightPixels!.buffer.asUint8List();
+        final nightBounds = _alphaBounds(
+          nightRgba,
+          nightImage.width,
+          nightImage.height,
+          threshold: 8,
+        );
+        final centre =
+            (((nightImage.height ~/ 2) * nightImage.width) +
+                (nightImage.width ~/ 2)) *
+            4;
+        expect(nightImage.width, raster.value);
+        expect(nightImage.height, raster.value);
+        expect(nightBounds, bounds);
+        expect(nightRgba[centre + 3], greaterThan(240));
+        expect(nightRgba[centre], greaterThan(235));
+        expect(nightRgba[centre + 1], greaterThan(235));
+        expect(nightRgba[centre + 2], greaterThan(235));
+        nightImage.dispose();
+        nightCodec.dispose();
+      }
+    },
+  );
+
+  test('wordmark SVGs contain authored paths rather than live font text', () {
+    for (final name in <String>[
+      'perfect-wordmark.svg',
+      'perfect-wordmark-dark.svg',
+      'perfect-wordmark-high-contrast-light.svg',
+      'perfect-wordmark-high-contrast-dark.svg',
+    ]) {
+      final source = File('assets/brand/$name').readAsStringSync();
+      expect(source.toLowerCase(), isNot(contains('<text')));
+      expect(RegExp(r'<path ').allMatches(source), hasLength(8));
+      expect(
+        source,
+        contains('<title id="perfect-wordmark-title">Perfect!</title>'),
       );
     }
   });

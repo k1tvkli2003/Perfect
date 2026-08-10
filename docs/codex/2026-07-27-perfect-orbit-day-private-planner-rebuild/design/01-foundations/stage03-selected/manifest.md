@@ -15,7 +15,7 @@ color correction or post-render recomposition is allowed.
 
 | Local file | Canonical source | SHA-256 | Contract |
 | --- | --- | --- | --- |
-| `day-compass-transparent-512.png` | `assets/brand/perfect-launcher.png` | `43a5344bc25ce9c3a3562153c4667a6f49d9652209345ff6bcba25d4607c5728` | Exact selected transparent Day Compass mark; no baked tile |
+| `day-compass-transparent-512.png` | `assets/brand/perfect-launcher.png` | `c26010a7b9f6d87765f94dd77774501f3f1c145eb0e2b214b6569b45fc8b8d11` | Exact selected transparent Day Compass mark with the Stage 06 optical perimeter; no baked tile |
 | `perfect-wordmark.png` | `assets/brand/perfect-wordmark.png` | `89a010f6d60f414c144045f2aeddd81a023b4e9cd9bf67c7262a77813a06e87b` | Exact selected light-canvas wordmark image |
 | `perfect-wordmark-dark.png` | `assets/brand/perfect-wordmark-dark.png` | `3a5eefc491e2e1bb9ef51ecd279d3c8d1016f00a11abe3bf3ed0b72af3e3a0cf` | Exact selected dark-canvas wordmark image |
 

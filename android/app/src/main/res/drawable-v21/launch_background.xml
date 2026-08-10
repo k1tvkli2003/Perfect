@@ -3,8 +3,8 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/perfect_splash_background" />
     <item
-        android:width="96dp"
-        android:height="96dp"
-        android:drawable="@drawable/perfect_widget_mark"
+        android:width="144dp"
+        android:height="144dp"
+        android:drawable="@drawable/perfect_splash_mark_raster"
         android:gravity="center" />
 </layer-list>

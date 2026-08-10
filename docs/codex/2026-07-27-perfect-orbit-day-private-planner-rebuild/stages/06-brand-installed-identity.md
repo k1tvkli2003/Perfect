@@ -1,6 +1,6 @@
 # Stage 06 — Brand assets and installed identity
 
-Status: pending  
+Status: implementation complete — exact-SHA hosted release gate required before Stage 07
 Depends on: Stages 01–05  
 Primary surfaces: splash, auth, app header/rail, launcher, widget, Windows shell
 

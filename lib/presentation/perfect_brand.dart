@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:perfect/presentation/perfect_pictogram.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 
 /// The approved Perfect! mark, shared verbatim with Android and Windows.
@@ -12,6 +12,16 @@ class PerfectMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.maybeOf(context);
+    final highContrast = media?.highContrast ?? false;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final asset = highContrast
+        ? dark
+              ? 'assets/brand/perfect-mark-high-contrast-dark.png'
+              : 'assets/brand/perfect-mark-high-contrast-light.png'
+        : dark
+        ? 'assets/brand/perfect-mark-dark.png'
+        : 'assets/brand/perfect-launcher.png';
     final physicalPixels = (size * MediaQuery.devicePixelRatioOf(context))
         .ceil()
         .clamp(1, 512)
@@ -23,18 +33,12 @@ class PerfectMark extends StatelessWidget {
         child: SizedBox.square(
           dimension: size,
           child: Image.asset(
-            'assets/brand/perfect-launcher.png',
+            asset,
             fit: BoxFit.contain,
             filterQuality: FilterQuality.high,
             gaplessPlayback: true,
             cacheWidth: physicalPixels,
             cacheHeight: physicalPixels,
-            frameBuilder: (context, child, frame, loadedSynchronously) {
-              if (loadedSynchronously || frame != null) return child;
-              return PerfectPictogram(name: 'compass', size: size);
-            },
-            errorBuilder: (context, error, stackTrace) =>
-                PerfectPictogram(name: 'compass', size: size),
           ),
         ),
       ),
@@ -58,18 +62,23 @@ class PerfectWordmark extends StatelessWidget {
         (MediaQuery.maybeTextScalerOf(context) ?? TextScaler.noScaling).scale(
           fontSize,
         );
+    final media = MediaQuery.maybeOf(context);
+    final highContrast = media?.highContrast ?? false;
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final asset = highContrast
+        ? dark
+              ? 'assets/brand/perfect-wordmark-high-contrast-dark.svg'
+              : 'assets/brand/perfect-wordmark-high-contrast-light.svg'
+        : dark
+        ? 'assets/brand/perfect-wordmark-dark.svg'
+        : 'assets/brand/perfect-wordmark.svg';
     final wordmark = SizedBox(
       key: const ValueKey<String>('perfect-wordmark-visual'),
       height: scaledFontSize * 1.16,
-      child: Image.asset(
-        dark
-            ? 'assets/brand/perfect-wordmark-dark.png'
-            : 'assets/brand/perfect-wordmark.png',
+      child: SvgPicture.asset(
+        asset,
         fit: BoxFit.contain,
         alignment: AlignmentDirectional.centerStart,
-        filterQuality: FilterQuality.high,
-        gaplessPlayback: true,
         excludeFromSemantics: true,
       ),
     );
@@ -88,7 +97,7 @@ class PerfectWordmark extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (includeMark) ...[
-                  PerfectMark(size: scaledFontSize * .98),
+                  PerfectMark(size: scaledFontSize * 1.12),
                   const SizedBox(width: PerfectSpace.xs),
                 ],
                 wordmark,

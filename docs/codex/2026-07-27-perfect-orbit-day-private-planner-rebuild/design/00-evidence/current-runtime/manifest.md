@@ -130,3 +130,20 @@ Names such as `Focus Deep Work` and `Water plants` in the synthetic goldens are
 preview fixtures. They are not allowed in production seeds or a signed fresh-owner
 flow. Later stages must retain the existing production-fixture isolation tests and
 add manifest scanning for every new preview fixture.
+
+## Stage 06 installed-brand comparison
+
+Captured 2026-08-10 on the same Pixel Android 15/API 35 host. The `before`
+frames freeze the installed production baseline; the `after` frames use the
+non-production sibling package after an in-place `2000 -> 2045` preview update.
+The different auth/config substate in the first-frame pair is not a page-layout
+comparison; that pair is evidence only for mark/wordmark geometry and rendering.
+
+| File | Pixels | SHA-256 | Evidence |
+| --- | ---: | --- | --- |
+| `stage06-brand/android-splash-after.png` | 1080x2400 | `f0a558d0620f6ececfba96d5a03e15c3afd767b419c4076cb2818b4e354e0138` | Dedicated system-splash canvas shows all six modules and the owner core without circular clipping. |
+| `stage06-brand/android-splash-dark-before.png` | 1080x2400 | `11437e7f487d1e13fffd2aa34838a4ff7ab74f14cdeda5b443f3357c80300334` | Dark-mode adversarial capture: geometry is complete but the graphite owner core merges into the night canvas. |
+| `stage06-brand/android-splash-dark-after.png` | 1080x2400 | `1a80006ce437e226441cc894568fa587ee0b0e90d726d60648ec705ea40902a6` | Night-qualified splash preserves geometry and lifts only the owner core to warm white. |
+| `stage06-brand/android-app-drawer-after.png` | 1080x2400 | `4f5a45dc935b46c365f465251acc89e5ad4b32ab8f3c9551bfe2dc130f100c8a` | Old/new Perfect! installs coexist, exposing the regenerated adaptive safe inset under the same Pixel mask. |
+| `stage06-brand/android-first-frame-after.png` | 1080x2400 | `7842dcf936b7e0cf68c21be0b126ae51683c5c2994ed6bd569dc8e9118d35860` | Path wordmark and optically aligned Day Compass render in the real Flutter first surface. |
+| `stage06-brand/before-after.png` | 900x3180 | `e0de44c73cfaccbb0a68f605fedb2db6a0d4e94adfa7d09990bb384e5ef22452` | Uncropped light/dark side-by-side inspection sheet; the SVG source retains the original PNG links. |

@@ -15,7 +15,8 @@
         <ImageView
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:contentDescription="Perfect!"
+            android:contentDescription="@null"
+            android:importantForAccessibility="no"
             android:src="@drawable/perfect_widget_mark" />
 
         <LinearLayout
@@ -25,15 +26,14 @@
             android:orientation="vertical"
             android:paddingStart="12dp">
 
-            <TextView
+            <ImageView
                 android:id="@+id/widget_open_today"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Perfect! Today"
-                android:textColor="@color/perfect_widget_ink"
-                android:textDirection="locale"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:layout_width="104dp"
+                android:layout_height="26dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/widget_open_today_description"
+                android:scaleType="fitStart"
+                android:src="@drawable/perfect_widget_wordmark_raster" />
 
             <TextView
                 android:id="@+id/widget_date"

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:perfect/presentation/perfect_brand.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 
@@ -63,7 +64,7 @@ void main() {
       );
       expect(mark.left, greaterThanOrEqualTo(frame.left));
       expect(word.right, lessThanOrEqualTo(frame.right));
-      expect(mark.height / word.height, inInclusiveRange(.78, .92));
+      expect(mark.height / word.height, inInclusiveRange(.9, 1.02));
       expect(tester.takeException(), isNull);
     });
 
@@ -100,6 +101,38 @@ void main() {
       final node = tester.getSemantics(find.bySemanticsLabel('Perfect!'));
       expect(node.flagsCollection.isImage, isTrue);
       semantics.dispose();
+    });
+
+    testWidgets('dark and high-contrast surfaces select dedicated artwork', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: PerfectTheme.dark(),
+          home: const MediaQuery(
+            data: MediaQueryData(highContrast: true),
+            child: Scaffold(
+              body: PerfectWordmark(fontSize: 34, includeMark: true),
+            ),
+          ),
+        ),
+      );
+
+      final mark = tester.widget<Image>(find.byType(Image));
+      final markProvider = mark.image as ResizeImage;
+      final markAsset = markProvider.imageProvider as AssetImage;
+      expect(
+        markAsset.assetName,
+        'assets/brand/perfect-mark-high-contrast-dark.png',
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey<String>('perfect-wordmark-visual')),
+          matching: find.byType(SvgPicture),
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('mark decodes at its rendered physical size', (tester) async {
