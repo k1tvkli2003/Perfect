@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fffdf9"/><stop offset="1" stop-color="#f6efe8"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="15" flood-color="#382f28" flood-opacity=".11"/></filter>
+    <style>
+      .ui{font-family:"Segoe UI","Vazirmatn",Tahoma,Arial,sans-serif;fill:#202332}.eyebrow{font-size:13px;font-weight:750;letter-spacing:1.7px;fill:#897d70}.title{font-size:42px;font-weight:750;letter-spacing:-1.2px}.display{font-size:50px;font-weight:760;letter-spacing:-1.7px}.page{font-size:34px;font-weight:740;letter-spacing:-.8px}.section{font-size:24px;font-weight:720}.row{font-size:18px;font-weight:680}.body{font-size:16px;fill:#625d70}.meta{font-size:13px;fill:#777184}.caption{font-size:11px;fill:#777184}.panel{fill:#fffefa;stroke:#e6ddd3;stroke-width:1.2}.mono{font-variant-numeric:tabular-nums}.rtl{direction:rtl;unicode-bidi:plaintext}
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <text class="ui eyebrow" x="58" y="58">PS01 · TYPOGRAPHY PLATE</text>
+  <text class="ui title" x="58" y="108">The wordmark is an image. Everything else stays live.</text>
+  <text class="ui body" x="58" y="142">Exact identity · readable English/Persian/mixed copy · stable numerals · whole phrases at 200%</text>
+
+  <!-- WORDMARK -->
+  <g transform="translate(58 184)">
+    <rect class="panel" width="680" height="236" rx="32" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="30" y="42">EXACT SELECTED WORDMARK — NEVER A LIVE FONT SUBSTITUTE</text>
+    <image x="30" y="62" width="340" height="128" xlink:href="perfect-wordmark.png" preserveAspectRatio="xMinYMid meet"/>
+    <image x="414" y="78" width="230" height="88" xlink:href="perfect-wordmark.png" preserveAspectRatio="xMinYMid meet"/>
+    <text class="ui meta" x="30" y="208">Header large crop</text><text class="ui meta" x="414" y="182">Compact rail/header crop</text>
+  </g>
+  <g transform="translate(768 184)">
+    <rect x="0" y="0" width="774" height="236" rx="32" fill="#1b1e29" stroke="#3b3f4e" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="30" y="42" fill="#9f98ad">DARK WORDMARK EXPRESSION</text>
+    <image x="30" y="62" width="340" height="128" xlink:href="perfect-wordmark-dark.png" preserveAspectRatio="xMinYMid meet"/>
+    <text class="ui body" x="414" y="92" fill="#e6e1ed">Warm graphite canvas</text><text class="ui body" x="414" y="122" fill="#c9c2d0">Raised contrast · no pure black</text><text class="ui meta" x="414" y="156" fill="#a9a2b4">High contrast swaps blur for solid surfaces.</text>
+  </g>
+
+  <!-- HIERARCHY -->
+  <g transform="translate(58 450)">
+    <rect class="panel" width="690" height="474" rx="32" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="30" y="42">LIVE LATIN HIERARCHY — CANDIDATE RASTERIZATION TARGET</text>
+    <text class="ui display" x="30" y="110">Today</text><text class="ui meta" x="520" y="100">DISPLAY · 50 / 58</text>
+    <text class="ui page" x="30" y="176">Habits &amp; rhythms</text><text class="ui meta" x="520" y="166">PAGE · 34 / 42</text>
+    <text class="ui section" x="30" y="232">Next up</text><text class="ui meta" x="520" y="226">SECTION · 24 / 30</text>
+    <text class="ui row" x="30" y="284">Cardiology deep work</text><text class="ui meta" x="520" y="280">ROW · 18 / 24</text>
+    <text class="ui body" x="30" y="330">Focus on mechanisms, not just the number of completed tasks.</text>
+    <text class="ui meta mono" x="30" y="374">9:30–11:00 · Monday, July 27 · 2026-07-27</text>
+    <text class="ui caption" x="30" y="412">STUDY · HIGH · SAVED LOCALLY · 2 LOCAL CHANGES</text>
+    <rect x="30" y="438" width="630" height="1" fill="#e4ddd4"/>
+    <text class="ui meta" x="30" y="466">Live family is not frozen until Stage 04 tests Segoe UI / system / Vazirmatn pairing on Android and Windows.</text>
+  </g>
+
+  <!-- PERSIAN/MIXED -->
+  <g transform="translate(778 450)">
+    <rect class="panel" width="764" height="474" rx="32" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="30" y="42">PERSIAN · MIXED BIDI · DUAL DATE · 200% RECOMPOSITION</text>
+    <foreignObject x="30" y="66" width="704" height="178"><div xmlns="http://www.w3.org/1999/xhtml" dir="rtl" style="font-family:'Segoe UI','Vazirmatn',Tahoma,sans-serif;color:#202332;text-align:right"><div style="font-size:34px;line-height:44px;font-weight:740">برنامهٔ امروز</div><div style="font-size:24px;line-height:38px;font-weight:720">مرور فصل <span dir="ltr">Arrhythmia</span></div><div style="font-size:16px;line-height:32px;color:#625d70">سه‌شنبه، ۵ مرداد ۱۴۰۵ · <span dir="ltr">Monday, July 27, 2026</span></div><div style="font-size:13px;line-height:28px;color:#777184;font-variant-numeric:tabular-nums">۰۹:۳۰–۱۱:۰۰ · <span dir="ltr">9:30–11:00 AM</span></div></div></foreignObject>
+    <rect x="30" y="258" width="704" height="178" rx="24" fill="#faf7f2" stroke="#e5ddd4"/>
+    <text class="ui eyebrow" x="52" y="292">200% TEXT — STACK BEFORE CLIP</text>
+    <circle cx="78" cy="346" r="22" fill="none" stroke="#f6a65b" stroke-width="3"/>
+    <foreignObject x="104" y="308" width="600" height="108"><div xmlns="http://www.w3.org/1999/xhtml" dir="rtl" style="font-family:'Segoe UI','Vazirmatn',Tahoma,sans-serif;color:#202332;text-align:right"><div style="font-size:24px;line-height:34px;font-weight:720">مرور فصل <span dir="ltr">Arrhythmia</span> و خلاصه‌نویسی نکات مهم</div><div style="font-size:16px;line-height:28px;color:#625d70">امروز · ساعت ۰۹:۳۰ تا ۱۱:۰۰</div><div style="font-size:13px;line-height:24px;color:#777184">مطالعه · اولویت بالا · ۹۰ دقیقه</div></div></foreignObject>
+    <text class="ui caption" x="52" y="424">PRIMARY PHRASE WHOLE · METADATA STACKED · ACTION STILL REACHABLE</text>
+  </g>
+
+  <text class="ui meta" x="58" y="972">Acceptance: exact wordmark hash · no broken primary phrase · bidi isolation · tabular changing values · Android/Windows original-size screenshot inspection.</text>
+</svg>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1800" height="1100" viewBox="0 0 1800 1100">
+  <rect width="1800" height="1100" fill="#fbf8f3"/>
+  <style>
+    .title { font: 700 34px "Segoe UI", sans-serif; fill: #171a2a; }
+    .note { font: 400 17px "Segoe UI", sans-serif; fill: #666174; }
+    .label { font: 600 14px "Segoe UI", sans-serif; fill: #292b3a; }
+    .frame { fill: #fffdfa; stroke: #ded7cf; stroke-width: 2; }
+  </style>
+  <text class="title" x="50" y="55">Stage 03 · current Android phone surface matrix</text>
+  <text class="note" x="50" y="88">Exact 1080×2400 captures · same preview package/device · no crop · baseline only, never target UI</text>
+
+  <g transform="translate(50 120)">
+    <text class="label" x="0" y="20">Today · light</text><rect class="frame" x="0" y="34" width="180" height="400" rx="20"/><image x="4" y="38" width="172" height="392" xlink:href="android-routes/today-phone-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="245" y="20">Tasks</text><rect class="frame" x="245" y="34" width="180" height="400" rx="20"/><image x="249" y="38" width="172" height="392" xlink:href="android-routes/tasks-phone-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="490" y="20">Plan</text><rect class="frame" x="490" y="34" width="180" height="400" rx="20"/><image x="494" y="38" width="172" height="392" xlink:href="android-routes/plan-phone-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="735" y="20">Habits</text><rect class="frame" x="735" y="34" width="180" height="400" rx="20"/><image x="739" y="38" width="172" height="392" xlink:href="android-routes/habits-phone-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="980" y="20">More</text><rect class="frame" x="980" y="34" width="180" height="400" rx="20"/><image x="984" y="38" width="172" height="392" xlink:href="android-routes/more-phone-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="1225" y="20">Today · dark</text><rect class="frame" x="1225" y="34" width="180" height="400" rx="20"/><image x="1229" y="38" width="172" height="392" xlink:href="android-routes/today-phone-dark-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="1470" y="20">More · dark</text><rect class="frame" x="1470" y="34" width="180" height="400" rx="20"/><image x="1474" y="38" width="172" height="392" xlink:href="android-routes/more-phone-dark-current.png" preserveAspectRatio="xMidYMid meet"/>
+
+    <text class="label" x="0" y="505">Quick Capture</text><rect class="frame" x="0" y="519" width="180" height="400" rx="20"/><image x="4" y="523" width="172" height="392" xlink:href="android-routes/quick-capture-phone-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="245" y="505">AI + Capture stack</text><rect class="frame" x="245" y="519" width="180" height="400" rx="20"/><image x="249" y="523" width="172" height="392" xlink:href="android-routes/ai-capture-phone-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="490" y="505">Sync details</text><rect class="frame" x="490" y="519" width="180" height="400" rx="20"/><image x="494" y="523" width="172" height="392" xlink:href="android-routes/sync-details-phone-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="735" y="505">Create · Type</text><rect class="frame" x="735" y="519" width="180" height="400" rx="20"/><image x="739" y="523" width="172" height="392" xlink:href="android-routes/task-wizard-phone-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="980" y="505">Habit · Category</text><rect class="frame" x="980" y="519" width="180" height="400" rx="20"/><image x="984" y="523" width="172" height="392" xlink:href="android-routes/habit-wizard-category-phone-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="1225" y="505">Habit · Measure</text><rect class="frame" x="1225" y="519" width="180" height="400" rx="20"/><image x="1229" y="523" width="172" height="392" xlink:href="android-routes/habit-wizard-measure-phone-current.png" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="1470" y="505">Row tap → Edit/Type</text><rect class="frame" x="1470" y="519" width="180" height="400" rx="20"/><image x="1474" y="523" width="172" height="392" xlink:href="android-routes/task-row-tap-current.png" preserveAspectRatio="xMidYMid meet"/>
+  </g>
+</svg>

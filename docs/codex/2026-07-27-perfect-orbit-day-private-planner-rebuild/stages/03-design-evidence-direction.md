@@ -1,6 +1,6 @@
 # Stage 03 — Design evidence and revolutionary creative direction
 
-Status: pending  
+Status: complete — `PS01 Perfect Day Instrument` frozen for Stages 04–05
 Depends on: Stages 01–02  
 Blocks: every visual specification, preview and runtime implementation
 
@@ -137,5 +137,34 @@ polish.
 
 Freeze the selected direction ID, evidence paths, opinion ledger and supersession
 rules. Stage 04 receives the winning system and must produce every component preview
-before any production UI implementation. Commit/push the design documents and assets;
-do not publish a runtime release when no runtime byte changed.
+before any production UI implementation. Commit/push the design documents and assets.
+The repository workflow may publish its normal three install-ready artifacts for
+every `main` push as required by the owner, but a documentation-only build is not
+runtime visual acceptance.
+
+## Completed evidence — 2026-08-10
+
+- Frozen the existing Flutter/Android/widget screenshots and their SHA-256 hashes in
+  `../design/00-evidence/current-runtime/manifest.md`; every absent route/state is
+  named as an open current-evidence gap rather than represented by fake UI.
+- Inventoried and decomposed all 25 owner-provided HabitNow screenshots, current
+  Android/Windows primary guidance, seven planning peers and Dribbble craft examples.
+- Preserved all 25 HabitNow frames byte-for-byte inside the repository and built
+  uncropped current-runtime, HabitNow and finalist contact sheets for the permanent
+  side-by-side comparison gate; original frames remain the judgment authority.
+- Classified every whole-product family through the Integrity five-way ledger with no
+  silent surface.
+- Generated 24 structurally distinct recipes, scored eight, adversarially rendered
+  four normal/stress finalist families and rejected all eight model-native images as
+  canonical wherever text or identity drifted.
+- Selected `PS01` after the second weighted comparison. The selected contract freezes
+  Pulse + one Stream, view-first detail, direct method-specific habit logging, one
+  morphing Capture/Plan/AI/Voice surface and distinct phone/tablet/Windows layouts.
+- Authored six deterministic `single_render_native` SVG/PNG plates for identity,
+  shell, workflow, states, motion and typography; inspected all at original size and
+  recorded exact hashes in `../design/01-foundations/stage03-selected/manifest.md`.
+- Added an executable eight-test contract covering recipe count, screenshot/research
+  evidence, whole-product ledger, generated-board rejection, selected direction,
+  identity-byte equality, deterministic plates and production fixture isolation.
+- No shipped Flutter UI, route, domain, database or Supabase contract was changed by
+  Stage 03. Stage 04 remains design-only and owns exhaustive component previews.

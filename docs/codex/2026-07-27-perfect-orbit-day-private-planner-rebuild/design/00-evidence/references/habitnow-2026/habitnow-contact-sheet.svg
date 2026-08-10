@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="2250" viewBox="0 0 1200 2250">
+  <rect width="1200" height="2250" fill="#111214"/>
+  <style>
+    .title { font: 700 30px "Segoe UI", sans-serif; fill: #ffffff; }
+    .note { font: 400 15px "Segoe UI", sans-serif; fill: #b7b8bd; }
+    .label { font: 600 12px "Segoe UI", sans-serif; fill: #f0f0f2; }
+    .frame { fill: #1d1f22; stroke: #34363a; stroke-width: 2; }
+  </style>
+  <text class="title" x="35" y="50">HabitNow · owner-provided logic reference</text>
+  <text class="note" x="35" y="80">25 source screenshots · chronological order · uncropped aspect-preserving thumbnails · logic evidence, not identity target</text>
+  <g transform="translate(35 110)">
+    <g transform="translate(0 0)"><text class="label" y="16">01 Widget</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205812_One UI Home.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(230 0)"><text class="label" y="16">02 Today</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205818.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(460 0)"><text class="label" y="16">03 Habits</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205822.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(690 0)"><text class="label" y="16">04 Tasks</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205826.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(920 0)"><text class="label" y="16">05 Categories</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205830.png" preserveAspectRatio="xMidYMid meet"/></g>
+
+    <g transform="translate(0 420)"><text class="label" y="16">06 Timer</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205834.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(230 420)"><text class="label" y="16">07 Drawer</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205841.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(460 420)"><text class="label" y="16">08 Create type</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205844.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(690 420)"><text class="label" y="16">09 Category</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205848.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(920 420)"><text class="label" y="16">10 Evaluation</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205853.png" preserveAspectRatio="xMidYMid meet"/></g>
+
+    <g transform="translate(0 840)"><text class="label" y="16">11 Numeric</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205901.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(230 840)"><text class="label" y="16">12 Timer goal</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205905.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(460 840)"><text class="label" y="16">13 Checklist</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205910.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(690 840)"><text class="label" y="16">14 Boolean</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205916.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(920 840)"><text class="label" y="16">15 One-off task</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205931.png" preserveAspectRatio="xMidYMid meet"/></g>
+
+    <g transform="translate(0 1260)"><text class="label" y="16">16 Task category</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205937.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(230 1260)"><text class="label" y="16">17 Recurring evaluation</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205940.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(460 1260)"><text class="label" y="16">18 Recurrence family</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205951.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(690 1260)"><text class="label" y="16">19 Days per period</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205954.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(920 1260)"><text class="label" y="16">20 Annual dates</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_205957.png" preserveAspectRatio="xMidYMid meet"/></g>
+
+    <g transform="translate(0 1680)"><text class="label" y="16">21 Month days</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_210001.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(230 1680)"><text class="label" y="16">22 Weekdays</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_210004.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(460 1680)"><text class="label" y="16">23 Repeat interval</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_210007.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(690 1680)"><text class="label" y="16">24 Schedule/safeguards</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_210010.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(920 1680)"><text class="label" y="16">25 Calendar picker</text><rect class="frame" y="26" width="180" height="378" rx="12"/><image x="4" y="30" width="172" height="370" xlink:href="Screenshot_20260727_210025.png" preserveAspectRatio="xMidYMid meet"/></g>
+  </g>
+</svg>

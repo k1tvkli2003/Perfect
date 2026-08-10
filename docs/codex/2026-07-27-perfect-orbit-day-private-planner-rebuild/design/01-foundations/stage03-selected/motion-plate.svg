@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="920" viewBox="0 0 1600 920">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fffdf9"/><stop offset="1" stop-color="#f5eee8"/></linearGradient>
+    <linearGradient id="orb" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9fdbc4"/><stop offset=".48" stop-color="#9b84db"/><stop offset="1" stop-color="#f5aa5b"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#382f28" flood-opacity=".11"/></filter>
+    <style>
+      .ui{font-family:"Segoe UI",Arial,sans-serif;fill:#202332}.eyebrow{font-size:13px;font-weight:750;letter-spacing:1.7px;fill:#897d70}.title{font-size:42px;font-weight:750;letter-spacing:-1.2px}.h2{font-size:20px;font-weight:720}.h3{font-size:15px;font-weight:680}.body{font-size:14px;fill:#625d70}.tiny{font-size:11px;fill:#777184}.panel{fill:#fffefa;stroke:#e6ddd3;stroke-width:1.2}.frame{fill:#faf7f2;stroke:#e5ddd4;stroke-width:1}.arrow{fill:none;stroke:#9b9185;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.mono{font-variant-numeric:tabular-nums}
+    </style>
+  </defs>
+  <rect width="1600" height="920" fill="url(#bg)"/>
+  <text class="ui eyebrow" x="58" y="58">PS01 · MOTION STORYBOARD</text>
+  <text class="ui title" x="58" y="108">Motion explains continuity. It never decorates delay.</text>
+  <text class="ui body" x="58" y="142">Every sequence is interruptible, reversible and paired with a reduced-motion replacement.</text>
+
+  <!-- title rise -->
+  <g transform="translate(58 184)">
+    <rect class="panel" width="720" height="210" rx="30" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="28" y="38">MOT-TITLE-RISE · 180 MS · EMPHASIZED DECELERATE</text>
+    <g transform="translate(28 62)">
+      <g><rect class="frame" width="188" height="116" rx="18"/><text class="ui tiny" x="12" y="20">0 ms · y +12 · 0%</text><text class="ui h2" x="18" y="82" opacity=".12">Habits</text></g>
+      <path class="arrow" d="M204 58h34m-8-8 8 8-8 8"/>
+      <g transform="translate(250)"><rect class="frame" width="188" height="116" rx="18"/><text class="ui tiny" x="12" y="20">90 ms · y +4 · 72%</text><text class="ui h2" x="18" y="70" opacity=".72">Habits</text></g>
+      <path class="arrow" d="M454 58h34m-8-8 8 8-8 8"/>
+      <g transform="translate(500)"><rect class="frame" width="188" height="116" rx="18"/><text class="ui tiny" x="12" y="20">180 ms · y 0 · 100%</text><text class="ui h2" x="18" y="62">Habits</text><text class="ui tiny" x="18" y="84">Build rhythm without guilt.</text></g>
+    </g>
+  </g>
+
+  <!-- status receipt -->
+  <g transform="translate(808 184)">
+    <rect class="panel" width="734" height="210" rx="30" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="28" y="38">MOT-STATUS-RECEIPT · 220 MS + UNDO WINDOW</text>
+    <g transform="translate(28 62)">
+      <g><rect class="frame" width="188" height="116" rx="18"/><text class="ui tiny" x="12" y="20">idle</text><circle cx="38" cy="64" r="18" fill="#fff" stroke="#a9a2ad" stroke-width="2.5"/><text class="ui h3" x="70" y="69">Drink water</text></g>
+      <path class="arrow" d="M204 58h34m-8-8 8 8-8 8"/>
+      <g transform="translate(250)"><rect class="frame" width="188" height="116" rx="18"/><text class="ui tiny" x="12" y="20">press · scale .96</text><circle cx="38" cy="66" r="17" fill="#68bf9d"/><path d="M29 66l6 6 12-14" fill="none" stroke="#fff" stroke-width="3"/><text class="ui h3" x="70" y="69">Drink water</text></g>
+      <path class="arrow" d="M454 58h34m-8-8 8 8-8 8"/>
+      <g transform="translate(500)"><rect class="frame" width="202" height="116" rx="18"/><text class="ui tiny" x="12" y="20">settle · locally saved</text><circle cx="38" cy="54" r="18" fill="#68bf9d"/><path d="M29 54l6 6 12-14" fill="none" stroke="#fff" stroke-width="3"/><text class="ui h3" x="70" y="59">Drink water</text><rect x="14" y="82" width="174" height="24" rx="11" fill="#e4f5ed"/><text class="ui tiny" x="26" y="99">Done · Undo</text></g>
+    </g>
+  </g>
+
+  <!-- capture morph -->
+  <g transform="translate(58 424)">
+    <rect class="panel" width="960" height="236" rx="30" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="28" y="38">MOT-CAPTURE-MORPH · 260–340 MS SPRING · SAME ANCHOR · NO IME ON OPEN</text>
+    <g transform="translate(28 64)">
+      <g><rect class="frame" width="180" height="138" rx="18"/><text class="ui tiny" x="12" y="20">collapsed</text><circle cx="90" cy="76" r="34" fill="url(#orb)"/><path d="M79 76h22M90 65v22" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+      <path class="arrow" d="M196 69h32m-8-8 8 8-8 8"/>
+      <g transform="translate(240)"><rect class="frame" width="202" height="138" rx="18"/><text class="ui tiny" x="12" y="20">72 ms · shell grows</text><rect x="44" y="47" width="116" height="58" rx="28" fill="url(#orb)" opacity=".75"/><path d="M65 76h18M74 67v18" stroke="#fff" stroke-width="3"/></g>
+      <path class="arrow" d="M458 69h32m-8-8 8 8-8 8"/>
+      <g transform="translate(502)"><rect class="frame" width="398" height="138" rx="18"/><text class="ui tiny" x="12" y="20">260 ms · expanded, field still idle</text><rect x="18" y="42" width="362" height="54" rx="25" fill="#fff" stroke="#cfc5bb"/><text class="ui body" x="38" y="75">Capture a task…</text><circle cx="348" cy="69" r="20" fill="#2e3341"/><path d="M341 69h14M348 62v14" stroke="#fff" stroke-width="2"/><g class="ui tiny" text-anchor="middle"><text x="74" y="122">Task</text><text x="154" y="122">Plan</text><text x="246" y="122">Perfect AI</text><text x="332" y="122">Voice</text></g></g>
+    </g>
+  </g>
+
+  <!-- sync and breakpoint -->
+  <g transform="translate(1048 424)">
+    <rect class="panel" width="494" height="236" rx="30" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="28" y="38">SYNC + BREAKPOINT CONTINUITY</text>
+    <g transform="translate(28 70)" class="ui">
+      <rect class="frame" width="200" height="54" rx="18"/><circle cx="28" cy="27" r="11" fill="none" stroke="#d99b24" stroke-width="3" stroke-dasharray="38 14"/><text class="h3" x="52" y="25">Syncing</text><text class="tiny" x="52" y="42">bounded inner travel</text>
+      <path class="arrow" d="M212 27h28m-8-8 8 8-8 8"/>
+      <rect x="252" class="frame" width="186" height="54" rx="18"/><circle cx="278" cy="27" r="11" fill="#2aa66f"/><text class="h3" x="300" y="25">Synced</text><text class="tiny" x="300" y="42">motion stops</text>
+      <rect y="76" width="438" height="74" rx="18" fill="#f8f4ff" stroke="#d8cdf4"/><text class="h3" x="16" y="100">Resize mid-detail</text><text class="tiny" x="16" y="120">selection · scroll · focused field persist</text><path d="M310 112h86m-18-18 18 18-18 18" fill="none" stroke="#8e79d1" stroke-width="3"/><text class="tiny" x="320" y="98">pane → route</text>
+    </g>
+  </g>
+
+  <!-- reduced motion -->
+  <g transform="translate(58 690)">
+    <rect class="panel" width="1484" height="174" rx="30" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="28" y="38">REDUCED MOTION — REPLACEMENT, NOT SILENCE</text>
+    <g class="ui" transform="translate(28 68)">
+      <rect width="326" height="74" rx="20" fill="#faf7f2" stroke="#e5ddd4"/><text class="h3" x="18" y="28">Title</text><text class="tiny" x="18" y="50">12 ms crossfade · zero vertical travel</text>
+      <rect x="346" width="326" height="74" rx="20" fill="#faf7f2" stroke="#e5ddd4"/><text class="h3" x="364" y="28">Capture</text><text class="tiny" x="364" y="50">instant size settle · no heartbeat/spring</text>
+      <rect x="692" width="326" height="74" rx="20" fill="#faf7f2" stroke="#e5ddd4"/><text class="h3" x="710" y="28">Status</text><text class="tiny" x="710" y="50">state + receipt + announcement remain</text>
+      <rect x="1038" width="390" height="74" rx="20" fill="#faf7f2" stroke="#e5ddd4"/><text class="h3" x="1056" y="28">Breakpoint</text><text class="tiny" x="1056" y="50">direct reflow · focus/selection/scroll unchanged</text>
+    </g>
+  </g>
+</svg>

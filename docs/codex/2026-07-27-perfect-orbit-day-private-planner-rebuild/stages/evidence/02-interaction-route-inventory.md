@@ -530,3 +530,12 @@ Stage 03 should prioritize design evidence around these product opportunities:
 No production UI implementation is authorized by this inventory. Stages 03–05
 must first preview and freeze the component/page system, then later stages may
 replace the documented routes through normalized Copy comparisons.
+
+## 18. Hosted closure
+
+- Commit `b7c7279791da0dd6104f0043cb5d40f5380e27a7` contains the Stage 02 evidence and
+  executable route contract.
+- Exact-SHA workflow run `#41` (`31333024152`) completed successfully.
+- Release `v1.1.0-build.2041` targets that SHA and exposes exactly Android APK,
+  Windows Portable ZIP and Windows Setup. The release is transport evidence only;
+  Stage 02 intentionally changed no production UI bytes.

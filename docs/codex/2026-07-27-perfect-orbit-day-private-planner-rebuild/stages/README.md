@@ -32,11 +32,13 @@ all later runtime work is accepted through normalized Copy side-by-side comparis
 - Runtime stages end with commit, push, successful CI/release, install-ready
   artifacts and a clean `main`-only branch state.
 
-Current execution: Stage 01 passed locally and its first hosted attempt exposed a
-stale pre-rename MSIX scan path; commit `eaad6b2` fixes and regression-locks that
-transport defect, with exact-SHA run `#40` pending. Stage 02 is complete locally
-and awaits its own commit/push/hosted gate before Stage 03 is accepted. The root
-agent owns execution alone; no subagent work is active.
+Current execution: Stages 01–02 are closed by successful exact-SHA runs `#40` and
+`#41` plus releases `v1.1.0-build.2040` and `v1.1.0-build.2041`, each with exactly
+APK, Windows Portable ZIP and Windows Setup. Stage 03 has frozen the autonomous
+`PS01 Perfect Day Instrument` direction, deterministic identity/shell/workflow/
+state/motion/typography plates and executable evidence contract. Stage 04 is next
+and remains preview-only; production UI mutation is still blocked. The root agent
+owns execution alone; no subagent work is active.
 
 ## Whole-product coverage ledger
 

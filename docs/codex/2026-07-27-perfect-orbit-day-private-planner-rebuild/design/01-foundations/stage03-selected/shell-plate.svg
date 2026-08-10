@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1800" height="1100" viewBox="0 0 1800 1100">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fffdf9"/><stop offset="1" stop-color="#f5eee7"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff" stop-opacity=".86"/><stop offset="1" stop-color="#f8f5ff" stop-opacity=".68"/></linearGradient>
+    <linearGradient id="pulse" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#effbf6"/><stop offset=".55" stop-color="#d3f2e5"/><stop offset="1" stop-color="#efe9ff"/></linearGradient>
+    <linearGradient id="orb" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b9ead6"/><stop offset=".48" stop-color="#b29be6"/><stop offset="1" stop-color="#f6ae60"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#3d342c" flood-opacity=".12"/></filter>
+    <filter id="orbShadow" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#7658c8" flood-opacity=".32"/></filter>
+    <symbol id="i-today" viewBox="-12 -12 24 24"><rect x="-8" y="-7" width="16" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M-8-2h16M-4-10v5M4-10v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-task" viewBox="-12 -12 24 24"><circle r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M-5 0l4 4 7-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-plan" viewBox="-12 -12 24 24"><circle r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M0-5v6l4 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-habit" viewBox="-12 -12 24 24"><path d="M-8 7C-8-4-2-9 8-10 7 1 2 8-8 7zm2-2L5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-focus" viewBox="-12 -12 24 24"><circle r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle r="1.5" fill="currentColor"/></symbol>
+    <symbol id="i-more" viewBox="-12 -12 24 24"><path d="M-8-6H8M-8 0H8M-8 6H8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <style>
+      .ui{font-family:"Segoe UI",Arial,sans-serif;fill:#202332}.eyebrow{font-size:13px;font-weight:750;letter-spacing:1.7px;fill:#8a7e70}.title{font-size:42px;font-weight:750;letter-spacing:-1.3px}.h2{font-size:20px;font-weight:700}.h3{font-size:16px;font-weight:680}.body{font-size:14px;fill:#625d70}.tiny{font-size:11px;fill:#777184}.nav{font-size:11px;font-weight:650}.device{fill:#171a22}.screen{fill:#fffdf9}.panel{fill:#fffefa;stroke:#e8dfd5;stroke-width:1}.rule{stroke:#e8e1d9;stroke-width:1}.mint{fill:#68bf9d}.apricot{fill:#f6a65b}.lav{fill:#9d87dd}.graph{fill:#292d3a}.mono{font-variant-numeric:tabular-nums}
+    </style>
+  </defs>
+  <rect width="1800" height="1100" fill="url(#bg)"/>
+  <text class="ui eyebrow" x="54" y="58">PS01 · SHELL PLATE</text>
+  <text class="ui title" x="54" y="108">One semantic product. Three first-class compositions.</text>
+  <text class="ui body" x="54" y="142">Compact orientation · continuous work stream · progressive panes · no stretched phone · no Orbit</text>
+
+  <!-- PHONE -->
+  <g transform="translate(54 176)">
+    <text class="ui eyebrow" x="0" y="-16">ANDROID PHONE · 390 × 844</text>
+    <rect class="device" width="350" height="850" rx="46" filter="url(#shadow)"/>
+    <rect class="screen" x="10" y="10" width="330" height="830" rx="38"/>
+    <rect x="145" y="18" width="60" height="16" rx="8" fill="#171a22"/>
+    <rect x="22" y="42" width="306" height="84" rx="24" fill="url(#glass)" stroke="#eee5dc"/>
+    <image x="32" y="54" width="144" height="54" xlink:href="perfect-wordmark.png" preserveAspectRatio="xMinYMid meet"/>
+    <g transform="translate(228 62)"><path d="M8 20h34c8 0 13-5 13-12S50-4 42-4c-3-7-9-10-17-10-10 0-18 6-20 16C-3 3-8 9-8 16c0 8 6 14 16 14" transform="scale(.55)" fill="none" stroke="#2aa66f" stroke-width="3"/><text class="ui tiny" x="34" y="10" fill="#268a60">Synced</text></g>
+    <foreignObject x="32" y="130" width="280" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="font:11px 'Segoe UI','Vazirmatn',Tahoma,sans-serif;color:#777184;white-space:nowrap">Monday · July 27 · <span dir="rtl">۵ مرداد ۱۴۰۵</span></div></foreignObject>
+    <rect x="22" y="162" width="306" height="102" rx="26" fill="url(#pulse)" stroke="#d9e9e1"/>
+    <text class="ui eyebrow" x="42" y="190" fill="#4f9b80">TODAY PULSE</text>
+    <text class="ui h2 mono" x="42" y="226">9:24 AM</text>
+    <text class="ui body" x="146" y="226">Next at 9:30</text>
+    <rect x="252" y="184" width="54" height="42" rx="18" fill="#fff2e4"/><text class="ui h3" x="279" y="210" text-anchor="middle" fill="#b56821">Plan</text>
+    <text class="ui tiny" x="42" y="248">3 planned · 2 open · 1 habit at risk</text>
+    <text class="ui eyebrow" x="24" y="298">NOW</text>
+    <line x1="46" y1="316" x2="46" y2="680" stroke="#ddd7cf" stroke-width="2"/>
+    <circle cx="46" cy="342" r="6" class="apricot"/>
+    <text class="ui tiny mono" x="60" y="326">9:30</text>
+    <text class="ui h3" x="82" y="350">Cardiology deep work</text>
+    <text class="ui tiny" x="82" y="371">Study · 90 min · high</text>
+    <circle cx="300" cy="348" r="16" fill="none" stroke="#f6a65b" stroke-width="3"/>
+    <line class="rule" x1="82" y1="392" x2="310" y2="392"/>
+    <circle cx="46" cy="422" r="6" class="mint"/>
+    <text class="ui tiny mono" x="60" y="406">11:15</text>
+    <text class="ui h3" x="82" y="430">Review project brief</text>
+    <text class="ui tiny" x="82" y="451">Checklist · 3 of 5</text>
+    <circle cx="300" cy="428" r="16" fill="none" stroke="#68bf9d" stroke-width="3" stroke-dasharray="65 35"/>
+    <line class="rule" x1="82" y1="472" x2="310" y2="472"/>
+    <circle cx="46" cy="502" r="6" class="mint"/>
+    <text class="ui tiny" x="60" y="486">ANYTIME</text>
+    <text class="ui h3" x="82" y="510">Drink water</text>
+    <text class="ui tiny" x="82" y="531">5 of 8 · 18 day streak</text>
+    <rect x="258" y="490" width="52" height="36" rx="18" fill="#ddf4ea"/><text class="ui h3" x="284" y="514" text-anchor="middle" fill="#278862">+1</text>
+    <line class="rule" x1="82" y1="552" x2="310" y2="552"/>
+    <circle cx="46" cy="582" r="6" class="lav"/>
+    <text class="ui h3" x="82" y="590">Book lab appointment</text>
+    <text class="ui tiny" x="82" y="611">Flexible · Inbox</text>
+    <circle cx="300" cy="588" r="16" fill="none" stroke="#9d87dd" stroke-width="2.5"/>
+    <g filter="url(#orbShadow)"><circle cx="175" cy="694" r="34" fill="url(#orb)"/><path d="M163 694h24M175 682v24" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+    <rect x="22" y="748" width="306" height="70" rx="30" fill="url(#glass)" stroke="#e5dfe9"/>
+    <g class="ui nav" text-anchor="middle">
+      <g transform="translate(52 770)"><rect x="-20" y="-10" width="40" height="40" rx="16" fill="#fce8d6"/><path d="M-8 2h16v13h-16zM-4-4v8M4-4v8" fill="none" stroke="#202332" stroke-width="2"/></g>
+      <g transform="translate(113 770)"><circle r="10" fill="none" stroke="#565b6d" stroke-width="2"/><path d="M-5 0l4 4 7-8" fill="none" stroke="#565b6d" stroke-width="2"/></g>
+      <g transform="translate(175 770)"><circle r="10" fill="none" stroke="#565b6d" stroke-width="2"/><path d="M0-6v7l5 3" fill="none" stroke="#565b6d" stroke-width="2"/></g>
+      <g transform="translate(237 770)"><path d="M-8 8C-8-3-2-9 8-10 7 1 2 8-8 8z" fill="none" stroke="#565b6d" stroke-width="2"/></g>
+      <g transform="translate(299 770)"><path d="M-9-6h18M-9 0h18M-9 6h18" stroke="#565b6d" stroke-width="2"/></g>
+    </g>
+  </g>
+
+  <!-- TABLET -->
+  <g transform="translate(438 176)">
+    <text class="ui eyebrow" x="0" y="-16">ANDROID TABLET · 1200 × 800</text>
+    <rect class="device" width="570" height="850" rx="36" filter="url(#shadow)"/>
+    <rect class="screen" x="10" y="10" width="550" height="830" rx="28"/>
+    <rect x="22" y="22" width="76" height="806" rx="24" fill="#fbfaf8" stroke="#e8e1d9"/>
+    <image x="38" y="38" width="44" height="44" xlink:href="day-compass-transparent-512.png"/>
+    <g transform="translate(60 166)" class="ui" style="color:#666b7b">
+      <rect x="-24" y="-24" width="48" height="48" rx="18" fill="#fce8d6"/><use x="-11" y="-11" width="22" height="22" xlink:href="#i-today" style="color:#202332"/>
+      <use x="-11" y="73" width="22" height="22" xlink:href="#i-task"/><use x="-11" y="141" width="22" height="22" xlink:href="#i-plan"/><use x="-11" y="209" width="22" height="22" xlink:href="#i-habit"/><use x="-11" y="277" width="22" height="22" xlink:href="#i-more"/>
+    </g>
+    <rect x="112" y="22" width="434" height="82" rx="24" fill="url(#glass)" stroke="#eee5dc"/>
+    <image x="130" y="34" width="152" height="54" xlink:href="perfect-wordmark.png" preserveAspectRatio="xMinYMid meet"/>
+    <text class="ui tiny" x="302" y="57">MONDAY · JULY 27</text><text class="ui tiny" x="302" y="78">9:24 AM · Synced</text>
+    <rect x="112" y="120" width="232" height="696" rx="26" class="panel"/>
+    <rect x="358" y="120" width="188" height="696" rx="26" class="panel"/>
+    <rect x="128" y="138" width="200" height="86" rx="22" fill="url(#pulse)"/>
+    <text class="ui eyebrow" x="146" y="166" fill="#4f9b80">TODAY PULSE</text><text class="ui h2 mono" x="146" y="198">9:24</text><text class="ui tiny" x="216" y="196">Next 9:30</text>
+    <text class="ui eyebrow" x="130" y="258">DAY STREAM</text>
+    <line x1="150" y1="278" x2="150" y2="650" stroke="#ddd7cf" stroke-width="2"/>
+    <circle cx="150" cy="310" r="6" class="apricot"/><text class="ui tiny" x="165" y="294">9:30</text><text class="ui h3" x="180" y="316">Cardiology deep work</text><text class="ui tiny" x="180" y="338">90 min · Study</text>
+    <line class="rule" x1="180" y1="360" x2="326" y2="360"/>
+    <circle cx="150" cy="394" r="6" class="mint"/><text class="ui h3" x="180" y="400">Review project brief</text><text class="ui tiny" x="180" y="422">3 of 5</text>
+    <line class="rule" x1="180" y1="444" x2="326" y2="444"/>
+    <circle cx="150" cy="478" r="6" class="mint"/><text class="ui h3" x="180" y="484">Drink water</text><rect x="274" y="462" width="48" height="34" rx="17" fill="#ddf4ea"/><text class="ui h3" x="298" y="485" text-anchor="middle" fill="#278862">+1</text>
+    <circle cx="150" cy="562" r="6" class="lav"/><text class="ui h3" x="180" y="568">Book lab appointment</text><text class="ui tiny" x="180" y="590">Flexible</text>
+    <text class="ui eyebrow" x="376" y="158">SELECTED DETAIL</text>
+    <rect x="376" y="184" width="46" height="46" rx="16" fill="#fff0df"/><circle cx="399" cy="207" r="10" fill="none" stroke="#f6a65b" stroke-width="3"/>
+    <text class="ui h2" x="376" y="258">Cardiology</text><text class="ui h2" x="376" y="282">deep work</text><text class="ui body" x="376" y="318">9:30–11:00</text><text class="ui tiny" x="376" y="344">High · Study · 90 min</text>
+    <line class="rule" x1="376" y1="370" x2="528" y2="370"/>
+    <text class="ui h3" x="376" y="404">Next action</text><text class="ui body" x="376" y="432">Start Focus Studio</text>
+    <rect x="376" y="458" width="152" height="44" rx="18" fill="#eee8ff"/><text class="ui h3" x="452" y="486" text-anchor="middle" fill="#6750b4">Focus 90 min</text>
+    <text class="ui h3" x="376" y="548">History</text><text class="ui tiny" x="376" y="574">Saved locally · 9:22</text><text class="ui tiny" x="376" y="600">Plan updated · yesterday</text>
+    <g filter="url(#orbShadow)"><circle cx="329" cy="762" r="30" fill="url(#orb)"/><path d="M319 762h20M329 752v20" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+  </g>
+
+  <!-- WINDOWS -->
+  <g transform="translate(1042 176)">
+    <text class="ui eyebrow" x="0" y="-16">WINDOWS · CONTINUOUSLY RESIZABLE</text>
+    <rect class="device" width="704" height="850" rx="24" filter="url(#shadow)"/>
+    <rect class="screen" x="8" y="8" width="688" height="834" rx="18"/>
+    <rect x="8" y="8" width="688" height="34" rx="16" fill="#f8f6f2"/><text class="ui tiny" x="610" y="29">—   □   ×</text>
+    <rect x="18" y="52" width="86" height="776" rx="22" fill="#fbfaf8" stroke="#e8e1d9"/>
+    <image x="38" y="68" width="46" height="46" xlink:href="day-compass-transparent-512.png"/>
+    <g transform="translate(61 178)" class="ui" style="color:#202332"><rect x="-25" y="-25" width="50" height="50" rx="18" fill="#fce8d6"/><use x="-11" y="-11" width="22" height="22" xlink:href="#i-today"/><use x="-11" y="77" width="22" height="22" xlink:href="#i-task"/><use x="-11" y="145" width="22" height="22" xlink:href="#i-plan"/><use x="-11" y="213" width="22" height="22" xlink:href="#i-habit"/><use x="-11" y="281" width="22" height="22" xlink:href="#i-focus"/><use x="-11" y="349" width="22" height="22" xlink:href="#i-more"/></g>
+    <rect x="116" y="52" width="566" height="74" rx="22" fill="url(#glass)" stroke="#eee5dc"/>
+    <image x="132" y="62" width="146" height="52" xlink:href="perfect-wordmark.png" preserveAspectRatio="xMinYMid meet"/>
+    <text class="ui tiny" x="300" y="84">MONDAY · JULY 27 · 9:24 AM</text>
+    <g transform="translate(554 72)">
+      <path d="M8 20h34c8 0 13-5 13-12S50-4 42-4c-3-7-9-10-17-10-10 0-18 6-20 16C-3 3-8 9-8 16c0 8 6 14 16 14" transform="scale(.38)" fill="none" stroke="#268a60" stroke-width="4"/>
+      <text class="ui tiny" x="27" y="12" fill="#268a60">Synced</text>
+    </g>
+    <rect x="116" y="140" width="226" height="672" rx="20" class="panel"/>
+    <rect x="352" y="140" width="158" height="672" rx="20" class="panel"/>
+    <rect x="520" y="140" width="162" height="672" rx="20" class="panel"/>
+    <text class="ui h2" x="132" y="174">Today</text><rect x="132" y="190" width="194" height="38" rx="16" fill="#f5f2ee"/><text class="ui tiny" x="150" y="214">Search tasks   Ctrl K</text>
+    <text class="ui eyebrow" x="132" y="258">NOW</text>
+    <rect x="128" y="274" width="202" height="76" rx="18" fill="#fff6ec"/><rect x="132" y="286" width="4" height="52" rx="2" class="apricot"/><text class="ui h3" x="148" y="304">Cardiology deep work</text><text class="ui tiny" x="148" y="326">9:30–11:00 · Study</text>
+    <text class="ui eyebrow" x="132" y="382">LATER</text><text class="ui h3" x="148" y="416">Review project brief</text><text class="ui tiny" x="148" y="436">3 of 5</text><line class="rule" x1="148" y1="452" x2="326" y2="452"/>
+    <text class="ui h3" x="148" y="488">Drink water</text><rect x="276" y="466" width="48" height="34" rx="17" fill="#ddf4ea"/><text class="ui h3" x="300" y="489" text-anchor="middle" fill="#278862">+1</text><line class="rule" x1="148" y1="516" x2="326" y2="516"/>
+    <text class="ui h3" x="148" y="552">Book lab appointment</text><text class="ui tiny" x="148" y="574">Flexible</text>
+    <text class="ui h2" x="368" y="174">Plan</text><text class="ui tiny" x="368" y="204">TODAY · Day</text><line x1="392" y1="226" x2="392" y2="748" stroke="#e3ddd5"/>
+    <g class="ui tiny mono"><text x="364" y="258">9</text><text x="360" y="338">10</text><text x="360" y="418">11</text><text x="360" y="498">12</text><text x="360" y="578">1</text><text x="360" y="658">2</text></g>
+    <rect x="400" y="264" width="96" height="128" rx="14" fill="#eee8ff" stroke="#cdbff3"/><text class="ui tiny" x="408" y="286">Cardiology</text><text class="ui tiny" x="408" y="304">deep work</text><rect x="400" y="424" width="96" height="66" rx="14" fill="#fff0df"/><text class="ui tiny" x="408" y="450">Project brief</text>
+    <text class="ui eyebrow" x="536" y="174">DETAIL</text><rect x="536" y="196" width="42" height="42" rx="15" fill="#fff0df"/><text class="ui h2" x="536" y="266">Cardiology</text><text class="ui h2" x="536" y="290">deep work</text><text class="ui tiny" x="536" y="318">9:30–11:00</text><line class="rule" x1="536" y1="344" x2="664" y2="344"/>
+    <text class="ui h3" x="536" y="378">Checklist</text><text class="ui tiny" x="536" y="408">✓ Pull guideline</text><text class="ui tiny" x="536" y="434">○ Summarize cases</text><text class="ui h3" x="536" y="486">History</text><text class="ui tiny" x="536" y="516">Saved locally</text><text class="ui tiny" x="536" y="542">Plan updated</text>
+    <rect x="536" y="586" width="128" height="44" rx="18" fill="#eee8ff"/><text class="ui h3" x="600" y="614" text-anchor="middle" fill="#6750b4">Focus 90 min</text>
+    <g filter="url(#orbShadow)"><circle cx="333" cy="786" r="28" fill="url(#orb)"/><path d="M324 786h18M333 777v18" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+  </g>
+</svg>

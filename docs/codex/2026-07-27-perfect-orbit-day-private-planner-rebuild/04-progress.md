@@ -222,5 +222,48 @@ AI drafts could disappear during normal navigation.
 - Preserved all unrelated UI/date prototypes, `.vscode`, `NUL` and the retained
   stash without staging or treating them as accepted work.
 
-Stage 02 has no production UI mutation. Its commit/push and exact-SHA hosted result
-are the final gate before Stage 03 research and reference decomposition.
+Stage 02 had no production UI mutation. Commit `b7c7279`, exact-SHA run `#41` and
+release `v1.1.0-build.2041` closed its transport gate before Stage 03 began.
+
+## 2026-08-10 — Stage 03 evidence and direction checkpoint
+
+### Before
+
+The product had a detailed 50-stage registry and source-backed route map, but the
+forward visual direction still existed as prose plus historical Orbit screenshots.
+There was no complete alternative search, no recorded second-pass choice, no exact
+selected direction family and no deterministic plate set that could safely drive
+Copy implementation without inheriting ImageGen text/identity drift.
+
+### After
+
+- Froze 34 Flutter/Android/widget/current-route captures with exact dimensions,
+  hashes, defects, fixture boundaries and explicit current-evidence gaps. The 14 new
+  phone frames cover all five primary destinations plus Quick Capture, AI, Sync,
+  create/category/measure and direct-row-to-edit evidence.
+- Decomposed all 25 HabitNow screenshots by decision dependency, recurrence,
+  recovery and logging ergonomics; researched current Android/Windows primary
+  conventions, seven planning peers and Dribbble craft patterns.
+- Copied the 25 HabitNow source frames byte-for-byte into the repository and created
+  uncropped, hash-frozen current/HabitNow/finalist contact sheets. Comparison can now
+  be repeated without relying on a mutable Downloads folder or isolated images.
+- Classified every whole-product surface through `KEEP`, `REFINE`, `REDESIGN`,
+  `REMOVE` or `ADD`; no surface remains silently inherited.
+- Authored 24 genuinely different recipes, shortlisted eight, completed four
+  normal/stress finalist families and rescored them after visual inspection.
+- Selected and froze `PS01 Perfect Day Instrument`: compact Pulse, one continuous
+  Stream, distinct phone/tablet/Windows compositions, view-first detail, direct habit
+  controls and one morphing Capture/Plan/AI/Voice surface.
+- Preserved all eight model-native boards as noncanonical evidence after exact-text,
+  identity and composition inspection rejected them as Copy targets.
+- Authored and original-size inspected six deterministic identity/shell/workflow/
+  state/motion/typography SVG+PNG plates. Exact mark/wordmark bytes and all hashes are
+  frozen in the selected manifest.
+- Added a reusable Playwright SVG renderer with installed Edge/Chrome fallback and
+  an executable Stage 03 contract that passes 8/8.
+- Preserved the retained stash and every unrelated/unaccepted workspace/date/test,
+  `.vscode` and `NUL` file without staging or claiming them.
+
+Stage 03 changed no shipped UI, route, domain or database contract. Stage 04 now owns
+the exhaustive individual foundation/component previews; Stage 05 remains the final
+page-composition/Copy barrier before production UI mutation.

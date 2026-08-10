@@ -610,17 +610,24 @@ or behavioral acceptance.
 
 ## Current mapping
 
-- Stage 01 is complete locally with executable preservation, interrupted-migration,
-  protected-runtime-define and artifact-secret-scan gates. Hosted run `#39` proved
-  Android/tests but found that the Windows secret scan still referenced the MSIX
-  pre-rename path; commit `eaad6b2` corrects that exact defect and run `#40` is the
-  pending exact-SHA signing/release gate.
-- Stage 02 is complete locally. Its source-backed evidence freezes a view-first
-  route hierarchy, maps all in-app/native/AI entrypoints and mutations, budgets ten
-  core jobs, and assigns fifteen interaction debts to later numbered stages. Stage
-  03 begins only after the Stage 02 map/tests are committed and pushed.
+- Stage 01 is closed. After run `#39` exposed the stale pre-rename Windows scan path,
+  commit `eaad6b2` corrected it and exact-SHA run `#40` succeeded. Release
+  `v1.1.0-build.2040` targets that SHA and contains exactly APK, Windows Portable ZIP
+  and Windows Setup.
+- Stage 02 is closed at commit `b7c7279`. Its source-backed evidence freezes a
+  view-first route hierarchy, maps all in-app/native/AI entrypoints and mutations,
+  budgets ten core jobs, and assigns fifteen interaction debts. Exact-SHA run `#41`
+  and release `v1.1.0-build.2041` succeeded with the same three-asset contract.
+- Stage 03 is complete locally and ready for its commit/push gate. It froze
+  `PS01 Perfect Day Instrument` after 24 raw recipes, eight shortlisted concepts,
+  four adversarial finalist families and a second weighted comparison. Six
+  deterministic `single_render_native` plates plus an eight-test evidence contract
+  block generated text drift, identity drift, silent surfaces and fixture leakage.
+- Stage 04 is next. It must decompose PS01 into every individual foundation and
+  component contract/plate; Stage 05 then freezes full page families. Production UI
+  mutation remains blocked until both gates pass.
 - Existing uncommitted Quick Capture, date formatter and Today changes are
   prototypes mapped to stages 08, 11 and 16–19; they are not accepted until the
   earlier contracts/harness and their own stage gates pass.
-- The last accepted release before this plan is build 2038 at commit
-  `6b810449acd2c028d3ad7c15d6d5d6401c01e5f5`.
+- The latest accepted hosted release before the Stage 03 push is build 2041 at
+  commit `b7c7279791da0dd6104f0043cb5d40f5380e27a7`.

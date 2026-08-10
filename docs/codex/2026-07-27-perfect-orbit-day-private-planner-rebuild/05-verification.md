@@ -287,8 +287,9 @@ uncommitted Flutter prototypes, a device runtime or a release artifact.
 
 ### Explicit limits
 
-- Canonical preview image files and Stage 03–05 manifests are planned but not yet
-  generated; their absence keeps Stage 06 blocked exactly as intended.
+- Stage 03 direction plates/manifests now exist and are frozen. Exhaustive Stage 04
+  component previews and Stage 05 complete page/overlay/widget compositions do not;
+  their absence still keeps Stage 06 blocked exactly as intended.
 - Existing `perfect_workspace_page.dart`, its test changes and
   `perfect_date_format.dart` are unaccepted prototypes. No analyze/test/device/release
   claim is made for them in this checkpoint.
@@ -325,7 +326,8 @@ Android↔Windows convergence. Those remain milestone runtime gates.
 | Quality and Android | hosted job `93290608499` | passed | format, analyze, full tests, trusted APK build, package verification and upload all succeeded |
 | Windows desktop build | hosted job `93290608519` | failed after successful build/signing | final MSIX and Setup signatures were created; the new secret scan referenced the pre-rename `Perfect-private.msix` path, so upload/install-over/release correctly stayed blocked |
 | Final-path regression | local focused suite after `eaad6b2` | passed, 18/18 | scan now receives `$package.FullName`; test rejects `$packages[0].FullName` after rename |
-| Replacement hosted gate | run `#40` / `31332512462` | pending | exact SHA `eaad6b21bb136712e5ac51d10d6b6e2bf254e5f0`; no release claim until all jobs and three assets pass |
+| Replacement hosted gate | run `#40` / `31332512462` | passed | exact SHA `eaad6b21bb136712e5ac51d10d6b6e2bf254e5f0`; all jobs completed successfully |
+| Stage 01 release | `v1.1.0-build.2040` | passed | targets exact fix SHA and contains exactly Android APK, Windows Portable ZIP and Windows Setup |
 
 ## 2026-08-09 — Stage 02 interaction/route verification
 
@@ -340,4 +342,28 @@ Android↔Windows convergence. Those remain milestone runtime gates.
 | Static analysis | focused Flutter analyzer | passed | no issue in the new Stage 02 test |
 | Coverage propagation | 27-row classification | passed locally | every shared product-system row is changed/checked with evidence or a specific reason |
 | Runtime visual/release proof | not applicable to documentation-only Stage 02 | not claimed | Stage 03–05 preview gates and later runtime stages remain mandatory |
-| Stage 02 exact-SHA hosted gate | workflow after Stage 02 push | pending | attach only after the commit exists on `main` |
+| Stage 02 exact-SHA hosted gate | run `#41` / `31333024152` | passed | exact SHA `b7c7279791da0dd6104f0043cb5d40f5380e27a7`; all jobs completed successfully |
+| Stage 02 release | `v1.1.0-build.2041` | passed | targets exact Stage 02 SHA and contains exactly Android APK, Windows Portable ZIP and Windows Setup |
+
+## 2026-08-10 — Stage 03 design-evidence verification
+
+| Check | Method | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| Current baseline freeze | file count, dimensions and SHA-256 manifest | passed | 9 Flutter goldens + 5 prior Android runtime + 6 Android widget + 14 fresh current-route captures; uncropped comparison sheet and known route/state gaps explicitly frozen |
+| HabitNow evidence | exact-copy/hash and screenshot-inventory contracts | passed | exactly 25 owner screenshots copied byte-for-byte, classified by surface and converted to dependency/recovery/logging rules; uncropped five-by-five contact sheet inspected |
+| Research breadth | URL/evidence contract | passed | HabitNow plus TickTick, Todoist, Structured, Sunsama, Akiflow, Amazing Marvin, Android primary guidance, Windows primary guidance and Dribbble decomposition |
+| Generative breadth | heading/ID contract | passed | exactly 24 unique `R01`–`R24` mental-model recipes; radical/calm/Windows-first/one-handed sets present |
+| Whole-product Integrity | five-way ledger contract | passed | `KEEP/REFINE/REDESIGN/REMOVE/ADD` and every identity-to-release surface family are explicit; no silent rows |
+| Finalist honesty | file/manifest/contact-sheet contract + original-size visual inspection | passed | 4 normal + 4 stress model-native boards retained; side-by-side sheet inspected; all 8 rejected as canonical where text/identity/composition drifted |
+| Selected direction | second weighted score + frozen decision | passed | `PS01 Perfect Day Instrument` won at 98.4/100 with bounded F2/F3/F4/R09/R11/R21 imports and explicit supersession rule |
+| Deterministic plates | SVG/PNG manifest + original-size inspection | passed | identity, shell, workflow, state, motion and typography sources/renders frozen with exact hashes |
+| Identity integrity | byte-for-byte file comparison | passed | selected Day Compass and both wordmark copies equal canonical production brand assets |
+| Text integrity | single-render source inspection | passed | no post-render text repair; Persian/mixed bidi and 200% examples use explicit native XHTML layout inside deterministic SVG |
+| Fixture isolation | production persistence-source scan | passed | finalist entity names absent from planner database/local store and Supabase migrations |
+| Executable contract | `flutter test test/presentation/design_direction_contract_test.dart` | passed, 8/8 | evidence files/contact sheets, research, ledger, board rejection, PS01, exact assets, deterministic plates and fixture isolation locked |
+| Runtime/product mutation | scoped Git diff | not claimed / not applicable | Stage 03 adds docs/design/test/tool artifacts only; existing unrelated production/test prototypes remain unstaged |
+| Hosted Stage 03 gate | workflow after Stage 03 commit/push | pending | attach only to the exact committed SHA; transport release is not runtime visual acceptance |
+
+Stage 04/05 remain mandatory. These direction plates are not substitutes for every
+component state, page density, dark/high-contrast, 200%, IME, reduced-motion or real
+runtime side-by-side Copy proof.

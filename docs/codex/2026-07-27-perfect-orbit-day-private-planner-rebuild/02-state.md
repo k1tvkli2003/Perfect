@@ -1,10 +1,23 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-06T23:07:55+03:30
+- Last updated: 2026-08-10T17:05:03+03:30
 - Owner: Codex
 
 ## Current State
+
+Canonical 50-stage execution has closed Stages 01–02 through exact-SHA hosted runs
+`#40`/`#41` and releases `v1.1.0-build.2040`/`2041`. Stage 03 is locally complete:
+`PS01 Perfect Day Instrument` replaces the retired Orbit UI direction and freezes a
+compact Pulse, one continuous day Stream, view-first detail, direct habit controls,
+one morphing Capture/Plan/AI/Voice surface and distinct phone/tablet/Windows
+compositions. Six deterministic direction plates and an eight-test evidence contract
+are ready for the Stage 03 commit/push gate. Stage 04 is next and remains design-only;
+shipped UI mutation is still blocked through Stage 05.
+
+The earlier Perfect cycles below remain historical runtime evidence; they do not
+supersede the canonical numbered execution state.
+
 Perfect Cycle 1 روی commit `a793531279174f735ad1e247f96a5213613dabb1` با workflow موفق [`31041370535`](https://github.com/k1tvkli2003/Perfect/actions/runs/31041370535) و release immutable [`v1.1.0-build.2036`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2036) بسته شد. Cycle 2 نیز روی commit `5f49334a82189d976fa926b31b8f9c0488113a06` با run موفق [`31051013501`](https://github.com/k1tvkli2003/Perfect/actions/runs/31051013501) و release [`v1.1.0-build.2037`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2037) بسته شد؛ install-over `1.1.0.36 → 1.1.0.37` و Setup clean/rerun پاس است. Cycle 3 اکنون محلی کامل است: footer موبایل بدون label و بدون stadium پیش‌فرض، tile پاستلی منتخب، Quick Capture سه‌مسیرهٔ Plan/Perfect AI/Voice با one-surface morph، SVGهای اختصاصی AI/Voice، safe core درصد، ساعت‌های متقارن Orbit و clearance آخرین ردیف. analyzer، ۳۵۸/۳۵۸ تست و Workspace ۵۵/۵۵ سبزند؛ runtime API 35 با renderer رسمی `host` چند چرخهٔ باز/بسته‌شدن را بدون خروج QEMU/ADB پاس کرده است. push/release Cycle 3 هنوز در همین checkpoint در انتظار است. لجر کامل در `10-critics-tasks-habits-editor-ledger.md` است.
 
 بازسازی local-first و تجربهٔ Orbit Day در commit `1b8468b18ec8edc2645ab73dffff23a6829ba0ea` با exact-HEAD run [`30721214315`](https://github.com/k1tvkli2003/Perfect/actions/runs/30721214315) (`#30`) و conclusion `success` اثبات شده است؛ analyzer و 266/266 تست سبزند. Android `1.1.0+2030` با package/label/سه ABI/امضای v2 و fingerprint ثابت پاس است. Windows `1.1.0.30` با identity/publisher ثابت و signer `CA=false` پاس است؛ Setup مستقل نصب تمیز، rerun، حفظ package family/LocalState و عدم تغییر Trusted Root را ثابت کرد. Release immutable [`v1.1.0-build.2030`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2030) دقیقاً APK، Setup و portable را دارد؛ portable شامل 37 فایل runtime و صفر MSIX/CER/checksum/log/ZIP تو‌در‌تو است. Function v3 و owner-scoped backend زنده‌اند؛ شکاف‌های signed-in/hover/jank همچنان صادقانه بازند.
@@ -49,6 +62,8 @@ Perfect Cycle 1 روی commit `a793531279174f735ad1e247f96a5213613dabb1` با wo
 | 2026-07-31 | run `#21` اولین Windows install-over واقعی را بست. | نصب `1.1.0.20 → 1.1.0.21` با signer یکسان، package family و hash marker دقیق LocalState را حفظ کرد. | run `30639359490`، job `91185076156` |
 | 2026-08-02 | هر trusted main success یک Release immutable با دقیقاً سه asset نصب‌پذیر می‌سازد. | APK، Setup و portable باید مستقیماً قابل‌استفاده باشند؛ CER/MSIX خام/checksum/log فقط transport داخلی‌اند. Setup نیز trust پین‌شده و نصب/ارتقای MSIX را خودش انجام می‌دهد. | run `30721214315` + release `v1.1.0-build.2030` |
 | 2026-08-06 | Tasks به‌طور پیش‌فرض همهٔ کارهای Open را نشان می‌دهد و فیلترهای compact فقط در صورت درخواست باز می‌شوند. | Inbox نباید کارهای زمان‌دار معتبر را پنهان کند و ابزار فیلتر نباید قبل از خود کارها نصف viewport را اشغال کند. | Critics C2/C4 + Android runtime + workspace tests |
+| 2026-08-10 | `PS01 Perfect Day Instrument` جایگزین نهایی Orbit UI شد. | Pulse جمع‌وجور + Stream پیوسته، سرعت ثبت/لاگ، جزئیات view-first، واکنش‌گرایی واقعی و دوام state را بهتر از استعارهٔ مداری حل می‌کند. | Stage 03 weighted finalist proof + selected direction |
+| 2026-08-10 | بردهای ImageGen فقط evidence هستند؛ شش plate قطعی با `single_render_native` ساخته شدند. | متن، فارسی/بیدی، wordmark و هندسهٔ دقیق را نمی‌شود از تصویر مولدِ دچار drift به‌عنوان Copy target جا زد. | Stage 03 board/plate manifests + 8/8 contract tests |
 
 ## Blockers
 - هیچ blocker برای source، analyzer، 266/266 تست محلی، exact-SHA CI یا انتشار install-ready وجود ندارد.
@@ -142,8 +157,10 @@ Perfect Cycle 1 روی commit `a793531279174f735ad1e247f96a5213613dabb1` با wo
   scan before upload; the verifier never logs the protected value.
 - Local expanded gate: 59/59 preservation/config/migration/AI/signing/release/
   Windows contract tests passed. Analyzer and workflow syntax checks are clean.
-- Hosted artifact/release success is still pending the Stage 01 push and will be
-  associated only with that exact commit SHA.
+- Hosted run [`#40`](https://github.com/k1tvkli2003/Perfect/actions/runs/31332512462)
+  succeeded at exact SHA `eaad6b21bb136712e5ac51d10d6b6e2bf254e5f0`.
+  Release [`v1.1.0-build.2040`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2040)
+  targets that SHA and exposes exactly APK, Windows Portable ZIP and Windows Setup.
 
 ## Stage 02 route and interaction inventory — 2026-08-09
 
@@ -165,8 +182,35 @@ Perfect Cycle 1 روی commit `a793531279174f735ad1e247f96a5213613dabb1` با wo
   local-first mutation order, pull→push→pull sync, confirmed persisted AI writes
   and durable widget replay without declaring the current direct-to-edit defect as
   desirable behavior.
-- Stage 03 receives this map as a hard design input. It may not conceal route debt
-  with styling, and Stages 03–05 still block production UI mutation.
-- Hosted run `#39` for Stage 01 failed only because its post-rename secret scan used
-  the stale MSIX path. Commit `eaad6b2` fixes and regression-locks the final-path
-  scan; exact-SHA run `#40` is pending and no release success is claimed yet.
+- Stage 03 received this map as a hard design input and did not conceal route debt
+  with styling. Stages 04–05 still block production UI mutation.
+- Stage 02 commit `b7c7279791da0dd6104f0043cb5d40f5380e27a7` passed exact-SHA
+  hosted run [`#41`](https://github.com/k1tvkli2003/Perfect/actions/runs/31333024152).
+  Release [`v1.1.0-build.2041`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2041)
+  targets that SHA and contains exactly the three install-ready assets.
+
+## Stage 03 evidence and direction — 2026-08-10
+
+- The frozen current-runtime baseline records nine Flutter goldens, five prior
+  Android runtime captures, six Android widget captures and fourteen freshly
+  captured current phone route/state frames with dimensions, hashes, known defects
+  and explicit evidence gaps.
+- Current HabitNow logic is decomposed from all 25 owner screenshots. Current
+  Android/Windows primary guidance, seven planner peers and Dribbble craft references
+  are converted into local rules rather than copied styling.
+- Twenty-four distinct recipes became an eight-concept shortlist and four adversarial
+  normal/stress finalist families. All eight ImageGen boards remain noncanonical
+  because exact text/identity inspection found drift.
+- `PS01 Perfect Day Instrument` won the second weighted comparison. Bounded strengths
+  from Living Ledger, Daily Desk, Handrail and Adaptive Instrument were imported
+  without reviving Orbit or a dashboard/card-pile topology.
+- Six exact deterministic SVG/PNG plates freeze identity, shell, workflow, state,
+  motion and typography. The selected mark/wordmark copies are byte-identical to
+  production brand assets; Persian/mixed/200% specimens were inspected at original
+  size after native single-render rasterization.
+- `design_direction_contract_test.dart` passes 8/8 and locks evidence breadth,
+  selection, generated-board rejection, exact identity bytes, deterministic plates
+  and fixture isolation.
+- No production Flutter UI, route, domain, database or Supabase contract changed.
+  Stage 04 owns exhaustive individual component previews; Stage 05 owns complete page
+  compositions and Copy manifests.

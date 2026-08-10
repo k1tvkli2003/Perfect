@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fffdf9"/><stop offset="1" stop-color="#f6efe8"/></linearGradient>
+    <linearGradient id="orb" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a9dfca"/><stop offset=".5" stop-color="#a992df"/><stop offset="1" stop-color="#f5ad61"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="15" flood-color="#382f28" flood-opacity=".11"/></filter>
+    <filter id="orbShadow" x="-70%" y="-70%" width="240%" height="240%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#7357c5" flood-opacity=".30"/></filter>
+    <style>
+      .ui{font-family:"Segoe UI",Arial,sans-serif;fill:#202332}.eyebrow{font-size:13px;font-weight:750;letter-spacing:1.7px;fill:#897d70}.title{font-size:42px;font-weight:750;letter-spacing:-1.2px}.h2{font-size:22px;font-weight:720}.h3{font-size:16px;font-weight:680}.body{font-size:15px;fill:#625d70}.tiny{font-size:12px;fill:#777184}.panel{fill:#fffefa;stroke:#e6ddd3;stroke-width:1.2}.soft{fill:#faf7f2;stroke:#ece4db}.rule{stroke:#e4ddd4;stroke-width:1}.ap{fill:#fff0df;stroke:#f4cfaa}.mi{fill:#e3f5ed;stroke:#bce3d3}.la{fill:#eee8ff;stroke:#d7ccf6}.danger{fill:#fff0ef;stroke:#e9b8b4}.mono{font-variant-numeric:tabular-nums}
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <text class="ui eyebrow" x="58" y="58">PS01 · WORKFLOW PLATE</text>
+  <text class="ui title" x="58" y="108">Fast by default. Deep only when the decision needs it.</text>
+  <text class="ui body" x="58" y="142">Creation follows dependency order · normal taps view · direct controls mutate · AI proposes before write</text>
+
+  <!-- WIZARD -->
+  <g transform="translate(58 184)">
+    <rect class="panel" width="1484" height="220" rx="34" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="30" y="42">CREATE TASK / RECURRING / HABIT — NAMED ADAPTIVE STEPS</text>
+    <line x1="70" y1="94" x2="1386" y2="94" stroke="#dfd7ce" stroke-width="4" stroke-linecap="round"/>
+    <g class="ui" text-anchor="middle">
+      <g transform="translate(92 94)"><circle r="24" fill="#f6a65b"/><text class="h3" y="6" fill="#fff">1</text><text class="h3" y="58">Meaning</text><text class="tiny" y="82">type · title · category</text></g>
+      <g transform="translate(344 94)"><circle r="24" fill="#74c9aa"/><text class="h3" y="6" fill="#fff">2</text><text class="h3" y="58">Measure</text><text class="tiny" y="82">boolean · count · time</text></g>
+      <g transform="translate(596 94)"><circle r="24" fill="#a790e0"/><text class="h3" y="6" fill="#fff">3</text><text class="h3" y="58">Rhythm</text><text class="tiny" y="82">schedule · recurrence</text></g>
+      <g transform="translate(848 94)"><circle r="24" fill="#2e3341"/><text class="h3" y="6" fill="#fff">4</text><text class="h3" y="58">Recovery</text><text class="tiny" y="82">Miss · Pending · Carry</text></g>
+      <g transform="translate(1100 94)"><circle r="24" fill="#fffefa" stroke="#bdb5aa" stroke-width="2"/><text class="h3" y="6">5</text><text class="h3" y="58">Remind</text><text class="tiny" y="82">time · quiet hours</text></g>
+      <g transform="translate(1352 94)"><circle r="24" fill="#fffefa" stroke="#bdb5aa" stroke-width="2"/><text class="h3" y="6">6</text><text class="h3" y="58">Review</text><text class="tiny" y="82">human contract · save</text></g>
+    </g>
+    <text class="ui tiny" x="30" y="204">Draft saved locally · step, focus and scroll preserved across back, resize, rotation and IME.</text>
+  </g>
+
+  <!-- CAPTURE MORPH -->
+  <g transform="translate(58 434)">
+    <rect class="panel" width="724" height="292" rx="34" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="30" y="42">ONE CAPTURE SURFACE · FOUR MODES · INDEPENDENT DRAFTS</text>
+    <g filter="url(#orbShadow)"><circle cx="82" cy="116" r="34" fill="url(#orb)"/><path d="M70 116h24M82 104v24" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+    <path d="M124 116H164" stroke="#c4baae" stroke-width="2" stroke-dasharray="5 6"/>
+    <rect x="172" y="74" width="520" height="84" rx="30" fill="#fffdfa" stroke="#ded5cc"/>
+    <text class="ui body" x="198" y="108">Capture a task…</text><text class="ui tiny" x="198" y="132">Expansion does not open IME. Tap the field to type.</text>
+    <circle cx="650" cy="116" r="25" fill="#2e3341"/><path d="M641 116h18M650 107v18" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+    <g class="ui" text-anchor="middle">
+      <g transform="translate(196 196)"><rect x="-58" y="-26" width="116" height="54" rx="20" class="ap"/><text class="h3" y="6">Task</text></g>
+      <g transform="translate(332 196)"><rect x="-58" y="-26" width="116" height="54" rx="20" class="mi"/><text class="h3" y="6">Plan</text></g>
+      <g transform="translate(468 196)"><rect x="-58" y="-26" width="116" height="54" rx="20" class="la"/><text class="h3" y="6">Perfect AI</text></g>
+      <g transform="translate(604 196)"><rect x="-58" y="-26" width="116" height="54" rx="20" class="soft"/><text class="h3" y="6">Voice</text></g>
+    </g>
+    <text class="ui tiny" x="30" y="264">Task saves title-only locally · Plan adds time · AI reviews proposal · Voice transcribes into the same contract</text>
+  </g>
+
+  <!-- DETAIL BEFORE EDIT -->
+  <g transform="translate(812 434)">
+    <rect class="panel" width="730" height="292" rx="34" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="30" y="42">VIEW-FIRST DETAIL — EDIT IS EXPLICIT</text>
+    <rect x="30" y="70" width="298" height="190" rx="24" class="soft"/>
+    <rect x="52" y="92" width="46" height="46" rx="16" class="ap"/><circle cx="75" cy="115" r="10" fill="none" stroke="#f0a24f" stroke-width="3"/>
+    <text class="ui h3" x="114" y="108">Cardiology</text><text class="ui h3" x="114" y="130">deep work</text><text class="ui tiny mono" x="52" y="156">9:30–11:00 · Study · high</text>
+    <text class="ui h3" x="52" y="184">Today</text><text class="ui body" x="114" y="184">Pending · Focus</text>
+    <text class="ui h3" x="52" y="212">History</text><text class="ui body" x="114" y="212">Saved · 9:22</text>
+    <rect x="210" y="220" width="94" height="32" rx="14" fill="#2e3341"/><text class="ui h3" x="257" y="242" text-anchor="middle" style="fill:#fff">Edit</text>
+    <path d="M356 166H394" stroke="#c4baae" stroke-width="2" stroke-dasharray="5 6"/><path d="M386 158l10 8-10 8" fill="none" stroke="#746d63" stroke-width="2"/>
+    <rect x="410" y="70" width="288" height="190" rx="24" fill="#f8f4ff" stroke="#d8cdf4"/>
+    <text class="ui h3" x="432" y="104">Edit details</text><text class="ui tiny" x="432" y="130">Type: Task · read-only</text>
+    <rect x="432" y="148" width="244" height="40" rx="14" fill="#fff" stroke="#cfc5bb"/><text class="ui body" x="446" y="174">Cardiology deep work</text>
+    <rect x="432" y="202" width="112" height="38" rx="16" fill="#eee8ff"/><text class="ui h3" x="488" y="227" text-anchor="middle" fill="#6750b4">Continue</text>
+    <text class="ui tiny" x="558" y="226">No empty bar. No fake Type step.</text>
+  </g>
+
+  <!-- HABIT CONTROLS -->
+  <g transform="translate(58 756)">
+    <rect class="panel" width="1484" height="194" rx="34" filter="url(#shadow)"/>
+    <text class="ui eyebrow" x="30" y="40">METHOD-SPECIFIC HABIT LOGGING — DIRECT, REVERSIBLE, SERIALIZED</text>
+    <g class="ui" transform="translate(30 70)">
+      <g><rect width="236" height="90" rx="24" class="mi"/><text class="h3" x="22" y="30">Boolean</text><text class="tiny" x="22" y="54">Done / Miss / empty</text><circle cx="196" cy="45" r="20" fill="#68bf9d"/><path d="M187 45l7 7 12-15" fill="none" stroke="#fff" stroke-width="3"/></g>
+      <g transform="translate(248)"><rect width="236" height="90" rx="24" class="mi"/><text class="h3" x="22" y="30">Count</text><text class="tiny" x="22" y="54">5 of 8 · rapid taps</text><rect x="172" y="24" width="46" height="42" rx="18" fill="#68bf9d"/><text class="h2" x="195" y="53" text-anchor="middle" fill="#fff">+1</text></g>
+      <g transform="translate(496)"><rect width="236" height="90" rx="24" class="la"/><text class="h3" x="22" y="30">Duration</text><text class="tiny" x="22" y="54">Preset / timer / correct</text><rect x="154" y="24" width="64" height="42" rx="18" fill="#a790e0"/><text class="h3 mono" x="186" y="52" text-anchor="middle" fill="#fff">15m</text></g>
+      <g transform="translate(744)"><rect width="236" height="90" rx="24" class="ap"/><text class="h3" x="22" y="30">Numeric</text><text class="tiny" x="22" y="54">Quick add / exact set</text><rect x="158" y="24" width="60" height="42" rx="18" fill="#f6a65b"/><text class="h3" x="188" y="52" text-anchor="middle" fill="#fff">+250</text></g>
+      <g transform="translate(992)"><rect width="236" height="90" rx="24" class="soft"/><text class="h3" x="22" y="30">Checklist</text><text class="tiny" x="22" y="54">Next step / expand</text><circle cx="196" cy="45" r="20" fill="none" stroke="#68bf9d" stroke-width="4" stroke-dasharray="82 44"/></g>
+      <g transform="translate(1240)"><rect width="214" height="90" rx="24" class="danger"/><text class="h3" x="22" y="30">Quit habit</text><text class="tiny" x="22" y="54">Avoided / urge / recovery</text><path d="M166 48c14-18 32-18 40 0-8 18-26 18-40 0z" fill="none" stroke="#d46a63" stroke-width="2.5"/></g>
+    </g>
+  </g>
+</svg>

@@ -217,7 +217,10 @@ modified PowerShell blocks compile through `ScriptBlock.Create`.
   and Release were correctly blocked.
 - Commit `eaad6b2` changes the scan input to the final `$package.FullName` and adds a
   regression assertion that rejects the stale pre-rename expression. The related
-  local suite passes `18/18`; replacement run `#40` (`31332512462`) is pending.
-- This section deliberately does not claim a current release. Stage 01 hosted
-  closure requires all jobs, signed in-place upgrade proof and exactly three
-  install-ready release assets from the replacement exact SHA.
+  local suite passes `18/18`; replacement run `#40` (`31332512462`) completed with
+  conclusion `success` at exact SHA
+  `eaad6b21bb136712e5ac51d10d6b6e2bf254e5f0`.
+- Release `v1.1.0-build.2040` targets that exact SHA and contains exactly three
+  install-ready assets: Android APK, Windows Portable ZIP and Windows Setup. This
+  closes Stage 01's hosted transport gate without broadening the runtime claims in
+  the honest-limits section.

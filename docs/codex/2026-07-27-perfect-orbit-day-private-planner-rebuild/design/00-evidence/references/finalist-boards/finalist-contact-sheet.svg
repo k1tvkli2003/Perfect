@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1800" height="1120" viewBox="0 0 1800 1120">
+  <rect width="1800" height="1120" fill="#f8f5f0"/>
+  <style>
+    .title { font: 700 34px "Segoe UI", sans-serif; fill: #171a2a; }
+    .note { font: 400 17px "Segoe UI", sans-serif; fill: #666174; }
+    .label { font: 700 15px "Segoe UI", sans-serif; fill: #292b3a; }
+    .frame { fill: #fffdfa; stroke: #ded7cf; stroke-width: 2; }
+  </style>
+  <text class="title" x="50" y="55">Stage 03 · finalist side-by-side</text>
+  <text class="note" x="50" y="88">Top: normal board · bottom: stress board · aspect preserved · all model-native and rejected as canonical Copy targets</text>
+  <g transform="translate(50 125)">
+    <g transform="translate(0 0)"><text class="label" y="18">F1 · Pulse and Stream</text><rect class="frame" y="32" width="400" height="270" rx="16"/><image x="5" y="37" width="390" height="260" xlink:href="f1-pulse-stream-board-v1-model-native.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(435 0)"><text class="label" y="18">F2 · Living Ledger</text><rect class="frame" y="32" width="400" height="270" rx="16"/><image x="5" y="37" width="390" height="260" xlink:href="f2-living-ledger-board-v1-model-native.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(870 0)"><text class="label" y="18">F3 · Daily Desk</text><rect class="frame" y="32" width="400" height="270" rx="16"/><image x="5" y="37" width="390" height="260" xlink:href="f3-daily-desk-board-v1-model-native.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(1305 0)"><text class="label" y="18">F4 · Adaptive Instrument</text><rect class="frame" y="32" width="400" height="270" rx="16"/><image x="5" y="37" width="390" height="260" xlink:href="f4-adaptive-instrument-board-v1-model-native.png" preserveAspectRatio="xMidYMid meet"/></g>
+
+    <g transform="translate(0 390)"><text class="label" y="18">F1 · stress/recovery</text><rect class="frame" y="32" width="400" height="270" rx="16"/><image x="5" y="37" width="390" height="260" xlink:href="f1-pulse-stream-stress-v1-model-native.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(435 390)"><text class="label" y="18">F2 · stress/recovery</text><rect class="frame" y="32" width="400" height="270" rx="16"/><image x="5" y="37" width="390" height="260" xlink:href="f2-living-ledger-stress-v1-model-native.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(870 390)"><text class="label" y="18">F3 · stress/recovery</text><rect class="frame" y="32" width="400" height="270" rx="16"/><image x="5" y="37" width="390" height="260" xlink:href="f3-daily-desk-stress-v1-model-native.png" preserveAspectRatio="xMidYMid meet"/></g>
+    <g transform="translate(1305 390)"><text class="label" y="18">F4 · stress/recovery</text><rect class="frame" y="32" width="400" height="270" rx="16"/><image x="5" y="37" width="390" height="260" xlink:href="f4-adaptive-instrument-stress-v1-model-native.png" preserveAspectRatio="xMidYMid meet"/></g>
+
+    <rect x="0" y="770" width="1705" height="92" rx="22" fill="#fffdfa" stroke="#ded7cf"/>
+    <text class="label" x="24" y="810">Decision</text>
+    <text class="note" x="24" y="840">F1 won structurally. F2 history receipts, F3 Windows panes and bounded F4 craft were imported into deterministic PS01—not copied as pixels.</text>
+  </g>
+</svg>
