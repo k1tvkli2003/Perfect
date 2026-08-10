@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+    <title id="title">Family</title>
+    <desc id="desc">Perfect category pictogram: family</desc>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#DED7FF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".96"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></g>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#6954B8" stroke-width="1.72" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></g>
+    <circle cx="432" cy="92" r="17" fill="#DED7FF"/><circle cx="432" cy="92" r="7" fill="#6954B8"/>
+  </svg>

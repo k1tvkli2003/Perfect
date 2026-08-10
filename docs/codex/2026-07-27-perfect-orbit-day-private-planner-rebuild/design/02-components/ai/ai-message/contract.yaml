@@ -1,0 +1,154 @@
+{
+  "component_id": "ai-message",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "ai",
+  "family_title": "Perfect AI",
+  "title": "Message",
+  "purpose": "owner/assistant/system, long/mixed copy, streaming and failure variants",
+  "correct_use": "Use the canonical ai-message owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "mode-identity",
+      "context",
+      "input-or-content",
+      "mode-actions",
+      "commit-or-cancel"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Perfect AI / ai-message",
+  "canonical_semantic_owner": "Perfect AI / ai-message",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints",
+    "draft-state"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback"
+  ],
+  "mutation_contract": "none; component emits intent and never writes persistence directly",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default"
+    ],
+    "documented_variants": "owner/assistant/system, long/mixed copy, streaming and failure variants"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "token-authored surface, stroke, icon and state material"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "open/transition remains within frame budget after warm-up; no layout jump; expensive work is cancelable and off the UI thread",
+  "consumers": [
+    "capture instrument",
+    "AI route",
+    "proposal review"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "c34434be6662c4c8e303aac2ad138cc19d0848d3d292b1e3ec4ef10e21028c8a",
+    "states-light.png": "36836fc7fecb6a0ba93d86776210e4faa196ef2704ed9545a54c1de5c09e01d6",
+    "states-dark.png": "172e893bd48a3f637988871b5bdb9e4d1e8bfc3dc164f518692d9d06307cb51b",
+    "responsive.png": "886891c737b1b762e69f93c3daabe8dba0976776b170afcbd65fe9ab9cbac0f0",
+    "accessibility.png": "211ce9a10547fd955ef2e3c05a13f700c58ac32b89366e460c0b1fe7a4b8cc1d",
+    "motion-board.png": "69d1c6b0655382dcbc0e785812cf40db35a7941353b1c6da4e10d92d6f2f40ee",
+    "neighbor-plate.png": "295894608cba7b4b610f05791accaa53efd4ffcab53efbf1851de0e561ee8cc9"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "context strip",
+    "conversation",
+    "proposal"
+  ]
+}

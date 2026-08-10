@@ -1,0 +1,42 @@
+{
+  "foundation_id": "fnd-spacing-density",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "title": "Spacing, density and optical rhythm",
+  "purpose": "Shared spacing, radius, stroke, elevation, blur, icon and hit-target ladders.",
+  "semantic_owner": "Perfect foundation / fnd-spacing-density",
+  "required_themes": [
+    "light",
+    "dark",
+    "high-contrast"
+  ],
+  "required_layouts": [
+    "320 compact",
+    "390 phone",
+    "600 fold/tablet",
+    "900 tablet",
+    "1024 wide tablet",
+    "1366 Windows",
+    "expanded Windows",
+    "short height + IME"
+  ],
+  "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+  "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+  "preview_files": [
+    "anatomy.svg",
+    "specimen.png",
+    "stress.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "fae96013cb2929c9c1eeeaa04c9b4c0fead65e37dccdcdf6d0d6f341f9be19b7",
+    "specimen.png": "48d5982e51885012a532b44abd761bb9f70fc291d5064138699396138d014566",
+    "stress.png": "d98145e1689cfad6875cc25dbf98fcacc59c7bdfd70946561a8f4ae4d0f570fe"
+  },
+  "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-spacing-density/contract.yaml",
+  "previews": {
+    "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-spacing-density/anatomy.svg",
+    "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-spacing-density/specimen.png",
+    "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-spacing-density/stress.png"
+  },
+  "contract_sha256": "817abbdc6517f84ccc32843549afb75717a3598ed874d06e5c987c7866d77710"
+}

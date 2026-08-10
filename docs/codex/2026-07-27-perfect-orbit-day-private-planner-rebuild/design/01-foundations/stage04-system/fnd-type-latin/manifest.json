@@ -1,0 +1,42 @@
+{
+  "foundation_id": "fnd-type-latin",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "title": "Latin typography",
+  "purpose": "Exact wordmark boundary plus live Plus Jakarta roles, numerals and long-copy behavior.",
+  "semantic_owner": "Perfect foundation / fnd-type-latin",
+  "required_themes": [
+    "light",
+    "dark",
+    "high-contrast"
+  ],
+  "required_layouts": [
+    "320 compact",
+    "390 phone",
+    "600 fold/tablet",
+    "900 tablet",
+    "1024 wide tablet",
+    "1366 Windows",
+    "expanded Windows",
+    "short height + IME"
+  ],
+  "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+  "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+  "preview_files": [
+    "anatomy.svg",
+    "specimen.png",
+    "stress.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "3fc6c1d37560250ab7d0af63e0395dae9fb63e767919bab24ae3fe5d30769f05",
+    "specimen.png": "a4964e5cc60145d8f17abe3564cb5a459cffae023a344a632faca2356d346900",
+    "stress.png": "a0d93ff08321e3f81cc072dad1146fbaefbe8a5f32aa78bb4b7867fc00fc5ac0"
+  },
+  "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-latin/contract.yaml",
+  "previews": {
+    "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-latin/anatomy.svg",
+    "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-latin/specimen.png",
+    "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-latin/stress.png"
+  },
+  "contract_sha256": "b8de59420240c396f7a3a259579aefc4d0cc3c4f0929f0cf51fe5d995facb14a"
+}

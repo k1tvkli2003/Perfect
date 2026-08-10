@@ -1,0 +1,42 @@
+{
+  "foundation_id": "fnd-color-roles",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "title": "Semantic color roles",
+  "purpose": "Paired foreground, background, border and status roles across light, dark and high contrast.",
+  "semantic_owner": "Perfect foundation / fnd-color-roles",
+  "required_themes": [
+    "light",
+    "dark",
+    "high-contrast"
+  ],
+  "required_layouts": [
+    "320 compact",
+    "390 phone",
+    "600 fold/tablet",
+    "900 tablet",
+    "1024 wide tablet",
+    "1366 Windows",
+    "expanded Windows",
+    "short height + IME"
+  ],
+  "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+  "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+  "preview_files": [
+    "anatomy.svg",
+    "specimen.png",
+    "stress.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "a74894eec904fd212b3c408807b15106d77f23b6305485e50ff17c0486503c6a",
+    "specimen.png": "c6af7004cc2cb64a0cd376e4247ce47239bd60ccbaa5c8b83f6993f18676c70f",
+    "stress.png": "5333772af8b56e479a2903d0550d25604a6703f9799ff490a81b70ef01fe2daa"
+  },
+  "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-color-roles/contract.yaml",
+  "previews": {
+    "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-color-roles/anatomy.svg",
+    "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-color-roles/specimen.png",
+    "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-color-roles/stress.png"
+  },
+  "contract_sha256": "7dd80b40f2e655ccc6deac7fe2512af7df0bebafcf7de3b721989515ca682641"
+}

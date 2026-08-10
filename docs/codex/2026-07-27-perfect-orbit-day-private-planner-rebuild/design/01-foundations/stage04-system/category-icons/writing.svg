@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+    <title id="title">Writing</title>
+    <desc id="desc">Perfect category pictogram: writing</desc>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#DED7FF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".96"><path d="M13 21h8"></path><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></g>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#6954B8" stroke-width="1.72" stroke-linecap="round" stroke-linejoin="round"><path d="M13 21h8"></path><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></g>
+    <circle cx="432" cy="92" r="17" fill="#DED7FF"/><circle cx="432" cy="92" r="7" fill="#6954B8"/>
+  </svg>

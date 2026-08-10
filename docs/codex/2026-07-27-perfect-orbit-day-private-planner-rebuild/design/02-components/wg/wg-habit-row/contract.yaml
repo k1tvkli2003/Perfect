@@ -1,0 +1,161 @@
+{
+  "component_id": "wg-habit-row",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "wg",
+  "family_title": "Android widget",
+  "title": "Habit Row",
+  "purpose": "method-aware increment/log/correction/deep-link variants",
+  "correct_use": "Use the canonical wg-habit-row owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "leading-state",
+      "identity",
+      "metadata",
+      "secondary-progress",
+      "trailing-actions"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Android widget / wg-habit-row",
+  "canonical_semantic_owner": "Android widget / wg-habit-row",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints",
+    "durable-planner-projection"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback",
+    "intent-only-event"
+  ],
+  "mutation_contract": "none; component emits intent and never writes persistence directly",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default",
+      "hover",
+      "focus",
+      "pressed",
+      "disabled",
+      "empty",
+      "sparse",
+      "dense"
+    ],
+    "documented_variants": "method-aware increment/log/correction/deep-link variants"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "token-authored surface, stroke, icon and state material"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize",
+    "motion-widget-action"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "steady-state row interaction <=1 frame of synchronous work; no full-list rebuild; authored assets decode once",
+  "consumers": [
+    "Android widget size families"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "3a990681ed5717ce8d7608bb934e6006f29dfb39fded2282dd21e4d57aa8cd66",
+    "states-light.png": "a97ecc80e8d93a19d2173e028ed98b94a89342f34bc8dcf07af614962e3d2122",
+    "states-dark.png": "5e4aef700d59ec5dbe03516abc231f38ac07651d4be0692f471ba893ef7e9b26",
+    "responsive.png": "b2e0906e294e878606eea1568fbdd75ad3e691293b9c3dee2dea40d01a12145e",
+    "accessibility.png": "6428a6e895a736942f63859df96ccfddc745fe064942b8bc0891584764fd3c67",
+    "motion-board.png": "bc0ac6a004fa4591b53b17d9be29caaf1452c12907abc0b6a4be0c6019213f25",
+    "neighbor-plate.png": "2091d3af0f17b0dc53172786b4efb2b85317909eacb87d2909fe60e39ff0fd54"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "header",
+    "scroll list",
+    "Quick Add"
+  ]
+}

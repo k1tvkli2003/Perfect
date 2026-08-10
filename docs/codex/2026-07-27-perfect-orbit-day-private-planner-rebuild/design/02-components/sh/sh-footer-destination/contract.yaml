@@ -1,0 +1,159 @@
+{
+  "component_id": "sh-footer-destination",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "sh",
+  "family_title": "Shell and navigation",
+  "title": "Footer Destination",
+  "purpose": "idle/hover/focus/pressed/selected/disabled with no redundant check mark",
+  "correct_use": "Use the canonical sh-footer-destination owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "destinations",
+      "selection-lens",
+      "tooltip-or-label",
+      "safe-area",
+      "overflow"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Shell and navigation / sh-footer-destination",
+  "canonical_semantic_owner": "Shell and navigation / sh-footer-destination",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints",
+    "system-state"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback"
+  ],
+  "mutation_contract": "none; component emits intent and never writes persistence directly",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default",
+      "hover",
+      "focus",
+      "pressed"
+    ],
+    "documented_variants": "idle/hover/focus/pressed/selected/disabled with no redundant check mark"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "token-authored surface, stroke, icon and state material"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize",
+    "motion-footer-selection"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "no unbounded intrinsic pass; assets cached; hover/focus/press state changes stay within one frame",
+  "consumers": [
+    "every in-app route",
+    "phone footer",
+    "tablet rail",
+    "Windows rail"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "b1e71346a457c1eeb45d1ed7ee517faac51bd84bfc4a3935117d6b6812bb385d",
+    "states-light.png": "122f38892bc6ceccbf98027250116a32549947f4a4097e83f3f8cf8bd11e1184",
+    "states-dark.png": "728cbc57fef5c259a1c3f97665a0064e1cd91494d5efc9fc98eb638526947458",
+    "responsive.png": "f6fc9da5b6e993dd69c1174a50ec06910d59805ff0518978e5a86679fcbd4971",
+    "accessibility.png": "d69f3e73bc7ab3c7fb421d0180923a13d641cee0683008730faa497d6cf10f39",
+    "motion-board.png": "ca6190aa6d61f96ddf0726f0ca7e935d5ff4129a37d3d3cc424719defd7b4be9",
+    "neighbor-plate.png": "60be2549cfdc71e097f9e6b759ea7446a69d712f7714f9b5bd86f0f467993d33"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "page title",
+    "Sync Cloud",
+    "content frame"
+  ]
+}

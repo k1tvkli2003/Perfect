@@ -1,0 +1,35 @@
+{
+  "foundation_id": "fnd-grid-width",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "title": "Responsive geometry equations",
+  "purpose": "Content-driven phone, tablet and Windows pane equations including short-height stress.",
+  "semantic_owner": "Perfect foundation / fnd-grid-width",
+  "required_themes": [
+    "light",
+    "dark",
+    "high-contrast"
+  ],
+  "required_layouts": [
+    "320 compact",
+    "390 phone",
+    "600 fold/tablet",
+    "900 tablet",
+    "1024 wide tablet",
+    "1366 Windows",
+    "expanded Windows",
+    "short height + IME"
+  ],
+  "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+  "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+  "preview_files": [
+    "anatomy.svg",
+    "specimen.png",
+    "stress.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "388127977582324548fcf2f763f5ffd88f5ede98d6e9887f24cd7c550722f899",
+    "specimen.png": "ff1da12405b1c6d4c26b3bfe4f5964e23409153cd74f4bcec8125a9b5244a259",
+    "stress.png": "7a955da7afb7cf4a5c44975209c0f6ad56726d2a397afc156724c75a98d69894"
+  }
+}

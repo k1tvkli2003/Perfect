@@ -1,0 +1,42 @@
+{
+  "foundation_id": "fnd-focus-a11y",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "title": "Focus and accessibility language",
+  "purpose": "Hover, focus, pressed, disabled, selected, target and semantic patterns.",
+  "semantic_owner": "Perfect foundation / fnd-focus-a11y",
+  "required_themes": [
+    "light",
+    "dark",
+    "high-contrast"
+  ],
+  "required_layouts": [
+    "320 compact",
+    "390 phone",
+    "600 fold/tablet",
+    "900 tablet",
+    "1024 wide tablet",
+    "1366 Windows",
+    "expanded Windows",
+    "short height + IME"
+  ],
+  "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+  "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+  "preview_files": [
+    "anatomy.svg",
+    "specimen.png",
+    "stress.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "2021aa4f1da62d4c5462ab7f1cc4f60477a08cdf3ad704229c1b2551da54930f",
+    "specimen.png": "e2f5785e76bc06828cc676d70cb3d9780c912833c54fe111ec8a44f057dec202",
+    "stress.png": "0e3cc92c62325bde964dd71bb708253581e24e9a2fdc1246d1a68e46d473e880"
+  },
+  "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-focus-a11y/contract.yaml",
+  "previews": {
+    "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-focus-a11y/anatomy.svg",
+    "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-focus-a11y/specimen.png",
+    "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-focus-a11y/stress.png"
+  },
+  "contract_sha256": "13f2e86aa049717fa3362a48628e057a8b690132ea552c715d4147f8dab6276c"
+}

@@ -1,0 +1,166 @@
+{
+  "component_id": "habit-control-numeric",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "habit",
+  "family_title": "Habit language",
+  "title": "Control Numeric",
+  "purpose": "unit-aware add/set/correct and bounds states",
+  "correct_use": "Use the canonical habit-control-numeric owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "identity",
+      "primary-content",
+      "secondary-context",
+      "state-cue",
+      "action-or-continuation"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Habit language / habit-control-numeric",
+  "canonical_semantic_owner": "Habit language / habit-control-numeric",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints",
+    "durable-planner-projection"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback",
+    "intent-only-event"
+  ],
+  "mutation_contract": "durable local-first operation id; optimistic projection; retry-safe outbox; Undo where reversible",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default",
+      "pending",
+      "success",
+      "warning",
+      "offline",
+      "error",
+      "empty",
+      "sparse",
+      "dense"
+    ],
+    "documented_variants": "unit-aware add/set/correct and bounds states"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "token-authored surface, stroke, icon and state material"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize",
+    "motion-task-state"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "steady-state row interaction <=1 frame of synchronous work; no full-list rebuild; authored assets decode once",
+  "consumers": [
+    "Today",
+    "Habits",
+    "detail",
+    "widget",
+    "review"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "06152889ce65069f8c190aa6a2d6ede2cace5b51ee4ca175f1a686a3ef79e7db",
+    "states-light.png": "b9794dc5a32311e7fc85427f9d14648277f6847b8a8804c4897adf83075bba8c",
+    "states-dark.png": "832047365d1caab1f3a8f52eddbf4f7cba655f018ad622f579b95b2513259bf5",
+    "responsive.png": "0c824c42af5f3364a9a18419e3deeffc083c9bf656c2fa6950167e4f655f79e5",
+    "accessibility.png": "e6ddea1a6c2ca3c20ebdd2dfc8682222e45439d965d33bbfb68c1e9b8c359b3e",
+    "motion-board.png": "e5c0abc1a72dd078674d2187e9a6cbed19eafddb02c130f01a8c8e6140d8690e",
+    "neighbor-plate.png": "b7b4b1d368a90b2dbb6a079557dd3ff1be19859dfe48f5966a4dc266a8125591"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "habit identity",
+    "method control",
+    "streak receipt"
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "component_id": "wiz-reminder-step",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "wiz",
+  "family_title": "Wizard and editor",
+  "title": "Reminder Step",
+  "purpose": "reminder offsets, permission, quiet hours and failure states",
+  "correct_use": "Use the canonical wiz-reminder-step owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "identity",
+      "primary-content",
+      "secondary-context",
+      "state-cue",
+      "action-or-continuation"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Wizard and editor / wiz-reminder-step",
+  "canonical_semantic_owner": "Wizard and editor / wiz-reminder-step",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints",
+    "draft-state"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback",
+    "draft-change"
+  ],
+  "mutation_contract": "none; component emits intent and never writes persistence directly",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default"
+    ],
+    "documented_variants": "reminder offsets, permission, quiet hours and failure states"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "token-authored surface, stroke, icon and state material"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize",
+    "motion-wizard-step"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "open/transition remains within frame budget after warm-up; no layout jump; expensive work is cancelable and off the UI thread",
+  "consumers": [
+    "task create",
+    "recurring create",
+    "habit create",
+    "edit flows"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "b29840656e2252a0cb853dcad11eef7aad26642b447056c143cb156228d2e399",
+    "states-light.png": "df51f39bbe918447f8208ea9a322f3d83ece5e9e76b96ca61922a5dba7a03a14",
+    "states-dark.png": "fc6fb097c3a580620352ebdb6d355974c68fbda0c78d8211ab7e0ba50edfb2bd",
+    "responsive.png": "e43c072a656434d9fb0d3080642c81e1347019dbf1c9ac842153c561fdc068a8",
+    "accessibility.png": "5061636b7ebc28ff377429d695fff550d1470485abef1b761942cd6736ba83c1",
+    "motion-board.png": "b93f1c48077f6b0ce5d67e6455f59f776886401270322bd1a7cadd3d5931d38f",
+    "neighbor-plate.png": "0f5fb02324002810d5c43e9fea5d89f3ffa13763b23eb49961555dde7ceb00f5"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "named progress",
+    "step body",
+    "footer"
+  ]
+}

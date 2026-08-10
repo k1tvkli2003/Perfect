@@ -618,16 +618,19 @@ or behavioral acceptance.
   view-first route hierarchy, maps all in-app/native/AI entrypoints and mutations,
   budgets ten core jobs, and assigns fifteen interaction debts. Exact-SHA run `#41`
   and release `v1.1.0-build.2041` succeeded with the same three-asset contract.
-- Stage 03 is complete locally and ready for its commit/push gate. It froze
-  `PS01 Perfect Day Instrument` after 24 raw recipes, eight shortlisted concepts,
-  four adversarial finalist families and a second weighted comparison. Six
-  deterministic `single_render_native` plates plus an eight-test evidence contract
-  block generated text drift, identity drift, silent surfaces and fixture leakage.
-- Stage 04 is next. It must decompose PS01 into every individual foundation and
-  component contract/plate; Stage 05 then freezes full page families. Production UI
-  mutation remains blocked until both gates pass.
+- Stage 03 is closed at commit `4ff5ebe`. It froze `PS01 Perfect Day Instrument`
+  after 24 raw recipes, eight shortlisted concepts, four adversarial finalist
+  families and a second weighted comparison. Six deterministic
+  `single_render_native` plates plus an eight-test evidence contract block generated
+  text drift, identity drift, silent surfaces and fixture leakage. Exact-SHA run
+  `#42` and release `v1.1.0-build.2042` passed the three-asset transport contract.
+- Stage 04 is complete locally as `ps01-ds-1.0.0`: 9 foundations, 181 component
+  contracts across 27 families, 1,267 state/responsive/accessibility/motion/neighbor
+  boards, 48 category SVGs, 20 motion contracts and 1,576 exact hashes. Its hosted
+  checkpoint is pending commit/push. Stage 05 now owns all 134 full page families and
+  Copy manifests; production UI mutation remains blocked until that gate passes.
 - Existing uncommitted Quick Capture, date formatter and Today changes are
   prototypes mapped to stages 08, 11 and 16–19; they are not accepted until the
   earlier contracts/harness and their own stage gates pass.
-- The latest accepted hosted release before the Stage 03 push is build 2041 at
-  commit `b7c7279791da0dd6104f0043cb5d40f5380e27a7`.
+- The latest accepted hosted release remains build 2042 at exact commit
+  `4ff5ebe317b4f41e7508a69fba2206b68e632d7e` until the Stage 04 push is verified.

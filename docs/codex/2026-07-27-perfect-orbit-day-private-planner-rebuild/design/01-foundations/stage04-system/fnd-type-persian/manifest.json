@@ -1,0 +1,42 @@
+{
+  "foundation_id": "fnd-type-persian",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "title": "Persian and bidi typography",
+  "purpose": "Vazirmatn roles, Persian numerals, punctuation, bidi isolation and fallback metrics.",
+  "semantic_owner": "Perfect foundation / fnd-type-persian",
+  "required_themes": [
+    "light",
+    "dark",
+    "high-contrast"
+  ],
+  "required_layouts": [
+    "320 compact",
+    "390 phone",
+    "600 fold/tablet",
+    "900 tablet",
+    "1024 wide tablet",
+    "1366 Windows",
+    "expanded Windows",
+    "short height + IME"
+  ],
+  "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+  "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+  "preview_files": [
+    "anatomy.svg",
+    "specimen.png",
+    "stress.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "e6972a4c7c46688ed523b7c9a492fda1bc3e34f090723e3914b99b9af047623f",
+    "specimen.png": "39f80742f6a0df486283f18d2addf9d00b4100638a84f4c9de7112189f422f86",
+    "stress.png": "fc0e0ae9e0d7192b9bac0da4327d2873f4e624ff8c10f04d0d56c8168749de79"
+  },
+  "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-persian/contract.yaml",
+  "previews": {
+    "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-persian/anatomy.svg",
+    "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-persian/specimen.png",
+    "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-persian/stress.png"
+  },
+  "contract_sha256": "6b797b605ed61bfeaff136208fe7e195757569b1109e0b4cc740ee27b7edd1ce"
+}

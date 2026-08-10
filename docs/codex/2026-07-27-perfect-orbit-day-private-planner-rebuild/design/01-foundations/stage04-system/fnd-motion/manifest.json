@@ -1,0 +1,42 @@
+{
+  "foundation_id": "fnd-motion",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "title": "Motion Bible",
+  "purpose": "Triggers, timing, spatial intent, interruption, reverse and reduced-motion replacements.",
+  "semantic_owner": "Perfect foundation / fnd-motion",
+  "required_themes": [
+    "light",
+    "dark",
+    "high-contrast"
+  ],
+  "required_layouts": [
+    "320 compact",
+    "390 phone",
+    "600 fold/tablet",
+    "900 tablet",
+    "1024 wide tablet",
+    "1366 Windows",
+    "expanded Windows",
+    "short height + IME"
+  ],
+  "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+  "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+  "preview_files": [
+    "anatomy.svg",
+    "specimen.png",
+    "stress.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "31e735f74c780d362bf0ba9f6a7238070c27dabe179d1ce4f09b1252b7e05437",
+    "specimen.png": "d88af594b9bd361b23c7dfaa13b3fc5932c7a707f093030a6f9f2c1778857c6a",
+    "stress.png": "0320973d1f7cd93fdd0577a478de87fdcc9389dbc83b1eeaacd700898cae0899"
+  },
+  "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-motion/contract.yaml",
+  "previews": {
+    "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-motion/anatomy.svg",
+    "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-motion/specimen.png",
+    "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-motion/stress.png"
+  },
+  "contract_sha256": "de08753f9ba81e4cbaaae867d8241178e39406be69d3948a668a122c09a98f9e"
+}

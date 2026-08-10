@@ -1,0 +1,27 @@
+{
+  "catalog_version": "ps01-ds-1.0.0",
+  "generated_at": "2026-08-10",
+  "direction": "PS01 Perfect Day Instrument",
+  "gate_sha256": "f8e47f384e47fabbdf0708dcc5b647d1002bf5cb5f478b7109de92bb5ec57dd0",
+  "counts": {
+    "foundations": 9,
+    "components": 181,
+    "families": 27,
+    "component_previews": 1267,
+    "category_icons": 48,
+    "motions": 20
+  },
+  "manifests": [
+    "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/04-copy-manifests/foundations.json",
+    "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/04-copy-manifests/components.json",
+    "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/04-copy-manifests/assets.json",
+    "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/04-copy-manifests/motion.json"
+  ],
+  "generator": "tool/generate_stage04_design_system.cjs",
+  "renderer": {
+    "engine": "Playwright",
+    "browser": "chrome.exe",
+    "viewport": "1200x800@1x"
+  },
+  "acceptance": "Design-only Stage 04 corpus. Stage 05 page composition must consume these stable IDs and hashes before runtime implementation."
+}

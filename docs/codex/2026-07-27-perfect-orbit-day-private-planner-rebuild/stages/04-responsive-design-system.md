@@ -1,7 +1,7 @@
 # Stage 04 — Responsive design system and component preview library
 
-Status: pending  
-Depends on: Stage 03 internally accepted direction  
+Status: complete locally — `ps01-ds-1.0.0` frozen; hosted checkpoint pending
+Depends on: Stage 03 internally accepted direction
 Blocks: page composition previews and every production UI implementation
 
 ## Mission
@@ -187,6 +187,34 @@ the later implementation plan at the cheapest authoritative boundary.
 - A generic card/icon/gradient/painter substitutes for crafted graphic material.
 - Separate pages are allowed to invent local spacing, radius, status, selector,
   field, navigation or motion contracts.
+
+## Completion evidence — 2026-08-10
+
+- The gate inventory resolves to exactly 9 foundations and 181 unique components
+  across 27 semantic families. The versioned registry freezes 1,267 component PNG
+  previews, 48 transparent category SVGs and 20 named motion contracts.
+- Every component owns a machine-readable `contract.yaml`, one anatomy SVG and
+  seven `1200×800` evidence boards: light states, dark states, responsive,
+  accessibility, motion, and real-neighbor composition.
+- Foundation, family and whole-catalog contact sheets were generated from the same
+  source model. Critical rows, Today Pulse, Capture morphs, AI proposal review,
+  wizard scheduling, widget resize and light/dark/high-contrast stress boards were
+  inspected at original size.
+- The inspection pass replaced cramped task geometry, clipped responsive/motion
+  frames, low-contrast dark text, raw habit glyphs and generic widget scaling with
+  component-specific PS01 compositions and semantic Lucide/project SVGs.
+- `stage04-hashes.sha256` covers exactly 1,576 generated files. Verification parses
+  all 238 SVGs, checks every PNG signature and exact dimensions, rejects raw emoji,
+  proves transparent category marks and detects missing, stale or altered evidence.
+- Palette-aware lossless container optimization reduced the frozen design corpus to
+  148.18 MiB without changing the canonical `1200×800` geometry. The largest file
+  is 4.49 MiB, below GitHub's per-file limit.
+- `node tool/verify_stage04_design_system.cjs` passes with
+  `foundations=9 components=181 previews=1267 hashes=1576 svg=238 icons=48
+  motions=20`; the focused Flutter contract passes 8/8 and focused analysis is
+  clean.
+- No production Flutter UI, native code, route, domain, database or Supabase file
+  belongs to this stage. Stage 05 remains the final page-composition and Copy gate.
 
 ## Completion handoff
 

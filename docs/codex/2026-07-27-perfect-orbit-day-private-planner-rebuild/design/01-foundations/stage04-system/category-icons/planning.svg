@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+    <title id="title">Planning</title>
+    <desc id="desc">Perfect category pictogram: planning</desc>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#CDEED8" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".96"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></g>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#347B54" stroke-width="1.72" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></g>
+    <circle cx="432" cy="92" r="17" fill="#CDEED8"/><circle cx="432" cy="92" r="7" fill="#347B54"/>
+  </svg>

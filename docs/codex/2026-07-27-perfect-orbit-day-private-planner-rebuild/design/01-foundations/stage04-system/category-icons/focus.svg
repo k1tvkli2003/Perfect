@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+    <title id="title">Focus</title>
+    <desc id="desc">Perfect category pictogram: focus</desc>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#CBEFF0" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".96"><circle cx="12" cy="12" r="3"></circle><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path></g>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#1D6870" stroke-width="1.72" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path></g>
+    <circle cx="432" cy="92" r="17" fill="#CBEFF0"/><circle cx="432" cy="92" r="7" fill="#1D6870"/>
+  </svg>

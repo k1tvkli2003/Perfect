@@ -1,0 +1,158 @@
+{
+  "component_id": "det-habit-heatmap",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "det",
+  "family_title": "Detail and analytics",
+  "title": "Habit Heatmap",
+  "purpose": "honest scale, no-data and accessible values",
+  "correct_use": "Use the canonical det-habit-heatmap owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "title",
+      "measure",
+      "visual-series",
+      "legend",
+      "empty-or-source-note"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Detail and analytics / det-habit-heatmap",
+  "canonical_semantic_owner": "Detail and analytics / det-habit-heatmap",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints",
+    "durable-planner-projection"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback"
+  ],
+  "mutation_contract": "none; component emits intent and never writes persistence directly",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default",
+      "empty",
+      "sparse",
+      "dense"
+    ],
+    "documented_variants": "honest scale, no-data and accessible values"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "token-authored surface, stroke, icon and state material"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize",
+    "motion-detail-continuity"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "no unbounded intrinsic pass; assets cached; hover/focus/press state changes stay within one frame",
+  "consumers": [
+    "phone detail route",
+    "tablet detail pane",
+    "Windows inspector"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "74998cd046a5ebed8d356dd9be7b4ae9bcac858af341f6c8c0bf2075b76454d1",
+    "states-light.png": "2dd77a6e7c3ede28f3838fa7d5cd335463ae2b111dad89426c0a0ddaddfa7f85",
+    "states-dark.png": "30018cee84fe06f8e9ed81859e0f1dfaba36373e70ce5a3374e822e00ed2566d",
+    "responsive.png": "34a616b272accc6ce9e3622bb4710e95d99b63700a065a703ce5a5680224e7ef",
+    "accessibility.png": "a3c21360814a68e9f4373e0b30ce18b722b97bd36dd8dfd6d1bd991e37b75747",
+    "motion-board.png": "5dc91bac591cb343e5f1e09f21afb2d8573bc9bd4b0ce672ffd389a9877ad995",
+    "neighbor-plate.png": "f94984abdc2bf4bc6cff1d035fc5846e4bcb9cde9f57437dbaba4e726d1f9799"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "detail hero",
+    "facts",
+    "history"
+  ]
+}

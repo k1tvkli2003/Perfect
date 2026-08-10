@@ -1,0 +1,166 @@
+{
+  "component_id": "task-status-control",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "task",
+  "family_title": "Task language",
+  "title": "Status Control",
+  "purpose": "Pending/Partial/Done/Missed/empty multi-tap cycle with stable outer geometry",
+  "correct_use": "Use the canonical task-status-control owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "identity",
+      "primary-content",
+      "secondary-context",
+      "state-cue",
+      "action-or-continuation"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Task language / task-status-control",
+  "canonical_semantic_owner": "Task language / task-status-control",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints",
+    "durable-planner-projection"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback",
+    "intent-only-event"
+  ],
+  "mutation_contract": "durable local-first operation id; optimistic projection; retry-safe outbox; Undo where reversible",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default",
+      "pending",
+      "success",
+      "warning",
+      "offline",
+      "error",
+      "empty",
+      "sparse",
+      "dense"
+    ],
+    "documented_variants": "Pending/Partial/Done/Missed/empty multi-tap cycle with stable outer geometry"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "token-authored surface, stroke, icon and state material"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize",
+    "motion-task-state"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "steady-state row interaction <=1 frame of synchronous work; no full-list rebuild; authored assets decode once",
+  "consumers": [
+    "Today",
+    "Tasks",
+    "Plan",
+    "detail",
+    "widget"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "8dfbd29cf629c6abfc2469b955708566fe621e263cde575dfe9041f6942f50da",
+    "states-light.png": "9bf2315f05a877babadf55de553551e3716dfffc3fd7c1c897e550d919d66a06",
+    "states-dark.png": "cbaa40a62dcf14fa18234a4322566da1264132e1d0c4197792540ba4d38c0154",
+    "responsive.png": "92d9f53591af47f64ef38f42fc595b14673284d2e91a570c2384213a48af4adb",
+    "accessibility.png": "282f71933461b43a8cea9cee3fc7354616150b043b482cd9a0b094d3e0a93cf8",
+    "motion-board.png": "d4ccad1ceaf90ca42b09550542a12a5265601b183fd26d3cfe9aac422d874d3d",
+    "neighbor-plate.png": "a95d99852d4cbafddfbe7cfa836542094e97a8d6a612a7d84d3ff5960a161a8e"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "time rail",
+    "task row",
+    "status control"
+  ]
+}

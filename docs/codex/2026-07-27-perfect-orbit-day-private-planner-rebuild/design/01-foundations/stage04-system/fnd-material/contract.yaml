@@ -1,0 +1,35 @@
+{
+  "foundation_id": "fnd-material",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "title": "Surface and material language",
+  "purpose": "Quiet canvas, repeated rows, floating glass and non-blur/high-contrast fallbacks.",
+  "semantic_owner": "Perfect foundation / fnd-material",
+  "required_themes": [
+    "light",
+    "dark",
+    "high-contrast"
+  ],
+  "required_layouts": [
+    "320 compact",
+    "390 phone",
+    "600 fold/tablet",
+    "900 tablet",
+    "1024 wide tablet",
+    "1366 Windows",
+    "expanded Windows",
+    "short height + IME"
+  ],
+  "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+  "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+  "preview_files": [
+    "anatomy.svg",
+    "specimen.png",
+    "stress.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "9415770eb41623aa75e5bf0fdff1233661f48efe9c6afc995ffe55061ccb71ec",
+    "specimen.png": "6ca31385ff67581dd92c16e9d0015e828a71a639ed2b2e5d6c3ee6d801444a21",
+    "stress.png": "71c47668940980d5b17a1df07ee00f6fcd3bbcc7703617c9552bd2a14e2110ce"
+  }
+}

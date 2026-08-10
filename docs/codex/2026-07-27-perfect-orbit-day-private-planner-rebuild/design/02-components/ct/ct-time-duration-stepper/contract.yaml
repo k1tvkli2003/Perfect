@@ -1,0 +1,161 @@
+{
+  "component_id": "ct-time-duration-stepper",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "ct",
+  "family_title": "Common controls",
+  "title": "Time Duration Stepper",
+  "purpose": "minute/hour presets, custom entry and rollover behavior",
+  "correct_use": "Use the canonical ct-time-duration-stepper owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "hit-target",
+      "visual-control",
+      "label-or-value",
+      "focus-ring",
+      "state-layer"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Common controls / ct-time-duration-stepper",
+  "canonical_semantic_owner": "Common controls / ct-time-duration-stepper",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback",
+    "intent-only-event"
+  ],
+  "mutation_contract": "none; component emits intent and never writes persistence directly",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default",
+      "hover",
+      "focus",
+      "pressed",
+      "disabled"
+    ],
+    "documented_variants": "minute/hour presets, custom entry and rollover behavior"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "token-authored surface, stroke, icon and state material"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "no unbounded intrinsic pass; assets cached; hover/focus/press state changes stay within one frame",
+  "consumers": [
+    "forms",
+    "filters",
+    "capture",
+    "settings",
+    "feedback",
+    "AI"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "a66511497d7308f9841299d6bb685cb365d8051c5631e357512667816a5b9a76",
+    "states-light.png": "a328fb4c4c5cfd035f4c6953b9dfc0749e4081d6d9a76421ae7f5001b64be327",
+    "states-dark.png": "0295342f4cf75b62890b02c272644edf4d254371a4a856c48095c7bd2261d480",
+    "responsive.png": "c1d05121e87d1437c434e1d7c9f885814301701a79619b05bf655bba1663770e",
+    "accessibility.png": "6f015745ce728d01a64d5db8d09234076c3abea5d5d5ab80eb63373299a2cb9f",
+    "motion-board.png": "f7073f56d72f2735d774b09e9f831aa3e90ba0fa7a951a445661ce97c79ba8ec",
+    "neighbor-plate.png": "fa5bc1ac5efb315d96b9537b9917b1ab750679a423d12acdb5b72d088fcd7bd6"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "label",
+    "supporting copy",
+    "neighbor action"
+  ]
+}

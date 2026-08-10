@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+    <title id="title">Goals</title>
+    <desc id="desc">Perfect category pictogram: goals</desc>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#DED7FF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".96"><path d="M12 13V2l8 4-8 4"></path><path d="M20.561 10.222a9 9 0 1 1-12.55-5.29"></path><path d="M8.002 9.997a5 5 0 1 0 8.9 2.02"></path></g>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#6954B8" stroke-width="1.72" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13V2l8 4-8 4"></path><path d="M20.561 10.222a9 9 0 1 1-12.55-5.29"></path><path d="M8.002 9.997a5 5 0 1 0 8.9 2.02"></path></g>
+    <circle cx="432" cy="92" r="17" fill="#DED7FF"/><circle cx="432" cy="92" r="7" fill="#6954B8"/>
+  </svg>

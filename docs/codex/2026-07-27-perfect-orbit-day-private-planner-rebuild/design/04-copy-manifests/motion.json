@@ -1,0 +1,467 @@
+{
+  "catalog_version": "ps01-ds-1.0.0",
+  "generated_at": "2026-08-10",
+  "count": 20,
+  "motions": [
+    {
+      "id": "motion-route-enter",
+      "token": "route",
+      "intent": "context continuity",
+      "full": "title rises 10px while content fades and settles",
+      "reduced": "crossfade in place",
+      "trigger": "context continuity becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-route-exit",
+      "token": "standard",
+      "intent": "hierarchy reversal",
+      "full": "content softens before route ownership changes",
+      "reduced": "instant semantic swap",
+      "trigger": "hierarchy reversal becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-title-rise",
+      "token": "standard",
+      "intent": "fresh page orientation",
+      "full": "title rises 8px with no bounce",
+      "reduced": "opacity only",
+      "trigger": "fresh page orientation becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-header-scroll",
+      "token": "quick",
+      "intent": "retain context",
+      "full": "blur/stroke and compact title interpolate",
+      "reduced": "two discrete states",
+      "trigger": "retain context becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-footer-selection",
+      "token": "quick",
+      "intent": "destination acknowledgement",
+      "full": "pastel lens glides without geometry jump",
+      "reduced": "instant lens placement",
+      "trigger": "destination acknowledgement becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-rail-collapse",
+      "token": "emphasized",
+      "intent": "preserve workspace position",
+      "full": "width and labels interpolate; content reflows",
+      "reduced": "single layout swap",
+      "trigger": "preserve workspace position becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-capture-morph",
+      "token": "emphasized",
+      "intent": "one instrument changes jobs",
+      "full": "orb unfolds into the selected Task/Plan/AI/Voice shell",
+      "reduced": "crossfade within final bounds",
+      "trigger": "one instrument changes jobs becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-ime",
+      "token": "standard",
+      "intent": "maintain focused field",
+      "full": "composer and viewport negotiate inset together",
+      "reduced": "final inset applied",
+      "trigger": "maintain focused field becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-overlay",
+      "token": "modal",
+      "intent": "show temporary hierarchy",
+      "full": "anchor/scale/fade follows origin",
+      "reduced": "fade only",
+      "trigger": "show temporary hierarchy becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-task-state",
+      "token": "quick",
+      "intent": "reversible outcome feedback",
+      "full": "arc/color/icon interpolate within stable outer ring",
+      "reduced": "state swaps in place",
+      "trigger": "reversible outcome feedback becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-habit-increment",
+      "token": "micro",
+      "intent": "rapid tactile counting",
+      "full": "number ticks and receipt coalesces",
+      "reduced": "value swaps without travel",
+      "trigger": "rapid tactile counting becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-sync-state",
+      "token": "standard",
+      "intent": "background continuity",
+      "full": "cloud mark changes stroke and bounded activity",
+      "reduced": "label and symbol swap",
+      "trigger": "background continuity becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-optimistic-receipt",
+      "token": "feedback",
+      "intent": "local-first confidence",
+      "full": "receipt enters, holds, then yields to saved/Undo",
+      "reduced": "persistent static receipt",
+      "trigger": "local-first confidence becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-detail-continuity",
+      "token": "route",
+      "intent": "preserve selected entity",
+      "full": "row identity connects to detail hero",
+      "reduced": "crossfade preserving focus",
+      "trigger": "preserve selected entity becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-wizard-step",
+      "token": "standard",
+      "intent": "decision order",
+      "full": "shared chrome stays; body moves 12px along progression",
+      "reduced": "body crossfade",
+      "trigger": "decision order becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-drag-reschedule",
+      "token": "quick",
+      "intent": "direct manipulation",
+      "full": "block lifts, snaps and confirms conflict/result",
+      "reduced": "keyboard move receipt",
+      "trigger": "direct manipulation becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-focus-timer",
+      "token": "standard",
+      "intent": "quiet temporal feedback",
+      "full": "progress advances continuously without pulsing text",
+      "reduced": "minute-step updates",
+      "trigger": "quiet temporal feedback becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-reward",
+      "token": "feedback",
+      "intent": "earned acknowledgement",
+      "full": "one restrained bloom and receipt; never blocks work",
+      "reduced": "static badge receipt",
+      "trigger": "earned acknowledgement becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-widget-action",
+      "token": "quick",
+      "intent": "native optimistic action",
+      "full": "row state changes immediately, queue marker resolves",
+      "reduced": "native state swap",
+      "trigger": "native optimistic action becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    },
+    {
+      "id": "motion-continuous-resize",
+      "token": "standard",
+      "intent": "preserve state across breakpoints",
+      "full": "panes reflow without scroll/focus reset",
+      "reduced": "stable-state recomposition",
+      "trigger": "preserve state across breakpoints becomes active through explicit user or system state change",
+      "affected_layers": [
+        "semantic owner",
+        "selection/state material",
+        "focus continuity"
+      ],
+      "frames": [
+        "first: prior stable geometry",
+        "mid: interruptible semantic transition",
+        "end: final value announced"
+      ],
+      "interruption": "Settle toward the latest requested state without replaying intermediate acknowledgements.",
+      "reverse": "Reverse from current interpolated value; do not jump to the original frame first.",
+      "focus_semantics_timing": "Focus ownership changes only when the destination exists; state announcement follows committed local projection.",
+      "background_resume": "Pause decorative progress offstage; recompute from durable truth on resume.",
+      "frame_resource_budget": "No layout-wide repaint loop; warm transition targets a stable 60Hz frame budget and remains cancelable."
+    }
+  ]
+}

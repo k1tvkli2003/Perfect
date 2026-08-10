@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+    <title id="title">Appointment</title>
+    <desc id="desc">Perfect category pictogram: appointment</desc>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#CDEED8" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".96"><path d="M11 2v2"></path><path d="M5 2v2"></path><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"></path><path d="M8 15a6 6 0 0 0 12 0v-3"></path><circle cx="20" cy="10" r="2"></circle></g>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#347B54" stroke-width="1.72" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2v2"></path><path d="M5 2v2"></path><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"></path><path d="M8 15a6 6 0 0 0 12 0v-3"></path><circle cx="20" cy="10" r="2"></circle></g>
+    <circle cx="432" cy="92" r="17" fill="#CDEED8"/><circle cx="432" cy="92" r="7" fill="#347B54"/>
+  </svg>

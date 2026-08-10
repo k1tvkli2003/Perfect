@@ -267,3 +267,61 @@ Copy implementation without inheriting ImageGen text/identity drift.
 Stage 03 changed no shipped UI, route, domain or database contract. Stage 04 now owns
 the exhaustive individual foundation/component previews; Stage 05 remains the final
 page-composition/Copy barrier before production UI mutation.
+
+Exact-SHA run [`31393887073`](https://github.com/k1tvkli2003/Perfect/actions/runs/31393887073)
+(`#42`) passed all jobs for Stage 03 commit
+`4ff5ebe317b4f41e7508a69fba2206b68e632d7e`. Release
+[`v1.1.0-build.2042`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2042)
+targets that exact SHA and contains only the signed Android APK, Windows Portable ZIP
+and Windows Setup, each uploaded with a SHA-256 digest.
+
+## 2026-08-10 — Stage 04 responsive design-system checkpoint
+
+### Before
+
+PS01 had six accepted direction plates, but it did not yet have executable ownership
+for every reusable component. The preview gate enumerates 9 foundations and 181
+component IDs across 27 semantic families. Without per-ID contracts and comparison
+plates, page design could still invent local controls, spacing, states or motion.
+
+### Execution contract
+
+- Build the nine foundation specimens and one versioned token/asset/motion registry.
+- Give all 181 IDs their own contract, anatomy, light/dark state, responsive,
+  accessibility, motion and real-neighbor evidence.
+- Generate family and whole-catalog contact sheets, then inspect critical and stress
+  surfaces at original size rather than trusting file counts.
+- Lock exact inventory and hashes with an executable Stage 04 contract.
+- Keep production Flutter/native/domain/database/Supabase code untouched.
+
+### After
+
+- Froze design-system version `ps01-ds-1.0.0`: 9 foundation packets, all 181
+  component contracts across 27 families, 1,267 component preview boards, 48
+  transparent category SVGs and 20 named motion contracts.
+- Gave every component its own semantic owner, anatomy, states, platform
+  transformations, accessibility/RTL/200% behavior, motion/reduced-motion behavior,
+  performance budget, fixture boundary, consumer map and neighbor proof.
+- Rebuilt weak evidence discovered during original-size review: task rows no longer
+  squeeze five columns; Pulse/Capture/motion specimens remain centered and unclipped;
+  dark/high-contrast copy inherits explicit readable colors; habit status uses
+  semantic SVGs instead of raw glyphs; widget previews now recompose by size class.
+- Added deterministic foundation, component, family and master renderers plus a live
+  DOM geometry inspector. The renderer recycles/retries bounded browser sessions so
+  a partial browser crash cannot silently manufacture a complete catalog.
+- Reduced the complete generated corpus to 148.18 MiB with palette-aware PNG
+  optimization while retaining exact `1200×800` preview geometry and inspected mark
+  quality. No generated file exceeds 4.49 MiB.
+- Locked 1,576 generated-file hashes and verified 238 parseable SVGs, exact PNG
+  signatures/dimensions, transparent icon canvases, no raw emoji/dingbats, complete
+  provenance and zero stale/missing catalog files.
+- Added `responsive_design_system_contract_test.dart`; Stage 03+04 focused contracts
+  pass 16/16, the Stage 04 contract passes 8/8 independently and focused analyzer is
+  clean.
+- Preserved every unrelated/unaccepted production prototype, `.vscode`, `NUL` and
+  retained stash without staging or treating them as accepted work.
+
+Stage 04 changed no shipped Flutter UI, native code, route, domain, database or
+Supabase contract. Stage 05 may now compose complete pages only from the frozen IDs,
+tokens, assets, motion contracts and hashes; production implementation remains
+blocked until Stage 05 closes.

@@ -1,0 +1,155 @@
+{
+  "component_id": "ov-full-route",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "ov",
+  "family_title": "Overlays",
+  "title": "Full Route",
+  "purpose": "phone form/detail fallback and predictive-back behavior",
+  "correct_use": "Use the canonical ov-full-route owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "header",
+      "body",
+      "primary-action",
+      "secondary-action",
+      "dismiss-boundary"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Overlays / ov-full-route",
+  "canonical_semantic_owner": "Overlays / ov-full-route",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback"
+  ],
+  "mutation_contract": "none; component emits intent and never writes persistence directly",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default"
+    ],
+    "documented_variants": "phone form/detail fallback and predictive-back behavior"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "token-authored surface, stroke, icon and state material"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "open/transition remains within frame budget after warm-up; no layout jump; expensive work is cancelable and off the UI thread",
+  "consumers": [
+    "wizard",
+    "detail actions",
+    "settings",
+    "feedback",
+    "AI review"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "664b3a2b4a6a1f6ae31789bcb2a6029bb0b1622aa170ad380f0cf15047829580",
+    "states-light.png": "9b51eef6c6ee43b3633a4608763ac3fbf3394a0dd083acdd26c2ebf7197bd147",
+    "states-dark.png": "c2c1220322297cf9176ebf3cba7b1267cfdf23583259d6f2f461239af21cea9c",
+    "responsive.png": "8ef066d5a44dc1d52a88320aca2db3974020197302d9df95736839819f9205f5",
+    "accessibility.png": "e873cd7ffe0a4f3e3536e2acb1d7ce6ac406b00cecfeea023c2eb030666e9185",
+    "motion-board.png": "9b04772a03f4d1365e81661105c9c2311ce8aa5f5582982f61a2d684f899e79c",
+    "neighbor-plate.png": "b65533d8162d4b9ba529684cb0275fead529f1a8bd5b64c9222b87ab29ae940f"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "anchor",
+    "body content",
+    "safe dismissal"
+  ]
+}

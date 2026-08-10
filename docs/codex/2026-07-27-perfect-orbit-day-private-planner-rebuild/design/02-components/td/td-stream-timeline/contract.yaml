@@ -1,0 +1,154 @@
+{
+  "component_id": "td-stream-timeline",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "td",
+  "family_title": "Today stream",
+  "title": "Stream Timeline",
+  "purpose": "time rail, now marker, zone transitions and dense overlap handling",
+  "correct_use": "Use the canonical td-stream-timeline owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "title",
+      "measure",
+      "visual-series",
+      "legend",
+      "empty-or-source-note"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Today stream / td-stream-timeline",
+  "canonical_semantic_owner": "Today stream / td-stream-timeline",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints",
+    "durable-planner-projection"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback"
+  ],
+  "mutation_contract": "none; component emits intent and never writes persistence directly",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default"
+    ],
+    "documented_variants": "time rail, now marker, zone transitions and dense overlap handling"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "token-authored surface, stroke, icon and state material"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "steady-state row interaction <=1 frame of synchronous work; no full-list rebuild; authored assets decode once",
+  "consumers": [
+    "Today phone",
+    "Today tablet",
+    "Today Windows"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "1c2ebcf629c6f133ec331649f029943c827478d1d686c001cbf8afe4800334b8",
+    "states-light.png": "d3b0bc2f6e4bdd6901d457b0996adb138f86e5f06457b1c47fcb80b628e8e7ca",
+    "states-dark.png": "689383085372043324308c3f2b23fb569223b3dae3366bec9f613d27841b0c1d",
+    "responsive.png": "c88d6c0e6b3570dfb3b6621400e861a6fbb0f6417dd974279e32f43b5e0e3032",
+    "accessibility.png": "43588e30a87fd05c7af1a20872ca721494ebed726d859bec9d6025fafe218776",
+    "motion-board.png": "2c84b98ea7419a7096347c51391c9e967038f3aa1f11eb2f046289832b26fb14",
+    "neighbor-plate.png": "d0ed4836d0815eddf0d26304fc3e56dfe14a72bda7f35f2b497df7a8a99d0be9"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "Today Pulse",
+    "stream zone",
+    "capture orb"
+  ]
+}

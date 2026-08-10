@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+    <title id="title">Coding</title>
+    <desc id="desc">Perfect category pictogram: coding</desc>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#CBEFF0" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".96"><path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path></g>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#1D6870" stroke-width="1.72" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path></g>
+    <circle cx="432" cy="92" r="17" fill="#CBEFF0"/><circle cx="432" cy="92" r="7" fill="#1D6870"/>
+  </svg>

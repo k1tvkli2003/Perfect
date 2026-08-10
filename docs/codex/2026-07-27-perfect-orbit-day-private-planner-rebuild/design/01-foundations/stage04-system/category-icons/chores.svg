@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+    <title id="title">Chores</title>
+    <desc id="desc">Perfect category pictogram: chores</desc>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#FFD7AF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".96"><path d="M13 5h8"></path><path d="M13 12h8"></path><path d="M13 19h8"></path><path d="m3 17 2 2 4-4"></path><path d="m3 7 2 2 4-4"></path></g>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#A4510E" stroke-width="1.72" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5h8"></path><path d="M13 12h8"></path><path d="M13 19h8"></path><path d="m3 17 2 2 4-4"></path><path d="m3 7 2 2 4-4"></path></g>
+    <circle cx="432" cy="92" r="17" fill="#FFD7AF"/><circle cx="432" cy="92" r="7" fill="#A4510E"/>
+  </svg>

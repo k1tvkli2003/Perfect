@@ -362,8 +362,30 @@ Android↔Windows convergence. Those remain milestone runtime gates.
 | Fixture isolation | production persistence-source scan | passed | finalist entity names absent from planner database/local store and Supabase migrations |
 | Executable contract | `flutter test test/presentation/design_direction_contract_test.dart` | passed, 8/8 | evidence files/contact sheets, research, ledger, board rejection, PS01, exact assets, deterministic plates and fixture isolation locked |
 | Runtime/product mutation | scoped Git diff | not claimed / not applicable | Stage 03 adds docs/design/test/tool artifacts only; existing unrelated production/test prototypes remain unstaged |
-| Hosted Stage 03 gate | workflow after Stage 03 commit/push | pending | attach only to the exact committed SHA; transport release is not runtime visual acceptance |
+| Hosted Stage 03 gate | exact-SHA run `#42` / `31393887073` + release inspection | passed | all jobs succeeded for `4ff5ebe317b4f41e7508a69fba2206b68e632d7e`; `v1.1.0-build.2042` targets that SHA and contains exactly uploaded APK, Portable ZIP and Setup assets with SHA-256 digests; transport success is not runtime visual acceptance |
 
 Stage 04/05 remain mandatory. These direction plates are not substitutes for every
 component state, page density, dark/high-contrast, 200%, IME, reduced-motion or real
 runtime side-by-side Copy proof.
+
+## 2026-08-10 — Stage 04 responsive design-system verification
+
+| Check | Method | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| Exact gate inventory | gate parser + registry comparison | passed | exactly 9 foundations, 181 unique component IDs and 27 semantic families in canonical order |
+| Complete per-component packet | filesystem/contract traversal | passed | every ID has `contract.yaml`, anatomy SVG and 7 required `1200×800` PNG boards; 1,267 component previews total |
+| Foundations and identity | manifest/hash checks + original-size inspection | passed | 9 foundation specimens/stress boards, exact Perfect mark/wordmark provenance and PS01 token equations frozen |
+| Iconography | SVG parse/transparency/semantic-title scan | passed | 48 category SVGs, no full-canvas background, Lucide license recorded, no raw keyboard emoji or dingbat UI glyphs |
+| Motion system | named registry + five-frame/reduced-motion boards | passed | 20 intent-specific motion contracts map trigger, full motion, reduced motion, duration and easing |
+| Visual stress correction | original-size light/dark/high-contrast/responsive/neighbor review | passed | task-row crowding, dark contrast, capture/pulse clipping, raw habit glyphs and widget one-size scaling were corrected before freeze |
+| Geometry probe | Playwright live DOM bounds inspector | passed | representative Pulse, Capture, five-frame motion and dark task state boards report contained critical bounds |
+| Deterministic integrity | SHA-256 recomputation + stale-file rejection | passed | `stage04-hashes.sha256` exactly covers 1,576 generated files; all 238 SVGs parse; all PNG signatures and dimensions match |
+| Corpus transport fitness | file count/size scan | passed | final corpus is 148.18 MiB; largest file 4.49 MiB; no file approaches GitHub's 100 MiB limit |
+| Executable design contract | `flutter test test/presentation/responsive_design_system_contract_test.dart` | passed, 8/8 | inventory, IDs/order, contracts, previews, foundations, icons, motion/provenance and fixture isolation locked |
+| Cross-stage contract | Stage 03 + Stage 04 focused Flutter tests | passed, 16/16 | selected direction and its full component decomposition remain mutually consistent |
+| Focused analysis | `flutter analyze` over Stage 03/04 contract tests | passed | no issues |
+| Runtime/product mutation | scoped Git diff | not claimed / not applicable | only docs/design/test/tool artifacts belong to Stage 04; unrelated production prototypes remain unstaged |
+
+Stage 04 closes the reusable-component gate only. Stage 05 must still freeze all 134
+full page/overlay/widget compositions, densities and Copy manifests before any
+production UI implementation can be accepted.

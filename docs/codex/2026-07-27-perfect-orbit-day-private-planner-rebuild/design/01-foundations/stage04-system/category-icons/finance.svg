@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+    <title id="title">Finance</title>
+    <desc id="desc">Perfect category pictogram: finance</desc>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#DED7FF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".96"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2"></path><path d="M3 11h3c.8 0 1.6.3 2.1.9l1.1.9c1.6 1.6 4.1 1.6 5.7 0l1.1-.9c.5-.5 1.3-.9 2.1-.9H21"></path></g>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#6954B8" stroke-width="1.72" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2"></path><path d="M3 11h3c.8 0 1.6.3 2.1.9l1.1.9c1.6 1.6 4.1 1.6 5.7 0l1.1-.9c.5-.5 1.3-.9 2.1-.9H21"></path></g>
+    <circle cx="432" cy="92" r="17" fill="#DED7FF"/><circle cx="432" cy="92" r="7" fill="#6954B8"/>
+  </svg>

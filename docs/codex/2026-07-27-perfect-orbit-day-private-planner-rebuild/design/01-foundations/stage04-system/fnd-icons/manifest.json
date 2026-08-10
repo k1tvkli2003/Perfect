@@ -1,0 +1,42 @@
+{
+  "foundation_id": "fnd-icons",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "title": "Icon and pictogram language",
+  "purpose": "Optically corrected action family and 48-category SVG archive with no keyboard emoji.",
+  "semantic_owner": "Perfect foundation / fnd-icons",
+  "required_themes": [
+    "light",
+    "dark",
+    "high-contrast"
+  ],
+  "required_layouts": [
+    "320 compact",
+    "390 phone",
+    "600 fold/tablet",
+    "900 tablet",
+    "1024 wide tablet",
+    "1366 Windows",
+    "expanded Windows",
+    "short height + IME"
+  ],
+  "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+  "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+  "preview_files": [
+    "anatomy.svg",
+    "specimen.png",
+    "stress.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "aaf7f50652df697b38933da0a8464b6ca4ac1fcec156d49546265398bc095881",
+    "specimen.png": "3301c93f3b0eba29a088b7f3a4edf4d5257fa4d42daffe40950d7b5dc24edf17",
+    "stress.png": "c1a67bf4ff2ece19d7b2bd25ef7a53d8dddff474ae544bea9123eb1935208677"
+  },
+  "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-icons/contract.yaml",
+  "previews": {
+    "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-icons/anatomy.svg",
+    "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-icons/specimen.png",
+    "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-icons/stress.png"
+  },
+  "contract_sha256": "7196371607f58c1b5addb3ddbeb462af1da9c6ec150aedf305024ab4b48071ad"
+}

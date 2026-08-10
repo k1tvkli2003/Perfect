@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+    <title id="title">Other</title>
+    <desc id="desc">Perfect category pictogram: other</desc>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#CBEFF0" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".96"><path d="M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z"></path><rect x="3" y="14" width="7" height="7" rx="1"></rect><circle cx="17.5" cy="17.5" r="3.5"></circle></g>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#1D6870" stroke-width="1.72" stroke-linecap="round" stroke-linejoin="round"><path d="M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z"></path><rect x="3" y="14" width="7" height="7" rx="1"></rect><circle cx="17.5" cy="17.5" r="3.5"></circle></g>
+    <circle cx="432" cy="92" r="17" fill="#CBEFF0"/><circle cx="432" cy="92" r="7" fill="#1D6870"/>
+  </svg>

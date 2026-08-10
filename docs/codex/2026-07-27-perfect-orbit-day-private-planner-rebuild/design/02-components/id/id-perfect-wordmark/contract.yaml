@@ -1,0 +1,157 @@
+{
+  "component_id": "id-perfect-wordmark",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "id",
+  "family_title": "Identity",
+  "title": "Perfect Wordmark",
+  "purpose": "selected custom typography image, light/dark/high-contrast and compact-header crops",
+  "correct_use": "Use the canonical id-perfect-wordmark owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "identity",
+      "primary-content",
+      "secondary-context",
+      "state-cue",
+      "action-or-continuation"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Identity / id-perfect-wordmark",
+  "canonical_semantic_owner": "Identity / id-perfect-wordmark",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback"
+  ],
+  "mutation_contract": "none; component emits intent and never writes persistence directly",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default"
+    ],
+    "documented_variants": "selected custom typography image, light/dark/high-contrast and compact-header crops"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [
+    "canonical Day Compass/wordmark or manifest-owned SVG"
+  ],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "canonical brand raster/vector selected by asset manifest"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "no unbounded intrinsic pass; assets cached; hover/focus/press state changes stay within one frame",
+  "consumers": [
+    "bootstrap",
+    "header",
+    "widget",
+    "Windows shell",
+    "installer"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "4f9ae62e578f6c4a647906721e0cc76a2366dbf0eceab62bd4489d4bead7c3f2",
+    "states-light.png": "d7f536e2156762601b96d9a5c85fb9f9d87b62bbc4b595bc150f77dfa03df078",
+    "states-dark.png": "f93aee758a4006753895ca07d8c1cc8c998211b2fbc1acd21669c68b3e28226c",
+    "responsive.png": "a680debe01b9e9daa9b25497a44a8d2afbdc4b89552217a121f1023049c16576",
+    "accessibility.png": "a2cfc0e0d2fd66a4179bdd4ecb03faf1bba884f79d8eaee1e19b446e564007ac",
+    "motion-board.png": "3a1a3ecfcfe61f555c3781ebc7dbaaa44a71c358578a31a0cda34106f8a5c55e",
+    "neighbor-plate.png": "74a8f54bdf9092dc39dc9e0abd13119e1852655e2ad068de22ccc8b85ca826b2"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "wordmark",
+    "header",
+    "installed surface"
+  ]
+}

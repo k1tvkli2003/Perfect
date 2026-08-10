@@ -1,19 +1,21 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-10T17:05:03+03:30
+- Last updated: 2026-08-10T18:51:36+03:30
 - Owner: Codex
 
 ## Current State
 
-Canonical 50-stage execution has closed Stages 01–02 through exact-SHA hosted runs
-`#40`/`#41` and releases `v1.1.0-build.2040`/`2041`. Stage 03 is locally complete:
-`PS01 Perfect Day Instrument` replaces the retired Orbit UI direction and freezes a
+Canonical 50-stage execution has closed Stages 01–03 through exact-SHA hosted runs
+`#40`–`#42` and releases `v1.1.0-build.2040`–`2042`. Stage 03 commit
+`4ff5ebe317b4f41e7508a69fba2206b68e632d7e` freezes `PS01 Perfect Day Instrument`:
 compact Pulse, one continuous day Stream, view-first detail, direct habit controls,
 one morphing Capture/Plan/AI/Voice surface and distinct phone/tablet/Windows
-compositions. Six deterministic direction plates and an eight-test evidence contract
-are ready for the Stage 03 commit/push gate. Stage 04 is next and remains design-only;
-shipped UI mutation is still blocked through Stage 05.
+compositions. Run `31393887073` passed and its public non-draft release contains
+exactly the signed Android APK, Windows Portable ZIP and Windows Setup. Stage 04 is
+complete locally: `ps01-ds-1.0.0` freezes every foundation/component state,
+responsive/accessibility/motion/neighbor plate and its exact hash. Stage 05 is next;
+shipped UI mutation remains blocked until its complete page/Copy gate closes.
 
 The earlier Perfect cycles below remain historical runtime evidence; they do not
 supersede the canonical numbered execution state.
@@ -211,6 +213,30 @@ Perfect Cycle 1 روی commit `a793531279174f735ad1e247f96a5213613dabb1` با wo
 - `design_direction_contract_test.dart` passes 8/8 and locks evidence breadth,
   selection, generated-board rejection, exact identity bytes, deterministic plates
   and fixture isolation.
+- Exact-SHA run [`31393887073`](https://github.com/k1tvkli2003/Perfect/actions/runs/31393887073)
+  (`#42`) passed all jobs for `4ff5ebe317b4f41e7508a69fba2206b68e632d7e`.
+  Release [`v1.1.0-build.2042`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2042)
+  targets that SHA and exposes exactly the three install-ready assets.
 - No production Flutter UI, route, domain, database or Supabase contract changed.
   Stage 04 owns exhaustive individual component previews; Stage 05 owns complete page
   compositions and Copy manifests.
+
+## Stage 04 responsive design system — 2026-08-10
+
+- `ps01-ds-1.0.0` freezes 9 foundations, 181 component contracts across 27 semantic
+  families, 1,267 canonical component boards, 48 transparent category SVGs and 20
+  named motion contracts.
+- Every component has anatomy, light/dark state, responsive, accessibility,
+  first/mid/end/reversal/reduced-motion and real-neighbor evidence at `1200×800`.
+- Original-size inspection corrected cramped task geometry, clipped Pulse/Capture
+  frames, dark/high-contrast readability, raw habit glyphs and size-agnostic widget
+  previews before acceptance.
+- The executable verifier passes exact inventory/order/contracts, 1,576 hashes, 238
+  SVG parses, PNG signatures/dimensions, icon transparency, no raw emoji, provenance
+  and fixture isolation. Stage 03+04 focused tests pass 16/16 and focused analysis is
+  clean.
+- The 148.18 MiB design corpus has no file above 4.49 MiB. No production Flutter,
+  native, route, domain, database or Supabase file changed; unrelated prototypes and
+  the retained stash remain untouched.
+- The hosted exact-SHA checkpoint is pending this stage's commit/push. Stage 05 owns
+  all 134 full page/overlay/widget compositions and Copy manifests.

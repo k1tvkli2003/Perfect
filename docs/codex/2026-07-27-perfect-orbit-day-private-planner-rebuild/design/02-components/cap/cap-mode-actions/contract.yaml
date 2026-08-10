@@ -1,0 +1,159 @@
+{
+  "component_id": "cap-mode-actions",
+  "catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "family": "cap",
+  "family_title": "Capture instrument",
+  "title": "Mode Actions",
+  "purpose": "Task/Plan/AI/Voice icon actions with clear selected state and semantics",
+  "correct_use": "Use the canonical cap-mode-actions owner anywhere this semantic job appears; do not redraw a route-local substitute.",
+  "anatomy": {
+    "slots": [
+      "mode-identity",
+      "context",
+      "input-or-content",
+      "mode-actions",
+      "commit-or-cancel"
+    ],
+    "alignment_axes": [
+      "content-baseline",
+      "optical-center",
+      "interactive-center"
+    ],
+    "stable_outer_geometry": true
+  },
+  "semantic_owner": "Capture instrument / cap-mode-actions",
+  "canonical_semantic_owner": "Capture instrument / cap-mode-actions",
+  "inputs": [
+    "theme",
+    "locale-and-direction",
+    "text-scale",
+    "input-modality",
+    "window-constraints",
+    "draft-state"
+  ],
+  "outputs": [
+    "semantic-state",
+    "focus-and-pointer-feedback",
+    "intent-only-event"
+  ],
+  "mutation_contract": "none; component emits intent and never writes persistence directly",
+  "states": {
+    "precedence": [
+      "disabled",
+      "hard-error",
+      "conflict",
+      "busy",
+      "pressed",
+      "focus",
+      "hover",
+      "selected",
+      "default"
+    ],
+    "required": [
+      "default",
+      "hover",
+      "focus",
+      "pressed",
+      "disabled"
+    ],
+    "documented_variants": "Task/Plan/AI/Voice icon actions with clear selected state and semantics"
+  },
+  "responsive": {
+    "phone": "Intrinsic copy and >=48dp targets; wrap or stack before clipping; preserve one-handed primary action.",
+    "tablet": "Use compact rail and supporting/list-detail space only when live constraints keep both panes useful.",
+    "windows": "Use pointer density, hover/focus/shortcut and bounded panes; never stretch a phone card across the canvas.",
+    "short_height": "Move secondary content into the scroll owner; keep focused field and required actions reachable above IME.",
+    "breakpoint_state_continuity": [
+      "draft",
+      "focus",
+      "selection",
+      "scroll",
+      "expanded-state"
+    ]
+  },
+  "interaction": {
+    "touch": [
+      "minimum 48dp semantic target",
+      "press feedback before mutation receipt"
+    ],
+    "mouse": [
+      "hover without geometry jump",
+      "right-click only where a visible route/action alternative exists"
+    ],
+    "keyboard": [
+      "ordered focus",
+      "Enter/Space activation where conventional",
+      "Escape restores prior focus"
+    ],
+    "screen_reader": [
+      "single semantic owner",
+      "state and value announced without color dependence"
+    ]
+  },
+  "rtl_mixed_copy": "Direction derives per live field/span; icon mirroring is semantic, not automatic; mandatory labels remain whole at 200%.",
+  "tokens": [
+    "PS01 color roles",
+    "Perfect spacing/radius ladder",
+    "Perfect type roles",
+    "Perfect motion Bible"
+  ],
+  "assets": [],
+  "decomposition": {
+    "live_layers": [
+      "dynamic copy",
+      "value/state semantics",
+      "focusable controls",
+      "screen-reader value"
+    ],
+    "authored_layers": [
+      "token-authored surface, stroke, icon and state material"
+    ],
+    "forbidden_flattening": [
+      "user data",
+      "editable copy",
+      "interactive control",
+      "error or permission message"
+    ],
+    "implementation_boundary": "Preview pixels define composition; production retains live Flutter/native semantics."
+  },
+  "motion_ids": [
+    "motion-continuous-resize",
+    "motion-capture-morph"
+  ],
+  "reduced_motion": "Preserve final geometry and semantic announcement; replace travel, pulse and continuous rotation with crossfade or state swap.",
+  "performance_budget": "open/transition remains within frame budget after warm-up; no layout jump; expensive work is cancelable and off the UI thread",
+  "consumers": [
+    "Today capture instrument",
+    "Windows shortcut"
+  ],
+  "preview_files": [
+    "anatomy.svg",
+    "states-light.png",
+    "states-dark.png",
+    "responsive.png",
+    "accessibility.png",
+    "motion-board.png",
+    "neighbor-plate.png"
+  ],
+  "preview_sha256": {
+    "anatomy.svg": "bb6fdbda375d006c5101f47b15db9726b49f4a39cb9f63d44e791aaa892f1923",
+    "states-light.png": "63eb5f8b47ba0ec9417fa963dd53422e00171254e098058379889ddee5b6401a",
+    "states-dark.png": "d028089e370a1fa157f0e4b269b04ebba4c486aaaf5707258026e6fa772c337c",
+    "responsive.png": "738288c6a844ad42b29d74dded929761ac390b60116657806bdf348ca7291ff6",
+    "accessibility.png": "67e1b46cc997201f14eefd5eca635f420cf15d7c6de5199cda8b4107ca1d501b",
+    "motion-board.png": "d8514b413e4d6af16d49032ba6039017d216fa50c9a57cc31c70547d806b1467",
+    "neighbor-plate.png": "f51021c94f1cbac17e0a08eb9fcdecd525298ea968c859412d900f83f722f624"
+  },
+  "intentional_variants": [
+    "theme role substitution",
+    "input-modality affordance",
+    "documented responsive recomposition"
+  ],
+  "fixture_boundary": "All names and values in previews are fixture-only and cannot be imported or seeded into production persistence.",
+  "sibling_context": [
+    "capture orb",
+    "mode actions",
+    "footer"
+  ]
+}

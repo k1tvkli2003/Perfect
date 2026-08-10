@@ -1,0 +1,736 @@
+{
+  "catalog_version": "ps01-ds-1.0.0",
+  "generated_at": "2026-08-10",
+  "gate_source": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/stages/preview-production-gate.md",
+  "gate_sha256": "f8e47f384e47fabbdf0708dcc5b647d1002bf5cb5f478b7109de92bb5ec57dd0",
+  "exact_foundation_count": 9,
+  "foundations": [
+    {
+      "foundation_id": "fnd-color-roles",
+      "catalog_version": "ps01-ds-1.0.0",
+      "version": 1,
+      "title": "Semantic color roles",
+      "purpose": "Paired foreground, background, border and status roles across light, dark and high contrast.",
+      "semantic_owner": "Perfect foundation / fnd-color-roles",
+      "required_themes": [
+        "light",
+        "dark",
+        "high-contrast"
+      ],
+      "required_layouts": [
+        "320 compact",
+        "390 phone",
+        "600 fold/tablet",
+        "900 tablet",
+        "1024 wide tablet",
+        "1366 Windows",
+        "expanded Windows",
+        "short height + IME"
+      ],
+      "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+      "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+      "preview_files": [
+        "anatomy.svg",
+        "specimen.png",
+        "stress.png"
+      ],
+      "preview_sha256": {
+        "anatomy.svg": "a74894eec904fd212b3c408807b15106d77f23b6305485e50ff17c0486503c6a",
+        "specimen.png": "c6af7004cc2cb64a0cd376e4247ce47239bd60ccbaa5c8b83f6993f18676c70f",
+        "stress.png": "5333772af8b56e479a2903d0550d25604a6703f9799ff490a81b70ef01fe2daa"
+      },
+      "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-color-roles/contract.yaml",
+      "previews": {
+        "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-color-roles/anatomy.svg",
+        "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-color-roles/specimen.png",
+        "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-color-roles/stress.png"
+      },
+      "contract_sha256": "7dd80b40f2e655ccc6deac7fe2512af7df0bebafcf7de3b721989515ca682641"
+    },
+    {
+      "foundation_id": "fnd-type-latin",
+      "catalog_version": "ps01-ds-1.0.0",
+      "version": 1,
+      "title": "Latin typography",
+      "purpose": "Exact wordmark boundary plus live Plus Jakarta roles, numerals and long-copy behavior.",
+      "semantic_owner": "Perfect foundation / fnd-type-latin",
+      "required_themes": [
+        "light",
+        "dark",
+        "high-contrast"
+      ],
+      "required_layouts": [
+        "320 compact",
+        "390 phone",
+        "600 fold/tablet",
+        "900 tablet",
+        "1024 wide tablet",
+        "1366 Windows",
+        "expanded Windows",
+        "short height + IME"
+      ],
+      "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+      "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+      "preview_files": [
+        "anatomy.svg",
+        "specimen.png",
+        "stress.png"
+      ],
+      "preview_sha256": {
+        "anatomy.svg": "3fc6c1d37560250ab7d0af63e0395dae9fb63e767919bab24ae3fe5d30769f05",
+        "specimen.png": "a4964e5cc60145d8f17abe3564cb5a459cffae023a344a632faca2356d346900",
+        "stress.png": "a0d93ff08321e3f81cc072dad1146fbaefbe8a5f32aa78bb4b7867fc00fc5ac0"
+      },
+      "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-latin/contract.yaml",
+      "previews": {
+        "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-latin/anatomy.svg",
+        "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-latin/specimen.png",
+        "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-latin/stress.png"
+      },
+      "contract_sha256": "b8de59420240c396f7a3a259579aefc4d0cc3c4f0929f0cf51fe5d995facb14a"
+    },
+    {
+      "foundation_id": "fnd-type-persian",
+      "catalog_version": "ps01-ds-1.0.0",
+      "version": 1,
+      "title": "Persian and bidi typography",
+      "purpose": "Vazirmatn roles, Persian numerals, punctuation, bidi isolation and fallback metrics.",
+      "semantic_owner": "Perfect foundation / fnd-type-persian",
+      "required_themes": [
+        "light",
+        "dark",
+        "high-contrast"
+      ],
+      "required_layouts": [
+        "320 compact",
+        "390 phone",
+        "600 fold/tablet",
+        "900 tablet",
+        "1024 wide tablet",
+        "1366 Windows",
+        "expanded Windows",
+        "short height + IME"
+      ],
+      "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+      "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+      "preview_files": [
+        "anatomy.svg",
+        "specimen.png",
+        "stress.png"
+      ],
+      "preview_sha256": {
+        "anatomy.svg": "e6972a4c7c46688ed523b7c9a492fda1bc3e34f090723e3914b99b9af047623f",
+        "specimen.png": "39f80742f6a0df486283f18d2addf9d00b4100638a84f4c9de7112189f422f86",
+        "stress.png": "fc0e0ae9e0d7192b9bac0da4327d2873f4e624ff8c10f04d0d56c8168749de79"
+      },
+      "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-persian/contract.yaml",
+      "previews": {
+        "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-persian/anatomy.svg",
+        "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-persian/specimen.png",
+        "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-type-persian/stress.png"
+      },
+      "contract_sha256": "6b797b605ed61bfeaff136208fe7e195757569b1109e0b4cc740ee27b7edd1ce"
+    },
+    {
+      "foundation_id": "fnd-spacing-density",
+      "catalog_version": "ps01-ds-1.0.0",
+      "version": 1,
+      "title": "Spacing, density and optical rhythm",
+      "purpose": "Shared spacing, radius, stroke, elevation, blur, icon and hit-target ladders.",
+      "semantic_owner": "Perfect foundation / fnd-spacing-density",
+      "required_themes": [
+        "light",
+        "dark",
+        "high-contrast"
+      ],
+      "required_layouts": [
+        "320 compact",
+        "390 phone",
+        "600 fold/tablet",
+        "900 tablet",
+        "1024 wide tablet",
+        "1366 Windows",
+        "expanded Windows",
+        "short height + IME"
+      ],
+      "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+      "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+      "preview_files": [
+        "anatomy.svg",
+        "specimen.png",
+        "stress.png"
+      ],
+      "preview_sha256": {
+        "anatomy.svg": "fae96013cb2929c9c1eeeaa04c9b4c0fead65e37dccdcdf6d0d6f341f9be19b7",
+        "specimen.png": "48d5982e51885012a532b44abd761bb9f70fc291d5064138699396138d014566",
+        "stress.png": "d98145e1689cfad6875cc25dbf98fcacc59c7bdfd70946561a8f4ae4d0f570fe"
+      },
+      "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-spacing-density/contract.yaml",
+      "previews": {
+        "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-spacing-density/anatomy.svg",
+        "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-spacing-density/specimen.png",
+        "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-spacing-density/stress.png"
+      },
+      "contract_sha256": "817abbdc6517f84ccc32843549afb75717a3598ed874d06e5c987c7866d77710"
+    },
+    {
+      "foundation_id": "fnd-grid-width",
+      "catalog_version": "ps01-ds-1.0.0",
+      "version": 1,
+      "title": "Responsive geometry equations",
+      "purpose": "Content-driven phone, tablet and Windows pane equations including short-height stress.",
+      "semantic_owner": "Perfect foundation / fnd-grid-width",
+      "required_themes": [
+        "light",
+        "dark",
+        "high-contrast"
+      ],
+      "required_layouts": [
+        "320 compact",
+        "390 phone",
+        "600 fold/tablet",
+        "900 tablet",
+        "1024 wide tablet",
+        "1366 Windows",
+        "expanded Windows",
+        "short height + IME"
+      ],
+      "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+      "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+      "preview_files": [
+        "anatomy.svg",
+        "specimen.png",
+        "stress.png"
+      ],
+      "preview_sha256": {
+        "anatomy.svg": "388127977582324548fcf2f763f5ffd88f5ede98d6e9887f24cd7c550722f899",
+        "specimen.png": "ff1da12405b1c6d4c26b3bfe4f5964e23409153cd74f4bcec8125a9b5244a259",
+        "stress.png": "7a955da7afb7cf4a5c44975209c0f6ad56726d2a397afc156724c75a98d69894"
+      },
+      "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-grid-width/contract.yaml",
+      "previews": {
+        "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-grid-width/anatomy.svg",
+        "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-grid-width/specimen.png",
+        "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-grid-width/stress.png"
+      },
+      "contract_sha256": "ce4d8ca3e5cb292d672c98914e085821dc99afb917ffdb0a27989f0bf4cab755"
+    },
+    {
+      "foundation_id": "fnd-icons",
+      "catalog_version": "ps01-ds-1.0.0",
+      "version": 1,
+      "title": "Icon and pictogram language",
+      "purpose": "Optically corrected action family and 48-category SVG archive with no keyboard emoji.",
+      "semantic_owner": "Perfect foundation / fnd-icons",
+      "required_themes": [
+        "light",
+        "dark",
+        "high-contrast"
+      ],
+      "required_layouts": [
+        "320 compact",
+        "390 phone",
+        "600 fold/tablet",
+        "900 tablet",
+        "1024 wide tablet",
+        "1366 Windows",
+        "expanded Windows",
+        "short height + IME"
+      ],
+      "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+      "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+      "preview_files": [
+        "anatomy.svg",
+        "specimen.png",
+        "stress.png"
+      ],
+      "preview_sha256": {
+        "anatomy.svg": "aaf7f50652df697b38933da0a8464b6ca4ac1fcec156d49546265398bc095881",
+        "specimen.png": "3301c93f3b0eba29a088b7f3a4edf4d5257fa4d42daffe40950d7b5dc24edf17",
+        "stress.png": "c1a67bf4ff2ece19d7b2bd25ef7a53d8dddff474ae544bea9123eb1935208677"
+      },
+      "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-icons/contract.yaml",
+      "previews": {
+        "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-icons/anatomy.svg",
+        "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-icons/specimen.png",
+        "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-icons/stress.png"
+      },
+      "contract_sha256": "7196371607f58c1b5addb3ddbeb462af1da9c6ec150aedf305024ab4b48071ad"
+    },
+    {
+      "foundation_id": "fnd-material",
+      "catalog_version": "ps01-ds-1.0.0",
+      "version": 1,
+      "title": "Surface and material language",
+      "purpose": "Quiet canvas, repeated rows, floating glass and non-blur/high-contrast fallbacks.",
+      "semantic_owner": "Perfect foundation / fnd-material",
+      "required_themes": [
+        "light",
+        "dark",
+        "high-contrast"
+      ],
+      "required_layouts": [
+        "320 compact",
+        "390 phone",
+        "600 fold/tablet",
+        "900 tablet",
+        "1024 wide tablet",
+        "1366 Windows",
+        "expanded Windows",
+        "short height + IME"
+      ],
+      "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+      "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+      "preview_files": [
+        "anatomy.svg",
+        "specimen.png",
+        "stress.png"
+      ],
+      "preview_sha256": {
+        "anatomy.svg": "9415770eb41623aa75e5bf0fdff1233661f48efe9c6afc995ffe55061ccb71ec",
+        "specimen.png": "6ca31385ff67581dd92c16e9d0015e828a71a639ed2b2e5d6c3ee6d801444a21",
+        "stress.png": "71c47668940980d5b17a1df07ee00f6fcd3bbcc7703617c9552bd2a14e2110ce"
+      },
+      "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-material/contract.yaml",
+      "previews": {
+        "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-material/anatomy.svg",
+        "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-material/specimen.png",
+        "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-material/stress.png"
+      },
+      "contract_sha256": "d6f30467c25e27ddff8af2390e8be2a2627ac9a720da1549429efb4373325866"
+    },
+    {
+      "foundation_id": "fnd-motion",
+      "catalog_version": "ps01-ds-1.0.0",
+      "version": 1,
+      "title": "Motion Bible",
+      "purpose": "Triggers, timing, spatial intent, interruption, reverse and reduced-motion replacements.",
+      "semantic_owner": "Perfect foundation / fnd-motion",
+      "required_themes": [
+        "light",
+        "dark",
+        "high-contrast"
+      ],
+      "required_layouts": [
+        "320 compact",
+        "390 phone",
+        "600 fold/tablet",
+        "900 tablet",
+        "1024 wide tablet",
+        "1366 Windows",
+        "expanded Windows",
+        "short height + IME"
+      ],
+      "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+      "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+      "preview_files": [
+        "anatomy.svg",
+        "specimen.png",
+        "stress.png"
+      ],
+      "preview_sha256": {
+        "anatomy.svg": "31e735f74c780d362bf0ba9f6a7238070c27dabe179d1ce4f09b1252b7e05437",
+        "specimen.png": "d88af594b9bd361b23c7dfaa13b3fc5932c7a707f093030a6f9f2c1778857c6a",
+        "stress.png": "0320973d1f7cd93fdd0577a478de87fdcc9389dbc83b1eeaacd700898cae0899"
+      },
+      "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-motion/contract.yaml",
+      "previews": {
+        "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-motion/anatomy.svg",
+        "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-motion/specimen.png",
+        "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-motion/stress.png"
+      },
+      "contract_sha256": "de08753f9ba81e4cbaaae867d8241178e39406be69d3948a668a122c09a98f9e"
+    },
+    {
+      "foundation_id": "fnd-focus-a11y",
+      "catalog_version": "ps01-ds-1.0.0",
+      "version": 1,
+      "title": "Focus and accessibility language",
+      "purpose": "Hover, focus, pressed, disabled, selected, target and semantic patterns.",
+      "semantic_owner": "Perfect foundation / fnd-focus-a11y",
+      "required_themes": [
+        "light",
+        "dark",
+        "high-contrast"
+      ],
+      "required_layouts": [
+        "320 compact",
+        "390 phone",
+        "600 fold/tablet",
+        "900 tablet",
+        "1024 wide tablet",
+        "1366 Windows",
+        "expanded Windows",
+        "short height + IME"
+      ],
+      "live_copy_boundary": "Typography and interactive values remain live; brand wordmark alone is an accepted image asset.",
+      "fixture_boundary": "Specimen values are design-only and unreachable from production persistence.",
+      "preview_files": [
+        "anatomy.svg",
+        "specimen.png",
+        "stress.png"
+      ],
+      "preview_sha256": {
+        "anatomy.svg": "2021aa4f1da62d4c5462ab7f1cc4f60477a08cdf3ad704229c1b2551da54930f",
+        "specimen.png": "e2f5785e76bc06828cc676d70cb3d9780c912833c54fe111ec8a44f057dec202",
+        "stress.png": "0e3cc92c62325bde964dd71bb708253581e24e9a2fdc1246d1a68e46d473e880"
+      },
+      "contract": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-focus-a11y/contract.yaml",
+      "previews": {
+        "anatomy.svg": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-focus-a11y/anatomy.svg",
+        "specimen.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-focus-a11y/specimen.png",
+        "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-focus-a11y/stress.png"
+      },
+      "contract_sha256": "13f2e86aa049717fa3362a48628e057a8b690132ea552c715d4147f8dab6276c"
+    }
+  ],
+  "category_icon_archive": {
+    "count": 48,
+    "license_notice": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/LUCIDE-ISC-LICENSE.txt",
+    "license_sha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57",
+    "icons": [
+      {
+        "id": "home",
+        "label": "Home",
+        "lucide_icon": "Home",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/home.svg",
+        "sha256": "e34328a3eaf544ebf2fae5bb40cee92bea15b713df0bd453da5850014693e666"
+      },
+      {
+        "id": "work",
+        "label": "Work",
+        "lucide_icon": "BriefcaseBusiness",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/work.svg",
+        "sha256": "ede30efc310ca84093f106690fc33564eabeba31cd7a6365a7554b976a846580"
+      },
+      {
+        "id": "study",
+        "label": "Study",
+        "lucide_icon": "GraduationCap",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/study.svg",
+        "sha256": "bd4e3bee6768191df5232437814b770d69f8dcdbe74c9e246cf14af2d8f40670"
+      },
+      {
+        "id": "health",
+        "label": "Health",
+        "lucide_icon": "HeartPulse",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/health.svg",
+        "sha256": "4cb210349b5d5c858f7651212c3a21ac613dab5fbb2f023f8a79f147f0376761"
+      },
+      {
+        "id": "fitness",
+        "label": "Fitness",
+        "lucide_icon": "Dumbbell",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/fitness.svg",
+        "sha256": "057547fbefdf172e2c00a26415aa1caaf06f6ebf1aeb848226a41526bb99c537"
+      },
+      {
+        "id": "medication",
+        "label": "Medication",
+        "lucide_icon": "Pill",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/medication.svg",
+        "sha256": "b5c0501b48c89bed13954b2ce90a904550459d1269113b56f9d0b472164666e4"
+      },
+      {
+        "id": "mindfulness",
+        "label": "Mindfulness",
+        "lucide_icon": "Brain",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/mindfulness.svg",
+        "sha256": "ef70f86f6c21fe293b0721026175b98154c83a5b1cdd226118189a968fd7a818"
+      },
+      {
+        "id": "sleep",
+        "label": "Sleep",
+        "lucide_icon": "MoonStar",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/sleep.svg",
+        "sha256": "974e01e5159d56186f23592bd635fa21d2d2682a5a2b2308ca904d0f650463e2"
+      },
+      {
+        "id": "water",
+        "label": "Water",
+        "lucide_icon": "Droplets",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/water.svg",
+        "sha256": "bc53729060e8df00183c5f34e886e1ffa452e69e9122b43f64b1ab6be8050392"
+      },
+      {
+        "id": "nutrition",
+        "label": "Nutrition",
+        "lucide_icon": "Salad",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/nutrition.svg",
+        "sha256": "d4fcd196e6786d354d786a7ccbaf553deabb7a00b819eda7dbb7726f72905feb"
+      },
+      {
+        "id": "finance",
+        "label": "Finance",
+        "lucide_icon": "WalletCards",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/finance.svg",
+        "sha256": "3d8a84b792a7888ed1c0c3b285ecba62a9eed25b5ec70bfb0d8126820ff871cb"
+      },
+      {
+        "id": "shopping",
+        "label": "Shopping",
+        "lucide_icon": "ShoppingBag",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/shopping.svg",
+        "sha256": "3707391eb9f6c525d79ffd40ac3c7d0a37cfbe0384666dfe36c4e3eaac2f147e"
+      },
+      {
+        "id": "chores",
+        "label": "Chores",
+        "lucide_icon": "ListChecks",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/chores.svg",
+        "sha256": "694f8733cfa41b2ce107483f9f8f3c6d841f0cc9858710da6eeeb209bcc1332d"
+      },
+      {
+        "id": "cleaning",
+        "label": "Cleaning",
+        "lucide_icon": "Sparkles",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/cleaning.svg",
+        "sha256": "dac7e6924451b4ca55fe9bd866660a2ff925479e375838c8525e20e550f89eee"
+      },
+      {
+        "id": "family",
+        "label": "Family",
+        "lucide_icon": "Users",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/family.svg",
+        "sha256": "527dfeadca49b8167c8ba949122a9386170490cae2412163166829327a6a6425"
+      },
+      {
+        "id": "friends",
+        "label": "Friends",
+        "lucide_icon": "UserRound",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/friends.svg",
+        "sha256": "a65802eae9f5eef754fc38758ff6553911939dc25a281a66dd63746b00593216"
+      },
+      {
+        "id": "relationship",
+        "label": "Relationship",
+        "lucide_icon": "HeartHandshake",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/relationship.svg",
+        "sha256": "2d8e9e99612a8955e63024e6dcef339bccd5e0bd11cfd30b87c38da34ac905de"
+      },
+      {
+        "id": "pets",
+        "label": "Pets",
+        "lucide_icon": "PawPrint",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/pets.svg",
+        "sha256": "13b560aee8cddf6fb986863e7d157e98b4147f5500ecd335ad5890c2d9f34c66"
+      },
+      {
+        "id": "travel",
+        "label": "Travel",
+        "lucide_icon": "Plane",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/travel.svg",
+        "sha256": "ec5bf9c81e521b20fcb3879840e22c443fc4dbccafafbbd4c0a4871dad8745fe"
+      },
+      {
+        "id": "car",
+        "label": "Car",
+        "lucide_icon": "Car",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/car.svg",
+        "sha256": "86eb2cab98cf70dfe23997b39e4aeb9920f1416b2dfc9522ea0dfd26790abf45"
+      },
+      {
+        "id": "learning",
+        "label": "Learning",
+        "lucide_icon": "LibraryBig",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/learning.svg",
+        "sha256": "1fd130a5e163b154542c57ec7cfd7b7012418acea2c400ccf5c4468d100a489a"
+      },
+      {
+        "id": "reading",
+        "label": "Reading",
+        "lucide_icon": "BookOpen",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/reading.svg",
+        "sha256": "9dd2a51a162a19695ba87fb34d18dff3de2d503746bbae86ec56e238210cb758"
+      },
+      {
+        "id": "writing",
+        "label": "Writing",
+        "lucide_icon": "PenLine",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/writing.svg",
+        "sha256": "bbb149dcab70a7d6c3e9381e88af6dc273c2de3d3ca5a86e6169360b3cd3b771"
+      },
+      {
+        "id": "coding",
+        "label": "Coding",
+        "lucide_icon": "Code2",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/coding.svg",
+        "sha256": "881767984077f46477e7772cb59eca7a6a271c3425d3f8e8c953d880e60e480a"
+      },
+      {
+        "id": "design",
+        "label": "Design",
+        "lucide_icon": "Palette",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/design.svg",
+        "sha256": "c5530d343fdc79a51c6f62751b509fb3fda61f417fd3a53205acb8ab265290c4"
+      },
+      {
+        "id": "music",
+        "label": "Music",
+        "lucide_icon": "Music2",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/music.svg",
+        "sha256": "b0fa37c33e7acfb07bea1b25028abd67953c9b7207b4a961be448360631d8dd0"
+      },
+      {
+        "id": "art",
+        "label": "Art",
+        "lucide_icon": "Brush",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/art.svg",
+        "sha256": "f6992a1e3030b776c161b5c445309cfd1e7113f4b0bdc61fba6d48ee38bba9d8"
+      },
+      {
+        "id": "photography",
+        "label": "Photography",
+        "lucide_icon": "Camera",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/photography.svg",
+        "sha256": "a2250f6c6ccc5a05f774a1140747a2f45f73a56c7bdff3e39062ed2b79c33fea"
+      },
+      {
+        "id": "creativity",
+        "label": "Creativity",
+        "lucide_icon": "Lightbulb",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/creativity.svg",
+        "sha256": "eca53656db1ebabec82edabef1525df11757c9c522593953034abeb2200e579d"
+      },
+      {
+        "id": "career",
+        "label": "Career",
+        "lucide_icon": "TrendingUp",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/career.svg",
+        "sha256": "2a28bba6ee992b1169b3ce72b4d62e20fc9e0e051d7895e73295dbefea155156"
+      },
+      {
+        "id": "meetings",
+        "label": "Meetings",
+        "lucide_icon": "UsersRound",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/meetings.svg",
+        "sha256": "de117d83126060d8bbb667047ec62baf1648c57e805d3396af7240f465426657"
+      },
+      {
+        "id": "calls",
+        "label": "Calls",
+        "lucide_icon": "Phone",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/calls.svg",
+        "sha256": "14f842d1210901c4a26c2d46ce4f0c35bf6e2667d9745326cb28e36c7b4f2bd1"
+      },
+      {
+        "id": "email",
+        "label": "Email",
+        "lucide_icon": "Mail",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/email.svg",
+        "sha256": "7aede1252ce322a55307f185ee2c738ed5520ed2583374a4256020ea52d011a4"
+      },
+      {
+        "id": "planning",
+        "label": "Planning",
+        "lucide_icon": "CalendarDays",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/planning.svg",
+        "sha256": "7350a854e0ace52b415304b8f18b012a32e60e407b62fe9bcc322ebe95d42310"
+      },
+      {
+        "id": "goals",
+        "label": "Goals",
+        "lucide_icon": "Goal",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/goals.svg",
+        "sha256": "36072a375ac0a43967c08cf4f8c9ed69d33056b41ef0e35a428faa61f27ec9e1"
+      },
+      {
+        "id": "focus",
+        "label": "Focus",
+        "lucide_icon": "Focus",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/focus.svg",
+        "sha256": "630335fc1260a9110eb8b172c41e16cd6ccbcd128ea7895a6978e2f923f3a612"
+      },
+      {
+        "id": "routine",
+        "label": "Routine",
+        "lucide_icon": "Repeat2",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/routine.svg",
+        "sha256": "dc4c8b2513efb4d99cccb668e0f7541e000f1d0db357b8bf4d509853d1fb34b3"
+      },
+      {
+        "id": "morning",
+        "label": "Morning",
+        "lucide_icon": "Sunrise",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/morning.svg",
+        "sha256": "efbc600f6c3941dfc165e315ce3eeeb376ef66a167514032ef7a1955d60f8433"
+      },
+      {
+        "id": "evening",
+        "label": "Evening",
+        "lucide_icon": "Sunset",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/evening.svg",
+        "sha256": "5aeba214ee5039d0a557654a0b084e8e5fffd1b19e219395b6c8faa8efa4c2dc"
+      },
+      {
+        "id": "outdoors",
+        "label": "Outdoors",
+        "lucide_icon": "Trees",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/outdoors.svg",
+        "sha256": "2e457b6aac7ea0881a425cbb7947349754b07cee339898195f69c5a0007595fe"
+      },
+      {
+        "id": "nature",
+        "label": "Nature",
+        "lucide_icon": "Leaf",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/nature.svg",
+        "sha256": "8d2e143b64baddc10bc0a63374c92695eecacb3b1502d004dfa84aab85e5dda8"
+      },
+      {
+        "id": "sports",
+        "label": "Sports",
+        "lucide_icon": "Trophy",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/sports.svg",
+        "sha256": "0c82dce5b39c634f46e24e5bc97f384556089c845a6e4f12710dd3c54de28125"
+      },
+      {
+        "id": "gaming",
+        "label": "Gaming",
+        "lucide_icon": "Gamepad2",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/gaming.svg",
+        "sha256": "db07621071514ec1b8eb0e08bbd7f5fa8fa937ed5e463f456f82610910f4d1c2"
+      },
+      {
+        "id": "spiritual",
+        "label": "Spiritual",
+        "lucide_icon": "Sparkle",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/spiritual.svg",
+        "sha256": "91d500e1f23ca9f1d6949a367703eff47b3c6305a8d3cb2b6e86b4e484385224"
+      },
+      {
+        "id": "self-care",
+        "label": "Self care",
+        "lucide_icon": "HandHeart",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/self-care.svg",
+        "sha256": "9b17cedab7d1072561f73d87b874abd4e55b763e2eaa6c1cdf27a6475c5b1636"
+      },
+      {
+        "id": "appointment",
+        "label": "Appointment",
+        "lucide_icon": "Stethoscope",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/appointment.svg",
+        "sha256": "a69081a1e6a1e8d742df492538fdd72e95ed993d1b32ae6ddbbbb96893da3f21"
+      },
+      {
+        "id": "errands",
+        "label": "Errands",
+        "lucide_icon": "MapPinned",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/errands.svg",
+        "sha256": "a069c54ded5f2e44824886a4ae9c2ddc18b0113cb29b36e6ee9cb5e5367d6b65"
+      },
+      {
+        "id": "other",
+        "label": "Other",
+        "lucide_icon": "Shapes",
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/other.svg",
+        "sha256": "d1bbda4971fbf8d3491c2f3e9fad2d2e14296b1416fa5a66ff9b7025aa7fec20"
+      }
+    ]
+  },
+  "contact_sheet": {
+    "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/stage04-foundations-contact-sheet.png",
+    "width": 1246,
+    "height": 916,
+    "sha256": "cfa601d3151596e04bbff8dd97da83a9fb2df614f52a4f28f86642765a7b5f5c"
+  }
+}

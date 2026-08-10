@@ -1,0 +1,1531 @@
+{
+  "catalog_version": "ps01-ds-1.0.0",
+  "generated_at": "2026-08-10",
+  "layer_policy": {
+    "live": "Dynamic text, controls, planner data and critical/system copy remain semantic and editable.",
+    "vector": "Versioned SVG geometry for categories and authored visual language.",
+    "raster": "Only selected brand art and inspected graphic masters.",
+    "hybrid": "Live semantic control over authored token/vector/raster material.",
+    "build_time": "Launcher, splash, ICO and widget exports remain reproducible."
+  },
+  "exact_asset_count": 53,
+  "assets": [
+    {
+      "asset_id": "brand-perfect-launcher",
+      "classification": "build-time/raster",
+      "source_master": "assets/brand/perfect-launcher.png",
+      "ownership_license": "Project-owned private Perfect! brand asset",
+      "export_tool": "project source asset",
+      "dimensions_viewbox": "source-owned; inspected by Stage 04 specimen",
+      "transparent_bounds": "preserved; no synthetic black/white backing field",
+      "safe_zone": "consumer-specific semantic safe zone",
+      "optical_center": "visually inspected; geometry center is baseline",
+      "anchor_crop": "contain; never edge-crop meaningful geometry",
+      "theme_density_platform_variants": [
+        "light",
+        "dark",
+        "Android",
+        "Windows"
+      ],
+      "compression_memory_budget": "decode once; retain only consumer-size raster in memory",
+      "semantic_equivalent": "brand-perfect-launcher",
+      "consumers": [
+        "launcher",
+        "splash",
+        "header mark",
+        "widget"
+      ],
+      "sha256": "43a5344bc25ce9c3a3562153c4667a6f49d9652209345ff6bcba25d4607c5728"
+    },
+    {
+      "asset_id": "brand-perfect-wordmark-light",
+      "classification": "raster",
+      "source_master": "assets/brand/perfect-wordmark.png",
+      "ownership_license": "Project-owned private Perfect! selected typography",
+      "export_tool": "project source asset",
+      "dimensions_viewbox": "source-owned; inspected by Stage 04 specimen",
+      "transparent_bounds": "preserved; no synthetic black/white backing field",
+      "safe_zone": "consumer-specific semantic safe zone",
+      "optical_center": "visually inspected; geometry center is baseline",
+      "anchor_crop": "contain; never edge-crop meaningful geometry",
+      "theme_density_platform_variants": [
+        "light",
+        "dark",
+        "Android",
+        "Windows"
+      ],
+      "compression_memory_budget": "decode once; retain only consumer-size raster in memory",
+      "semantic_equivalent": "brand-perfect-wordmark-light",
+      "consumers": [
+        "light header",
+        "identity previews"
+      ],
+      "sha256": "89a010f6d60f414c144045f2aeddd81a023b4e9cd9bf67c7262a77813a06e87b"
+    },
+    {
+      "asset_id": "brand-perfect-wordmark-dark",
+      "classification": "raster",
+      "source_master": "assets/brand/perfect-wordmark-dark.png",
+      "ownership_license": "Project-owned private Perfect! selected typography",
+      "export_tool": "project source asset",
+      "dimensions_viewbox": "source-owned; inspected by Stage 04 specimen",
+      "transparent_bounds": "preserved; no synthetic black/white backing field",
+      "safe_zone": "consumer-specific semantic safe zone",
+      "optical_center": "visually inspected; geometry center is baseline",
+      "anchor_crop": "contain; never edge-crop meaningful geometry",
+      "theme_density_platform_variants": [
+        "light",
+        "dark",
+        "Android",
+        "Windows"
+      ],
+      "compression_memory_budget": "decode once; retain only consumer-size raster in memory",
+      "semantic_equivalent": "brand-perfect-wordmark-dark",
+      "consumers": [
+        "dark header",
+        "identity previews"
+      ],
+      "sha256": "3a5eefc491e2e1bb9ef51ecd279d3c8d1016f00a11abe3bf3ed0b72af3e3a0cf"
+    },
+    {
+      "asset_id": "type-plus-jakarta-variable",
+      "classification": "live font",
+      "source_master": "assets/fonts/PlusJakartaSans-Variable.ttf",
+      "ownership_license": "SIL Open Font License; see assets/fonts/OFL-PlusJakartaSans.txt",
+      "export_tool": "project source asset",
+      "dimensions_viewbox": "source-owned; inspected by Stage 04 specimen",
+      "transparent_bounds": "preserved; no synthetic black/white backing field",
+      "safe_zone": "consumer-specific semantic safe zone",
+      "optical_center": "visually inspected; geometry center is baseline",
+      "anchor_crop": "contain; never edge-crop meaningful geometry",
+      "theme_density_platform_variants": [
+        "light",
+        "dark",
+        "Android",
+        "Windows"
+      ],
+      "compression_memory_budget": "decode once; retain only consumer-size raster in memory",
+      "semantic_equivalent": "Perfect Jakarta live typography roles",
+      "consumers": [
+        "all Latin live copy"
+      ],
+      "sha256": "89b3fb38aa0d275d7a731d0d817a4f1622b316b4d7fbdedcf02ee9099ff68bc8"
+    },
+    {
+      "asset_id": "type-vazirmatn-variable",
+      "classification": "live font",
+      "source_master": "assets/fonts/Vazirmatn-Variable.ttf",
+      "ownership_license": "SIL Open Font License; see assets/fonts/OFL-Vazirmatn.txt",
+      "export_tool": "project source asset",
+      "dimensions_viewbox": "source-owned; inspected by Stage 04 specimen",
+      "transparent_bounds": "preserved; no synthetic black/white backing field",
+      "safe_zone": "consumer-specific semantic safe zone",
+      "optical_center": "visually inspected; geometry center is baseline",
+      "anchor_crop": "contain; never edge-crop meaningful geometry",
+      "theme_density_platform_variants": [
+        "light",
+        "dark",
+        "Android",
+        "Windows"
+      ],
+      "compression_memory_budget": "decode once; retain only consumer-size raster in memory",
+      "semantic_equivalent": "Perfect Vazirmatn live typography roles",
+      "consumers": [
+        "all Persian and mixed-script live copy"
+      ],
+      "sha256": "696249a2c74b39ffdef55de4df2809c5b639d3ff80d618d8160a095d2fd49dca"
+    },
+    {
+      "asset_id": "category-home",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/home.svg",
+      "ownership_license": "Lucide Home source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Home",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "e34328a3eaf544ebf2fae5bb40cee92bea15b713df0bd453da5850014693e666"
+    },
+    {
+      "asset_id": "category-work",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/work.svg",
+      "ownership_license": "Lucide BriefcaseBusiness source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Work",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "ede30efc310ca84093f106690fc33564eabeba31cd7a6365a7554b976a846580"
+    },
+    {
+      "asset_id": "category-study",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/study.svg",
+      "ownership_license": "Lucide GraduationCap source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Study",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "bd4e3bee6768191df5232437814b770d69f8dcdbe74c9e246cf14af2d8f40670"
+    },
+    {
+      "asset_id": "category-health",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/health.svg",
+      "ownership_license": "Lucide HeartPulse source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Health",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "4cb210349b5d5c858f7651212c3a21ac613dab5fbb2f023f8a79f147f0376761"
+    },
+    {
+      "asset_id": "category-fitness",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/fitness.svg",
+      "ownership_license": "Lucide Dumbbell source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Fitness",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "057547fbefdf172e2c00a26415aa1caaf06f6ebf1aeb848226a41526bb99c537"
+    },
+    {
+      "asset_id": "category-medication",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/medication.svg",
+      "ownership_license": "Lucide Pill source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Medication",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "b5c0501b48c89bed13954b2ce90a904550459d1269113b56f9d0b472164666e4"
+    },
+    {
+      "asset_id": "category-mindfulness",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/mindfulness.svg",
+      "ownership_license": "Lucide Brain source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Mindfulness",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "ef70f86f6c21fe293b0721026175b98154c83a5b1cdd226118189a968fd7a818"
+    },
+    {
+      "asset_id": "category-sleep",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/sleep.svg",
+      "ownership_license": "Lucide MoonStar source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Sleep",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "974e01e5159d56186f23592bd635fa21d2d2682a5a2b2308ca904d0f650463e2"
+    },
+    {
+      "asset_id": "category-water",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/water.svg",
+      "ownership_license": "Lucide Droplets source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Water",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "bc53729060e8df00183c5f34e886e1ffa452e69e9122b43f64b1ab6be8050392"
+    },
+    {
+      "asset_id": "category-nutrition",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/nutrition.svg",
+      "ownership_license": "Lucide Salad source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Nutrition",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "d4fcd196e6786d354d786a7ccbaf553deabb7a00b819eda7dbb7726f72905feb"
+    },
+    {
+      "asset_id": "category-finance",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/finance.svg",
+      "ownership_license": "Lucide WalletCards source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Finance",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "3d8a84b792a7888ed1c0c3b285ecba62a9eed25b5ec70bfb0d8126820ff871cb"
+    },
+    {
+      "asset_id": "category-shopping",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/shopping.svg",
+      "ownership_license": "Lucide ShoppingBag source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Shopping",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "3707391eb9f6c525d79ffd40ac3c7d0a37cfbe0384666dfe36c4e3eaac2f147e"
+    },
+    {
+      "asset_id": "category-chores",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/chores.svg",
+      "ownership_license": "Lucide ListChecks source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Chores",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "694f8733cfa41b2ce107483f9f8f3c6d841f0cc9858710da6eeeb209bcc1332d"
+    },
+    {
+      "asset_id": "category-cleaning",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/cleaning.svg",
+      "ownership_license": "Lucide Sparkles source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Cleaning",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "dac7e6924451b4ca55fe9bd866660a2ff925479e375838c8525e20e550f89eee"
+    },
+    {
+      "asset_id": "category-family",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/family.svg",
+      "ownership_license": "Lucide Users source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Family",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "527dfeadca49b8167c8ba949122a9386170490cae2412163166829327a6a6425"
+    },
+    {
+      "asset_id": "category-friends",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/friends.svg",
+      "ownership_license": "Lucide UserRound source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Friends",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "a65802eae9f5eef754fc38758ff6553911939dc25a281a66dd63746b00593216"
+    },
+    {
+      "asset_id": "category-relationship",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/relationship.svg",
+      "ownership_license": "Lucide HeartHandshake source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Relationship",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "2d8e9e99612a8955e63024e6dcef339bccd5e0bd11cfd30b87c38da34ac905de"
+    },
+    {
+      "asset_id": "category-pets",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/pets.svg",
+      "ownership_license": "Lucide PawPrint source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Pets",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "13b560aee8cddf6fb986863e7d157e98b4147f5500ecd335ad5890c2d9f34c66"
+    },
+    {
+      "asset_id": "category-travel",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/travel.svg",
+      "ownership_license": "Lucide Plane source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Travel",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "ec5bf9c81e521b20fcb3879840e22c443fc4dbccafafbbd4c0a4871dad8745fe"
+    },
+    {
+      "asset_id": "category-car",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/car.svg",
+      "ownership_license": "Lucide Car source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Car",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "86eb2cab98cf70dfe23997b39e4aeb9920f1416b2dfc9522ea0dfd26790abf45"
+    },
+    {
+      "asset_id": "category-learning",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/learning.svg",
+      "ownership_license": "Lucide LibraryBig source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Learning",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "1fd130a5e163b154542c57ec7cfd7b7012418acea2c400ccf5c4468d100a489a"
+    },
+    {
+      "asset_id": "category-reading",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/reading.svg",
+      "ownership_license": "Lucide BookOpen source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Reading",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "9dd2a51a162a19695ba87fb34d18dff3de2d503746bbae86ec56e238210cb758"
+    },
+    {
+      "asset_id": "category-writing",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/writing.svg",
+      "ownership_license": "Lucide PenLine source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Writing",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "bbb149dcab70a7d6c3e9381e88af6dc273c2de3d3ca5a86e6169360b3cd3b771"
+    },
+    {
+      "asset_id": "category-coding",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/coding.svg",
+      "ownership_license": "Lucide Code2 source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Coding",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "881767984077f46477e7772cb59eca7a6a271c3425d3f8e8c953d880e60e480a"
+    },
+    {
+      "asset_id": "category-design",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/design.svg",
+      "ownership_license": "Lucide Palette source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Design",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "c5530d343fdc79a51c6f62751b509fb3fda61f417fd3a53205acb8ab265290c4"
+    },
+    {
+      "asset_id": "category-music",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/music.svg",
+      "ownership_license": "Lucide Music2 source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Music",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "b0fa37c33e7acfb07bea1b25028abd67953c9b7207b4a961be448360631d8dd0"
+    },
+    {
+      "asset_id": "category-art",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/art.svg",
+      "ownership_license": "Lucide Brush source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Art",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "f6992a1e3030b776c161b5c445309cfd1e7113f4b0bdc61fba6d48ee38bba9d8"
+    },
+    {
+      "asset_id": "category-photography",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/photography.svg",
+      "ownership_license": "Lucide Camera source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Photography",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "a2250f6c6ccc5a05f774a1140747a2f45f73a56c7bdff3e39062ed2b79c33fea"
+    },
+    {
+      "asset_id": "category-creativity",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/creativity.svg",
+      "ownership_license": "Lucide Lightbulb source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Creativity",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "eca53656db1ebabec82edabef1525df11757c9c522593953034abeb2200e579d"
+    },
+    {
+      "asset_id": "category-career",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/career.svg",
+      "ownership_license": "Lucide TrendingUp source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Career",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "2a28bba6ee992b1169b3ce72b4d62e20fc9e0e051d7895e73295dbefea155156"
+    },
+    {
+      "asset_id": "category-meetings",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/meetings.svg",
+      "ownership_license": "Lucide UsersRound source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Meetings",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "de117d83126060d8bbb667047ec62baf1648c57e805d3396af7240f465426657"
+    },
+    {
+      "asset_id": "category-calls",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/calls.svg",
+      "ownership_license": "Lucide Phone source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Calls",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "14f842d1210901c4a26c2d46ce4f0c35bf6e2667d9745326cb28e36c7b4f2bd1"
+    },
+    {
+      "asset_id": "category-email",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/email.svg",
+      "ownership_license": "Lucide Mail source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Email",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "7aede1252ce322a55307f185ee2c738ed5520ed2583374a4256020ea52d011a4"
+    },
+    {
+      "asset_id": "category-planning",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/planning.svg",
+      "ownership_license": "Lucide CalendarDays source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Planning",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "7350a854e0ace52b415304b8f18b012a32e60e407b62fe9bcc322ebe95d42310"
+    },
+    {
+      "asset_id": "category-goals",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/goals.svg",
+      "ownership_license": "Lucide Goal source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Goals",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "36072a375ac0a43967c08cf4f8c9ed69d33056b41ef0e35a428faa61f27ec9e1"
+    },
+    {
+      "asset_id": "category-focus",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/focus.svg",
+      "ownership_license": "Lucide Focus source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Focus",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "630335fc1260a9110eb8b172c41e16cd6ccbcd128ea7895a6978e2f923f3a612"
+    },
+    {
+      "asset_id": "category-routine",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/routine.svg",
+      "ownership_license": "Lucide Repeat2 source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Routine",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "dc4c8b2513efb4d99cccb668e0f7541e000f1d0db357b8bf4d509853d1fb34b3"
+    },
+    {
+      "asset_id": "category-morning",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/morning.svg",
+      "ownership_license": "Lucide Sunrise source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Morning",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "efbc600f6c3941dfc165e315ce3eeeb376ef66a167514032ef7a1955d60f8433"
+    },
+    {
+      "asset_id": "category-evening",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/evening.svg",
+      "ownership_license": "Lucide Sunset source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Evening",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "5aeba214ee5039d0a557654a0b084e8e5fffd1b19e219395b6c8faa8efa4c2dc"
+    },
+    {
+      "asset_id": "category-outdoors",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/outdoors.svg",
+      "ownership_license": "Lucide Trees source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Outdoors",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "2e457b6aac7ea0881a425cbb7947349754b07cee339898195f69c5a0007595fe"
+    },
+    {
+      "asset_id": "category-nature",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/nature.svg",
+      "ownership_license": "Lucide Leaf source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Nature",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "8d2e143b64baddc10bc0a63374c92695eecacb3b1502d004dfa84aab85e5dda8"
+    },
+    {
+      "asset_id": "category-sports",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/sports.svg",
+      "ownership_license": "Lucide Trophy source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Sports",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "0c82dce5b39c634f46e24e5bc97f384556089c845a6e4f12710dd3c54de28125"
+    },
+    {
+      "asset_id": "category-gaming",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/gaming.svg",
+      "ownership_license": "Lucide Gamepad2 source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Gaming",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "db07621071514ec1b8eb0e08bbd7f5fa8fa937ed5e463f456f82610910f4d1c2"
+    },
+    {
+      "asset_id": "category-spiritual",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/spiritual.svg",
+      "ownership_license": "Lucide Sparkle source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Spiritual",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "91d500e1f23ca9f1d6949a367703eff47b3c6305a8d3cb2b6e86b4e484385224"
+    },
+    {
+      "asset_id": "category-self-care",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/self-care.svg",
+      "ownership_license": "Lucide HandHeart source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Self care",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "9b17cedab7d1072561f73d87b874abd4e55b763e2eaa6c1cdf27a6475c5b1636"
+    },
+    {
+      "asset_id": "category-appointment",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/appointment.svg",
+      "ownership_license": "Lucide Stethoscope source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Appointment",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "a69081a1e6a1e8d742df492538fdd72e95ed993d1b32ae6ddbbbb96893da3f21"
+    },
+    {
+      "asset_id": "category-errands",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/errands.svg",
+      "ownership_license": "Lucide MapPinned source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Errands",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "a069c54ded5f2e44824886a4ae9c2ddc18b0113cb29b36e6ee9cb5e5367d6b65"
+    },
+    {
+      "asset_id": "category-other",
+      "classification": "vector",
+      "source_master": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/category-icons/other.svg",
+      "ownership_license": "Lucide Shapes source geometry under ISC; Perfect optical two-stroke export",
+      "export_tool": "tool/generate_stage04_design_system.cjs",
+      "dimensions_viewbox": "512x512 / viewBox 0 0 512 512",
+      "transparent_bounds": "transparent canvas; no white or black backing",
+      "safe_zone": "56 logical px minimum; decorative status dot remains inside bounds",
+      "optical_center": "geometry-centered with category-specific Lucide balance retained",
+      "anchor_crop": "contain; no crop",
+      "theme_density_platform_variants": [
+        "semantic foreground role",
+        "16",
+        "20",
+        "24",
+        "32",
+        "48"
+      ],
+      "compression_memory_budget": "SVG parse/cache once; rasterize only at consumer size",
+      "semantic_equivalent": "Other",
+      "consumers": [
+        "category selector",
+        "task/habit row",
+        "detail",
+        "widget where supported"
+      ],
+      "sha256": "d1bbda4971fbf8d3491c2f3e9fad2d2e14296b1416fa5a66ff9b7025aa7fec20"
+    }
+  ]
+}

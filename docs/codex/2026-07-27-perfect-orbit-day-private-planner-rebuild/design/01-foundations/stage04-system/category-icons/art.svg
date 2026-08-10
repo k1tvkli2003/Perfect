@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+    <title id="title">Art</title>
+    <desc id="desc">Perfect category pictogram: art</desc>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#DED7FF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity=".96"><path d="m11 10 3 3"></path><path d="M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21z"></path><path d="M9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031"></path></g>
+    <g transform="translate(56 56) scale(16.6666667)" fill="none" stroke="#6954B8" stroke-width="1.72" stroke-linecap="round" stroke-linejoin="round"><path d="m11 10 3 3"></path><path d="M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21z"></path><path d="M9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031"></path></g>
+    <circle cx="432" cy="92" r="17" fill="#DED7FF"/><circle cx="432" cy="92" r="7" fill="#6954B8"/>
+  </svg>
