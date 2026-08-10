@@ -1,0 +1,774 @@
+{
+  "page_id": "pg-detail-habit-analytics",
+  "preview_version": "ps01-pages-1.0.0",
+  "component_catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "subgroup": "View-first details",
+  "family": "detail",
+  "family_label": "View-first detail",
+  "title": "Habit patterns",
+  "accent": "lilac",
+  "primary_question": "What is true about this item, how has it changed, and what is the safest next action? Surface: Habit patterns.",
+  "primary_action": "Continue",
+  "scan_order": [
+    "identity and page question",
+    "current system state",
+    "primary live content",
+    "reversible primary action",
+    "secondary evidence or navigation"
+  ],
+  "semantic_order": [
+    "page title",
+    "state summary",
+    "primary content collection",
+    "primary action",
+    "secondary actions",
+    "navigation"
+  ],
+  "component_ids": [
+    "sh-page-canvas",
+    "sh-title-cluster",
+    "sh-page-scroll-frame",
+    "sh-system-overlay-anchor",
+    "sh-glass-header",
+    "sh-sync-cloud",
+    "wiz-progress",
+    "wiz-footer",
+    "det-hero",
+    "det-fact-group",
+    "det-relations",
+    "det-history-timeline",
+    "det-lifecycle-actions",
+    "det-chart",
+    "det-insight",
+    "habit-metric-strip",
+    "det-month-calendar"
+  ],
+  "live_copy_ids": [
+    "copy.pg-detail-habit-analytics.title",
+    "copy.pg-detail-habit-analytics.subtitle",
+    "copy.pg-detail-habit-analytics.primary_action",
+    "copy.pg-detail-habit-analytics.secondary_action",
+    "copy.pg-detail-habit-analytics.date",
+    "copy.pg-detail-habit-analytics.sync",
+    "copy.pg-detail-habit-analytics.fixture_notice",
+    "copy.pg-detail-habit-analytics.persian_sample"
+  ],
+  "live_copy": {
+    "title": "Habit patterns",
+    "subtitle": "Truth, history and safe actions live together. Editing is explicit, never accidental.",
+    "primary_action": "Continue",
+    "secondary_action": "More options",
+    "date": "Monday, Aug 10 · ۱۹ مرداد ۱۴۰۵",
+    "sync": "Synced",
+    "fixture_notice": "Preview fixture only — never production data",
+    "persian_sample": "برنامه امروزت آماده است؛ قدم بعدی روشن و قابل انجام می‌ماند."
+  },
+  "asset_layers": [
+    "live: dynamic copy, owner data, controls, status and semantics",
+    "vector: Stage 04 icons/category pictograms and authored state geometry",
+    "raster: exact Perfect mark/wordmark only where the identity manifest permits",
+    "hybrid: live controls over authored pastel material"
+  ],
+  "z_order": [
+    "canvas",
+    "persistent navigation",
+    "scrolling live content",
+    "sticky context",
+    "capture or contextual floating control",
+    "temporary overlay",
+    "system receipt"
+  ],
+  "responsive_equations": [
+    "phone: clamp(16px, 4.1vw, 24px) gutters; one scan spine; footer/capture clear final action",
+    "tablet: 72px collapsed rail + bounded primary pane; add secondary pane only when its minimum readable width survives",
+    "windows: remembered 72/232px rail; minmax(0, primary) + optional 320–440px inspector; 760px readable line cap",
+    "short height or IME: preserve focused control and primary action; scroll body, never the action into an unreachable layer"
+  ],
+  "pane_rules": [
+    "compact owns one route and one scroll owner",
+    "medium may pair context and work without duplicating actions",
+    "wide may open an inspector that collapses back to a full route with selection preserved"
+  ],
+  "scroll_owner": "pg-detail-habit-analytics-primary-scroll-frame",
+  "sticky_floating_layers": [
+    "glass header",
+    "contextual action only when it does not occlude content"
+  ],
+  "occlusion_clearance": "final required action and final row retain >=24px breathing room plus safe-area/footer/composer inset; no invisible spacer bar",
+  "states": [
+    "local-ready",
+    "loading",
+    "optimistic",
+    "synced",
+    "draft",
+    "validation",
+    "saving",
+    "success-Undo"
+  ],
+  "scenario_ids": [
+    "scn-detail-habit-analytics-phone-compact",
+    "scn-detail-habit-analytics-phone-landscape",
+    "scn-detail-habit-analytics-tablet-portrait",
+    "scn-detail-habit-analytics-tablet-landscape",
+    "scn-detail-habit-analytics-windows-compact",
+    "scn-detail-habit-analytics-windows-wide",
+    "scn-detail-habit-analytics-dark",
+    "scn-detail-habit-analytics-stress",
+    "scn-detail-habit-analytics-system-state",
+    "scn-detail-habit-analytics-motion-board"
+  ],
+  "fixture_id": "fx-owner-dense",
+  "fixture_boundary": "All page names, dates, tasks, habits, counts and history are isolated preview fixtures and cannot be imported or seeded into production.",
+  "motion_ids": [
+    "motion-route-enter",
+    "motion-title-rise",
+    "motion-continuous-resize",
+    "motion-detail-continuity"
+  ],
+  "entry_routes": [
+    "authenticated-shell",
+    "/detail-habit-analytics"
+  ],
+  "exit_routes": [
+    "back-with-state",
+    "/previous-workspace"
+  ],
+  "state_continuity": [
+    "draft",
+    "focus",
+    "selection",
+    "scroll",
+    "route intent",
+    "optimistic receipt"
+  ],
+  "candidates": [
+    {
+      "id": "candidate-focus-spine",
+      "file": "candidate-focus-spine.png",
+      "title": "Focus Spine",
+      "structure": "One continuous vertical answer path with the primary action inside reach, not in a detached dashboard card.",
+      "path": "candidates/candidate-focus-spine.png"
+    },
+    {
+      "id": "candidate-split-workbench",
+      "file": "candidate-split-workbench.png",
+      "title": "Split Workbench",
+      "structure": "Master context and live work remain adjacent; wide layouts gain an inspector while compact layouts preserve route continuity.",
+      "path": "candidates/candidate-split-workbench.png"
+    },
+    {
+      "id": "candidate-command-ledger",
+      "file": "candidate-command-ledger.png",
+      "title": "Command Ledger",
+      "structure": "Query, filters and reversible actions lead a dense evidence-first ledger with restrained decoration.",
+      "path": "candidates/candidate-command-ledger.png"
+    }
+  ],
+  "selected_candidate": "candidate-split-workbench",
+  "canonical_previews": {
+    "phone-compact.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/canonical/phone-compact.png",
+    "phone-landscape.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/canonical/phone-landscape.png",
+    "tablet-portrait.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/canonical/tablet-portrait.png",
+    "tablet-landscape.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/canonical/tablet-landscape.png",
+    "windows-compact.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/canonical/windows-compact.png",
+    "windows-wide.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/canonical/windows-wide.png",
+    "dark.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/canonical/dark.png",
+    "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/canonical/stress.png",
+    "system-state.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/canonical/system-state.png",
+    "motion-board.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/canonical/motion-board.png"
+  },
+  "canonical_preview_metadata": [
+    {
+      "file": "phone-compact.png",
+      "viewport": "390x844",
+      "width": 390,
+      "height": 844,
+      "layout": "phone-compact",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "phone-landscape.png",
+      "viewport": "844x390",
+      "width": 844,
+      "height": 390,
+      "layout": "phone-landscape-short",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "tablet-portrait.png",
+      "viewport": "800x1280",
+      "width": 800,
+      "height": 1280,
+      "layout": "tablet-portrait",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "fa-IR",
+      "direction": "rtl"
+    },
+    {
+      "file": "tablet-landscape.png",
+      "viewport": "1280x800",
+      "width": 1280,
+      "height": 800,
+      "layout": "tablet-landscape",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "windows-compact.png",
+      "viewport": "720x540",
+      "width": 720,
+      "height": 540,
+      "layout": "windows-compact",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "windows-wide.png",
+      "viewport": "1366x768",
+      "width": 1366,
+      "height": 768,
+      "layout": "windows-wide",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "dark.png",
+      "viewport": "390x844",
+      "width": 390,
+      "height": 844,
+      "layout": "phone-compact",
+      "theme": "dark",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "stress.png",
+      "viewport": "720x540",
+      "width": 720,
+      "height": 540,
+      "layout": "windows-compact-short",
+      "theme": "high-contrast",
+      "density": "dense-long-copy",
+      "textScale": 2,
+      "locale": "fa-IR+en-GB",
+      "direction": "mixed"
+    },
+    {
+      "file": "system-state.png",
+      "viewport": "1200x800",
+      "width": 1200,
+      "height": 800,
+      "layout": "state-comparison-board",
+      "theme": "light-dark-high-contrast",
+      "density": "state-matrix",
+      "textScale": 1,
+      "locale": "en-GB+fa-IR",
+      "direction": "mixed"
+    },
+    {
+      "file": "motion-board.png",
+      "viewport": "1200x800",
+      "width": 1200,
+      "height": 800,
+      "layout": "motion-storyboard",
+      "theme": "light",
+      "density": "five-frames",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    }
+  ],
+  "preview_sha256": {
+    "phone-compact.png": "2842d32fb1543565b7dfb25061635bf75ce1d0f1ed51b7378c7dcdbd249f2ea2",
+    "phone-landscape.png": "77499ec5bf495b8c4b0c66478a2f733f21c8ac63e6aae88666625e825e0be2ca",
+    "tablet-portrait.png": "47d413a4252f78e97c08e2a647cfaf5f21e82350fdd37170fe8d2835aabf540b",
+    "tablet-landscape.png": "7417ec62f11eba989dcf2a899f2117b408c536eec564e6a7b2123e9c6c965f11",
+    "windows-compact.png": "484deceffe0bce6ea322e173da528e5a5e821e58d804715d14fb5a6b0f11d4a8",
+    "windows-wide.png": "01cf3861f1f91268be611079fe28e6734395a5b4061cff643bd4221655187fab",
+    "dark.png": "6401952d47000c8367d4deb23c302e1b44b8ce8aec6562c081ad0cc12b7f5858",
+    "stress.png": "f925a4f93b24aa25608eec43617fd646c43bb712f3c18faf30986d75a0cd24e5",
+    "system-state.png": "f2762665a7f9ca881b98db96849eea23c915fbd22c795b7263b0f32cb2e192b2",
+    "motion-board.png": "57acca8ec52cac7f086bed2c955c07b50bf1a48d25358b58e1ea8a809f1c93cd"
+  },
+  "decision_record": "decision.md",
+  "decomposition": {
+    "live_layers": [
+      "all dynamic/critical copy",
+      "controls",
+      "planner values",
+      "validation",
+      "system state",
+      "semantic tree"
+    ],
+    "authored_layers": [
+      "brand identity",
+      "token material",
+      "icon/category vectors",
+      "noninteractive graphic scaffolding"
+    ],
+    "forbidden_flattening": [
+      "owner data",
+      "editable copy",
+      "interactive controls",
+      "errors",
+      "permissions",
+      "AI proposal consequences"
+    ],
+    "copy_protocol": "Implement from component IDs and this manifest, then compare normalized reference/runtime/overlay/diff—not visual memory."
+  },
+  "acceptance": {
+    "modernize": "The candidate-split-workbench topology reduces navigation or interpretation cost and avoids a generic card dashboard.",
+    "integrity": "Brand, system state, component ownership, local-first truth and all consumers remain in one canonical language.",
+    "anatomy": "Primary question and action own the scan path; scroll, sticky layers, reach zones and platform transformation are explicit.",
+    "style": "Perfect pastel material, exact identity, live typography, optical alignment and restrained glass are applied by role.",
+    "critics": "Sparse/dense, dark/high contrast, 200% mixed copy, short height, IME, offline/error and continuous resize are adversarial inputs, not afterthoughts."
+  },
+  "strongest_rejected_candidate": "candidate-command-ledger",
+  "rejection_reason": "The command ledger was efficient at wide width but fractured the primary question on compact and touch layouts.",
+  "residual_risks": [
+    "Runtime visual fidelity, semantics and interaction proof remain owned by the numbered implementation stage for pg-detail-habit-analytics."
+  ],
+  "production_boundary": "Design-only. No Flutter/native/domain/database/auth/sync source may be generated or mutated by Stage 05.",
+  "candidate_sha256": {
+    "candidate-focus-spine.png": "56b3eed825a8c71d453a18d56a407fe9db94b955d1e2e12705c0e7b008350fe4",
+    "candidate-split-workbench.png": "4d8dad3fd154ce3adfef0e11728baedb8411e0ce89b3e485fe5b18c4b230951f",
+    "candidate-command-ledger.png": "120a67508313419a139335e368dcd4d0df13d15ea23911558618761f35353bde"
+  },
+  "candidate_previews": {
+    "candidate-focus-spine.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/candidates/candidate-focus-spine.png",
+    "candidate-split-workbench.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/candidates/candidate-split-workbench.png",
+    "candidate-command-ledger.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-detail-habit-analytics/candidates/candidate-command-ledger.png"
+  },
+  "canonical_audits": {
+    "phone-compact.png": {
+      "page_id": "pg-detail-habit-analytics",
+      "layout": "phone-compact",
+      "viewport": "390x844",
+      "document": {
+        "width": 390,
+        "height": 844
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "canvas_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "header_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 140.88,
+        "width": 390,
+        "height": 140.88
+      },
+      "footer_bounds": {
+        "left": 14,
+        "top": 764,
+        "right": 376,
+        "bottom": 832,
+        "width": 362,
+        "height": 68
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "phone-landscape.png": {
+      "page_id": "pg-detail-habit-analytics",
+      "layout": "phone-landscape-short",
+      "viewport": "844x390",
+      "document": {
+        "width": 844,
+        "height": 390
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 844,
+        "bottom": 390,
+        "width": 844,
+        "height": 390
+      },
+      "canvas_bounds": {
+        "left": 58,
+        "top": 0,
+        "right": 844,
+        "bottom": 390,
+        "width": 786,
+        "height": 390
+      },
+      "header_bounds": {
+        "left": 58,
+        "top": 0,
+        "right": 844,
+        "bottom": 62,
+        "width": 786,
+        "height": 62
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "tablet-portrait.png": {
+      "page_id": "pg-detail-habit-analytics",
+      "layout": "tablet-portrait",
+      "viewport": "800x1280",
+      "document": {
+        "width": 800,
+        "height": 1280
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 800,
+        "bottom": 1280,
+        "width": 800,
+        "height": 1280
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 800,
+        "bottom": 1280,
+        "width": 728,
+        "height": 1280
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 800,
+        "bottom": 84,
+        "width": 728,
+        "height": 84
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "tablet-landscape.png": {
+      "page_id": "pg-detail-habit-analytics",
+      "layout": "tablet-landscape",
+      "viewport": "1280x800",
+      "document": {
+        "width": 1280,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1280,
+        "bottom": 800,
+        "width": 1280,
+        "height": 800
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 1280,
+        "bottom": 800,
+        "width": 1208,
+        "height": 800
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 1280,
+        "bottom": 94.09,
+        "width": 1208,
+        "height": 94.09
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "windows-compact.png": {
+      "page_id": "pg-detail-habit-analytics",
+      "layout": "windows-compact",
+      "viewport": "720x540",
+      "document": {
+        "width": 720,
+        "height": 540
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 720,
+        "height": 540
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 648,
+        "height": 540
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 720,
+        "bottom": 84,
+        "width": 648,
+        "height": 84
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "windows-wide.png": {
+      "page_id": "pg-detail-habit-analytics",
+      "layout": "windows-wide",
+      "viewport": "1366x768",
+      "document": {
+        "width": 1366,
+        "height": 768
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1366,
+        "bottom": 768,
+        "width": 1366,
+        "height": 768
+      },
+      "canvas_bounds": {
+        "left": 232,
+        "top": 0,
+        "right": 1366,
+        "bottom": 768,
+        "width": 1134,
+        "height": 768
+      },
+      "header_bounds": {
+        "left": 232,
+        "top": 0,
+        "right": 1366,
+        "bottom": 95.36,
+        "width": 1134,
+        "height": 95.36
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "dark.png": {
+      "page_id": "pg-detail-habit-analytics",
+      "layout": "phone-compact",
+      "viewport": "390x844",
+      "document": {
+        "width": 390,
+        "height": 844
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "canvas_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "header_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 140.88,
+        "width": 390,
+        "height": 140.88
+      },
+      "footer_bounds": {
+        "left": 14,
+        "top": 764,
+        "right": 376,
+        "bottom": 832,
+        "width": 362,
+        "height": 68
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "stress.png": {
+      "page_id": "pg-detail-habit-analytics",
+      "layout": "windows-compact-short",
+      "viewport": "720x540",
+      "document": {
+        "width": 720,
+        "height": 540
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 720,
+        "height": 540
+      },
+      "canvas_bounds": {
+        "left": 64,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 656,
+        "height": 540
+      },
+      "header_bounds": {
+        "left": 64,
+        "top": 0,
+        "right": 720,
+        "bottom": 104,
+        "width": 656,
+        "height": 104
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "system-state.png": {
+      "page_id": "pg-detail-habit-analytics",
+      "layout": "state-comparison-board",
+      "viewport": "1200x800",
+      "document": {
+        "width": 1200,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1200,
+        "bottom": 800,
+        "width": 1200,
+        "height": 800
+      },
+      "canvas_bounds": null,
+      "header_bounds": null,
+      "footer_bounds": null,
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "motion-board.png": {
+      "page_id": "pg-detail-habit-analytics",
+      "layout": "motion-storyboard",
+      "viewport": "1200x800",
+      "document": {
+        "width": 1200,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1200,
+        "bottom": 800,
+        "width": 1200,
+        "height": 800
+      },
+      "canvas_bounds": null,
+      "header_bounds": null,
+      "footer_bounds": null,
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    }
+  }
+}

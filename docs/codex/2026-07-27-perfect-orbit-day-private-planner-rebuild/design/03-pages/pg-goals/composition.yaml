@@ -1,0 +1,760 @@
+{
+  "page_id": "pg-goals",
+  "preview_version": "ps01-pages-1.0.0",
+  "component_catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "subgroup": "Workspaces and planning horizons",
+  "family": "workspace",
+  "family_label": "Workspace and horizons",
+  "title": "Goals",
+  "accent": "mint",
+  "primary_question": "How do I find, compare and act on the right work without filter or card noise? Surface: Goals.",
+  "primary_action": "Open the next relevant item",
+  "scan_order": [
+    "identity and page question",
+    "current system state",
+    "primary live content",
+    "reversible primary action",
+    "secondary evidence or navigation"
+  ],
+  "semantic_order": [
+    "page title",
+    "state summary",
+    "primary content collection",
+    "primary action",
+    "secondary actions",
+    "navigation"
+  ],
+  "component_ids": [
+    "sh-page-canvas",
+    "sh-title-cluster",
+    "sh-page-scroll-frame",
+    "sh-system-overlay-anchor",
+    "sh-glass-header",
+    "sh-sync-cloud",
+    "goal-outcome-card",
+    "goal-horizon-strip"
+  ],
+  "live_copy_ids": [
+    "copy.pg-goals.title",
+    "copy.pg-goals.subtitle",
+    "copy.pg-goals.primary_action",
+    "copy.pg-goals.secondary_action",
+    "copy.pg-goals.date",
+    "copy.pg-goals.sync",
+    "copy.pg-goals.fixture_notice",
+    "copy.pg-goals.persian_sample"
+  ],
+  "live_copy": {
+    "title": "Goals",
+    "subtitle": "Search, filter and act without losing the working context.",
+    "primary_action": "Open the next relevant item",
+    "secondary_action": "More options",
+    "date": "Monday, Aug 10 · ۱۹ مرداد ۱۴۰۵",
+    "sync": "Synced",
+    "fixture_notice": "Preview fixture only — never production data",
+    "persian_sample": "برنامه امروزت آماده است؛ قدم بعدی روشن و قابل انجام می‌ماند."
+  },
+  "asset_layers": [
+    "live: dynamic copy, owner data, controls, status and semantics",
+    "vector: Stage 04 icons/category pictograms and authored state geometry",
+    "raster: exact Perfect mark/wordmark only where the identity manifest permits",
+    "hybrid: live controls over authored pastel material"
+  ],
+  "z_order": [
+    "canvas",
+    "persistent navigation",
+    "scrolling live content",
+    "sticky context",
+    "capture or contextual floating control",
+    "temporary overlay",
+    "system receipt"
+  ],
+  "responsive_equations": [
+    "phone: clamp(16px, 4.1vw, 24px) gutters; one scan spine; footer/capture clear final action",
+    "tablet: 72px collapsed rail + bounded primary pane; add secondary pane only when its minimum readable width survives",
+    "windows: remembered 72/232px rail; minmax(0, primary) + optional 320–440px inspector; 760px readable line cap",
+    "short height or IME: preserve focused control and primary action; scroll body, never the action into an unreachable layer"
+  ],
+  "pane_rules": [
+    "compact owns one route and one scroll owner",
+    "medium may pair context and work without duplicating actions",
+    "wide may open an inspector that collapses back to a full route with selection preserved"
+  ],
+  "scroll_owner": "pg-goals-primary-scroll-frame",
+  "sticky_floating_layers": [
+    "glass header",
+    "contextual action only when it does not occlude content"
+  ],
+  "occlusion_clearance": "final required action and final row retain >=24px breathing room plus safe-area/footer/composer inset; no invisible spacer bar",
+  "states": [
+    "local-ready",
+    "loading",
+    "optimistic",
+    "synced"
+  ],
+  "scenario_ids": [
+    "scn-goals-phone-compact",
+    "scn-goals-phone-landscape",
+    "scn-goals-tablet-portrait",
+    "scn-goals-tablet-landscape",
+    "scn-goals-windows-compact",
+    "scn-goals-windows-wide",
+    "scn-goals-dark",
+    "scn-goals-stress",
+    "scn-goals-system-state",
+    "scn-goals-motion-board"
+  ],
+  "fixture_id": "fx-owner-normal",
+  "fixture_boundary": "All page names, dates, tasks, habits, counts and history are isolated preview fixtures and cannot be imported or seeded into production.",
+  "motion_ids": [
+    "motion-route-enter",
+    "motion-title-rise",
+    "motion-continuous-resize"
+  ],
+  "entry_routes": [
+    "authenticated-shell",
+    "/goals"
+  ],
+  "exit_routes": [
+    "back-with-state",
+    "/today"
+  ],
+  "state_continuity": [
+    "draft",
+    "focus",
+    "selection",
+    "scroll",
+    "route intent",
+    "optimistic receipt"
+  ],
+  "candidates": [
+    {
+      "id": "candidate-focus-spine",
+      "file": "candidate-focus-spine.png",
+      "title": "Focus Spine",
+      "structure": "One continuous vertical answer path with the primary action inside reach, not in a detached dashboard card.",
+      "path": "candidates/candidate-focus-spine.png"
+    },
+    {
+      "id": "candidate-split-workbench",
+      "file": "candidate-split-workbench.png",
+      "title": "Split Workbench",
+      "structure": "Master context and live work remain adjacent; wide layouts gain an inspector while compact layouts preserve route continuity.",
+      "path": "candidates/candidate-split-workbench.png"
+    },
+    {
+      "id": "candidate-command-ledger",
+      "file": "candidate-command-ledger.png",
+      "title": "Command Ledger",
+      "structure": "Query, filters and reversible actions lead a dense evidence-first ledger with restrained decoration.",
+      "path": "candidates/candidate-command-ledger.png"
+    }
+  ],
+  "selected_candidate": "candidate-split-workbench",
+  "canonical_previews": {
+    "phone-compact.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/canonical/phone-compact.png",
+    "phone-landscape.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/canonical/phone-landscape.png",
+    "tablet-portrait.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/canonical/tablet-portrait.png",
+    "tablet-landscape.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/canonical/tablet-landscape.png",
+    "windows-compact.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/canonical/windows-compact.png",
+    "windows-wide.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/canonical/windows-wide.png",
+    "dark.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/canonical/dark.png",
+    "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/canonical/stress.png",
+    "system-state.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/canonical/system-state.png",
+    "motion-board.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/canonical/motion-board.png"
+  },
+  "canonical_preview_metadata": [
+    {
+      "file": "phone-compact.png",
+      "viewport": "390x844",
+      "width": 390,
+      "height": 844,
+      "layout": "phone-compact",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "phone-landscape.png",
+      "viewport": "844x390",
+      "width": 844,
+      "height": 390,
+      "layout": "phone-landscape-short",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "tablet-portrait.png",
+      "viewport": "800x1280",
+      "width": 800,
+      "height": 1280,
+      "layout": "tablet-portrait",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "fa-IR",
+      "direction": "rtl"
+    },
+    {
+      "file": "tablet-landscape.png",
+      "viewport": "1280x800",
+      "width": 1280,
+      "height": 800,
+      "layout": "tablet-landscape",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "windows-compact.png",
+      "viewport": "720x540",
+      "width": 720,
+      "height": 540,
+      "layout": "windows-compact",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "windows-wide.png",
+      "viewport": "1366x768",
+      "width": 1366,
+      "height": 768,
+      "layout": "windows-wide",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "dark.png",
+      "viewport": "390x844",
+      "width": 390,
+      "height": 844,
+      "layout": "phone-compact",
+      "theme": "dark",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "stress.png",
+      "viewport": "720x540",
+      "width": 720,
+      "height": 540,
+      "layout": "windows-compact-short",
+      "theme": "high-contrast",
+      "density": "dense-long-copy",
+      "textScale": 2,
+      "locale": "fa-IR+en-GB",
+      "direction": "mixed"
+    },
+    {
+      "file": "system-state.png",
+      "viewport": "1200x800",
+      "width": 1200,
+      "height": 800,
+      "layout": "state-comparison-board",
+      "theme": "light-dark-high-contrast",
+      "density": "state-matrix",
+      "textScale": 1,
+      "locale": "en-GB+fa-IR",
+      "direction": "mixed"
+    },
+    {
+      "file": "motion-board.png",
+      "viewport": "1200x800",
+      "width": 1200,
+      "height": 800,
+      "layout": "motion-storyboard",
+      "theme": "light",
+      "density": "five-frames",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    }
+  ],
+  "preview_sha256": {
+    "phone-compact.png": "037e0f78236b521a56c2dc5e20d26a19d5333b05f77dc981798b7928e3c7899f",
+    "phone-landscape.png": "84877a9d535baf6ebd811afa9d03dfaee002947d32f3e283abfcc570bb299782",
+    "tablet-portrait.png": "c8342f89528791b97b53b95f974cc3470efc10e8cf13449de991afced0c60700",
+    "tablet-landscape.png": "7d33bafdf3bd7ecdbbdfe8f1d8ef8daa1a6fec25ed269e7b528012716336d272",
+    "windows-compact.png": "2c98125854032d187a43143eaab185cdbde9c4dc45980b1b7da7768a2d515f2a",
+    "windows-wide.png": "9235f677c1be6386ff6e07a0065f2bf3b92ca14ceeb70a5f9de684d121a3597b",
+    "dark.png": "8ece422e4cd5f15b0a439ef61467e54992c1bfb26a78bcf342a0c41949c9b83b",
+    "stress.png": "3ba1c78f28f1cac22fa69a9f057a174b9d79a6fb341ad08c46be4716a656b0b2",
+    "system-state.png": "4a64c6c40d7399567c64e01e75d4063bed9fa3870dd53028b4771feed7aa5629",
+    "motion-board.png": "fb8aaa05aaea90c9ab25fec2ab9b32748dda4f9fe36204553e82441afc68da02"
+  },
+  "decision_record": "decision.md",
+  "decomposition": {
+    "live_layers": [
+      "all dynamic/critical copy",
+      "controls",
+      "planner values",
+      "validation",
+      "system state",
+      "semantic tree"
+    ],
+    "authored_layers": [
+      "brand identity",
+      "token material",
+      "icon/category vectors",
+      "noninteractive graphic scaffolding"
+    ],
+    "forbidden_flattening": [
+      "owner data",
+      "editable copy",
+      "interactive controls",
+      "errors",
+      "permissions",
+      "AI proposal consequences"
+    ],
+    "copy_protocol": "Implement from component IDs and this manifest, then compare normalized reference/runtime/overlay/diff—not visual memory."
+  },
+  "acceptance": {
+    "modernize": "The candidate-split-workbench topology reduces navigation or interpretation cost and avoids a generic card dashboard.",
+    "integrity": "Brand, system state, component ownership, local-first truth and all consumers remain in one canonical language.",
+    "anatomy": "Primary question and action own the scan path; scroll, sticky layers, reach zones and platform transformation are explicit.",
+    "style": "Perfect pastel material, exact identity, live typography, optical alignment and restrained glass are applied by role.",
+    "critics": "Sparse/dense, dark/high contrast, 200% mixed copy, short height, IME, offline/error and continuous resize are adversarial inputs, not afterthoughts."
+  },
+  "strongest_rejected_candidate": "candidate-command-ledger",
+  "rejection_reason": "The command ledger was efficient at wide width but fractured the primary question on compact and touch layouts.",
+  "residual_risks": [
+    "Runtime visual fidelity, semantics and interaction proof remain owned by the numbered implementation stage for pg-goals."
+  ],
+  "production_boundary": "Design-only. No Flutter/native/domain/database/auth/sync source may be generated or mutated by Stage 05.",
+  "candidate_sha256": {
+    "candidate-focus-spine.png": "14345ffc43408471f9d73f97350ed43d0f7c64e0090063d56a8c1d761b5bdd16",
+    "candidate-split-workbench.png": "f8da1477e888a398772c3e6aabbd38743153caebf14ab08a006dc0ef1e9b1bef",
+    "candidate-command-ledger.png": "e68cb4e8ee6ea3f19962f1510cbd2561026a98324b9ed17ac384e177db91804e"
+  },
+  "candidate_previews": {
+    "candidate-focus-spine.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/candidates/candidate-focus-spine.png",
+    "candidate-split-workbench.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/candidates/candidate-split-workbench.png",
+    "candidate-command-ledger.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-goals/candidates/candidate-command-ledger.png"
+  },
+  "canonical_audits": {
+    "phone-compact.png": {
+      "page_id": "pg-goals",
+      "layout": "phone-compact",
+      "viewport": "390x844",
+      "document": {
+        "width": 390,
+        "height": 844
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "canvas_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "header_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 140.88,
+        "width": 390,
+        "height": 140.88
+      },
+      "footer_bounds": {
+        "left": 14,
+        "top": 764,
+        "right": 376,
+        "bottom": 832,
+        "width": 362,
+        "height": 68
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "phone-landscape.png": {
+      "page_id": "pg-goals",
+      "layout": "phone-landscape-short",
+      "viewport": "844x390",
+      "document": {
+        "width": 844,
+        "height": 390
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 844,
+        "bottom": 390,
+        "width": 844,
+        "height": 390
+      },
+      "canvas_bounds": {
+        "left": 58,
+        "top": 0,
+        "right": 844,
+        "bottom": 390,
+        "width": 786,
+        "height": 390
+      },
+      "header_bounds": {
+        "left": 58,
+        "top": 0,
+        "right": 844,
+        "bottom": 62,
+        "width": 786,
+        "height": 62
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "tablet-portrait.png": {
+      "page_id": "pg-goals",
+      "layout": "tablet-portrait",
+      "viewport": "800x1280",
+      "document": {
+        "width": 800,
+        "height": 1280
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 800,
+        "bottom": 1280,
+        "width": 800,
+        "height": 1280
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 800,
+        "bottom": 1280,
+        "width": 728,
+        "height": 1280
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 800,
+        "bottom": 84,
+        "width": 728,
+        "height": 84
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "tablet-landscape.png": {
+      "page_id": "pg-goals",
+      "layout": "tablet-landscape",
+      "viewport": "1280x800",
+      "document": {
+        "width": 1280,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1280,
+        "bottom": 800,
+        "width": 1280,
+        "height": 800
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 1280,
+        "bottom": 800,
+        "width": 1208,
+        "height": 800
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 1280,
+        "bottom": 94.09,
+        "width": 1208,
+        "height": 94.09
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "windows-compact.png": {
+      "page_id": "pg-goals",
+      "layout": "windows-compact",
+      "viewport": "720x540",
+      "document": {
+        "width": 720,
+        "height": 540
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 720,
+        "height": 540
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 648,
+        "height": 540
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 720,
+        "bottom": 84,
+        "width": 648,
+        "height": 84
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "windows-wide.png": {
+      "page_id": "pg-goals",
+      "layout": "windows-wide",
+      "viewport": "1366x768",
+      "document": {
+        "width": 1366,
+        "height": 768
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1366,
+        "bottom": 768,
+        "width": 1366,
+        "height": 768
+      },
+      "canvas_bounds": {
+        "left": 232,
+        "top": 0,
+        "right": 1366,
+        "bottom": 768,
+        "width": 1134,
+        "height": 768
+      },
+      "header_bounds": {
+        "left": 232,
+        "top": 0,
+        "right": 1366,
+        "bottom": 95.36,
+        "width": 1134,
+        "height": 95.36
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "dark.png": {
+      "page_id": "pg-goals",
+      "layout": "phone-compact",
+      "viewport": "390x844",
+      "document": {
+        "width": 390,
+        "height": 844
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "canvas_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "header_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 140.88,
+        "width": 390,
+        "height": 140.88
+      },
+      "footer_bounds": {
+        "left": 14,
+        "top": 764,
+        "right": 376,
+        "bottom": 832,
+        "width": 362,
+        "height": 68
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "stress.png": {
+      "page_id": "pg-goals",
+      "layout": "windows-compact-short",
+      "viewport": "720x540",
+      "document": {
+        "width": 720,
+        "height": 540
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 720,
+        "height": 540
+      },
+      "canvas_bounds": {
+        "left": 64,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 656,
+        "height": 540
+      },
+      "header_bounds": {
+        "left": 64,
+        "top": 0,
+        "right": 720,
+        "bottom": 104,
+        "width": 656,
+        "height": 104
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "system-state.png": {
+      "page_id": "pg-goals",
+      "layout": "state-comparison-board",
+      "viewport": "1200x800",
+      "document": {
+        "width": 1200,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1200,
+        "bottom": 800,
+        "width": 1200,
+        "height": 800
+      },
+      "canvas_bounds": null,
+      "header_bounds": null,
+      "footer_bounds": null,
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "motion-board.png": {
+      "page_id": "pg-goals",
+      "layout": "motion-storyboard",
+      "viewport": "1200x800",
+      "document": {
+        "width": 1200,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1200,
+        "bottom": 800,
+        "width": 1200,
+        "height": 800
+      },
+      "canvas_bounds": null,
+      "header_bounds": null,
+      "footer_bounds": null,
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    }
+  }
+}

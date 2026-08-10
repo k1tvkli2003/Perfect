@@ -1,0 +1,761 @@
+{
+  "page_id": "pg-focus-complete-reflection",
+  "preview_version": "ps01-pages-1.0.0",
+  "component_catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "subgroup": "Focus and gamification",
+  "family": "focus",
+  "family_label": "Focus and healthy reward",
+  "title": "Close the focus loop",
+  "accent": "mint",
+  "primary_question": "How do I protect attention, finish honestly and learn without manipulative gamification? Surface: Close the focus loop.",
+  "primary_action": "Continue with the clearest safe action",
+  "scan_order": [
+    "identity and page question",
+    "current system state",
+    "primary live content",
+    "reversible primary action",
+    "secondary evidence or navigation"
+  ],
+  "semantic_order": [
+    "page title",
+    "state summary",
+    "primary content collection",
+    "primary action",
+    "secondary actions",
+    "navigation"
+  ],
+  "component_ids": [
+    "sh-page-canvas",
+    "sh-title-cluster",
+    "sh-page-scroll-frame",
+    "sh-system-overlay-anchor",
+    "sh-glass-header",
+    "focus-setup",
+    "focus-timer",
+    "focus-reflection"
+  ],
+  "live_copy_ids": [
+    "copy.pg-focus-complete-reflection.title",
+    "copy.pg-focus-complete-reflection.subtitle",
+    "copy.pg-focus-complete-reflection.primary_action",
+    "copy.pg-focus-complete-reflection.secondary_action",
+    "copy.pg-focus-complete-reflection.date",
+    "copy.pg-focus-complete-reflection.sync",
+    "copy.pg-focus-complete-reflection.fixture_notice",
+    "copy.pg-focus-complete-reflection.persian_sample"
+  ],
+  "live_copy": {
+    "title": "Close the focus loop",
+    "subtitle": "Quiet progress, honest feedback and no guilt mechanics.",
+    "primary_action": "Continue with the clearest safe action",
+    "secondary_action": "More options",
+    "date": "Monday, Aug 10 · ۱۹ مرداد ۱۴۰۵",
+    "sync": "Synced",
+    "fixture_notice": "Preview fixture only — never production data",
+    "persian_sample": "برنامه امروزت آماده است؛ قدم بعدی روشن و قابل انجام می‌ماند."
+  },
+  "asset_layers": [
+    "live: dynamic copy, owner data, controls, status and semantics",
+    "vector: Stage 04 icons/category pictograms and authored state geometry",
+    "raster: exact Perfect mark/wordmark only where the identity manifest permits",
+    "hybrid: live controls over authored pastel material"
+  ],
+  "z_order": [
+    "canvas",
+    "persistent navigation",
+    "scrolling live content",
+    "sticky context",
+    "capture or contextual floating control",
+    "temporary overlay",
+    "system receipt"
+  ],
+  "responsive_equations": [
+    "phone: clamp(16px, 4.1vw, 24px) gutters; one scan spine; footer/capture clear final action",
+    "tablet: 72px collapsed rail + bounded primary pane; add secondary pane only when its minimum readable width survives",
+    "windows: remembered 72/232px rail; minmax(0, primary) + optional 320–440px inspector; 760px readable line cap",
+    "short height or IME: preserve focused control and primary action; scroll body, never the action into an unreachable layer"
+  ],
+  "pane_rules": [
+    "compact owns one route and one scroll owner",
+    "medium may pair context and work without duplicating actions",
+    "wide may open an inspector that collapses back to a full route with selection preserved"
+  ],
+  "scroll_owner": "pg-focus-complete-reflection-primary-scroll-frame",
+  "sticky_floating_layers": [
+    "glass header",
+    "contextual action only when it does not occlude content"
+  ],
+  "occlusion_clearance": "final required action and final row retain >=24px breathing room plus safe-area/footer/composer inset; no invisible spacer bar",
+  "states": [
+    "local-ready",
+    "loading",
+    "optimistic",
+    "synced"
+  ],
+  "scenario_ids": [
+    "scn-focus-complete-reflection-phone-compact",
+    "scn-focus-complete-reflection-phone-landscape",
+    "scn-focus-complete-reflection-tablet-portrait",
+    "scn-focus-complete-reflection-tablet-landscape",
+    "scn-focus-complete-reflection-windows-compact",
+    "scn-focus-complete-reflection-windows-wide",
+    "scn-focus-complete-reflection-dark",
+    "scn-focus-complete-reflection-stress",
+    "scn-focus-complete-reflection-system-state",
+    "scn-focus-complete-reflection-motion-board"
+  ],
+  "fixture_id": "fx-owner-normal",
+  "fixture_boundary": "All page names, dates, tasks, habits, counts and history are isolated preview fixtures and cannot be imported or seeded into production.",
+  "motion_ids": [
+    "motion-route-enter",
+    "motion-title-rise",
+    "motion-continuous-resize",
+    "motion-focus-timer"
+  ],
+  "entry_routes": [
+    "authenticated-shell",
+    "/focus-complete-reflection"
+  ],
+  "exit_routes": [
+    "back-with-state",
+    "/today"
+  ],
+  "state_continuity": [
+    "draft",
+    "focus",
+    "selection",
+    "scroll",
+    "route intent",
+    "optimistic receipt"
+  ],
+  "candidates": [
+    {
+      "id": "candidate-focus-spine",
+      "file": "candidate-focus-spine.png",
+      "title": "Focus Spine",
+      "structure": "One continuous vertical answer path with the primary action inside reach, not in a detached dashboard card.",
+      "path": "candidates/candidate-focus-spine.png"
+    },
+    {
+      "id": "candidate-split-workbench",
+      "file": "candidate-split-workbench.png",
+      "title": "Split Workbench",
+      "structure": "Master context and live work remain adjacent; wide layouts gain an inspector while compact layouts preserve route continuity.",
+      "path": "candidates/candidate-split-workbench.png"
+    },
+    {
+      "id": "candidate-command-ledger",
+      "file": "candidate-command-ledger.png",
+      "title": "Command Ledger",
+      "structure": "Query, filters and reversible actions lead a dense evidence-first ledger with restrained decoration.",
+      "path": "candidates/candidate-command-ledger.png"
+    }
+  ],
+  "selected_candidate": "candidate-focus-spine",
+  "canonical_previews": {
+    "phone-compact.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/canonical/phone-compact.png",
+    "phone-landscape.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/canonical/phone-landscape.png",
+    "tablet-portrait.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/canonical/tablet-portrait.png",
+    "tablet-landscape.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/canonical/tablet-landscape.png",
+    "windows-compact.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/canonical/windows-compact.png",
+    "windows-wide.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/canonical/windows-wide.png",
+    "dark.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/canonical/dark.png",
+    "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/canonical/stress.png",
+    "system-state.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/canonical/system-state.png",
+    "motion-board.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/canonical/motion-board.png"
+  },
+  "canonical_preview_metadata": [
+    {
+      "file": "phone-compact.png",
+      "viewport": "390x844",
+      "width": 390,
+      "height": 844,
+      "layout": "phone-compact",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "phone-landscape.png",
+      "viewport": "844x390",
+      "width": 844,
+      "height": 390,
+      "layout": "phone-landscape-short",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "tablet-portrait.png",
+      "viewport": "800x1280",
+      "width": 800,
+      "height": 1280,
+      "layout": "tablet-portrait",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "fa-IR",
+      "direction": "rtl"
+    },
+    {
+      "file": "tablet-landscape.png",
+      "viewport": "1280x800",
+      "width": 1280,
+      "height": 800,
+      "layout": "tablet-landscape",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "windows-compact.png",
+      "viewport": "720x540",
+      "width": 720,
+      "height": 540,
+      "layout": "windows-compact",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "windows-wide.png",
+      "viewport": "1366x768",
+      "width": 1366,
+      "height": 768,
+      "layout": "windows-wide",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "dark.png",
+      "viewport": "390x844",
+      "width": 390,
+      "height": 844,
+      "layout": "phone-compact",
+      "theme": "dark",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "stress.png",
+      "viewport": "720x540",
+      "width": 720,
+      "height": 540,
+      "layout": "windows-compact-short",
+      "theme": "high-contrast",
+      "density": "dense-long-copy",
+      "textScale": 2,
+      "locale": "fa-IR+en-GB",
+      "direction": "mixed"
+    },
+    {
+      "file": "system-state.png",
+      "viewport": "1200x800",
+      "width": 1200,
+      "height": 800,
+      "layout": "state-comparison-board",
+      "theme": "light-dark-high-contrast",
+      "density": "state-matrix",
+      "textScale": 1,
+      "locale": "en-GB+fa-IR",
+      "direction": "mixed"
+    },
+    {
+      "file": "motion-board.png",
+      "viewport": "1200x800",
+      "width": 1200,
+      "height": 800,
+      "layout": "motion-storyboard",
+      "theme": "light",
+      "density": "five-frames",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    }
+  ],
+  "preview_sha256": {
+    "phone-compact.png": "41d29dc75deb9cf8fbb1690ae658b66dadcbdca90ccd541d4341a9107aa40d07",
+    "phone-landscape.png": "4d2936eaeb28e0003d364badbe19ccb9554c7fc6c9bb00891276511cbf1c5198",
+    "tablet-portrait.png": "3f0414cbf99a14b9de199b6ac32fb041f03a2cead4bda732c3f6ac098f5e825c",
+    "tablet-landscape.png": "f057003cf688463cf47922f0a8f3ebd2fd5ec590bb992a9535b9136e12e2bdc5",
+    "windows-compact.png": "e643e4ceadbddcd806ab21f4af80000e455ab5afb03c4ef5e692b6eb227d283b",
+    "windows-wide.png": "e7cb5ae78756aae3ecd91e29bfe8bf6af83795983285251f71f5cf8df5e29f9c",
+    "dark.png": "961b89b38c4205b9a74c8041e15b97f952bb9a304678dc37f7d08413f1419974",
+    "stress.png": "e48f989ce7056cb67c65c1a4bd5fc6f7b0f31213d7e3041a556463431183f1ef",
+    "system-state.png": "f2f2d9ca7be9ec983cec6ecb0c40067be5792ae3d9fdbe922b286d0d848a385b",
+    "motion-board.png": "fc4cbe8c6fa8c0bf328e2bde740d2b7e130b05b1d8cc9f6074e79131f45a1f5a"
+  },
+  "decision_record": "decision.md",
+  "decomposition": {
+    "live_layers": [
+      "all dynamic/critical copy",
+      "controls",
+      "planner values",
+      "validation",
+      "system state",
+      "semantic tree"
+    ],
+    "authored_layers": [
+      "brand identity",
+      "token material",
+      "icon/category vectors",
+      "noninteractive graphic scaffolding"
+    ],
+    "forbidden_flattening": [
+      "owner data",
+      "editable copy",
+      "interactive controls",
+      "errors",
+      "permissions",
+      "AI proposal consequences"
+    ],
+    "copy_protocol": "Implement from component IDs and this manifest, then compare normalized reference/runtime/overlay/diff—not visual memory."
+  },
+  "acceptance": {
+    "modernize": "The candidate-focus-spine topology reduces navigation or interpretation cost and avoids a generic card dashboard.",
+    "integrity": "Brand, system state, component ownership, local-first truth and all consumers remain in one canonical language.",
+    "anatomy": "Primary question and action own the scan path; scroll, sticky layers, reach zones and platform transformation are explicit.",
+    "style": "Perfect pastel material, exact identity, live typography, optical alignment and restrained glass are applied by role.",
+    "critics": "Sparse/dense, dark/high contrast, 200% mixed copy, short height, IME, offline/error and continuous resize are adversarial inputs, not afterthoughts."
+  },
+  "strongest_rejected_candidate": "candidate-command-ledger",
+  "rejection_reason": "The ledger made a personal, moment-to-moment route feel administrative and pushed the primary action below evidence chrome.",
+  "residual_risks": [
+    "Runtime visual fidelity, semantics and interaction proof remain owned by the numbered implementation stage for pg-focus-complete-reflection."
+  ],
+  "production_boundary": "Design-only. No Flutter/native/domain/database/auth/sync source may be generated or mutated by Stage 05.",
+  "candidate_sha256": {
+    "candidate-focus-spine.png": "a67469be36ddd3d0bae53392c32bb90e69ea1ac788671305cbf046aa68a46d54",
+    "candidate-split-workbench.png": "9970d13375efadd91fd9e54250040574429fb3db2bef64f71d1b9182abd3ec1b",
+    "candidate-command-ledger.png": "873f5a0163cb8422eea0198a0fc5a1d16a35c861d9bdb0534efa73f5788e5731"
+  },
+  "candidate_previews": {
+    "candidate-focus-spine.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/candidates/candidate-focus-spine.png",
+    "candidate-split-workbench.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/candidates/candidate-split-workbench.png",
+    "candidate-command-ledger.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-focus-complete-reflection/candidates/candidate-command-ledger.png"
+  },
+  "canonical_audits": {
+    "phone-compact.png": {
+      "page_id": "pg-focus-complete-reflection",
+      "layout": "phone-compact",
+      "viewport": "390x844",
+      "document": {
+        "width": 390,
+        "height": 844
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "canvas_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "header_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 140.88,
+        "width": 390,
+        "height": 140.88
+      },
+      "footer_bounds": {
+        "left": 14,
+        "top": 764,
+        "right": 376,
+        "bottom": 832,
+        "width": 362,
+        "height": 68
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "phone-landscape.png": {
+      "page_id": "pg-focus-complete-reflection",
+      "layout": "phone-landscape-short",
+      "viewport": "844x390",
+      "document": {
+        "width": 844,
+        "height": 390
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 844,
+        "bottom": 390,
+        "width": 844,
+        "height": 390
+      },
+      "canvas_bounds": {
+        "left": 58,
+        "top": 0,
+        "right": 844,
+        "bottom": 390,
+        "width": 786,
+        "height": 390
+      },
+      "header_bounds": {
+        "left": 58,
+        "top": 0,
+        "right": 844,
+        "bottom": 62,
+        "width": 786,
+        "height": 62
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "tablet-portrait.png": {
+      "page_id": "pg-focus-complete-reflection",
+      "layout": "tablet-portrait",
+      "viewport": "800x1280",
+      "document": {
+        "width": 800,
+        "height": 1280
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 800,
+        "bottom": 1280,
+        "width": 800,
+        "height": 1280
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 800,
+        "bottom": 1280,
+        "width": 728,
+        "height": 1280
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 800,
+        "bottom": 84,
+        "width": 728,
+        "height": 84
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "tablet-landscape.png": {
+      "page_id": "pg-focus-complete-reflection",
+      "layout": "tablet-landscape",
+      "viewport": "1280x800",
+      "document": {
+        "width": 1280,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1280,
+        "bottom": 800,
+        "width": 1280,
+        "height": 800
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 1280,
+        "bottom": 800,
+        "width": 1208,
+        "height": 800
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 1280,
+        "bottom": 94.09,
+        "width": 1208,
+        "height": 94.09
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "windows-compact.png": {
+      "page_id": "pg-focus-complete-reflection",
+      "layout": "windows-compact",
+      "viewport": "720x540",
+      "document": {
+        "width": 720,
+        "height": 540
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 720,
+        "height": 540
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 648,
+        "height": 540
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 720,
+        "bottom": 84,
+        "width": 648,
+        "height": 84
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "windows-wide.png": {
+      "page_id": "pg-focus-complete-reflection",
+      "layout": "windows-wide",
+      "viewport": "1366x768",
+      "document": {
+        "width": 1366,
+        "height": 768
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1366,
+        "bottom": 768,
+        "width": 1366,
+        "height": 768
+      },
+      "canvas_bounds": {
+        "left": 232,
+        "top": 0,
+        "right": 1366,
+        "bottom": 768,
+        "width": 1134,
+        "height": 768
+      },
+      "header_bounds": {
+        "left": 232,
+        "top": 0,
+        "right": 1366,
+        "bottom": 95.36,
+        "width": 1134,
+        "height": 95.36
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "dark.png": {
+      "page_id": "pg-focus-complete-reflection",
+      "layout": "phone-compact",
+      "viewport": "390x844",
+      "document": {
+        "width": 390,
+        "height": 844
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "canvas_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "header_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 140.88,
+        "width": 390,
+        "height": 140.88
+      },
+      "footer_bounds": {
+        "left": 14,
+        "top": 764,
+        "right": 376,
+        "bottom": 832,
+        "width": 362,
+        "height": 68
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "stress.png": {
+      "page_id": "pg-focus-complete-reflection",
+      "layout": "windows-compact-short",
+      "viewport": "720x540",
+      "document": {
+        "width": 720,
+        "height": 540
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 720,
+        "height": 540
+      },
+      "canvas_bounds": {
+        "left": 64,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 656,
+        "height": 540
+      },
+      "header_bounds": {
+        "left": 64,
+        "top": 0,
+        "right": 720,
+        "bottom": 104,
+        "width": 656,
+        "height": 104
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "system-state.png": {
+      "page_id": "pg-focus-complete-reflection",
+      "layout": "state-comparison-board",
+      "viewport": "1200x800",
+      "document": {
+        "width": 1200,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1200,
+        "bottom": 800,
+        "width": 1200,
+        "height": 800
+      },
+      "canvas_bounds": null,
+      "header_bounds": null,
+      "footer_bounds": null,
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "motion-board.png": {
+      "page_id": "pg-focus-complete-reflection",
+      "layout": "motion-storyboard",
+      "viewport": "1200x800",
+      "document": {
+        "width": 1200,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1200,
+        "bottom": 800,
+        "width": 1200,
+        "height": 800
+      },
+      "canvas_bounds": null,
+      "header_bounds": null,
+      "footer_bounds": null,
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    }
+  }
+}

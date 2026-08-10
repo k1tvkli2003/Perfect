@@ -1,0 +1,758 @@
+{
+  "page_id": "pg-update-status",
+  "preview_version": "ps01-pages-1.0.0",
+  "component_catalog_version": "ps01-ds-1.0.0",
+  "version": 1,
+  "subgroup": "More, settings and recovery",
+  "family": "settings",
+  "family_label": "Owner tools and recovery",
+  "title": "Update status",
+  "accent": "mint",
+  "primary_question": "How do I understand and change this owner-level setting without risking data or session continuity? Surface: Update status.",
+  "primary_action": "Continue with the clearest safe action",
+  "scan_order": [
+    "identity and page question",
+    "current system state",
+    "primary live content",
+    "reversible primary action",
+    "secondary evidence or navigation"
+  ],
+  "semantic_order": [
+    "page title",
+    "state summary",
+    "primary content collection",
+    "primary action",
+    "secondary actions",
+    "navigation"
+  ],
+  "component_ids": [
+    "sh-page-canvas",
+    "sh-title-cluster",
+    "sh-page-scroll-frame",
+    "sh-system-overlay-anchor",
+    "sh-glass-header",
+    "update-status"
+  ],
+  "live_copy_ids": [
+    "copy.pg-update-status.title",
+    "copy.pg-update-status.subtitle",
+    "copy.pg-update-status.primary_action",
+    "copy.pg-update-status.secondary_action",
+    "copy.pg-update-status.date",
+    "copy.pg-update-status.sync",
+    "copy.pg-update-status.fixture_notice",
+    "copy.pg-update-status.persian_sample"
+  ],
+  "live_copy": {
+    "title": "Update status",
+    "subtitle": "Owner controls with clear consequences and recovery before reset.",
+    "primary_action": "Continue with the clearest safe action",
+    "secondary_action": "More options",
+    "date": "Monday, Aug 10 · ۱۹ مرداد ۱۴۰۵",
+    "sync": "Synced",
+    "fixture_notice": "Preview fixture only — never production data",
+    "persian_sample": "برنامه امروزت آماده است؛ قدم بعدی روشن و قابل انجام می‌ماند."
+  },
+  "asset_layers": [
+    "live: dynamic copy, owner data, controls, status and semantics",
+    "vector: Stage 04 icons/category pictograms and authored state geometry",
+    "raster: exact Perfect mark/wordmark only where the identity manifest permits",
+    "hybrid: live controls over authored pastel material"
+  ],
+  "z_order": [
+    "canvas",
+    "persistent navigation",
+    "scrolling live content",
+    "sticky context",
+    "capture or contextual floating control",
+    "temporary overlay",
+    "system receipt"
+  ],
+  "responsive_equations": [
+    "phone: clamp(16px, 4.1vw, 24px) gutters; one scan spine; footer/capture clear final action",
+    "tablet: 72px collapsed rail + bounded primary pane; add secondary pane only when its minimum readable width survives",
+    "windows: remembered 72/232px rail; minmax(0, primary) + optional 320–440px inspector; 760px readable line cap",
+    "short height or IME: preserve focused control and primary action; scroll body, never the action into an unreachable layer"
+  ],
+  "pane_rules": [
+    "compact owns one route and one scroll owner",
+    "medium may pair context and work without duplicating actions",
+    "wide may open an inspector that collapses back to a full route with selection preserved"
+  ],
+  "scroll_owner": "pg-update-status-primary-scroll-frame",
+  "sticky_floating_layers": [
+    "glass header",
+    "contextual action only when it does not occlude content"
+  ],
+  "occlusion_clearance": "final required action and final row retain >=24px breathing room plus safe-area/footer/composer inset; no invisible spacer bar",
+  "states": [
+    "local-ready",
+    "loading",
+    "optimistic",
+    "synced"
+  ],
+  "scenario_ids": [
+    "scn-update-status-phone-compact",
+    "scn-update-status-phone-landscape",
+    "scn-update-status-tablet-portrait",
+    "scn-update-status-tablet-landscape",
+    "scn-update-status-windows-compact",
+    "scn-update-status-windows-wide",
+    "scn-update-status-dark",
+    "scn-update-status-stress",
+    "scn-update-status-system-state",
+    "scn-update-status-motion-board"
+  ],
+  "fixture_id": "fx-owner-normal",
+  "fixture_boundary": "All page names, dates, tasks, habits, counts and history are isolated preview fixtures and cannot be imported or seeded into production.",
+  "motion_ids": [
+    "motion-route-enter",
+    "motion-title-rise",
+    "motion-continuous-resize"
+  ],
+  "entry_routes": [
+    "authenticated-shell",
+    "/update-status"
+  ],
+  "exit_routes": [
+    "back-with-state",
+    "/today"
+  ],
+  "state_continuity": [
+    "draft",
+    "focus",
+    "selection",
+    "scroll",
+    "route intent",
+    "optimistic receipt"
+  ],
+  "candidates": [
+    {
+      "id": "candidate-focus-spine",
+      "file": "candidate-focus-spine.png",
+      "title": "Focus Spine",
+      "structure": "One continuous vertical answer path with the primary action inside reach, not in a detached dashboard card.",
+      "path": "candidates/candidate-focus-spine.png"
+    },
+    {
+      "id": "candidate-split-workbench",
+      "file": "candidate-split-workbench.png",
+      "title": "Split Workbench",
+      "structure": "Master context and live work remain adjacent; wide layouts gain an inspector while compact layouts preserve route continuity.",
+      "path": "candidates/candidate-split-workbench.png"
+    },
+    {
+      "id": "candidate-command-ledger",
+      "file": "candidate-command-ledger.png",
+      "title": "Command Ledger",
+      "structure": "Query, filters and reversible actions lead a dense evidence-first ledger with restrained decoration.",
+      "path": "candidates/candidate-command-ledger.png"
+    }
+  ],
+  "selected_candidate": "candidate-command-ledger",
+  "canonical_previews": {
+    "phone-compact.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/canonical/phone-compact.png",
+    "phone-landscape.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/canonical/phone-landscape.png",
+    "tablet-portrait.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/canonical/tablet-portrait.png",
+    "tablet-landscape.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/canonical/tablet-landscape.png",
+    "windows-compact.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/canonical/windows-compact.png",
+    "windows-wide.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/canonical/windows-wide.png",
+    "dark.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/canonical/dark.png",
+    "stress.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/canonical/stress.png",
+    "system-state.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/canonical/system-state.png",
+    "motion-board.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/canonical/motion-board.png"
+  },
+  "canonical_preview_metadata": [
+    {
+      "file": "phone-compact.png",
+      "viewport": "390x844",
+      "width": 390,
+      "height": 844,
+      "layout": "phone-compact",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "phone-landscape.png",
+      "viewport": "844x390",
+      "width": 844,
+      "height": 390,
+      "layout": "phone-landscape-short",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "tablet-portrait.png",
+      "viewport": "800x1280",
+      "width": 800,
+      "height": 1280,
+      "layout": "tablet-portrait",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "fa-IR",
+      "direction": "rtl"
+    },
+    {
+      "file": "tablet-landscape.png",
+      "viewport": "1280x800",
+      "width": 1280,
+      "height": 800,
+      "layout": "tablet-landscape",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "windows-compact.png",
+      "viewport": "720x540",
+      "width": 720,
+      "height": 540,
+      "layout": "windows-compact",
+      "theme": "light",
+      "density": "normal",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "windows-wide.png",
+      "viewport": "1366x768",
+      "width": 1366,
+      "height": 768,
+      "layout": "windows-wide",
+      "theme": "light",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "dark.png",
+      "viewport": "390x844",
+      "width": 390,
+      "height": 844,
+      "layout": "phone-compact",
+      "theme": "dark",
+      "density": "dense",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    },
+    {
+      "file": "stress.png",
+      "viewport": "720x540",
+      "width": 720,
+      "height": 540,
+      "layout": "windows-compact-short",
+      "theme": "high-contrast",
+      "density": "dense-long-copy",
+      "textScale": 2,
+      "locale": "fa-IR+en-GB",
+      "direction": "mixed"
+    },
+    {
+      "file": "system-state.png",
+      "viewport": "1200x800",
+      "width": 1200,
+      "height": 800,
+      "layout": "state-comparison-board",
+      "theme": "light-dark-high-contrast",
+      "density": "state-matrix",
+      "textScale": 1,
+      "locale": "en-GB+fa-IR",
+      "direction": "mixed"
+    },
+    {
+      "file": "motion-board.png",
+      "viewport": "1200x800",
+      "width": 1200,
+      "height": 800,
+      "layout": "motion-storyboard",
+      "theme": "light",
+      "density": "five-frames",
+      "textScale": 1,
+      "locale": "en-GB",
+      "direction": "ltr"
+    }
+  ],
+  "preview_sha256": {
+    "phone-compact.png": "616c9433cf0ae97394fbd6877450a613afe709b2a1358b94b9c6f6e08f22a391",
+    "phone-landscape.png": "965999ab2dca31e779fd4266b7e5a487d8e25115543ec129aa3d17354ef3270e",
+    "tablet-portrait.png": "fc884adee7f7b683acbdf32b32e4bfa5b6f4fdecdab79fc51b0fb2a4fdbbb0d3",
+    "tablet-landscape.png": "32bd4712c3fb1db183553ed6301b47788d15aeeb36fedbc5f522cbc2b42b0e70",
+    "windows-compact.png": "22ec019711429661047c7140774351b649d46f8dda0b8df7af429f4f0a2cd0d0",
+    "windows-wide.png": "86752de8439a4e9ecd1d81ce07906d13fb241db8344ed196dd771c4d85da61f1",
+    "dark.png": "75a53331f0501f5e934b428ca95d7c50f1ce9cbfd1a5a7ca80708c28f075fd08",
+    "stress.png": "4de864229743c1259ddf3b592b7ca5408709a25283002a79f04b275846b94292",
+    "system-state.png": "b0bd32d698c302f486688f1660f3e023166a84c4d95b9ec4159e3f460a85d907",
+    "motion-board.png": "f41e614fa2d8f2cc535356cc40b81fbcb89342dc866e3139d1c55f5bf045d98f"
+  },
+  "decision_record": "decision.md",
+  "decomposition": {
+    "live_layers": [
+      "all dynamic/critical copy",
+      "controls",
+      "planner values",
+      "validation",
+      "system state",
+      "semantic tree"
+    ],
+    "authored_layers": [
+      "brand identity",
+      "token material",
+      "icon/category vectors",
+      "noninteractive graphic scaffolding"
+    ],
+    "forbidden_flattening": [
+      "owner data",
+      "editable copy",
+      "interactive controls",
+      "errors",
+      "permissions",
+      "AI proposal consequences"
+    ],
+    "copy_protocol": "Implement from component IDs and this manifest, then compare normalized reference/runtime/overlay/diff—not visual memory."
+  },
+  "acceptance": {
+    "modernize": "The candidate-command-ledger topology reduces navigation or interpretation cost and avoids a generic card dashboard.",
+    "integrity": "Brand, system state, component ownership, local-first truth and all consumers remain in one canonical language.",
+    "anatomy": "Primary question and action own the scan path; scroll, sticky layers, reach zones and platform transformation are explicit.",
+    "style": "Perfect pastel material, exact identity, live typography, optical alignment and restrained glass are applied by role.",
+    "critics": "Sparse/dense, dark/high contrast, 200% mixed copy, short height, IME, offline/error and continuous resize are adversarial inputs, not afterthoughts."
+  },
+  "strongest_rejected_candidate": "candidate-split-workbench",
+  "rejection_reason": "The split workbench added a second pane before this route had a second simultaneous job, wasting reach and attention.",
+  "residual_risks": [
+    "Runtime visual fidelity, semantics and interaction proof remain owned by the numbered implementation stage for pg-update-status."
+  ],
+  "production_boundary": "Design-only. No Flutter/native/domain/database/auth/sync source may be generated or mutated by Stage 05.",
+  "candidate_sha256": {
+    "candidate-focus-spine.png": "4bf7a9b1a4204da903696d37b8c21590256e217024bf7ecb26693d519c3a32ac",
+    "candidate-split-workbench.png": "ec948127b1287e8ddf93824e4908bc71014b069030ad3cbec063652e1bbf2ab7",
+    "candidate-command-ledger.png": "b111b1461ae2ef0a2ff743ed4423fbbeed7e8fbf60cf4b22ebd479edacab019f"
+  },
+  "candidate_previews": {
+    "candidate-focus-spine.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/candidates/candidate-focus-spine.png",
+    "candidate-split-workbench.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/candidates/candidate-split-workbench.png",
+    "candidate-command-ledger.png": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-update-status/candidates/candidate-command-ledger.png"
+  },
+  "canonical_audits": {
+    "phone-compact.png": {
+      "page_id": "pg-update-status",
+      "layout": "phone-compact",
+      "viewport": "390x844",
+      "document": {
+        "width": 390,
+        "height": 844
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "canvas_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "header_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 140.88,
+        "width": 390,
+        "height": 140.88
+      },
+      "footer_bounds": {
+        "left": 14,
+        "top": 764,
+        "right": 376,
+        "bottom": 832,
+        "width": 362,
+        "height": 68
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "phone-landscape.png": {
+      "page_id": "pg-update-status",
+      "layout": "phone-landscape-short",
+      "viewport": "844x390",
+      "document": {
+        "width": 844,
+        "height": 390
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 844,
+        "bottom": 390,
+        "width": 844,
+        "height": 390
+      },
+      "canvas_bounds": {
+        "left": 58,
+        "top": 0,
+        "right": 844,
+        "bottom": 390,
+        "width": 786,
+        "height": 390
+      },
+      "header_bounds": {
+        "left": 58,
+        "top": 0,
+        "right": 844,
+        "bottom": 62,
+        "width": 786,
+        "height": 62
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "tablet-portrait.png": {
+      "page_id": "pg-update-status",
+      "layout": "tablet-portrait",
+      "viewport": "800x1280",
+      "document": {
+        "width": 800,
+        "height": 1280
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 800,
+        "bottom": 1280,
+        "width": 800,
+        "height": 1280
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 800,
+        "bottom": 1280,
+        "width": 728,
+        "height": 1280
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 800,
+        "bottom": 84,
+        "width": 728,
+        "height": 84
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "tablet-landscape.png": {
+      "page_id": "pg-update-status",
+      "layout": "tablet-landscape",
+      "viewport": "1280x800",
+      "document": {
+        "width": 1280,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1280,
+        "bottom": 800,
+        "width": 1280,
+        "height": 800
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 1280,
+        "bottom": 800,
+        "width": 1208,
+        "height": 800
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 1280,
+        "bottom": 94.09,
+        "width": 1208,
+        "height": 94.09
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "windows-compact.png": {
+      "page_id": "pg-update-status",
+      "layout": "windows-compact",
+      "viewport": "720x540",
+      "document": {
+        "width": 720,
+        "height": 540
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 720,
+        "height": 540
+      },
+      "canvas_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 648,
+        "height": 540
+      },
+      "header_bounds": {
+        "left": 72,
+        "top": 0,
+        "right": 720,
+        "bottom": 84,
+        "width": 648,
+        "height": 84
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "windows-wide.png": {
+      "page_id": "pg-update-status",
+      "layout": "windows-wide",
+      "viewport": "1366x768",
+      "document": {
+        "width": 1366,
+        "height": 768
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1366,
+        "bottom": 768,
+        "width": 1366,
+        "height": 768
+      },
+      "canvas_bounds": {
+        "left": 232,
+        "top": 0,
+        "right": 1366,
+        "bottom": 768,
+        "width": 1134,
+        "height": 768
+      },
+      "header_bounds": {
+        "left": 232,
+        "top": 0,
+        "right": 1366,
+        "bottom": 95.36,
+        "width": 1134,
+        "height": 95.36
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "dark.png": {
+      "page_id": "pg-update-status",
+      "layout": "phone-compact",
+      "viewport": "390x844",
+      "document": {
+        "width": 390,
+        "height": 844
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "canvas_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "width": 390,
+        "height": 844
+      },
+      "header_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 140.88,
+        "width": 390,
+        "height": 140.88
+      },
+      "footer_bounds": {
+        "left": 14,
+        "top": 764,
+        "right": 376,
+        "bottom": 832,
+        "width": 362,
+        "height": 68
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "stress.png": {
+      "page_id": "pg-update-status",
+      "layout": "windows-compact-short",
+      "viewport": "720x540",
+      "document": {
+        "width": 720,
+        "height": 540
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 720,
+        "height": 540
+      },
+      "canvas_bounds": {
+        "left": 64,
+        "top": 0,
+        "right": 720,
+        "bottom": 540,
+        "width": 656,
+        "height": 540
+      },
+      "header_bounds": {
+        "left": 64,
+        "top": 0,
+        "right": 720,
+        "bottom": 104,
+        "width": 656,
+        "height": 104
+      },
+      "footer_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "width": 0,
+        "height": 0
+      },
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "system-state.png": {
+      "page_id": "pg-update-status",
+      "layout": "state-comparison-board",
+      "viewport": "1200x800",
+      "document": {
+        "width": 1200,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1200,
+        "bottom": 800,
+        "width": 1200,
+        "height": 800
+      },
+      "canvas_bounds": null,
+      "header_bounds": null,
+      "footer_bounds": null,
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    },
+    "motion-board.png": {
+      "page_id": "pg-update-status",
+      "layout": "motion-storyboard",
+      "viewport": "1200x800",
+      "document": {
+        "width": 1200,
+        "height": 800
+      },
+      "root_bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1200,
+        "bottom": 800,
+        "width": 1200,
+        "height": 800
+      },
+      "canvas_bounds": null,
+      "header_bounds": null,
+      "footer_bounds": null,
+      "capture_bounds": null,
+      "horizontal_overflow": [],
+      "clipped_copy": [],
+      "failure_ids": []
+    }
+  }
+}

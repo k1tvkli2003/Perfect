@@ -325,3 +325,66 @@ Stage 04 changed no shipped Flutter UI, native code, route, domain, database or
 Supabase contract. Stage 05 may now compose complete pages only from the frozen IDs,
 tokens, assets, motion contracts and hashes; production implementation remains
 blocked until Stage 05 closes.
+
+Exact-SHA run [`31404235491`](https://github.com/k1tvkli2003/Perfect/actions/runs/31404235491)
+(`#43`) passed all four jobs for Stage 04 commit
+`c0a01133a7a4f8e5a7bcbffe2c51bcadbf0ae6f1`. Windows install-over preserved the
+package family and LocalState from `1.1.0.42` to `1.1.0.43`; clean Setup and rerun
+also passed. Release
+[`v1.1.0-build.2043`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2043)
+targets that exact SHA and contains only the signed APK, Portable ZIP and Setup.
+
+## 2026-08-10 — Stage 05 full-product preview and Copy checkpoint
+
+### Before
+
+Stage 04 owned reusable parts, but no frozen page-level authority joined them into a
+complete workflow. The gate still required 134 route/overlay/native compositions,
+platform transformations, live text ownership, decision records, fixture isolation
+and a Copy pipeline that could prove a mismatch rather than merely show two images.
+
+### Execution contract
+
+- Compose every exact gate page ID from frozen Stage 04 component IDs.
+- Compare three genuinely different structures per page and record the autonomous
+  winner, strongest rejected alternative and residual implementation risk.
+- Render ten canonical phone/tablet/Windows/dark/stress/system/motion views per page
+  and reject overflow, clipped required copy or lost platform chrome before writing
+  the PNG.
+- Map every live phrase, fixture, component consumer and scenario without allowing
+  preview data or flattened dynamic copy into production.
+- Prove the Copy harness with deliberately injected phone, tablet and Windows defects.
+
+### After
+
+- Froze page catalog `ps01-pages-1.0.0`: 134 pages in exact gate order across 11
+  families, 402 structural candidates and 134 autonomous decision records.
+- Generated 1,340 canonical views and 1,340 browser-derived geometry audits. Exact
+  viewports cover compact/landscape phone, portrait/landscape tablet, compact/wide
+  Windows, dark, 200% mixed-direction stress, system-state and motion boards.
+- Mapped 1,072 live, unflattened Copy entries (8 per page), all 181 Stage 04
+  components and six explicitly production-unreachable fixtures.
+- Built deterministic phone/tablet/Windows Copy smokes. Geometry, typography and
+  state mutations produce reference/runtime/overlay/diff evidence, identify exact
+  page/scenario/category/field and fail CI with exit code 2.
+- Used the composition audit to catch and repair real defects before freeze: footer
+  and Capture occlusion, Today density rhythm, wizard final-action reach, compact
+  week-plan overflow, feedback short-landscape ordering, widget host overflow, dark
+  AI contrast and task status-ring centering.
+- Limited generated cleanup to the 134 owned `pg-*` roots and named contact sheets.
+  The Stage 03 handoff is snapshotted and SHA-checked before and after generation.
+- Locked exactly 2,055 generated hashes across a 121.16 MiB corpus; the largest file
+  is 1.96 MiB. Scoped Git attributes pin hash-sensitive contracts/evidence to LF so
+  byte verification remains stable after Windows clones. No protected Stage 03 or
+  unrelated workspace file enters the scope.
+- `node tool/verify_stage05_page_library.cjs` passes all inventory, dimension,
+  pixel-equivalence, fixture, Copy-failure and exact-coverage checks. The new Flutter
+  contract passes 9/9, Stage 03+04 focused contracts pass 25/25 and full analysis is
+  clean.
+- Preserved all unrelated/unaccepted production prototypes, `.vscode`, `NUL` and the
+  retained stash without staging or claiming them.
+
+Stage 05 changes no shipped Flutter UI, native code, route, domain, database, auth,
+sync or Supabase contract. Its commit/push and exact-SHA hosted checkpoint close the
+preview-before-production barrier; Stage 06 must implement from exact preview IDs,
+decomposition records and hashes rather than visual memory.

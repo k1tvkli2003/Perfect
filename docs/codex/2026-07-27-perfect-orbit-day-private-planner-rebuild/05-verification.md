@@ -385,7 +385,32 @@ runtime side-by-side Copy proof.
 | Cross-stage contract | Stage 03 + Stage 04 focused Flutter tests | passed, 16/16 | selected direction and its full component decomposition remain mutually consistent |
 | Focused analysis | `flutter analyze` over Stage 03/04 contract tests | passed | no issues |
 | Runtime/product mutation | scoped Git diff | not claimed / not applicable | only docs/design/test/tool artifacts belong to Stage 04; unrelated production prototypes remain unstaged |
+| Hosted Stage 04 gate | exact-SHA run `#43` / `31404235491` + release inspection | passed | all four jobs succeeded for `c0a01133a7a4f8e5a7bcbffe2c51bcadbf0ae6f1`; install-over `1.1.0.42 → 1.1.0.43` preserved package family/LocalState; `v1.1.0-build.2043` contains exactly APK, Portable ZIP and Setup |
 
 Stage 04 closes the reusable-component gate only. Stage 05 must still freeze all 134
 full page/overlay/widget compositions, densities and Copy manifests before any
 production UI implementation can be accepted.
+
+## 2026-08-10 — Stage 05 page-preview and Copy verification
+
+| Check | Method | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| Exact page authority | gate Section 5 parser + page registry | passed | exactly 134 unique page IDs in canonical order across 11 families |
+| Structural exploration | candidate files/contracts/decision traversal | passed | 3 non-color-only candidates and one explicit winner/rejection/risk record per page; 402 candidate boards total |
+| Canonical composition set | Playwright render + PNG/manifest checks | passed | 10 exact phone/tablet/Windows/dark/stress/system/motion previews per page; 1,340 total |
+| Live geometry gate | in-browser DOM composition audit | passed | 1,340/1,340 exact root bounds; zero uncontained horizontal overflow, clipped required copy or missing required chrome |
+| Component propagation | Stage 04 reverse-consumer ledger | passed | all 181 component IDs have one or more explicit page consumers; zero silent/unconsumed IDs |
+| Text integrity | live Copy registry + contract test | passed | exactly 1,072 unique entries, 8 per page, all `live: true`, flattening forbidden and wrapping behavior explicit |
+| Fixture isolation | six-fixture registry + production-source scan | passed | all fixtures are production-unreachable; sample entities/catalog version absent from planner persistence and Supabase migrations |
+| Copy mismatch proof | three deliberate mutated-runtime comparisons | passed | phone geometry, tablet typography and Windows state defects each name exact page/scenario/category/field and `--fail-on-mismatch` exits 2 |
+| Pixel/reference integrity | normalized raw-pixel digest comparison | passed | every smoke reference is pixel-equivalent to its canonical source despite PNG recompression |
+| Deterministic integrity | independent verifier + SHA recomputation + scoped LF attributes | passed | `stage05-hashes.sha256` covers all and only 2,055 generated artifacts across Windows/CI checkout semantics; protected Stage 03 handoff remains exact |
+| Corpus transport fitness | file count/size scan | passed | 121.16 MiB total; largest file 1.96 MiB; no GitHub 100 MiB risk |
+| Executable Stage 05 contract | `flutter test test/presentation/page_preview_quality_harness_contract_test.dart` | passed, 9/9 | counts/order, candidates, canonical audits, consumers, Copy, fixtures, mismatch smokes, exact hash scope and guard tooling locked |
+| Prior design chain | Stage 03 + Stage 04 focused Flutter contracts | passed, 25/25 | selected direction and component system remain intact |
+| Static analysis | full `flutter analyze` | passed | no issues after removing only the orphan test process created by an earlier command timeout |
+| Runtime/product mutation | scoped Git diff | not claimed / not applicable | Stage 05 owns design/tool/test/docs only; existing unrelated production/test prototypes remain unstaged |
+
+This closes design authority, not runtime fidelity. Every Stage 06–50 production
+surface still requires matched fixture capture and normalized reference/runtime/
+overlay/diff evidence before its own gate can close.

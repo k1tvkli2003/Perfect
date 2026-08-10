@@ -1,0 +1,37 @@
+{
+  "preview_id": "pg-today-normal@ps01-pages-1.0.0#14085f1a062944510427fce3d6431038f4f19b3cbea43e793a50068f99d0be8f",
+  "page_id": "pg-today-normal",
+  "scenario_id": "scn-today-normal-phone-compact",
+  "runtime_page_id": "pg-today-normal",
+  "runtime_scenario_id": "scn-today-normal-phone-compact",
+  "mismatch_count": 2,
+  "categories": [
+    "geometry"
+  ],
+  "mismatches": [
+    {
+      "category": "geometry",
+      "severity": "P2",
+      "field": "landmarks.primary_content.x",
+      "expected": 0.06,
+      "actual": 0.095,
+      "note": "Normalized bounds drift beyond the 1.2% Stage 05 tolerance."
+    },
+    {
+      "category": "geometry",
+      "severity": "P2",
+      "field": "landmarks.primary_content.width",
+      "expected": 0.88,
+      "actual": 0.81,
+      "note": "Normalized bounds drift beyond the 1.2% Stage 05 tolerance."
+    }
+  ],
+  "pixels": {
+    "width": 390,
+    "height": 844,
+    "changed_pixels": 84663,
+    "changed_ratio": 0.25720925993437843,
+    "mean_channel_delta": 11.207270020658646,
+    "maximum_channel_delta": 255
+  }
+}

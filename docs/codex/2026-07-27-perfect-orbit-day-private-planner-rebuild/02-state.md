@@ -1,21 +1,21 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-10T18:51:36+03:30
+- Last updated: 2026-08-10T21:06:09+03:30
 - Owner: Codex
 
 ## Current State
 
-Canonical 50-stage execution has closed Stages 01–03 through exact-SHA hosted runs
-`#40`–`#42` and releases `v1.1.0-build.2040`–`2042`. Stage 03 commit
-`4ff5ebe317b4f41e7508a69fba2206b68e632d7e` freezes `PS01 Perfect Day Instrument`:
-compact Pulse, one continuous day Stream, view-first detail, direct habit controls,
-one morphing Capture/Plan/AI/Voice surface and distinct phone/tablet/Windows
-compositions. Run `31393887073` passed and its public non-draft release contains
-exactly the signed Android APK, Windows Portable ZIP and Windows Setup. Stage 04 is
-complete locally: `ps01-ds-1.0.0` freezes every foundation/component state,
-responsive/accessibility/motion/neighbor plate and its exact hash. Stage 05 is next;
-shipped UI mutation remains blocked until its complete page/Copy gate closes.
+Canonical 50-stage execution has closed Stages 01–04 through exact-SHA hosted runs
+`#40`–`#43` and releases `v1.1.0-build.2040`–`2043`. Stage 04 commit
+`c0a01133a7a4f8e5a7bcbffe2c51bcadbf0ae6f1` freezes `ps01-ds-1.0.0`; run
+`31404235491` passed all four jobs, including Windows install-over
+`1.1.0.42 → 1.1.0.43` with package family and LocalState preserved. Stage 05 is
+complete locally as `ps01-pages-1.0.0`: all 134 page/overlay/widget compositions,
+their three candidates, ten canonical layouts, live Copy, component consumers,
+fixtures, decisions and exact hashes are frozen. Its hosted checkpoint is pending
+commit/push; production UI remains untouched and Stage 06 is the first implementation
+stage allowed to consume this contract.
 
 The earlier Perfect cycles below remain historical runtime evidence; they do not
 supersede the canonical numbered execution state.
@@ -238,5 +238,31 @@ Perfect Cycle 1 روی commit `a793531279174f735ad1e247f96a5213613dabb1` با wo
 - The 148.18 MiB design corpus has no file above 4.49 MiB. No production Flutter,
   native, route, domain, database or Supabase file changed; unrelated prototypes and
   the retained stash remain untouched.
-- The hosted exact-SHA checkpoint is pending this stage's commit/push. Stage 05 owns
-  all 134 full page/overlay/widget compositions and Copy manifests.
+- Exact-SHA run [`31404235491`](https://github.com/k1tvkli2003/Perfect/actions/runs/31404235491)
+  (`#43`) passed all four jobs for
+  `c0a01133a7a4f8e5a7bcbffe2c51bcadbf0ae6f1`. Release
+  [`v1.1.0-build.2043`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2043)
+  targets that SHA and contains exactly the signed Android APK, Windows Portable ZIP
+  and Windows Setup; clean install, rerun and install-over all passed.
+
+## Stage 05 full-product preview and Copy gate — 2026-08-10
+
+- `ps01-pages-1.0.0` freezes the exact 134 gate IDs across 11 page families. Every
+  page owns 3 structurally distinct candidates, one autonomous decision record and
+  10 canonical phone/tablet/Windows/dark/stress/system/motion compositions.
+- The final corpus contains 402 candidate boards, 1,340 canonical previews, 1,340
+  live-browser composition audits, 1,072 live Copy entries, 6 isolated fixtures and
+  explicit consumers for all 181 Stage 04 components.
+- Original-size and contact-sheet review corrected footer occlusion, Today habit
+  spacing, wizard anchoring, compact week-plan overflow, feedback short-landscape
+  reflow, widget bounds, dark AI readability and status-ring optical alignment.
+- Three intentional Copy failures prove exact phone geometry, tablet typography and
+  Windows state defects are named by page/scenario/category and exit with code 2.
+- `stage05-hashes.sha256` exactly covers all and only 2,055 generated artifacts
+  (121.16 MiB; largest 1.96 MiB). The protected Stage 03 handoff is hash-guarded.
+- The independent verifier passes the exact inventory and hashes; the Stage 05
+  Flutter contract passes 9/9, Stage 03+04 contracts pass 25/25 and full
+  `flutter analyze` reports no issues.
+- No production Flutter/native/domain/database/auth/sync/Supabase source changed.
+  Existing user prototypes, `.vscode`, `NUL` and retained stash remain unaccepted
+  and unstaged. The hosted Stage 05 checkpoint follows its dedicated commit/push.

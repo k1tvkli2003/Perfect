@@ -1,0 +1,54 @@
+{
+  "catalog_version": "ps01-pages-1.0.0",
+  "generated_at": "2026-08-10",
+  "entrypoint": "design/test harness only; no production import, seed, merge or signed-build route",
+  "fixtures": [
+    {
+      "id": "fx-owner-empty",
+      "purpose": "Valid private owner/session with zero planner entities or history.",
+      "entities": 0,
+      "production_reachable": false
+    },
+    {
+      "id": "fx-owner-sparse",
+      "purpose": "One unscheduled task and one simple habit.",
+      "entities": 2,
+      "production_reachable": false
+    },
+    {
+      "id": "fx-owner-normal",
+      "purpose": "Realistic mixed day/week with scheduling and tracking methods.",
+      "entities": 14,
+      "production_reachable": false
+    },
+    {
+      "id": "fx-owner-dense",
+      "purpose": "Long bilingual titles, overlapping recurrence, all progress states, relations, notes, goals, conflicts and long history.",
+      "entities": 64,
+      "production_reachable": false
+    },
+    {
+      "id": "fx-system-adversarial",
+      "purpose": "Local first load, offline, retry, auth expiry, conflict, hard error, AI proposal and widget-origin mutation.",
+      "entities": 16,
+      "production_reachable": false
+    },
+    {
+      "id": "fx-time-boundaries",
+      "purpose": "00:00, 05:59, noon, 18:00, 23:59, timezone and Gregorian/Jalali boundary projections.",
+      "entities": 12,
+      "production_reachable": false
+    }
+  ],
+  "forbidden_production_sources": [
+    "lib/planner/data/planner_database.dart",
+    "lib/planner/data/planner_local_store.dart",
+    "supabase/migrations"
+  ],
+  "sample_entity_names": [
+    "Review project brief",
+    "Study clinical reasoning",
+    "Read medicine",
+    "No late caffeine"
+  ]
+}

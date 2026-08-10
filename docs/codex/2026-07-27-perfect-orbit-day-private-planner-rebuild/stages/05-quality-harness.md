@@ -1,6 +1,6 @@
 # Stage 05 — Full-product page preview library, Copy contract and quality harness
 
-Status: pending  
+Status: complete locally — `ps01-pages-1.0.0` frozen; hosted checkpoint pending
 Depends on: Stage 04 frozen component preview catalog  
 Blocks: every production UI implementation in Stages 06–50
 
@@ -194,6 +194,36 @@ Record:
   or a passing focused test is presented as full device/release evidence;
 - owner choice is requested for an ordinary design decision already delegated to the
   autonomous quality gates.
+
+## Completion evidence — 2026-08-10
+
+- The authoritative Section 5 gate resolves to exactly 134 unique page IDs in
+  canonical order across 11 families. Each owns three structural candidates, one
+  autonomous decision record and ten canonical compositions.
+- The frozen corpus contains 402 candidate boards, 1,340 canonical PNGs and 1,340
+  browser-derived audits spanning exact phone portrait/landscape, tablet portrait/
+  landscape, Windows compact/wide, dark, 200% mixed-direction stress, system-state
+  and motion layouts.
+- Every audit verifies exact document/root bounds, required live copy and platform
+  chrome, with zero uncontained horizontal overflow, clipped required phrases or
+  failure IDs. Visual/contact-sheet review corrected the defects the gate exposed.
+- All 181 Stage 04 component IDs have explicit reverse consumers. The Copy registry
+  contains exactly 1,072 unique live/unflattened entries (8 per page), and all six
+  deterministic fixtures are unreachable from production persistence.
+- Three normalized comparison smokes deliberately inject phone geometry, tablet
+  typography and Windows state defects. Each produces reference/runtime/overlay/diff
+  evidence, identifies page/scenario/category/field and exits 2 under the failure
+  contract.
+- `stage05-hashes.sha256` covers all and only 2,055 generated files. Generation is
+  limited to the 134 owned page roots and named sheets; the Stage 03 handoff is
+  snapshotted and hash-verified before and after generation. Scoped LF attributes
+  preserve those byte hashes across Windows and CI checkouts.
+- `node tool/verify_stage05_page_library.cjs` passes with
+  `pages=134 candidates=402 previews=1340 audits=1340 components=181 copy=1072
+  fixtures=6 comparisons=3 hashes=2055`. The Flutter contract passes 9/9, the Stage
+  03+04 chain passes 25/25 and full analysis is clean.
+- No production Flutter/native/domain/database/auth/sync/Supabase source belongs to
+  this stage. Existing user prototypes and the retained stash remain untouched.
 
 ## Completion handoff
 

@@ -1,0 +1,14 @@
+# Stage 05 is a byte-frozen cross-platform design corpus. Keep its textual
+# contracts and evidence on LF so SHA-256 verification survives Windows clones.
+.gitattributes text eol=lf
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/stage03-selected/README.md text eol=lf
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-*/composition.yaml text eol=lf
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-*/decision.md text eol=lf
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/04-copy-manifests/*.json text eol=lf
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/04-copy-manifests/*.sha256 text eol=lf
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage05/**/*.json text eol=lf
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage05/**/*.md text eol=lf
+tool/generate_stage05_page_library.cjs text eol=lf
+tool/verify_stage05_page_library.cjs text eol=lf
+tool/stage05/*.cjs text eol=lf
+test/presentation/page_preview_quality_harness_contract_test.dart text eol=lf

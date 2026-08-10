@@ -1,0 +1,29 @@
+{
+  "preview_id": "pg-tasks-dense@ps01-pages-1.0.0#1a87b84765228c97f254858557fe09483229104618724578c5151175a94cb517",
+  "page_id": "pg-tasks-dense",
+  "scenario_id": "scn-tasks-dense-windows-wide",
+  "runtime_page_id": "pg-tasks-dense",
+  "runtime_scenario_id": "scn-tasks-dense-windows-wide",
+  "mismatch_count": 1,
+  "categories": [
+    "state"
+  ],
+  "mismatches": [
+    {
+      "category": "state",
+      "severity": "P1",
+      "field": "system_state.sync",
+      "expected": "synced",
+      "actual": "error",
+      "note": "Runtime state meaning differs from the exact frozen scenario."
+    }
+  ],
+  "pixels": {
+    "width": 1366,
+    "height": 768,
+    "changed_pixels": 22704,
+    "changed_ratio": 0.021641654465592974,
+    "mean_channel_delta": 0.7328835458353669,
+    "maximum_channel_delta": 206
+  }
+}

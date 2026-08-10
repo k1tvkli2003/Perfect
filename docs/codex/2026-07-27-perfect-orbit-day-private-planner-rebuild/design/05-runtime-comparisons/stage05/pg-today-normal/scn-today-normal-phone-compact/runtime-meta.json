@@ -1,0 +1,48 @@
+{
+  "preview_id": "pg-today-normal@ps01-pages-1.0.0#14085f1a062944510427fce3d6431038f4f19b3cbea43e793a50068f99d0be8f",
+  "page_id": "pg-today-normal",
+  "scenario_id": "scn-today-normal-phone-compact",
+  "viewport": "390x844",
+  "theme": "light",
+  "locale": "en-GB",
+  "direction": "ltr",
+  "text_scale": 1,
+  "landmarks": {
+    "header": {
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "height": 0.12
+    },
+    "primary_content": {
+      "x": 0.095,
+      "y": 0.15,
+      "width": 0.81,
+      "height": 0.66
+    },
+    "primary_action": {
+      "x": 0.62,
+      "y": 0.79,
+      "width": 0.28,
+      "height": 0.075
+    }
+  },
+  "typography": {
+    "page_title": {
+      "family": "Perfect Jakarta",
+      "weight": 650,
+      "size": 24,
+      "line_height": 1.12
+    },
+    "body": {
+      "family": "Perfect Jakarta",
+      "weight": 480,
+      "size": 15,
+      "line_height": 1.45
+    }
+  },
+  "system_state": {
+    "sync": "synced",
+    "local_ready": true
+  }
+}

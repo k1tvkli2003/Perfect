@@ -1,0 +1,45 @@
+{
+  "catalog_version": "ps01-pages-1.0.0",
+  "component_catalog_version": "ps01-ds-1.0.0",
+  "generated_at": "2026-08-10",
+  "direction": "PS01 Perfect Day Instrument",
+  "gate_section_sha256": "4b7b249ffb382f4be820c14969408e9f9e512ecf7f7db0fc09d835bd1dd434b4",
+  "counts": {
+    "pages": 134,
+    "page_families": 11,
+    "structural_candidates": 402,
+    "canonical_previews": 1340,
+    "canonical_render_audits": 1340,
+    "component_consumers": 181,
+    "live_copy_entries": 1072,
+    "fixtures": 6,
+    "motion_ids": 20,
+    "comparison_smokes": 3
+  },
+  "manifests": [
+    "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/04-copy-manifests/pages.json",
+    "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/04-copy-manifests/copy.json",
+    "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/04-copy-manifests/fixtures.json",
+    "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/04-copy-manifests/coverage-ledger.json",
+    "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/04-copy-manifests/quality-harness.json"
+  ],
+  "generator": "tool/generate_stage05_page_library.cjs",
+  "renderer": {
+    "engine": "Playwright",
+    "browser": "chrome.exe",
+    "device_scale_factor": 1,
+    "exact_viewports": [
+      "phone-compact.png:390x844",
+      "phone-landscape.png:844x390",
+      "tablet-portrait.png:800x1280",
+      "tablet-landscape.png:1280x800",
+      "windows-compact.png:720x540",
+      "windows-wide.png:1366x768",
+      "dark.png:390x844",
+      "stress.png:720x540",
+      "system-state.png:1200x800",
+      "motion-board.png:1200x800"
+    ]
+  },
+  "acceptance": "Final design-only gate. Stage 06 may implement only from exact page/component IDs, decomposition records and hashes."
+}

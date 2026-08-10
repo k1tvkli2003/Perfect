@@ -1,0 +1,48 @@
+{
+  "preview_id": "pg-task-schedule@ps01-pages-1.0.0#b064c13a96971a5be706fda86c50e27ad2acc5d0e1db361ac699c66dbd075108",
+  "page_id": "pg-task-schedule",
+  "scenario_id": "scn-task-schedule-tablet-portrait",
+  "viewport": "800x1280",
+  "theme": "light",
+  "locale": "fa-IR",
+  "direction": "rtl",
+  "text_scale": 1,
+  "landmarks": {
+    "header": {
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "height": 0.12
+    },
+    "primary_content": {
+      "x": 0.06,
+      "y": 0.15,
+      "width": 0.88,
+      "height": 0.66
+    },
+    "primary_action": {
+      "x": 0.62,
+      "y": 0.79,
+      "width": 0.28,
+      "height": 0.075
+    }
+  },
+  "typography": {
+    "page_title": {
+      "family": "Perfect Jakarta",
+      "weight": 650,
+      "size": 24,
+      "line_height": 1.12
+    },
+    "body": {
+      "family": "Perfect Jakarta",
+      "weight": 480,
+      "size": 15,
+      "line_height": 1.45
+    }
+  },
+  "system_state": {
+    "sync": "synced",
+    "local_ready": true
+  }
+}

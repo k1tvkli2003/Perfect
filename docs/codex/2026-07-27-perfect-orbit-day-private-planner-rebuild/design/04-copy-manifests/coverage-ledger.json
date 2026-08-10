@@ -1,0 +1,2594 @@
+{
+  "catalog_version": "ps01-pages-1.0.0",
+  "component_catalog_version": "ps01-ds-1.0.0",
+  "generated_at": "2026-08-10",
+  "exact_component_count": 181,
+  "unconsumed_component_count": 0,
+  "component_consumers": [
+    {
+      "component_id": "id-perfect-mark",
+      "consumers": [
+        "pg-bootstrap"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "id-perfect-wordmark",
+      "consumers": [
+        "pg-splash-transition"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "id-launcher-android",
+      "consumers": [
+        "pg-configuration"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "id-splash-android",
+      "consumers": [
+        "pg-sign-in"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "id-icon-windows",
+      "consumers": [
+        "pg-password-update"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "id-widget-brand",
+      "consumers": [
+        "pg-session-expired"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "id-category-pictogram",
+      "consumers": [
+        "pg-bootstrap-recovery"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sh-page-canvas",
+      "consumers": [
+        "pg-bootstrap",
+        "pg-splash-transition",
+        "pg-configuration",
+        "pg-sign-in",
+        "pg-password-update",
+        "pg-session-expired",
+        "pg-bootstrap-recovery",
+        "pg-shell-phone",
+        "pg-shell-short-landscape",
+        "pg-shell-tablet-collapsed",
+        "pg-shell-tablet-expanded",
+        "pg-shell-windows-compact",
+        "pg-shell-windows-intermediate",
+        "pg-shell-windows-wide",
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-capture-collapsed",
+        "pg-capture-task",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-capture-voice",
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-capture-interrupted-resize",
+        "pg-create-choice",
+        "pg-task-identity",
+        "pg-task-definition",
+        "pg-task-schedule",
+        "pg-task-recurrence",
+        "pg-task-recovery",
+        "pg-task-reminder",
+        "pg-task-review",
+        "pg-habit-identity",
+        "pg-habit-tracking",
+        "pg-habit-target",
+        "pg-habit-multiple-daily",
+        "pg-habit-schedule",
+        "pg-habit-recovery",
+        "pg-habit-reminder",
+        "pg-habit-review",
+        "pg-edit-task",
+        "pg-edit-recurring-task",
+        "pg-edit-habit",
+        "pg-editor-validation",
+        "pg-editor-discard-draft",
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector",
+        "pg-tasks-default",
+        "pg-tasks-search",
+        "pg-tasks-filtered",
+        "pg-tasks-dense",
+        "pg-tasks-bulk",
+        "pg-plan-day",
+        "pg-plan-week",
+        "pg-plan-month",
+        "pg-plan-unscheduled",
+        "pg-plan-overlap-conflict",
+        "pg-plan-drag-resize",
+        "pg-habits-today",
+        "pg-habits-insights",
+        "pg-habits-build-maintain-quit",
+        "pg-habits-dense",
+        "pg-goals",
+        "pg-projects",
+        "pg-areas",
+        "pg-notes",
+        "pg-horizon-week",
+        "pg-horizon-month",
+        "pg-horizon-quarter",
+        "pg-horizon-year",
+        "pg-review-week",
+        "pg-review-month",
+        "pg-focus-setup",
+        "pg-focus-running",
+        "pg-focus-paused-background",
+        "pg-focus-complete-reflection",
+        "pg-focus-history",
+        "pg-achievements",
+        "pg-streak-recovery",
+        "pg-reward-receipt",
+        "pg-more",
+        "pg-profile-session",
+        "pg-settings-appearance",
+        "pg-settings-reminders",
+        "pg-settings-widget",
+        "pg-settings-ai",
+        "pg-settings-data",
+        "pg-archive-trash",
+        "pg-conflict-center",
+        "pg-insights-review",
+        "pg-diagnostics",
+        "pg-backup-export",
+        "pg-import-dry-run",
+        "pg-data-recovery",
+        "pg-update-status",
+        "pg-feedback-launcher",
+        "pg-feedback-menu",
+        "pg-feedback-screenshot-draft",
+        "pg-feedback-note-draft",
+        "pg-feedback-entries",
+        "pg-feedback-entry-detail",
+        "pg-feedback-export",
+        "pg-ai-empty",
+        "pg-ai-conversation",
+        "pg-ai-listening",
+        "pg-ai-proposal",
+        "pg-ai-conflict",
+        "pg-ai-error-offline",
+        "pg-widget-compact",
+        "pg-widget-medium",
+        "pg-widget-tall",
+        "pg-widget-wide",
+        "pg-widget-large",
+        "pg-widget-empty",
+        "pg-widget-quick-add",
+        "pg-widget-offline-action",
+        "pg-notification-open",
+        "pg-stale-deep-link",
+        "pg-windows-protocol-open"
+      ],
+      "consumer_count": 134
+    },
+    {
+      "component_id": "sh-glass-header",
+      "consumers": [
+        "pg-bootstrap",
+        "pg-splash-transition",
+        "pg-configuration",
+        "pg-sign-in",
+        "pg-password-update",
+        "pg-session-expired",
+        "pg-bootstrap-recovery",
+        "pg-shell-phone",
+        "pg-shell-short-landscape",
+        "pg-shell-tablet-collapsed",
+        "pg-shell-tablet-expanded",
+        "pg-shell-windows-compact",
+        "pg-shell-windows-intermediate",
+        "pg-shell-windows-wide",
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-capture-collapsed",
+        "pg-capture-task",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-capture-voice",
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-capture-interrupted-resize",
+        "pg-create-choice",
+        "pg-task-identity",
+        "pg-task-definition",
+        "pg-task-schedule",
+        "pg-task-recurrence",
+        "pg-task-recovery",
+        "pg-task-reminder",
+        "pg-task-review",
+        "pg-habit-identity",
+        "pg-habit-tracking",
+        "pg-habit-target",
+        "pg-habit-multiple-daily",
+        "pg-habit-schedule",
+        "pg-habit-recovery",
+        "pg-habit-reminder",
+        "pg-habit-review",
+        "pg-edit-task",
+        "pg-edit-recurring-task",
+        "pg-edit-habit",
+        "pg-editor-validation",
+        "pg-editor-discard-draft",
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector",
+        "pg-tasks-default",
+        "pg-tasks-search",
+        "pg-tasks-filtered",
+        "pg-tasks-dense",
+        "pg-tasks-bulk",
+        "pg-plan-day",
+        "pg-plan-week",
+        "pg-plan-month",
+        "pg-plan-unscheduled",
+        "pg-plan-overlap-conflict",
+        "pg-plan-drag-resize",
+        "pg-habits-today",
+        "pg-habits-insights",
+        "pg-habits-build-maintain-quit",
+        "pg-habits-dense",
+        "pg-goals",
+        "pg-projects",
+        "pg-areas",
+        "pg-notes",
+        "pg-horizon-week",
+        "pg-horizon-month",
+        "pg-horizon-quarter",
+        "pg-horizon-year",
+        "pg-review-week",
+        "pg-review-month",
+        "pg-focus-setup",
+        "pg-focus-running",
+        "pg-focus-paused-background",
+        "pg-focus-complete-reflection",
+        "pg-focus-history",
+        "pg-achievements",
+        "pg-streak-recovery",
+        "pg-reward-receipt",
+        "pg-more",
+        "pg-profile-session",
+        "pg-settings-appearance",
+        "pg-settings-reminders",
+        "pg-settings-widget",
+        "pg-settings-ai",
+        "pg-settings-data",
+        "pg-archive-trash",
+        "pg-conflict-center",
+        "pg-insights-review",
+        "pg-diagnostics",
+        "pg-backup-export",
+        "pg-import-dry-run",
+        "pg-data-recovery",
+        "pg-update-status",
+        "pg-feedback-launcher",
+        "pg-feedback-menu",
+        "pg-feedback-screenshot-draft",
+        "pg-feedback-note-draft",
+        "pg-feedback-entries",
+        "pg-feedback-entry-detail",
+        "pg-feedback-export",
+        "pg-ai-empty",
+        "pg-ai-conversation",
+        "pg-ai-listening",
+        "pg-ai-proposal",
+        "pg-ai-conflict",
+        "pg-ai-error-offline",
+        "pg-notification-open",
+        "pg-stale-deep-link",
+        "pg-windows-protocol-open"
+      ],
+      "consumer_count": 126
+    },
+    {
+      "component_id": "sh-title-cluster",
+      "consumers": [
+        "pg-bootstrap",
+        "pg-splash-transition",
+        "pg-configuration",
+        "pg-sign-in",
+        "pg-password-update",
+        "pg-session-expired",
+        "pg-bootstrap-recovery",
+        "pg-shell-phone",
+        "pg-shell-short-landscape",
+        "pg-shell-tablet-collapsed",
+        "pg-shell-tablet-expanded",
+        "pg-shell-windows-compact",
+        "pg-shell-windows-intermediate",
+        "pg-shell-windows-wide",
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-capture-collapsed",
+        "pg-capture-task",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-capture-voice",
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-capture-interrupted-resize",
+        "pg-create-choice",
+        "pg-task-identity",
+        "pg-task-definition",
+        "pg-task-schedule",
+        "pg-task-recurrence",
+        "pg-task-recovery",
+        "pg-task-reminder",
+        "pg-task-review",
+        "pg-habit-identity",
+        "pg-habit-tracking",
+        "pg-habit-target",
+        "pg-habit-multiple-daily",
+        "pg-habit-schedule",
+        "pg-habit-recovery",
+        "pg-habit-reminder",
+        "pg-habit-review",
+        "pg-edit-task",
+        "pg-edit-recurring-task",
+        "pg-edit-habit",
+        "pg-editor-validation",
+        "pg-editor-discard-draft",
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector",
+        "pg-tasks-default",
+        "pg-tasks-search",
+        "pg-tasks-filtered",
+        "pg-tasks-dense",
+        "pg-tasks-bulk",
+        "pg-plan-day",
+        "pg-plan-week",
+        "pg-plan-month",
+        "pg-plan-unscheduled",
+        "pg-plan-overlap-conflict",
+        "pg-plan-drag-resize",
+        "pg-habits-today",
+        "pg-habits-insights",
+        "pg-habits-build-maintain-quit",
+        "pg-habits-dense",
+        "pg-goals",
+        "pg-projects",
+        "pg-areas",
+        "pg-notes",
+        "pg-horizon-week",
+        "pg-horizon-month",
+        "pg-horizon-quarter",
+        "pg-horizon-year",
+        "pg-review-week",
+        "pg-review-month",
+        "pg-focus-setup",
+        "pg-focus-running",
+        "pg-focus-paused-background",
+        "pg-focus-complete-reflection",
+        "pg-focus-history",
+        "pg-achievements",
+        "pg-streak-recovery",
+        "pg-reward-receipt",
+        "pg-more",
+        "pg-profile-session",
+        "pg-settings-appearance",
+        "pg-settings-reminders",
+        "pg-settings-widget",
+        "pg-settings-ai",
+        "pg-settings-data",
+        "pg-archive-trash",
+        "pg-conflict-center",
+        "pg-insights-review",
+        "pg-diagnostics",
+        "pg-backup-export",
+        "pg-import-dry-run",
+        "pg-data-recovery",
+        "pg-update-status",
+        "pg-feedback-launcher",
+        "pg-feedback-menu",
+        "pg-feedback-screenshot-draft",
+        "pg-feedback-note-draft",
+        "pg-feedback-entries",
+        "pg-feedback-entry-detail",
+        "pg-feedback-export",
+        "pg-ai-empty",
+        "pg-ai-conversation",
+        "pg-ai-listening",
+        "pg-ai-proposal",
+        "pg-ai-conflict",
+        "pg-ai-error-offline",
+        "pg-widget-compact",
+        "pg-widget-medium",
+        "pg-widget-tall",
+        "pg-widget-wide",
+        "pg-widget-large",
+        "pg-widget-empty",
+        "pg-widget-quick-add",
+        "pg-widget-offline-action",
+        "pg-notification-open",
+        "pg-stale-deep-link",
+        "pg-windows-protocol-open"
+      ],
+      "consumer_count": 134
+    },
+    {
+      "component_id": "sh-dual-date-clock",
+      "consumers": [
+        "pg-sign-in"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sh-sync-cloud",
+      "consumers": [
+        "pg-password-update",
+        "pg-shell-phone",
+        "pg-shell-short-landscape",
+        "pg-shell-tablet-collapsed",
+        "pg-shell-tablet-expanded",
+        "pg-shell-windows-compact",
+        "pg-shell-windows-intermediate",
+        "pg-shell-windows-wide",
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-habit-multiple-daily",
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector",
+        "pg-tasks-default",
+        "pg-tasks-search",
+        "pg-tasks-filtered",
+        "pg-tasks-dense",
+        "pg-tasks-bulk",
+        "pg-plan-day",
+        "pg-plan-week",
+        "pg-plan-month",
+        "pg-plan-unscheduled",
+        "pg-plan-overlap-conflict",
+        "pg-plan-drag-resize",
+        "pg-habits-today",
+        "pg-habits-insights",
+        "pg-habits-build-maintain-quit",
+        "pg-habits-dense",
+        "pg-goals",
+        "pg-projects",
+        "pg-areas",
+        "pg-notes",
+        "pg-more",
+        "pg-settings-appearance",
+        "pg-settings-reminders",
+        "pg-settings-widget",
+        "pg-settings-ai",
+        "pg-settings-data",
+        "pg-feedback-launcher",
+        "pg-feedback-menu",
+        "pg-feedback-screenshot-draft",
+        "pg-feedback-note-draft",
+        "pg-feedback-entries",
+        "pg-feedback-entry-detail",
+        "pg-feedback-export",
+        "pg-ai-empty",
+        "pg-ai-conversation",
+        "pg-ai-listening",
+        "pg-ai-proposal",
+        "pg-ai-conflict",
+        "pg-ai-error-offline"
+      ],
+      "consumer_count": 68
+    },
+    {
+      "component_id": "sh-phone-footer",
+      "consumers": [
+        "pg-session-expired",
+        "pg-shell-phone",
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-capture-collapsed",
+        "pg-capture-task",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-capture-voice",
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-capture-interrupted-resize",
+        "pg-habits-today"
+      ],
+      "consumer_count": 18
+    },
+    {
+      "component_id": "sh-footer-destination",
+      "consumers": [
+        "pg-bootstrap-recovery"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sh-tablet-rail",
+      "consumers": [
+        "pg-shell-phone",
+        "pg-shell-tablet-collapsed",
+        "pg-shell-tablet-expanded"
+      ],
+      "consumer_count": 3
+    },
+    {
+      "component_id": "sh-windows-rail",
+      "consumers": [
+        "pg-shell-short-landscape",
+        "pg-shell-windows-compact",
+        "pg-shell-windows-intermediate",
+        "pg-shell-windows-wide",
+        "pg-windows-protocol-open"
+      ],
+      "consumer_count": 5
+    },
+    {
+      "component_id": "sh-rail-toggle",
+      "consumers": [
+        "pg-shell-tablet-collapsed"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sh-page-scroll-frame",
+      "consumers": [
+        "pg-bootstrap",
+        "pg-splash-transition",
+        "pg-configuration",
+        "pg-sign-in",
+        "pg-password-update",
+        "pg-session-expired",
+        "pg-bootstrap-recovery",
+        "pg-shell-phone",
+        "pg-shell-short-landscape",
+        "pg-shell-tablet-collapsed",
+        "pg-shell-tablet-expanded",
+        "pg-shell-windows-compact",
+        "pg-shell-windows-intermediate",
+        "pg-shell-windows-wide",
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-capture-collapsed",
+        "pg-capture-task",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-capture-voice",
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-capture-interrupted-resize",
+        "pg-create-choice",
+        "pg-task-identity",
+        "pg-task-definition",
+        "pg-task-schedule",
+        "pg-task-recurrence",
+        "pg-task-recovery",
+        "pg-task-reminder",
+        "pg-task-review",
+        "pg-habit-identity",
+        "pg-habit-tracking",
+        "pg-habit-target",
+        "pg-habit-multiple-daily",
+        "pg-habit-schedule",
+        "pg-habit-recovery",
+        "pg-habit-reminder",
+        "pg-habit-review",
+        "pg-edit-task",
+        "pg-edit-recurring-task",
+        "pg-edit-habit",
+        "pg-editor-validation",
+        "pg-editor-discard-draft",
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector",
+        "pg-tasks-default",
+        "pg-tasks-search",
+        "pg-tasks-filtered",
+        "pg-tasks-dense",
+        "pg-tasks-bulk",
+        "pg-plan-day",
+        "pg-plan-week",
+        "pg-plan-month",
+        "pg-plan-unscheduled",
+        "pg-plan-overlap-conflict",
+        "pg-plan-drag-resize",
+        "pg-habits-today",
+        "pg-habits-insights",
+        "pg-habits-build-maintain-quit",
+        "pg-habits-dense",
+        "pg-goals",
+        "pg-projects",
+        "pg-areas",
+        "pg-notes",
+        "pg-horizon-week",
+        "pg-horizon-month",
+        "pg-horizon-quarter",
+        "pg-horizon-year",
+        "pg-review-week",
+        "pg-review-month",
+        "pg-focus-setup",
+        "pg-focus-running",
+        "pg-focus-paused-background",
+        "pg-focus-complete-reflection",
+        "pg-focus-history",
+        "pg-achievements",
+        "pg-streak-recovery",
+        "pg-reward-receipt",
+        "pg-more",
+        "pg-profile-session",
+        "pg-settings-appearance",
+        "pg-settings-reminders",
+        "pg-settings-widget",
+        "pg-settings-ai",
+        "pg-settings-data",
+        "pg-archive-trash",
+        "pg-conflict-center",
+        "pg-insights-review",
+        "pg-diagnostics",
+        "pg-backup-export",
+        "pg-import-dry-run",
+        "pg-data-recovery",
+        "pg-update-status",
+        "pg-feedback-launcher",
+        "pg-feedback-menu",
+        "pg-feedback-screenshot-draft",
+        "pg-feedback-note-draft",
+        "pg-feedback-entries",
+        "pg-feedback-entry-detail",
+        "pg-feedback-export",
+        "pg-ai-empty",
+        "pg-ai-conversation",
+        "pg-ai-listening",
+        "pg-ai-proposal",
+        "pg-ai-conflict",
+        "pg-ai-error-offline",
+        "pg-widget-compact",
+        "pg-widget-medium",
+        "pg-widget-tall",
+        "pg-widget-wide",
+        "pg-widget-large",
+        "pg-widget-empty",
+        "pg-widget-quick-add",
+        "pg-widget-offline-action",
+        "pg-notification-open",
+        "pg-stale-deep-link",
+        "pg-windows-protocol-open"
+      ],
+      "consumer_count": 134
+    },
+    {
+      "component_id": "sh-desktop-inspector",
+      "consumers": [
+        "pg-shell-windows-compact"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sh-pane-divider",
+      "consumers": [
+        "pg-shell-windows-intermediate"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sh-system-overlay-anchor",
+      "consumers": [
+        "pg-bootstrap",
+        "pg-splash-transition",
+        "pg-configuration",
+        "pg-sign-in",
+        "pg-password-update",
+        "pg-session-expired",
+        "pg-bootstrap-recovery",
+        "pg-shell-phone",
+        "pg-shell-short-landscape",
+        "pg-shell-tablet-collapsed",
+        "pg-shell-tablet-expanded",
+        "pg-shell-windows-compact",
+        "pg-shell-windows-intermediate",
+        "pg-shell-windows-wide",
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-capture-collapsed",
+        "pg-capture-task",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-capture-voice",
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-capture-interrupted-resize",
+        "pg-create-choice",
+        "pg-task-identity",
+        "pg-task-definition",
+        "pg-task-schedule",
+        "pg-task-recurrence",
+        "pg-task-recovery",
+        "pg-task-reminder",
+        "pg-task-review",
+        "pg-habit-identity",
+        "pg-habit-tracking",
+        "pg-habit-target",
+        "pg-habit-multiple-daily",
+        "pg-habit-schedule",
+        "pg-habit-recovery",
+        "pg-habit-reminder",
+        "pg-habit-review",
+        "pg-edit-task",
+        "pg-edit-recurring-task",
+        "pg-edit-habit",
+        "pg-editor-validation",
+        "pg-editor-discard-draft",
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector",
+        "pg-tasks-default",
+        "pg-tasks-search",
+        "pg-tasks-filtered",
+        "pg-tasks-dense",
+        "pg-tasks-bulk",
+        "pg-plan-day",
+        "pg-plan-week",
+        "pg-plan-month",
+        "pg-plan-unscheduled",
+        "pg-plan-overlap-conflict",
+        "pg-plan-drag-resize",
+        "pg-habits-today",
+        "pg-habits-insights",
+        "pg-habits-build-maintain-quit",
+        "pg-habits-dense",
+        "pg-goals",
+        "pg-projects",
+        "pg-areas",
+        "pg-notes",
+        "pg-horizon-week",
+        "pg-horizon-month",
+        "pg-horizon-quarter",
+        "pg-horizon-year",
+        "pg-review-week",
+        "pg-review-month",
+        "pg-focus-setup",
+        "pg-focus-running",
+        "pg-focus-paused-background",
+        "pg-focus-complete-reflection",
+        "pg-focus-history",
+        "pg-achievements",
+        "pg-streak-recovery",
+        "pg-reward-receipt",
+        "pg-more",
+        "pg-profile-session",
+        "pg-settings-appearance",
+        "pg-settings-reminders",
+        "pg-settings-widget",
+        "pg-settings-ai",
+        "pg-settings-data",
+        "pg-archive-trash",
+        "pg-conflict-center",
+        "pg-insights-review",
+        "pg-diagnostics",
+        "pg-backup-export",
+        "pg-import-dry-run",
+        "pg-data-recovery",
+        "pg-update-status",
+        "pg-feedback-launcher",
+        "pg-feedback-menu",
+        "pg-feedback-screenshot-draft",
+        "pg-feedback-note-draft",
+        "pg-feedback-entries",
+        "pg-feedback-entry-detail",
+        "pg-feedback-export",
+        "pg-ai-empty",
+        "pg-ai-conversation",
+        "pg-ai-listening",
+        "pg-ai-proposal",
+        "pg-ai-conflict",
+        "pg-ai-error-offline",
+        "pg-widget-compact",
+        "pg-widget-medium",
+        "pg-widget-tall",
+        "pg-widget-wide",
+        "pg-widget-large",
+        "pg-widget-empty",
+        "pg-widget-quick-add",
+        "pg-widget-offline-action",
+        "pg-notification-open",
+        "pg-stale-deep-link",
+        "pg-windows-protocol-open"
+      ],
+      "consumer_count": 134
+    },
+    {
+      "component_id": "ct-button-primary",
+      "consumers": [
+        "pg-bootstrap"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-button-secondary",
+      "consumers": [
+        "pg-splash-transition"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-button-ghost",
+      "consumers": [
+        "pg-configuration"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-button-danger",
+      "consumers": [
+        "pg-sign-in"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-icon-button",
+      "consumers": [
+        "pg-password-update"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-split-action",
+      "consumers": [
+        "pg-session-expired"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-text-field",
+      "consumers": [
+        "pg-bootstrap-recovery"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-search-field",
+      "consumers": [
+        "pg-shell-phone"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-note-field",
+      "consumers": [
+        "pg-shell-short-landscape"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-password-field",
+      "consumers": [
+        "pg-shell-tablet-collapsed"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-voice-field",
+      "consumers": [
+        "pg-shell-tablet-expanded",
+        "pg-capture-voice",
+        "pg-ai-listening"
+      ],
+      "consumer_count": 3
+    },
+    {
+      "component_id": "ct-chip-filter",
+      "consumers": [
+        "pg-shell-windows-compact"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-segmented-view",
+      "consumers": [
+        "pg-shell-windows-intermediate"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-checkbox",
+      "consumers": [
+        "pg-shell-windows-wide"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-radio",
+      "consumers": [
+        "pg-capture-collapsed"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-toggle",
+      "consumers": [
+        "pg-capture-task"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-slider",
+      "consumers": [
+        "pg-capture-plan"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-count-stepper",
+      "consumers": [
+        "pg-capture-ai"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-value-stepper",
+      "consumers": [
+        "pg-capture-voice"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-time-duration-stepper",
+      "consumers": [
+        "pg-capture-proposal-review"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-date-picker",
+      "consumers": [
+        "pg-capture-ime"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-time-picker",
+      "consumers": [
+        "pg-capture-interrupted-resize"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-calendar",
+      "consumers": [
+        "pg-create-choice"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-menu",
+      "consumers": [
+        "pg-task-identity"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-tooltip",
+      "consumers": [
+        "pg-task-definition"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-toast-undo",
+      "consumers": [
+        "pg-task-schedule"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-progress",
+      "consumers": [
+        "pg-task-recurrence"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ct-skeleton",
+      "consumers": [
+        "pg-task-recovery"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sel-category-tile",
+      "consumers": [
+        "pg-create-choice"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sel-category-picker",
+      "consumers": [
+        "pg-task-identity"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sel-icon-library",
+      "consumers": [
+        "pg-task-definition"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sel-color-swatch",
+      "consumers": [
+        "pg-task-schedule"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sel-project-area-goal",
+      "consumers": [
+        "pg-task-recurrence"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sel-tag-context",
+      "consumers": [
+        "pg-task-recovery"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sel-priority-energy",
+      "consumers": [
+        "pg-task-reminder"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sel-repeat-summary",
+      "consumers": [
+        "pg-task-review"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "sel-reminder-summary",
+      "consumers": [
+        "pg-habit-identity"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ov-dialog",
+      "consumers": [
+        "pg-shell-phone"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ov-bottom-sheet",
+      "consumers": [
+        "pg-shell-short-landscape"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ov-popover",
+      "consumers": [
+        "pg-shell-tablet-collapsed"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ov-full-route",
+      "consumers": [
+        "pg-shell-tablet-expanded"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ov-wizard-chrome",
+      "consumers": [
+        "pg-shell-windows-compact"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "st-empty",
+      "consumers": [
+        "pg-bootstrap"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "st-local-loading",
+      "consumers": [
+        "pg-splash-transition"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "st-local-ready-syncing",
+      "consumers": [
+        "pg-configuration"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "st-offline",
+      "consumers": [
+        "pg-sign-in"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "st-retrying",
+      "consumers": [
+        "pg-password-update"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "st-error-recoverable",
+      "consumers": [
+        "pg-session-expired"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "st-error-hard",
+      "consumers": [
+        "pg-bootstrap-recovery"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "st-conflict",
+      "consumers": [
+        "pg-shell-phone"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "st-destructive-confirm",
+      "consumers": [
+        "pg-shell-short-landscape"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "td-pulse",
+      "consumers": [
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-habits-today"
+      ],
+      "consumer_count": 8
+    },
+    {
+      "component_id": "td-zone-heading",
+      "consumers": [
+        "pg-today-sparse"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "td-stream-timeline",
+      "consumers": [
+        "pg-today-normal"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "td-next-emphasis",
+      "consumers": [
+        "pg-today-dense"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "td-continuation-cue",
+      "consumers": [
+        "pg-today-offline"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "task-row",
+      "consumers": [
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-habits-today"
+      ],
+      "consumer_count": 8
+    },
+    {
+      "component_id": "task-status-control",
+      "consumers": [
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-habits-today"
+      ],
+      "consumer_count": 8
+    },
+    {
+      "component_id": "task-partial-ring",
+      "consumers": [
+        "pg-today-normal"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "task-time-rail",
+      "consumers": [
+        "pg-today-dense"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "task-meta-line",
+      "consumers": [
+        "pg-today-offline"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "task-subtasks-summary",
+      "consumers": [
+        "pg-today-retry-error"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "task-row-actions",
+      "consumers": [
+        "pg-today-conflict"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "task-inline-receipt",
+      "consumers": [
+        "pg-detail-task"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "habit-row",
+      "consumers": [
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-habits-today"
+      ],
+      "consumer_count": 8
+    },
+    {
+      "component_id": "habit-control-check",
+      "consumers": [
+        "pg-today-sparse"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "habit-control-count",
+      "consumers": [
+        "pg-today-normal"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "habit-control-duration",
+      "consumers": [
+        "pg-today-dense"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "habit-control-numeric",
+      "consumers": [
+        "pg-today-offline"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "habit-control-checklist",
+      "consumers": [
+        "pg-today-retry-error"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "habit-control-formula",
+      "consumers": [
+        "pg-today-conflict"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "habit-day-state",
+      "consumers": [
+        "pg-detail-task"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "habit-week-strip",
+      "consumers": [
+        "pg-detail-recurring-task"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "habit-streak-receipt",
+      "consumers": [
+        "pg-detail-habit"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "habit-recovery-preview",
+      "consumers": [
+        "pg-detail-habit-history"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "habit-metric-strip",
+      "consumers": [
+        "pg-detail-habit-analytics"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "cap-orb",
+      "consumers": [
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict",
+        "pg-capture-collapsed",
+        "pg-capture-task",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-capture-voice",
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-capture-interrupted-resize",
+        "pg-habits-today"
+      ],
+      "consumer_count": 16
+    },
+    {
+      "component_id": "cap-expanded-shell",
+      "consumers": [
+        "pg-today-sparse",
+        "pg-capture-collapsed",
+        "pg-capture-task",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-capture-voice",
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-capture-interrupted-resize"
+      ],
+      "consumer_count": 9
+    },
+    {
+      "component_id": "cap-task-mode",
+      "consumers": [
+        "pg-today-normal",
+        "pg-capture-task"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "cap-plan-mode",
+      "consumers": [
+        "pg-today-dense",
+        "pg-capture-plan"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "cap-mode-actions",
+      "consumers": [
+        "pg-today-offline",
+        "pg-capture-collapsed",
+        "pg-capture-task",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-capture-voice",
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-capture-interrupted-resize"
+      ],
+      "consumer_count": 9
+    },
+    {
+      "component_id": "cap-send-action",
+      "consumers": [
+        "pg-today-retry-error",
+        "pg-capture-collapsed",
+        "pg-capture-task",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-capture-voice",
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-capture-interrupted-resize"
+      ],
+      "consumer_count": 9
+    },
+    {
+      "component_id": "ai-shell",
+      "consumers": [
+        "pg-capture-collapsed",
+        "pg-capture-ai",
+        "pg-ai-empty",
+        "pg-ai-conversation",
+        "pg-ai-listening",
+        "pg-ai-proposal",
+        "pg-ai-conflict",
+        "pg-ai-error-offline"
+      ],
+      "consumer_count": 8
+    },
+    {
+      "component_id": "ai-context-strip",
+      "consumers": [
+        "pg-capture-task",
+        "pg-capture-ai",
+        "pg-ai-empty",
+        "pg-ai-conversation",
+        "pg-ai-listening",
+        "pg-ai-proposal",
+        "pg-ai-conflict",
+        "pg-ai-error-offline"
+      ],
+      "consumer_count": 8
+    },
+    {
+      "component_id": "ai-starter-path",
+      "consumers": [
+        "pg-capture-plan"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ai-message",
+      "consumers": [
+        "pg-capture-ai",
+        "pg-ai-empty",
+        "pg-ai-conversation",
+        "pg-ai-listening",
+        "pg-ai-proposal",
+        "pg-ai-conflict",
+        "pg-ai-error-offline"
+      ],
+      "consumer_count": 7
+    },
+    {
+      "component_id": "ai-thinking",
+      "consumers": [
+        "pg-capture-voice"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ai-proposal",
+      "consumers": [
+        "pg-capture-proposal-review",
+        "pg-ai-proposal"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "ai-proposal-action",
+      "consumers": [
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-ai-proposal"
+      ],
+      "consumer_count": 3
+    },
+    {
+      "component_id": "ai-history-banner",
+      "consumers": [
+        "pg-capture-interrupted-resize"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ai-error-ribbon",
+      "consumers": [
+        "pg-feedback-launcher"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "voice-recorder",
+      "consumers": [
+        "pg-capture-collapsed",
+        "pg-capture-voice",
+        "pg-ai-listening"
+      ],
+      "consumer_count": 3
+    },
+    {
+      "component_id": "wiz-progress",
+      "consumers": [
+        "pg-create-choice",
+        "pg-task-identity",
+        "pg-task-definition",
+        "pg-task-schedule",
+        "pg-task-recurrence",
+        "pg-task-recovery",
+        "pg-task-reminder",
+        "pg-task-review",
+        "pg-habit-identity",
+        "pg-habit-tracking",
+        "pg-habit-target",
+        "pg-habit-multiple-daily",
+        "pg-habit-schedule",
+        "pg-habit-recovery",
+        "pg-habit-reminder",
+        "pg-habit-review",
+        "pg-edit-task",
+        "pg-edit-recurring-task",
+        "pg-edit-habit",
+        "pg-editor-validation",
+        "pg-editor-discard-draft",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics"
+      ],
+      "consumer_count": 23
+    },
+    {
+      "component_id": "wiz-type-choice",
+      "consumers": [
+        "pg-task-identity"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "wiz-identity-step",
+      "consumers": [
+        "pg-task-identity",
+        "pg-task-definition",
+        "pg-habit-identity"
+      ],
+      "consumer_count": 3
+    },
+    {
+      "component_id": "wiz-definition-step",
+      "consumers": [
+        "pg-task-definition",
+        "pg-task-schedule",
+        "pg-habit-tracking",
+        "pg-habit-target",
+        "pg-habit-multiple-daily"
+      ],
+      "consumer_count": 5
+    },
+    {
+      "component_id": "wiz-schedule-step",
+      "consumers": [
+        "pg-task-schedule",
+        "pg-task-recurrence",
+        "pg-habit-schedule",
+        "pg-plan-unscheduled"
+      ],
+      "consumer_count": 4
+    },
+    {
+      "component_id": "wiz-recurrence-step",
+      "consumers": [
+        "pg-task-recurrence",
+        "pg-task-recovery"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "wiz-recovery-step",
+      "consumers": [
+        "pg-bootstrap-recovery",
+        "pg-task-recovery",
+        "pg-task-reminder",
+        "pg-habit-recovery",
+        "pg-streak-recovery",
+        "pg-data-recovery"
+      ],
+      "consumer_count": 6
+    },
+    {
+      "component_id": "wiz-reminder-step",
+      "consumers": [
+        "pg-task-reminder",
+        "pg-task-review",
+        "pg-habit-reminder",
+        "pg-settings-reminders"
+      ],
+      "consumer_count": 4
+    },
+    {
+      "component_id": "wiz-review-step",
+      "consumers": [
+        "pg-capture-proposal-review",
+        "pg-task-review",
+        "pg-habit-identity",
+        "pg-habit-review",
+        "pg-review-week",
+        "pg-review-month",
+        "pg-insights-review"
+      ],
+      "consumer_count": 7
+    },
+    {
+      "component_id": "wiz-footer",
+      "consumers": [
+        "pg-create-choice",
+        "pg-task-identity",
+        "pg-task-definition",
+        "pg-task-schedule",
+        "pg-task-recurrence",
+        "pg-task-recovery",
+        "pg-task-reminder",
+        "pg-task-review",
+        "pg-habit-identity",
+        "pg-habit-tracking",
+        "pg-habit-target",
+        "pg-habit-multiple-daily",
+        "pg-habit-schedule",
+        "pg-habit-recovery",
+        "pg-habit-reminder",
+        "pg-habit-review",
+        "pg-edit-task",
+        "pg-edit-recurring-task",
+        "pg-edit-habit",
+        "pg-editor-validation",
+        "pg-editor-discard-draft",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics"
+      ],
+      "consumer_count": 23
+    },
+    {
+      "component_id": "wiz-discard-draft",
+      "consumers": [
+        "pg-habit-target"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "det-hero",
+      "consumers": [
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector",
+        "pg-feedback-entry-detail"
+      ],
+      "consumer_count": 13
+    },
+    {
+      "component_id": "det-fact-group",
+      "consumers": [
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector",
+        "pg-feedback-entry-detail"
+      ],
+      "consumer_count": 13
+    },
+    {
+      "component_id": "det-relations",
+      "consumers": [
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector",
+        "pg-feedback-entry-detail"
+      ],
+      "consumer_count": 13
+    },
+    {
+      "component_id": "det-history-timeline",
+      "consumers": [
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector",
+        "pg-feedback-entry-detail"
+      ],
+      "consumer_count": 13
+    },
+    {
+      "component_id": "det-month-calendar",
+      "consumers": [
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "det-habit-heatmap",
+      "consumers": [
+        "pg-detail-habit-history",
+        "pg-detail-goal"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "det-chart",
+      "consumers": [
+        "pg-detail-habit-analytics",
+        "pg-detail-project",
+        "pg-habits-insights",
+        "pg-insights-review"
+      ],
+      "consumer_count": 4
+    },
+    {
+      "component_id": "det-insight",
+      "consumers": [
+        "pg-detail-habit-analytics",
+        "pg-detail-area",
+        "pg-habits-insights",
+        "pg-insights-review"
+      ],
+      "consumer_count": 4
+    },
+    {
+      "component_id": "det-lifecycle-actions",
+      "consumers": [
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector",
+        "pg-feedback-entry-detail"
+      ],
+      "consumer_count": 13
+    },
+    {
+      "component_id": "det-focus-link",
+      "consumers": [
+        "pg-detail-focus-session"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ws-query-bar",
+      "consumers": [
+        "pg-tasks-default",
+        "pg-tasks-search",
+        "pg-tasks-filtered",
+        "pg-tasks-dense",
+        "pg-tasks-bulk"
+      ],
+      "consumer_count": 5
+    },
+    {
+      "component_id": "ws-filter-deck",
+      "consumers": [
+        "pg-tasks-default",
+        "pg-tasks-search",
+        "pg-tasks-filtered",
+        "pg-tasks-dense",
+        "pg-tasks-bulk"
+      ],
+      "consumer_count": 5
+    },
+    {
+      "component_id": "ws-group-header",
+      "consumers": [
+        "pg-tasks-default",
+        "pg-tasks-search",
+        "pg-tasks-filtered",
+        "pg-tasks-dense",
+        "pg-tasks-bulk"
+      ],
+      "consumer_count": 5
+    },
+    {
+      "component_id": "ws-saved-view",
+      "consumers": [
+        "pg-tasks-dense"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "ws-bulk-bar",
+      "consumers": [
+        "pg-tasks-bulk"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "plan-week-strip",
+      "consumers": [
+        "pg-capture-plan",
+        "pg-tasks-default",
+        "pg-plan-day",
+        "pg-plan-week",
+        "pg-plan-month",
+        "pg-plan-unscheduled",
+        "pg-plan-overlap-conflict",
+        "pg-plan-drag-resize"
+      ],
+      "consumer_count": 8
+    },
+    {
+      "component_id": "plan-day-column",
+      "consumers": [
+        "pg-capture-plan",
+        "pg-tasks-search",
+        "pg-plan-day",
+        "pg-plan-week",
+        "pg-plan-month",
+        "pg-plan-unscheduled",
+        "pg-plan-overlap-conflict",
+        "pg-plan-drag-resize"
+      ],
+      "consumer_count": 8
+    },
+    {
+      "component_id": "plan-week-grid",
+      "consumers": [
+        "pg-tasks-filtered"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "plan-month-cell",
+      "consumers": [
+        "pg-tasks-dense"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "plan-time-block",
+      "consumers": [
+        "pg-tasks-bulk"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "plan-unscheduled-tray",
+      "consumers": [
+        "pg-capture-plan",
+        "pg-plan-day",
+        "pg-plan-week",
+        "pg-plan-month",
+        "pg-plan-unscheduled",
+        "pg-plan-overlap-conflict",
+        "pg-plan-drag-resize"
+      ],
+      "consumer_count": 7
+    },
+    {
+      "component_id": "goal-outcome-card",
+      "consumers": [
+        "pg-detail-task",
+        "pg-goals",
+        "pg-horizon-week",
+        "pg-horizon-month",
+        "pg-horizon-quarter",
+        "pg-horizon-year"
+      ],
+      "consumer_count": 6
+    },
+    {
+      "component_id": "goal-horizon-strip",
+      "consumers": [
+        "pg-detail-recurring-task",
+        "pg-goals",
+        "pg-horizon-week",
+        "pg-horizon-month",
+        "pg-horizon-quarter",
+        "pg-horizon-year"
+      ],
+      "consumer_count": 6
+    },
+    {
+      "component_id": "project-area-card",
+      "consumers": [
+        "pg-detail-task",
+        "pg-projects",
+        "pg-areas"
+      ],
+      "consumer_count": 3
+    },
+    {
+      "component_id": "review-checkpoint",
+      "consumers": [
+        "pg-tasks-default",
+        "pg-review-week",
+        "pg-review-month"
+      ],
+      "consumer_count": 3
+    },
+    {
+      "component_id": "focus-setup",
+      "consumers": [
+        "pg-detail-focus-session",
+        "pg-focus-setup",
+        "pg-focus-running",
+        "pg-focus-paused-background",
+        "pg-focus-complete-reflection",
+        "pg-focus-history"
+      ],
+      "consumer_count": 6
+    },
+    {
+      "component_id": "focus-timer",
+      "consumers": [
+        "pg-detail-focus-session",
+        "pg-focus-setup",
+        "pg-focus-running",
+        "pg-focus-paused-background",
+        "pg-focus-complete-reflection",
+        "pg-focus-history"
+      ],
+      "consumer_count": 6
+    },
+    {
+      "component_id": "focus-reflection",
+      "consumers": [
+        "pg-detail-focus-session",
+        "pg-focus-setup",
+        "pg-focus-running",
+        "pg-focus-paused-background",
+        "pg-focus-complete-reflection",
+        "pg-focus-history"
+      ],
+      "consumer_count": 6
+    },
+    {
+      "component_id": "game-streak",
+      "consumers": [
+        "pg-detail-task",
+        "pg-streak-recovery"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "game-achievement",
+      "consumers": [
+        "pg-detail-recurring-task",
+        "pg-achievements"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "game-reward-receipt",
+      "consumers": [
+        "pg-detail-habit",
+        "pg-reward-receipt"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "set-section",
+      "consumers": [
+        "pg-more",
+        "pg-profile-session",
+        "pg-settings-appearance",
+        "pg-settings-reminders",
+        "pg-settings-widget",
+        "pg-settings-ai",
+        "pg-settings-data"
+      ],
+      "consumer_count": 7
+    },
+    {
+      "component_id": "set-row",
+      "consumers": [
+        "pg-more",
+        "pg-profile-session",
+        "pg-settings-appearance",
+        "pg-settings-reminders",
+        "pg-settings-widget",
+        "pg-settings-ai",
+        "pg-settings-data"
+      ],
+      "consumer_count": 7
+    },
+    {
+      "component_id": "set-theme-preview",
+      "consumers": [
+        "pg-settings-appearance"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "set-reminder-window",
+      "consumers": [
+        "pg-settings-reminders"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "set-widget-preview",
+      "consumers": [
+        "pg-settings-widget"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "set-profile-session",
+      "consumers": [
+        "pg-settings-ai"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "diag-status-card",
+      "consumers": [
+        "pg-more",
+        "pg-diagnostics"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "diag-log-viewer",
+      "consumers": [
+        "pg-profile-session",
+        "pg-diagnostics"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "fb-launcher",
+      "consumers": [
+        "pg-more",
+        "pg-feedback-launcher",
+        "pg-feedback-menu",
+        "pg-feedback-screenshot-draft",
+        "pg-feedback-note-draft",
+        "pg-feedback-entries",
+        "pg-feedback-entry-detail",
+        "pg-feedback-export"
+      ],
+      "consumer_count": 8
+    },
+    {
+      "component_id": "fb-menu",
+      "consumers": [
+        "pg-profile-session",
+        "pg-feedback-launcher",
+        "pg-feedback-menu",
+        "pg-feedback-screenshot-draft",
+        "pg-feedback-note-draft",
+        "pg-feedback-entries",
+        "pg-feedback-entry-detail",
+        "pg-feedback-export"
+      ],
+      "consumer_count": 8
+    },
+    {
+      "component_id": "fb-draft",
+      "consumers": [
+        "pg-settings-appearance"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "fb-screenshot-preview",
+      "consumers": [
+        "pg-settings-reminders"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "fb-entry-row",
+      "consumers": [
+        "pg-settings-widget"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "fb-entry-detail",
+      "consumers": [
+        "pg-settings-ai"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "data-backup-summary",
+      "consumers": [
+        "pg-more",
+        "pg-backup-export",
+        "pg-import-dry-run",
+        "pg-data-recovery"
+      ],
+      "consumer_count": 4
+    },
+    {
+      "component_id": "data-import-dry-run",
+      "consumers": [
+        "pg-profile-session",
+        "pg-backup-export",
+        "pg-import-dry-run",
+        "pg-data-recovery"
+      ],
+      "consumer_count": 4
+    },
+    {
+      "component_id": "data-recovery",
+      "consumers": [
+        "pg-settings-appearance",
+        "pg-backup-export",
+        "pg-import-dry-run",
+        "pg-data-recovery"
+      ],
+      "consumer_count": 4
+    },
+    {
+      "component_id": "update-status",
+      "consumers": [
+        "pg-password-update",
+        "pg-more",
+        "pg-update-status"
+      ],
+      "consumer_count": 3
+    },
+    {
+      "component_id": "wg-header",
+      "consumers": [
+        "pg-settings-widget",
+        "pg-widget-compact",
+        "pg-widget-medium",
+        "pg-widget-tall",
+        "pg-widget-wide",
+        "pg-widget-large",
+        "pg-widget-empty",
+        "pg-widget-quick-add",
+        "pg-widget-offline-action"
+      ],
+      "consumer_count": 9
+    },
+    {
+      "component_id": "wg-empty",
+      "consumers": [
+        "pg-widget-medium"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "wg-task-row",
+      "consumers": [
+        "pg-settings-widget",
+        "pg-widget-compact",
+        "pg-widget-medium",
+        "pg-widget-tall",
+        "pg-widget-wide",
+        "pg-widget-large",
+        "pg-widget-empty",
+        "pg-widget-quick-add",
+        "pg-widget-offline-action"
+      ],
+      "consumer_count": 9
+    },
+    {
+      "component_id": "wg-habit-row",
+      "consumers": [
+        "pg-settings-widget",
+        "pg-widget-compact",
+        "pg-widget-medium",
+        "pg-widget-tall",
+        "pg-widget-wide",
+        "pg-widget-large",
+        "pg-widget-empty",
+        "pg-widget-quick-add",
+        "pg-widget-offline-action"
+      ],
+      "consumer_count": 9
+    },
+    {
+      "component_id": "wg-scroll-list",
+      "consumers": [
+        "pg-settings-widget",
+        "pg-widget-compact",
+        "pg-widget-medium",
+        "pg-widget-tall",
+        "pg-widget-wide",
+        "pg-widget-large",
+        "pg-widget-empty",
+        "pg-widget-quick-add",
+        "pg-widget-offline-action"
+      ],
+      "consumer_count": 9
+    },
+    {
+      "component_id": "wg-quick-add",
+      "consumers": [
+        "pg-widget-empty",
+        "pg-widget-quick-add"
+      ],
+      "consumer_count": 2
+    },
+    {
+      "component_id": "wg-resize-cue",
+      "consumers": [
+        "pg-widget-quick-add"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "component_id": "wg-action-receipt",
+      "consumers": [
+        "pg-widget-offline-action"
+      ],
+      "consumer_count": 1
+    }
+  ],
+  "whole_product_families": [
+    {
+      "family": "entry",
+      "label": "Entry and trust",
+      "pages": [
+        "pg-bootstrap",
+        "pg-splash-transition",
+        "pg-configuration",
+        "pg-sign-in",
+        "pg-password-update",
+        "pg-session-expired",
+        "pg-bootstrap-recovery"
+      ]
+    },
+    {
+      "family": "shell",
+      "label": "Adaptive shell",
+      "pages": [
+        "pg-shell-phone",
+        "pg-shell-short-landscape",
+        "pg-shell-tablet-collapsed",
+        "pg-shell-tablet-expanded",
+        "pg-shell-windows-compact",
+        "pg-shell-windows-intermediate",
+        "pg-shell-windows-wide"
+      ]
+    },
+    {
+      "family": "today",
+      "label": "Today instrument",
+      "pages": [
+        "pg-today-empty",
+        "pg-today-sparse",
+        "pg-today-normal",
+        "pg-today-dense",
+        "pg-today-offline",
+        "pg-today-retry-error",
+        "pg-today-conflict"
+      ]
+    },
+    {
+      "family": "capture",
+      "label": "Capture instrument",
+      "pages": [
+        "pg-capture-collapsed",
+        "pg-capture-task",
+        "pg-capture-plan",
+        "pg-capture-ai",
+        "pg-capture-voice",
+        "pg-capture-proposal-review",
+        "pg-capture-ime",
+        "pg-capture-interrupted-resize"
+      ]
+    },
+    {
+      "family": "wizard",
+      "label": "Creation and editing",
+      "pages": [
+        "pg-create-choice",
+        "pg-task-identity",
+        "pg-task-definition",
+        "pg-task-schedule",
+        "pg-task-recurrence",
+        "pg-task-recovery",
+        "pg-task-reminder",
+        "pg-task-review",
+        "pg-habit-identity",
+        "pg-habit-tracking",
+        "pg-habit-target",
+        "pg-habit-multiple-daily",
+        "pg-habit-schedule",
+        "pg-habit-recovery",
+        "pg-habit-reminder",
+        "pg-habit-review",
+        "pg-edit-task",
+        "pg-edit-recurring-task",
+        "pg-edit-habit",
+        "pg-editor-validation",
+        "pg-editor-discard-draft"
+      ]
+    },
+    {
+      "family": "detail",
+      "label": "View-first detail",
+      "pages": [
+        "pg-detail-task",
+        "pg-detail-recurring-task",
+        "pg-detail-habit",
+        "pg-detail-habit-history",
+        "pg-detail-habit-analytics",
+        "pg-detail-goal",
+        "pg-detail-project",
+        "pg-detail-area",
+        "pg-detail-note",
+        "pg-detail-focus-session",
+        "pg-detail-lifecycle-confirm",
+        "pg-detail-desktop-inspector"
+      ]
+    },
+    {
+      "family": "workspace",
+      "label": "Workspace and horizons",
+      "pages": [
+        "pg-tasks-default",
+        "pg-tasks-search",
+        "pg-tasks-filtered",
+        "pg-tasks-dense",
+        "pg-tasks-bulk",
+        "pg-plan-day",
+        "pg-plan-week",
+        "pg-plan-month",
+        "pg-plan-unscheduled",
+        "pg-plan-overlap-conflict",
+        "pg-plan-drag-resize",
+        "pg-habits-today",
+        "pg-habits-insights",
+        "pg-habits-build-maintain-quit",
+        "pg-habits-dense",
+        "pg-goals",
+        "pg-projects",
+        "pg-areas",
+        "pg-notes",
+        "pg-horizon-week",
+        "pg-horizon-month",
+        "pg-horizon-quarter",
+        "pg-horizon-year",
+        "pg-review-week",
+        "pg-review-month"
+      ]
+    },
+    {
+      "family": "focus",
+      "label": "Focus and healthy reward",
+      "pages": [
+        "pg-focus-setup",
+        "pg-focus-running",
+        "pg-focus-paused-background",
+        "pg-focus-complete-reflection",
+        "pg-focus-history",
+        "pg-achievements",
+        "pg-streak-recovery",
+        "pg-reward-receipt"
+      ]
+    },
+    {
+      "family": "settings",
+      "label": "Owner tools and recovery",
+      "pages": [
+        "pg-more",
+        "pg-profile-session",
+        "pg-settings-appearance",
+        "pg-settings-reminders",
+        "pg-settings-widget",
+        "pg-settings-ai",
+        "pg-settings-data",
+        "pg-archive-trash",
+        "pg-conflict-center",
+        "pg-insights-review",
+        "pg-diagnostics",
+        "pg-backup-export",
+        "pg-import-dry-run",
+        "pg-data-recovery",
+        "pg-update-status"
+      ]
+    },
+    {
+      "family": "assistant",
+      "label": "Feedback and Perfect AI",
+      "pages": [
+        "pg-feedback-launcher",
+        "pg-feedback-menu",
+        "pg-feedback-screenshot-draft",
+        "pg-feedback-note-draft",
+        "pg-feedback-entries",
+        "pg-feedback-entry-detail",
+        "pg-feedback-export",
+        "pg-ai-empty",
+        "pg-ai-conversation",
+        "pg-ai-listening",
+        "pg-ai-proposal",
+        "pg-ai-conflict",
+        "pg-ai-error-offline"
+      ]
+    },
+    {
+      "family": "native",
+      "label": "Native and external entry",
+      "pages": [
+        "pg-widget-compact",
+        "pg-widget-medium",
+        "pg-widget-tall",
+        "pg-widget-wide",
+        "pg-widget-large",
+        "pg-widget-empty",
+        "pg-widget-quick-add",
+        "pg-widget-offline-action",
+        "pg-notification-open",
+        "pg-stale-deep-link",
+        "pg-windows-protocol-open"
+      ]
+    }
+  ],
+  "silent_consumer_policy": "Every Stage 04 component and every Stage 05 page has at least one explicit owner/consumer mapping; silence is not acceptance."
+}

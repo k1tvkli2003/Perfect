@@ -32,15 +32,16 @@ all later runtime work is accepted through normalized Copy side-by-side comparis
 - Runtime stages end with commit, push, successful CI/release, install-ready
   artifacts and a clean `main`-only branch state.
 
-Current execution: Stages 01–03 are closed by successful exact-SHA runs `#40`–`#42`
-and releases `v1.1.0-build.2040`–`2042`, each with exactly APK, Windows Portable ZIP
-and Windows Setup. Stage 03 froze the autonomous `PS01 Perfect Day Instrument`
-direction, deterministic identity/shell/workflow/state/motion/typography plates and
-executable evidence contract. Stage 04 is locally closed as design-system version
-`ps01-ds-1.0.0`: 9 foundations, 181 components, 1,267 canonical boards, 48 category
-SVGs and 20 motion contracts; its exact-SHA hosted checkpoint follows this commit.
-Stage 05 is next and production UI mutation remains blocked until it closes. The
-root agent owns execution alone; no subagent work is active.
+Current execution: Stages 01–04 are closed by successful exact-SHA runs `#40`–`#43`
+and releases `v1.1.0-build.2040`–`2043`, each with exactly APK, Windows Portable ZIP
+and Windows Setup. Stage 04 froze `ps01-ds-1.0.0`; its Windows gate also preserved
+package family and LocalState across install-over. Stage 05 is locally complete as
+`ps01-pages-1.0.0`: 134 page IDs, 402 structural candidates, 1,340 canonical
+compositions/audits, 1,072 live Copy entries, all 181 component consumers, six
+isolated fixtures, three intentional mismatch proofs and 2,055 hashes. Its exact-SHA
+hosted checkpoint follows this commit. Production UI remains unchanged; Stage 06 is
+the first implementation stage. The root agent owns execution alone; no subagent
+work is active.
 
 ## Whole-product coverage ledger
 

@@ -1,0 +1,132 @@
+{
+  "catalog_version": "ps01-pages-1.0.0",
+  "generated_at": "2026-08-10",
+  "required_axes": [
+    "geometry",
+    "density",
+    "text",
+    "theme",
+    "input",
+    "motion",
+    "connectivity",
+    "auth",
+    "lifecycle",
+    "origin"
+  ],
+  "deterministic_fixtures": [
+    "fx-owner-empty",
+    "fx-owner-sparse",
+    "fx-owner-normal",
+    "fx-owner-dense",
+    "fx-system-adversarial",
+    "fx-time-boundaries"
+  ],
+  "geometry_assertions": [
+    "viewport containment",
+    "paired-edge symmetry",
+    "optical center",
+    ">=48dp target",
+    "safe line length",
+    "final action reachability",
+    "no critical overlap"
+  ],
+  "semantic_assertions": [
+    "unique label",
+    "role",
+    "value",
+    "state",
+    "action",
+    "reading order",
+    "focus order"
+  ],
+  "interaction_drivers": [
+    "task state cycle",
+    "rapid habit increment",
+    "wizard path",
+    "keyboard traversal",
+    "context menu",
+    "resize",
+    "IME",
+    "outside dismissal",
+    "back",
+    "deep link"
+  ],
+  "motion_capture": [
+    "route/title rise",
+    "capture morph",
+    "sheet/dialog",
+    "selector",
+    "completion",
+    "sync",
+    "resize",
+    "reduced motion"
+  ],
+  "performance_capture": [
+    "startup",
+    "composer",
+    "dense lists",
+    "detail",
+    "wizard",
+    "widget action"
+  ],
+  "copy_pipeline": "reference.png + runtime.png + overlay.png + diff.png + mismatch.md + comparison.json",
+  "injected_failure_smoke": [
+    {
+      "platform": "phone",
+      "pageId": "pg-today-normal",
+      "variantFile": "phone-compact.png",
+      "injected": "geometry",
+      "output": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage05/pg-today-normal/scn-today-normal-phone-compact",
+      "preview_id": "pg-today-normal@ps01-pages-1.0.0#14085f1a062944510427fce3d6431038f4f19b3cbea43e793a50068f99d0be8f",
+      "scenario_id": "scn-today-normal-phone-compact",
+      "mismatch_count": 2,
+      "categories": [
+        "geometry"
+      ],
+      "changed_ratio": 0.25720925993437843
+    },
+    {
+      "platform": "tablet",
+      "pageId": "pg-task-schedule",
+      "variantFile": "tablet-portrait.png",
+      "injected": "typography",
+      "output": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage05/pg-task-schedule/scn-task-schedule-tablet-portrait",
+      "preview_id": "pg-task-schedule@ps01-pages-1.0.0#b064c13a96971a5be706fda86c50e27ad2acc5d0e1db361ac699c66dbd075108",
+      "scenario_id": "scn-task-schedule-tablet-portrait",
+      "mismatch_count": 3,
+      "categories": [
+        "typography"
+      ],
+      "changed_ratio": 0.0525810546875
+    },
+    {
+      "platform": "windows",
+      "pageId": "pg-tasks-dense",
+      "variantFile": "windows-wide.png",
+      "injected": "state",
+      "output": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage05/pg-tasks-dense/scn-tasks-dense-windows-wide",
+      "preview_id": "pg-tasks-dense@ps01-pages-1.0.0#1a87b84765228c97f254858557fe09483229104618724578c5151175a94cb517",
+      "scenario_id": "scn-tasks-dense-windows-wide",
+      "mismatch_count": 1,
+      "categories": [
+        "state"
+      ],
+      "changed_ratio": 0.021641654465592974
+    }
+  ],
+  "expected_failure_categories": [
+    "geometry",
+    "typography",
+    "state"
+  ],
+  "exact_rendered_composition_audits": 1340,
+  "rendered_composition_gate": "Every canonical page/variant must preserve exact root bounds, horizontal containment, required live copy, and platform chrome visibility before its PNG is accepted.",
+  "commands": {
+    "generate": "node tool/generate_stage05_page_library.cjs",
+    "audit": "node tool/generate_stage05_page_library.cjs --audit-only",
+    "verify": "node tool/verify_stage05_page_library.cjs",
+    "contract": "flutter test test/presentation/page_preview_quality_harness_contract_test.dart",
+    "intentional_failure": "node tool/stage05/preview_diff.cjs --reference <reference> --runtime <mutated-runtime> --reference-meta <reference-meta> --runtime-meta <runtime-meta> --output <output> --fail-on-mismatch"
+  },
+  "ci_failure_contract": "Exit code 2 names exact page/scenario/categories when a comparison mismatch exists; exit code 1 is harness failure."
+}

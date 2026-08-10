@@ -624,13 +624,17 @@ or behavioral acceptance.
   `single_render_native` plates plus an eight-test evidence contract block generated
   text drift, identity drift, silent surfaces and fixture leakage. Exact-SHA run
   `#42` and release `v1.1.0-build.2042` passed the three-asset transport contract.
-- Stage 04 is complete locally as `ps01-ds-1.0.0`: 9 foundations, 181 component
-  contracts across 27 families, 1,267 state/responsive/accessibility/motion/neighbor
-  boards, 48 category SVGs, 20 motion contracts and 1,576 exact hashes. Its hosted
-  checkpoint is pending commit/push. Stage 05 now owns all 134 full page families and
-  Copy manifests; production UI mutation remains blocked until that gate passes.
+- Stage 04 is closed at commit `c0a0113` as `ps01-ds-1.0.0`: 9 foundations, 181
+  component contracts, 1,267 boards, 48 category SVGs, 20 motion contracts and 1,576
+  hashes. Exact-SHA run `#43` and release `v1.1.0-build.2043` passed, including
+  Windows install-over with package family and LocalState preserved.
+- Stage 05 is complete locally as `ps01-pages-1.0.0`: all 134 page/overlay/widget
+  IDs, 402 structural candidates, 1,340 canonical previews and live geometry audits,
+  1,072 Copy entries, six isolated fixtures, 181 component-consumer mappings, three
+  intentional Copy failures and 2,055 exact hashes are frozen. Its hosted checkpoint
+  follows the dedicated commit/push; production UI remains unchanged.
 - Existing uncommitted Quick Capture, date formatter and Today changes are
   prototypes mapped to stages 08, 11 and 16–19; they are not accepted until the
   earlier contracts/harness and their own stage gates pass.
-- The latest accepted hosted release remains build 2042 at exact commit
-  `4ff5ebe317b4f41e7508a69fba2206b68e632d7e` until the Stage 04 push is verified.
+- The latest accepted hosted release remains build 2043 at exact commit
+  `c0a01133a7a4f8e5a7bcbffe2c51bcadbf0ae6f1` until the Stage 05 push is verified.

@@ -1,0 +1,48 @@
+{
+  "preview_id": "pg-tasks-dense@ps01-pages-1.0.0#1a87b84765228c97f254858557fe09483229104618724578c5151175a94cb517",
+  "page_id": "pg-tasks-dense",
+  "scenario_id": "scn-tasks-dense-windows-wide",
+  "viewport": "1366x768",
+  "theme": "light",
+  "locale": "en-GB",
+  "direction": "ltr",
+  "text_scale": 1,
+  "landmarks": {
+    "header": {
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "height": 0.12
+    },
+    "primary_content": {
+      "x": 0.06,
+      "y": 0.15,
+      "width": 0.88,
+      "height": 0.66
+    },
+    "primary_action": {
+      "x": 0.62,
+      "y": 0.79,
+      "width": 0.28,
+      "height": 0.075
+    }
+  },
+  "typography": {
+    "page_title": {
+      "family": "Perfect Jakarta",
+      "weight": 650,
+      "size": 24,
+      "line_height": 1.12
+    },
+    "body": {
+      "family": "Perfect Jakarta",
+      "weight": 480,
+      "size": 15,
+      "line_height": 1.45
+    }
+  },
+  "system_state": {
+    "sync": "error",
+    "local_ready": true
+  }
+}
