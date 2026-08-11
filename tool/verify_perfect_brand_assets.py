@@ -49,6 +49,26 @@ def _require(condition: bool, message: str) -> None:
         raise AssertionError(message)
 
 
+def _verify_canonical_text_bytes() -> None:
+    attributes = (ROOT / ".gitattributes").read_text(encoding="utf-8")
+    for contract in (
+        "assets/brand/*.svg text eol=lf",
+        "assets/brand/*-manifest.json text eol=lf",
+    ):
+        _require(
+            contract in attributes,
+            f"Missing cross-platform brand EOL contract: {contract}",
+        )
+
+    generated_text = [MARK_MANIFEST, WORDMARK_MANIFEST, *BRAND_DIR.glob("*.svg")]
+    for path in generated_text:
+        _require(path.is_file(), f"Missing generated brand text output: {path}")
+        _require(
+            b"\r" not in path.read_bytes(),
+            f"Generated brand text must use canonical LF bytes: {path}",
+        )
+
+
 def _bounds(image: Image.Image, threshold: int = 1) -> tuple[int, int, int, int]:
     alpha = image.convert("RGBA").getchannel("A")
     if threshold > 1:
@@ -324,6 +344,7 @@ def _verify_android_consumers() -> None:
 
 
 def main() -> None:
+    _verify_canonical_text_bytes()
     mark_manifest = _verify_manifest_hashes(MARK_MANIFEST)
     wordmark_manifest = _verify_manifest_hashes(WORDMARK_MANIFEST)
     _verify_mark_assets(mark_manifest)

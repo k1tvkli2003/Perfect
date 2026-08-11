@@ -89,3 +89,11 @@ The main workflow now verifies checked-in assets, regenerates mark/wordmark and
 launcher derivatives, verifies them again and fails on any Git diff. This gate
 runs before formatting, analysis, tests, signing or publication; a malformed
 brand asset cannot become a trusted release.
+
+The first exact-SHA hosted attempt (`31442875839`) exposed an operating-system
+boundary that local Windows repetition could not: the wordmark manifest had
+hashed CRLF SVG bytes while the Ubuntu checkout normalized those files to LF.
+Generated SVG/manifest writers now emit canonical LF bytes, `.gitattributes`
+pins those artifacts to LF on every checkout, and the verifier rejects either
+a missing repository EOL contract or any generated carriage return. The gate
+was strengthened rather than bypassed.

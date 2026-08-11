@@ -198,7 +198,7 @@ def _write_variant(name: str, ink: str, accent: str) -> tuple[Path, Path, Image.
     svg_path = OUTPUT_DIR / f"{name}.svg"
     raster = _render_wordmark(ink=ink, accent=accent)
     raster.save(png_path, optimize=True)
-    svg_path.write_text(_path_svg(ink=ink, accent=accent), encoding="utf-8")
+    svg_path.write_bytes(_path_svg(ink=ink, accent=accent).encode("utf-8"))
     return png_path, svg_path, raster
 
 
@@ -286,9 +286,8 @@ def main() -> None:
         },
         "outputs": sorted(outputs, key=lambda item: str(item["path"])),
     }
-    MANIFEST.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    MANIFEST.write_bytes(
+        (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8"),
     )
     print(f"font_sha256={_sha256(FONT_PATH)}")
     print(f"manifest={MANIFEST}")

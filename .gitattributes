@@ -12,3 +12,8 @@ tool/generate_stage05_page_library.cjs text eol=lf
 tool/verify_stage05_page_library.cjs text eol=lf
 tool/stage05/*.cjs text eol=lf
 test/presentation/page_preview_quality_harness_contract_test.dart text eol=lf
+
+# Stage 06 brand manifests hash generated SVG bytes. Keep every generated
+# textual brand artifact on canonical LF across Windows and Linux checkouts.
+assets/brand/*.svg text eol=lf
+assets/brand/*-manifest.json text eol=lf

@@ -122,7 +122,7 @@
       "glyph_paths": 8,
       "kind": "path-svg-master",
       "path": "assets/brand/perfect-wordmark-dark.svg",
-      "sha256": "d86d4b712287e51bb2e12aa40f920d3faeacf2939baf133d9ca67672f4f70c9f"
+      "sha256": "96d3e8f7ea5ce25d9fd1f23e7863cdcd65d5278deaab3fb980049c1c7a925971"
     },
     {
       "alpha_bounds": [
@@ -143,7 +143,7 @@
       "glyph_paths": 8,
       "kind": "path-svg-master",
       "path": "assets/brand/perfect-wordmark-high-contrast-dark.svg",
-      "sha256": "0c837ded73c1b5f7ceccfc8a5bd1a64e62e1a3d6d471323af1f926a9ba0e3921"
+      "sha256": "e155afb12494da32f8d6610d3a3135951f8de5e774cd8c876b7b4db464357fb5"
     },
     {
       "alpha_bounds": [
@@ -164,7 +164,7 @@
       "glyph_paths": 8,
       "kind": "path-svg-master",
       "path": "assets/brand/perfect-wordmark-high-contrast-light.svg",
-      "sha256": "0d460b7fae9aef850ca828a1d9744085a6f504d2aea6a43e7534460237fe728f"
+      "sha256": "fea2b693ebd075eae1bb6727670c803f04e280fa2ada0b49c430b47ca20c56b9"
     },
     {
       "alpha_bounds": [
@@ -185,7 +185,7 @@
       "glyph_paths": 8,
       "kind": "path-svg-master",
       "path": "assets/brand/perfect-wordmark.svg",
-      "sha256": "02edeeeeab557abe3dff364925b5e1ad69a5bb55483562bc3331414e0d199583"
+      "sha256": "45a952196efaddb3749ccab6760420d17dc68f9f36f4922919445a8157086a2c"
     }
   ],
   "schema_version": 1

@@ -532,9 +532,8 @@ def main() -> None:
             ],
         },
     }
-    MANIFEST.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    MANIFEST.write_bytes(
+        (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8"),
     )
 
     print(f"source_sha256={actual_source_hash}")
