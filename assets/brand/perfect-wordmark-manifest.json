@@ -1,4 +1,18 @@
 {
+  "authored_sources": {
+    "dark_raster": {
+      "path": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage03-selected/perfect-wordmark-dark.png",
+      "sha256": "3a5eefc491e2e1bb9ef51ecd279d3c8d1016f00a11abe3bf3ed0b72af3e3a0cf"
+    },
+    "light_raster": {
+      "path": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage03-selected/perfect-wordmark.png",
+      "sha256": "89a010f6d60f414c144045f2aeddd81a023b4e9cd9bf67c7262a77813a06e87b"
+    },
+    "path_master": {
+      "path": "assets/brand/perfect-wordmark.svg",
+      "sha256": "45a952196efaddb3749ccab6760420d17dc68f9f36f4922919445a8157086a2c"
+    }
+  },
   "contract": {
     "android_widget_canvas_dp": [
       96,
@@ -35,13 +49,14 @@
         138,
         31
       ],
+      "hash_basis": "rgba-v1",
       "kind": "android-widget-raster",
       "path": "android/app/src/main/res/drawable-hdpi/perfect_widget_wordmark_raster.png",
       "pixels": [
         144,
         36
       ],
-      "sha256": "805be65be5f522e138a72383f7c882d30ed7dabc5e1e9fbcf017acaa6ea9d324"
+      "sha256": "afa7ef1a1fb46bdebb42a1cae57200b4e8587522103390e18fdaf9ae73f0a323"
     },
     {
       "alpha_bounds": [
@@ -50,13 +65,14 @@
         92,
         21
       ],
+      "hash_basis": "rgba-v1",
       "kind": "android-widget-raster",
       "path": "android/app/src/main/res/drawable-mdpi/perfect_widget_wordmark_raster.png",
       "pixels": [
         96,
         24
       ],
-      "sha256": "bcf3ffaecd16f5c5e19d766de47827456e99f26e2b552c1bbe818370939d2224"
+      "sha256": "96b3350f45862f258f0236e8d60e6eb257bb714164184fefbc0df5ac0ca4a7ad"
     },
     {
       "alpha_bounds": [
@@ -65,13 +81,14 @@
         184,
         41
       ],
+      "hash_basis": "rgba-v1",
       "kind": "android-widget-raster",
       "path": "android/app/src/main/res/drawable-xhdpi/perfect_widget_wordmark_raster.png",
       "pixels": [
         192,
         48
       ],
-      "sha256": "c89d78ebaaa26162cfd6bce29932d39bc55dd0d2777092281eab7d921d075cc8"
+      "sha256": "ba4ad46045425dbe7a9938fe530edf3a4fa2eaf755be7357cd2921679f4999b1"
     },
     {
       "alpha_bounds": [
@@ -80,13 +97,14 @@
         276,
         62
       ],
+      "hash_basis": "rgba-v1",
       "kind": "android-widget-raster",
       "path": "android/app/src/main/res/drawable-xxhdpi/perfect_widget_wordmark_raster.png",
       "pixels": [
         288,
         72
       ],
-      "sha256": "8ecd40a380ccad11dc284119755747f4c6c5adbee7df81cfce8b10c053c4e107"
+      "sha256": "fbf23ab9d9b59dd2d9bd3c9179f799485b2e35a55340b4bb7fc667abbee6bb30"
     },
     {
       "alpha_bounds": [
@@ -95,13 +113,14 @@
         368,
         83
       ],
+      "hash_basis": "rgba-v1",
       "kind": "android-widget-raster",
       "path": "android/app/src/main/res/drawable-xxxhdpi/perfect_widget_wordmark_raster.png",
       "pixels": [
         384,
         96
       ],
-      "sha256": "af67600b1b0d33cc0379879775271b3e91b7155fd13507857582fbb3fa7ca790"
+      "sha256": "75410a5b20888f0837e4383f9937668683ec16371a109365a1850b6c4f0a3693"
     },
     {
       "alpha_bounds": [
@@ -110,16 +129,18 @@
         1627,
         347
       ],
+      "hash_basis": "rgba-v1",
       "kind": "raster-fallback",
       "path": "assets/brand/perfect-wordmark-dark.png",
       "pixels": [
         1651,
         371
       ],
-      "sha256": "3a5eefc491e2e1bb9ef51ecd279d3c8d1016f00a11abe3bf3ed0b72af3e3a0cf"
+      "sha256": "020b8d15084abf840b1d7c0e97711b17ab19803ce18becf71d8ae129f6042cb8"
     },
     {
       "glyph_paths": 8,
+      "hash_basis": "bytes-v1",
       "kind": "path-svg-master",
       "path": "assets/brand/perfect-wordmark-dark.svg",
       "sha256": "96d3e8f7ea5ce25d9fd1f23e7863cdcd65d5278deaab3fb980049c1c7a925971"
@@ -131,16 +152,18 @@
         1627,
         347
       ],
+      "hash_basis": "rgba-v1",
       "kind": "raster-fallback",
       "path": "assets/brand/perfect-wordmark-high-contrast-dark.png",
       "pixels": [
         1651,
         371
       ],
-      "sha256": "536df1ec3dc62f96d45e43fc088c283b17cd7213692a77be6ebd6b48fc0f4803"
+      "sha256": "606a3fc8f6fcb5223d6da7dcd6d5406e401645049a618c9567587a1e35621e6a"
     },
     {
       "glyph_paths": 8,
+      "hash_basis": "bytes-v1",
       "kind": "path-svg-master",
       "path": "assets/brand/perfect-wordmark-high-contrast-dark.svg",
       "sha256": "e155afb12494da32f8d6610d3a3135951f8de5e774cd8c876b7b4db464357fb5"
@@ -152,16 +175,18 @@
         1627,
         347
       ],
+      "hash_basis": "rgba-v1",
       "kind": "raster-fallback",
       "path": "assets/brand/perfect-wordmark-high-contrast-light.png",
       "pixels": [
         1651,
         371
       ],
-      "sha256": "1df06dc853d8dd2eef17a49716bd40ea1475fda1e3e278354df60378005ae038"
+      "sha256": "2189ad9b068a2597093a1ce37d88d5dac079927efba35ec87cf75e29002f4c22"
     },
     {
       "glyph_paths": 8,
+      "hash_basis": "bytes-v1",
       "kind": "path-svg-master",
       "path": "assets/brand/perfect-wordmark-high-contrast-light.svg",
       "sha256": "fea2b693ebd075eae1bb6727670c803f04e280fa2ada0b49c430b47ca20c56b9"
@@ -173,20 +198,22 @@
         1627,
         347
       ],
+      "hash_basis": "rgba-v1",
       "kind": "raster-fallback",
       "path": "assets/brand/perfect-wordmark.png",
       "pixels": [
         1651,
         371
       ],
-      "sha256": "89a010f6d60f414c144045f2aeddd81a023b4e9cd9bf67c7262a77813a06e87b"
+      "sha256": "77a6c4224e13ee5b0322e40bfe9e54be2ccaff7049d08f25bcea775e8d873c7a"
     },
     {
       "glyph_paths": 8,
+      "hash_basis": "bytes-v1",
       "kind": "path-svg-master",
       "path": "assets/brand/perfect-wordmark.svg",
       "sha256": "45a952196efaddb3749ccab6760420d17dc68f9f36f4922919445a8157086a2c"
     }
   ],
-  "schema_version": 1
+  "schema_version": 2
 }

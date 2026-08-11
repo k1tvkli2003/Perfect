@@ -56,7 +56,7 @@ are recorded in:
 | Gate | Result |
 | --- | --- |
 | `python tool/verify_perfect_brand_assets.py` | Pass. Source hashes, generated hashes, alpha bounds, safe zones, SVG paths, ICO frames and consumers verified. |
-| Deterministic regeneration | Pass. Two generators plus `flutter_launcher_icons` reproduced 58 checked outputs with zero byte drift. |
+| Deterministic regeneration | Pass. Authored masters remain byte-pinned; decoded raster/ICO geometry is RGBA-pinned; 40 generated manifest, SVG and Android XML files repeated with zero byte drift. |
 | Focused Flutter tests | Pass, 34/34 brand/theme/platform/design-direction tests. |
 | Stage 03 identity contract | Pass, 8/8 after updating its protected selected master to the Stage 06 optical perimeter. |
 | Stage 05 preview harness | Pass, 9/9; page-preview registry remains intact. |
@@ -86,9 +86,11 @@ mutating the owner's signed production package.
 ## CI regression gate
 
 The main workflow now verifies checked-in assets, regenerates mark/wordmark and
-launcher derivatives, verifies them again and fails on any Git diff. This gate
-runs before formatting, analysis, tests, signing or publication; a malformed
-brand asset cannot become a trusted release.
+launcher derivatives, verifies them again and fails on semantic manifest,
+authored SVG or Android XML drift. Raster and ICO files are validated from
+decoded pixels and ordered frames rather than host-specific compression bytes.
+This gate runs before formatting, analysis, tests, signing or publication; a
+malformed brand asset cannot become a trusted release.
 
 The first exact-SHA hosted attempt (`31442875839`) exposed an operating-system
 boundary that local Windows repetition could not: the wordmark manifest had
@@ -97,3 +99,18 @@ Generated SVG/manifest writers now emit canonical LF bytes, `.gitattributes`
 pins those artifacts to LF on every checkout, and the verifier rejects either
 a missing repository EOL contract or any generated carriage return. The gate
 was strengthened rather than bypassed.
+
+The replacement attempt (`31449329295`) then proved that raw PNG/ICO bytes are
+not a valid cross-platform identity contract: Pillow produced the same decoded
+geometry with host-specific compression, while FreeType text measurement
+shifted regenerated path positions. Stage 03's accepted transparent mark and
+wordmark raster, plus the accepted path-only light SVG, are now immutable
+authored masters. Raster outputs use dimension-prefixed decoded RGBA hashes;
+SVG and manifest outputs retain exact canonical byte hashes; the ICO is pinned
+as an ordered semantic frame set. CI still regenerates and verifies every
+surface, but ignores encoder-only binary noise after semantic verification.
+
+That same run correctly rejected nine Windows golden files whose only changed
+bounds were the installed mark/wordmark surfaces. They were regenerated from a
+detached clean worktree, inspected at compact, tablet and expanded sizes, and
+accepted only after all seven tagged scenarios passed with unchanged layout.

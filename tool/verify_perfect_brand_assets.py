@@ -44,6 +44,29 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _rgba_sha256(image: Image.Image) -> str:
+    rgba = image.convert("RGBA")
+    digest = hashlib.sha256()
+    digest.update(b"perfect-rgba-v1\0")
+    digest.update(rgba.width.to_bytes(4, "big"))
+    digest.update(rgba.height.to_bytes(4, "big"))
+    digest.update(rgba.tobytes())
+    return digest.hexdigest()
+
+
+def _rgba_file_sha256(path: Path) -> str:
+    with Image.open(path) as opened:
+        return _rgba_sha256(opened)
+
+
+def _rgba_frame_set_sha256(frames: list[Image.Image]) -> str:
+    digest = hashlib.sha256()
+    digest.update(b"perfect-rgba-frame-set-v1\0")
+    for frame in frames:
+        digest.update(bytes.fromhex(_rgba_sha256(frame)))
+    return digest.hexdigest()
+
+
 def _require(condition: bool, message: str) -> None:
     if not condition:
         raise AssertionError(message)
@@ -114,8 +137,15 @@ def _verify_manifest_hashes(manifest_path: Path) -> dict[str, object]:
     for entry in payload["outputs"]:
         path = ROOT / entry["path"]
         _require(path.is_file(), f"Missing generated brand output: {path}")
+        basis = entry.get("hash_basis")
+        if basis == "rgba-v1":
+            actual_hash = _rgba_file_sha256(path)
+        elif basis == "bytes-v1":
+            actual_hash = _sha256(path)
+        else:
+            raise AssertionError(f"Unknown generated hash basis for {path}: {basis}")
         _require(
-            _sha256(path) == entry["sha256"],
+            actual_hash == entry["sha256"],
             f"Generated output drifted from {manifest_path.name}: {path}",
         )
     return payload
@@ -127,6 +157,20 @@ def _verify_mark_assets(manifest: dict[str, object]) -> None:
         _sha256(source) == manifest["selected_source"]["sha256"],
         "The user-selected Day Compass source changed.",
     )
+    for source_name in (
+        "protected_transparent_master",
+        "protected_high_resolution_master",
+    ):
+        protected = manifest["selected_source"][source_name]
+        protected_path = ROOT / protected["path"]
+        _require(
+            _sha256(protected_path) == protected["sha256"],
+            f"The {source_name} Day Compass source changed.",
+        )
+        _require(
+            _rgba_file_sha256(protected_path) == protected["rgba_sha256"],
+            f"The {source_name} Day Compass pixels changed.",
+        )
 
     master_path = BRAND_DIR / "perfect-launcher.png"
     with Image.open(master_path) as opened:
@@ -266,6 +310,12 @@ def _verify_wordmark_assets(manifest: dict[str, object]) -> None:
         _sha256(font_source) == manifest["font_source"]["sha256"],
         "The authored wordmark font source changed.",
     )
+    for source_name, source_entry in manifest["authored_sources"].items():
+        source_path = ROOT / source_entry["path"]
+        _require(
+            _sha256(source_path) == source_entry["sha256"],
+            f"The authored wordmark {source_name} source changed.",
+        )
     variants = (
         "perfect-wordmark",
         "perfect-wordmark-dark",
@@ -294,7 +344,9 @@ def _verify_wordmark_assets(manifest: dict[str, object]) -> None:
                  f"{density} native wordmark touches its canvas edge.")
 
 
-def _verify_windows_icon() -> None:
+def _verify_windows_icon(manifest: dict[str, object]) -> None:
+    expected = manifest["windows_ico"]
+    frames: list[Image.Image] = []
     with Image.open(WINDOWS_ICO) as ico:
         actual_sizes = {size[0] for size in ico.ico.sizes()}
         _require(
@@ -303,6 +355,7 @@ def _verify_windows_icon() -> None:
         )
         for size, ratio in ICO_VISIBLE_RATIOS.items():
             frame = ico.ico.getimage((size, size)).convert("RGBA")
+            frames.append(frame)
             left, top, right, bottom = _bounds(frame)
             minimum_perimeter = max(1, math.floor((size - (size * ratio)) / 2) - 1)
             _require(
@@ -314,6 +367,17 @@ def _verify_windows_icon() -> None:
                     _components(frame, threshold=192) == 7,
                     f"Windows {size}px frame lost a visually opaque module.",
                 )
+    _require(
+        _rgba_frame_set_sha256(frames) == expected["sha256"],
+        "Windows ICO semantic frame set drifted.",
+    )
+    expected_frames = expected["frames"]
+    _require(len(expected_frames) == len(frames), "Windows ICO manifest frame count drifted.")
+    for frame, entry in zip(frames, expected_frames, strict=True):
+        _require(
+            _rgba_sha256(frame) == entry["rgba_sha256"],
+            f"Windows {entry['pixels']}px frame pixels drifted.",
+        )
 
 
 def _verify_android_consumers() -> None:
@@ -349,7 +413,7 @@ def main() -> None:
     wordmark_manifest = _verify_manifest_hashes(WORDMARK_MANIFEST)
     _verify_mark_assets(mark_manifest)
     _verify_wordmark_assets(wordmark_manifest)
-    _verify_windows_icon()
+    _verify_windows_icon(mark_manifest)
     _verify_android_consumers()
     print("Perfect! brand assets: verified")
 

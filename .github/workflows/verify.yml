@@ -136,10 +136,9 @@ jobs:
           dart run flutter_launcher_icons
           python3 tool/verify_perfect_brand_assets.py
           git diff --exit-code -- \
-            assets/brand \
-            android/app/src/main/res \
-            windows/runner/resources/app_icon.ico \
-            docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/icon-concepts-v2/selected/day-compass-transparent-512.png
+            ':(glob)assets/brand/*.svg' \
+            ':(glob)assets/brand/*-manifest.json' \
+            ':(glob)android/app/src/main/res/**/*.xml'
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed lib test
       - name: Analyze

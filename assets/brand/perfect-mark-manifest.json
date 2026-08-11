@@ -36,12 +36,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android system splash",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-hdpi/perfect_splash_mark_raster.png",
       "pixels": [
         432,
         432
       ],
-      "sha256": "98afec73632b65248f2e3846b89b437fded72c7bce607b0aa1f75370b7dde268"
+      "sha256": "b0d5b777084aa6ad41b7be1bb114f7cc221b0627555321b3070e125b1f316fa6"
     },
     {
       "alpha_bounds": [
@@ -52,12 +53,13 @@
       ],
       "components_alpha_128": 6,
       "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-hdpi/perfect_widget_mark_raster.png",
       "pixels": [
         72,
         72
       ],
-      "sha256": "06e034a7a7c295d7132ac103a904ef5c3a26b268d19c41adfdc0d37969a477bd"
+      "sha256": "a5e5ea624e5a14671ddca8c004ce973eda807e79cc5664ee4f6e5226e19322b0"
     },
     {
       "alpha_bounds": [
@@ -68,12 +70,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android system splash",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-mdpi/perfect_splash_mark_raster.png",
       "pixels": [
         288,
         288
       ],
-      "sha256": "600a929c0c3adc49dbe1a72da35adf4cbceef6d4c144f431d28457ca12ef7241"
+      "sha256": "f0876f2f07ec9082fdb8dfc8788a532e85b9579ac11bed11831a54447ecc23d1"
     },
     {
       "alpha_bounds": [
@@ -84,12 +87,13 @@
       ],
       "components_alpha_128": 3,
       "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-mdpi/perfect_widget_mark_raster.png",
       "pixels": [
         48,
         48
       ],
-      "sha256": "6e08adbe585033e818f17248fe930ac5212cc95049339a7d8a9db9a6a76d5aa3"
+      "sha256": "b670ed386af34b6efe83bbe5e62d87e62d124121c99e4ab61f85ea8ac9ca9327"
     },
     {
       "alpha_bounds": [
@@ -100,12 +104,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android dark system splash",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-night-hdpi/perfect_splash_mark_raster.png",
       "pixels": [
         432,
         432
       ],
-      "sha256": "a0734f8ccaa2f05a58f42610d93d56b2203d318d546baebd857948965b0f2679"
+      "sha256": "e30e08221950a1dba11f18451e674a6ff8d7203759ad2b000f74da70093bc44f"
     },
     {
       "alpha_bounds": [
@@ -116,12 +121,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android dark system splash",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-night-mdpi/perfect_splash_mark_raster.png",
       "pixels": [
         288,
         288
       ],
-      "sha256": "1316f2f5bc83d19acd3f317ffcc388b8ea08498319b5cf851f1fdbb20fa8cb05"
+      "sha256": "9312a42e36aec61d6487e65d7e5fb0e12b3698510a3baa6d8c70aefb972de526"
     },
     {
       "alpha_bounds": [
@@ -132,12 +138,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android dark system splash",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-night-xhdpi/perfect_splash_mark_raster.png",
       "pixels": [
         576,
         576
       ],
-      "sha256": "4a11d5d3b654857441a0caa8e3618efbbcd02b0b7b32c7d9a7635739a121b4f8"
+      "sha256": "1a76d6091eb5397ddbcbbf7f6ccde6630e2db6516bbc1a5baa2309caac647af0"
     },
     {
       "alpha_bounds": [
@@ -148,12 +155,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android dark system splash",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-night-xxhdpi/perfect_splash_mark_raster.png",
       "pixels": [
         864,
         864
       ],
-      "sha256": "564cc203b0e3482875852fa3dc58a27f3ae67398885af1277eaad6f74e7a19fe"
+      "sha256": "a5164f846f1ee61b3a4c2713cc14a01703b0992485ec948765fa18029fba4be1"
     },
     {
       "alpha_bounds": [
@@ -164,12 +172,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android dark system splash",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-night-xxxhdpi/perfect_splash_mark_raster.png",
       "pixels": [
         1152,
         1152
       ],
-      "sha256": "36cffebf191c9245a0124d9b54041c646dabe8a2a098b38b7876c8dcb2022070"
+      "sha256": "16695e975e976e96df5b1576c46259abb715d02a0447b5a1f38281cdcbd7fa4f"
     },
     {
       "alpha_bounds": [
@@ -180,12 +189,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android system splash",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-xhdpi/perfect_splash_mark_raster.png",
       "pixels": [
         576,
         576
       ],
-      "sha256": "d244fa7475aff6f2cf714a6fd0a3945e293d065b38dc38d44a30cc49f8ffd22c"
+      "sha256": "dbea88ff56aac7b1f37e3433562dd9990d9ba0e37a8dbcf2d2bcd154f7a722a2"
     },
     {
       "alpha_bounds": [
@@ -196,12 +206,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-xhdpi/perfect_widget_mark_raster.png",
       "pixels": [
         96,
         96
       ],
-      "sha256": "c5e5dd5aca5cc877fb0b426a84b55b0aee43589d3af2244a29c8627d12e2aa6c"
+      "sha256": "6adcb2236dea7a8611f13d42e59ce93d33f15679c4c45de3b98c533b8578deff"
     },
     {
       "alpha_bounds": [
@@ -212,12 +223,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android system splash",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-xxhdpi/perfect_splash_mark_raster.png",
       "pixels": [
         864,
         864
       ],
-      "sha256": "695a6d977e005ea1a842150d27d085ebcbdfa13273421e89b83bcc587d760cda"
+      "sha256": "4318d8d67db7cbc7997e4369b6be91b551f2554aca1c12266dd18522ed4b2dbe"
     },
     {
       "alpha_bounds": [
@@ -228,12 +240,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-xxhdpi/perfect_widget_mark_raster.png",
       "pixels": [
         144,
         144
       ],
-      "sha256": "0dadda9aed848801f7d20c5aed5783b155c2ef12b33057e3199af1005bdf5a7b"
+      "sha256": "4dcd7ca84b83031679100e11079d73e83a023c66b33de786b0a7211e9010537c"
     },
     {
       "alpha_bounds": [
@@ -244,12 +257,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android system splash",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-xxxhdpi/perfect_splash_mark_raster.png",
       "pixels": [
         1152,
         1152
       ],
-      "sha256": "49ba37f604daa4fb222114b737632361a7f324c98fc85839196d245c173f518f"
+      "sha256": "b3ad6c84df8cd80fb3027960b500e121287bf7d17d7c6c5347547e7325b9866a"
     },
     {
       "alpha_bounds": [
@@ -260,12 +274,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-xxxhdpi/perfect_widget_mark_raster.png",
       "pixels": [
         192,
         192
       ],
-      "sha256": "d59ef788e143b82bde1d5165fcdf1475fe3577769281c217468f58a4bd2d4a5f"
+      "sha256": "a1ec5e079452ba56c08b29057014b2c4b4e6b2681b7fdfc91ab281dd600ecc80"
     },
     {
       "alpha_bounds": [
@@ -276,12 +291,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android themed adaptive icon",
+      "hash_basis": "rgba-v1",
       "path": "assets/brand/perfect-launcher-monochrome.png",
       "pixels": [
         512,
         512
       ],
-      "sha256": "7877214fe7616d41b4c917b1d0f8311e8d1a1eea5522e3c92001fdbae4edcc3c"
+      "sha256": "cdce8b571af0a5493cde1fc02047fff8ef933e76cd8539ef448183f1984a5809"
     },
     {
       "alpha_bounds": [
@@ -292,12 +308,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Flutter and legacy Android launcher mark",
+      "hash_basis": "rgba-v1",
       "path": "assets/brand/perfect-launcher.png",
       "pixels": [
         512,
         512
       ],
-      "sha256": "c26010a7b9f6d87765f94dd77774501f3f1c145eb0e2b214b6569b45fc8b8d11"
+      "sha256": "ca1857887ecea36e0c7bbf71287f7ae1a5d333d97c253d8b92b46d11f6d6d995"
     },
     {
       "alpha_bounds": [
@@ -308,12 +325,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "archival high-resolution mark master",
+      "hash_basis": "rgba-v1",
       "path": "assets/brand/perfect-mark-1024.png",
       "pixels": [
         1024,
         1024
       ],
-      "sha256": "808f8f81183927af6d809fe2e368d3d7f25d58adef1c5cc880889155ec31d478"
+      "sha256": "d56666a30fb41eaafdca82458d471e606a75b7b9d62ca54d2f8a78d2401ef2c7"
     },
     {
       "alpha_bounds": [
@@ -324,12 +342,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Flutter dark surfaces",
+      "hash_basis": "rgba-v1",
       "path": "assets/brand/perfect-mark-dark.png",
       "pixels": [
         512,
         512
       ],
-      "sha256": "5c8bcdc25485bd7f59efdfd110b2d3f62eab67813e13ec8cda6fabf1f8962d21"
+      "sha256": "b09a2eeadb15088ccc8244fc4f01e7954413debc5b5578de26850783e70b5994"
     },
     {
       "alpha_bounds": [
@@ -340,12 +359,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Flutter high-contrast dark",
+      "hash_basis": "rgba-v1",
       "path": "assets/brand/perfect-mark-high-contrast-dark.png",
       "pixels": [
         512,
         512
       ],
-      "sha256": "49133d7ab78a57727d7290b87c48b0be546cee2898e0229bc26ea13aa1ddd2d3"
+      "sha256": "a10bf0dd4da22da31e15614189702b620fe1acc994d9be9974e6d4a376936b81"
     },
     {
       "alpha_bounds": [
@@ -356,12 +376,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Flutter high-contrast light",
+      "hash_basis": "rgba-v1",
       "path": "assets/brand/perfect-mark-high-contrast-light.png",
       "pixels": [
         512,
         512
       ],
-      "sha256": "1b06980fc5fae2582c37041c5d282f0e26472454b5438e8ab7b1d2fece7e1dcc"
+      "sha256": "50b708c5fcd9e2f9f8fbe0b4066ef2f268984c4a37d224a8869342a07ff59f11"
     },
     {
       "alpha_bounds": [
@@ -372,12 +393,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android system splash reference canvas",
+      "hash_basis": "rgba-v1",
       "path": "assets/brand/perfect-splash-android-288.png",
       "pixels": [
         288,
         288
       ],
-      "sha256": "600a929c0c3adc49dbe1a72da35adf4cbceef6d4c144f431d28457ca12ef7241"
+      "sha256": "f0876f2f07ec9082fdb8dfc8788a532e85b9579ac11bed11831a54447ecc23d1"
     },
     {
       "alpha_bounds": [
@@ -388,12 +410,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Android dark system splash reference canvas",
+      "hash_basis": "rgba-v1",
       "path": "assets/brand/perfect-splash-android-dark-288.png",
       "pixels": [
         288,
         288
       ],
-      "sha256": "1316f2f5bc83d19acd3f317ffcc388b8ea08498319b5cf851f1fdbb20fa8cb05"
+      "sha256": "9312a42e36aec61d6487e65d7e5fb0e12b3698510a3baa6d8c70aefb972de526"
     },
     {
       "alpha_bounds": [
@@ -404,12 +427,13 @@
       ],
       "components_alpha_128": 3,
       "consumer": "Android native widget reference canvas",
+      "hash_basis": "rgba-v1",
       "path": "assets/brand/perfect-widget-mark-48.png",
       "pixels": [
         48,
         48
       ],
-      "sha256": "6e08adbe585033e818f17248fe930ac5212cc95049339a7d8a9db9a6a76d5aa3"
+      "sha256": "b670ed386af34b6efe83bbe5e62d87e62d124121c99e4ab61f85ea8ac9ca9327"
     },
     {
       "alpha_bounds": [
@@ -420,12 +444,13 @@
       ],
       "components_alpha_128": 7,
       "consumer": "Windows packaging and MSIX logo source",
+      "hash_basis": "rgba-v1",
       "path": "assets/brand/perfect-windows-icon.png",
       "pixels": [
         256,
         256
       ],
-      "sha256": "298afd0db0ac961af4a4785c426d57665bb39bd53048ca193821e9a4d10c486f"
+      "sha256": "1577e38910511343156150f1c9303d6098328e8bcbb331319775c9709df3bd98"
     }
   ],
   "platform_decisions": {
@@ -434,7 +459,7 @@
     "surface_specific_derivatives": true,
     "transparent_where_supported": true
   },
-  "schema_version": 1,
+  "schema_version": 2,
   "selected_source": {
     "chroma_rgb": [
       248,
@@ -442,6 +467,16 @@
       245
     ],
     "path": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/icon-concepts-v2/selected/day-compass-selected-chroma-1254.png",
+    "protected_high_resolution_master": {
+      "path": "assets/brand/perfect-mark-1024.png",
+      "rgba_sha256": "d56666a30fb41eaafdca82458d471e606a75b7b9d62ca54d2f8a78d2401ef2c7",
+      "sha256": "808f8f81183927af6d809fe2e368d3d7f25d58adef1c5cc880889155ec31d478"
+    },
+    "protected_transparent_master": {
+      "path": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage03-selected/day-compass-transparent-512.png",
+      "rgba_sha256": "ca1857887ecea36e0c7bbf71287f7ae1a5d333d97c253d8b92b46d11f6d6d995",
+      "sha256": "c26010a7b9f6d87765f94dd77774501f3f1c145eb0e2b214b6569b45fc8b8d11"
+    },
     "sha256": "10280e3c4fae3b80bafdc8df35bcf26d75653566c7b9670fc6ca2462801dce77"
   },
   "windows_ico": {
@@ -454,7 +489,8 @@
           13
         ],
         "components_alpha_128": 1,
-        "pixels": 16
+        "pixels": 16,
+        "rgba_sha256": "20af8302afe15b5da214cf85a9a26d3a2355008f622a1924f4a055dbb9d9f001"
       },
       {
         "alpha_bounds": [
@@ -464,7 +500,8 @@
           17
         ],
         "components_alpha_128": 1,
-        "pixels": 20
+        "pixels": 20,
+        "rgba_sha256": "1f06033cc915b1c1dc796951052ed8526cefb2ed8c93015f1011b325e9bfdaaa"
       },
       {
         "alpha_bounds": [
@@ -474,7 +511,8 @@
           21
         ],
         "components_alpha_128": 2,
-        "pixels": 24
+        "pixels": 24,
+        "rgba_sha256": "2d0abe8fb6ef1cfcb2cc50716944925382a20c20f5c2d448c66341079c257a6c"
       },
       {
         "alpha_bounds": [
@@ -484,7 +522,8 @@
           28
         ],
         "components_alpha_128": 2,
-        "pixels": 32
+        "pixels": 32,
+        "rgba_sha256": "8c4065bfa7f4c226ee15a78ce44829fbda51cf5cbb267413d5529e7f217c9519"
       },
       {
         "alpha_bounds": [
@@ -494,7 +533,8 @@
           36
         ],
         "components_alpha_128": 3,
-        "pixels": 40
+        "pixels": 40,
+        "rgba_sha256": "0e442225eb0f6fb7c232d567cfe3cc84ce4c79f078bc2a49ed14257962d29dbd"
       },
       {
         "alpha_bounds": [
@@ -504,7 +544,8 @@
           43
         ],
         "components_alpha_128": 5,
-        "pixels": 48
+        "pixels": 48,
+        "rgba_sha256": "14344f106860232ae34c19c38d3e537aca4127830ab6750b1cc56e20cf4d4ab8"
       },
       {
         "alpha_bounds": [
@@ -514,7 +555,8 @@
           59
         ],
         "components_alpha_128": 7,
-        "pixels": 64
+        "pixels": 64,
+        "rgba_sha256": "8788c76a6c751c1c457f00aa08d626a584a79f40cf7b9440822ca226a4e22c19"
       },
       {
         "alpha_bounds": [
@@ -524,7 +566,8 @@
           119
         ],
         "components_alpha_128": 7,
-        "pixels": 128
+        "pixels": 128,
+        "rgba_sha256": "1212e68b9c46aca4364c5a673f08aaabe8329952cc8cc8013b0e520a1e739555"
       },
       {
         "alpha_bounds": [
@@ -534,10 +577,12 @@
           240
         ],
         "components_alpha_128": 7,
-        "pixels": 256
+        "pixels": 256,
+        "rgba_sha256": "1577e38910511343156150f1c9303d6098328e8bcbb331319775c9709df3bd98"
       }
     ],
+    "hash_basis": "rgba-frame-set-v1",
     "path": "windows/runner/resources/app_icon.ico",
-    "sha256": "c2b7369ee8d6450454eafc9b5587d0b005ab5ac0c7ae7e49707c28b48220de46"
+    "sha256": "87e391c42a624e9951848b89cbe274f98e7055056991abaf86bc415884cd5d1e"
   }
 }

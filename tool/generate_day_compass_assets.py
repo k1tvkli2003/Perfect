@@ -1,10 +1,10 @@
 """Generate deterministic Perfect! Day Compass assets for every host surface.
 
 The approved ImageGen concept is a six-module pastel Day Compass around one
-dark owner core. Its chroma source is immutable. This generator removes the
-magenta canvas once, then produces surface-specific compositions instead of
-reusing one bitmap across incompatible launcher, splash, widget and Windows
-safe zones.
+dark owner core. Both its archival chroma source and the visually approved
+transparent Stage 03 master are immutable. Surface-specific compositions are
+derived from that protected transparent master instead of asking platform PNG
+encoders to recreate the approved identity from chroma on every host.
 
 Run from the repository root:
 
@@ -35,8 +35,21 @@ SELECTION_DIR = (
 SOURCE = SELECTION_DIR / "day-compass-selected-chroma-1254.png"
 SOURCE_SHA256 = "10280e3c4fae3b80bafdc8df35bcf26d75653566c7b9670fc6ca2462801dce77"
 
+FOUNDATION_DIR = (
+    ROOT
+    / "docs"
+    / "codex"
+    / "2026-07-27-perfect-orbit-day-private-planner-rebuild"
+    / "design"
+    / "01-foundations"
+    / "stage03-selected"
+)
+MASTER_SOURCE = FOUNDATION_DIR / "day-compass-transparent-512.png"
+MASTER_SOURCE_SHA256 = "c26010a7b9f6d87765f94dd77774501f3f1c145eb0e2b214b6569b45fc8b8d11"
+
 BRAND_DIR = ROOT / "assets" / "brand"
 MASTER_1024 = BRAND_DIR / "perfect-mark-1024.png"
+MASTER_1024_SHA256 = "808f8f81183927af6d809fe2e368d3d7f25d58adef1c5cc880889155ec31d478"
 MASTER = BRAND_DIR / "perfect-launcher.png"
 MONOCHROME = BRAND_DIR / "perfect-launcher-monochrome.png"
 DARK_MARK = BRAND_DIR / "perfect-mark-dark.png"
@@ -83,6 +96,24 @@ def _sha256(path: Path) -> str:
     with path.open("rb") as stream:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _rgba_sha256(image: Image.Image) -> str:
+    rgba = image.convert("RGBA")
+    digest = hashlib.sha256()
+    digest.update(b"perfect-rgba-v1\0")
+    digest.update(rgba.width.to_bytes(4, "big"))
+    digest.update(rgba.height.to_bytes(4, "big"))
+    digest.update(rgba.tobytes())
+    return digest.hexdigest()
+
+
+def _rgba_frame_set_sha256(frames: list[Image.Image]) -> str:
+    digest = hashlib.sha256()
+    digest.update(b"perfect-rgba-frame-set-v1\0")
+    for frame in frames:
+        digest.update(bytes.fromhex(_rgba_sha256(frame)))
     return digest.hexdigest()
 
 
@@ -402,7 +433,8 @@ def _entry(path: Path, image: Image.Image, consumer: str) -> dict[str, object]:
     bounds = image.getchannel("A").getbbox()
     return {
         "path": path.relative_to(ROOT).as_posix(),
-        "sha256": _sha256(path),
+        "sha256": _rgba_sha256(image),
+        "hash_basis": "rgba-v1",
         "pixels": list(image.size),
         "alpha_bounds": list(bounds) if bounds else None,
         "components_alpha_128": _component_count(image),
@@ -420,11 +452,30 @@ def main() -> None:
             f"expected {SOURCE_SHA256}, got {actual_source_hash}."
         )
 
-    source = Image.open(SOURCE)
-    transparent = _remove_magenta(source)
-    master = _compose(transparent, MASTER_SIZE, MASTER_SIZE - (MASTER_MARGIN * 2))
+    if not MASTER_SOURCE.is_file():
+        raise FileNotFoundError(MASTER_SOURCE)
+    actual_master_source_hash = _sha256(MASTER_SOURCE)
+    if actual_master_source_hash != MASTER_SOURCE_SHA256:
+        raise ValueError(
+            "The protected transparent Day Compass master changed: "
+            f"expected {MASTER_SOURCE_SHA256}, got {actual_master_source_hash}."
+        )
+    if not MASTER_1024.is_file():
+        raise FileNotFoundError(MASTER_1024)
+    actual_master_1024_hash = _sha256(MASTER_1024)
+    if actual_master_1024_hash != MASTER_1024_SHA256:
+        raise ValueError(
+            "The protected high-resolution Day Compass master changed: "
+            f"expected {MASTER_1024_SHA256}, got {actual_master_1024_hash}."
+        )
+
+    with Image.open(SOURCE) as opened:
+        source = opened.convert("RGBA")
+    with Image.open(MASTER_SOURCE) as opened:
+        master = opened.convert("RGBA")
+    with Image.open(MASTER_1024) as opened:
+        master_1024 = opened.convert("RGBA")
     _validate_master(master)
-    master_1024 = _compose(transparent, 1024, 1024 - (MASTER_MARGIN * 4))
     monochrome = _silhouette(master, (255, 255, 255))
     dark_mark = _dark_surface_mark(master)
     high_contrast_light = _silhouette(master, (17, 18, 24))
@@ -440,8 +491,6 @@ def main() -> None:
     BRAND_DIR.mkdir(parents=True, exist_ok=True)
     SELECTION_DIR.mkdir(parents=True, exist_ok=True)
     for image, destination in (
-        (master_1024, MASTER_1024),
-        (master, MASTER),
         (monochrome, MONOCHROME),
         (dark_mark, DARK_MARK),
         (high_contrast_light, HIGH_CONTRAST_LIGHT),
@@ -449,9 +498,11 @@ def main() -> None:
         (widget_preview, WIDGET_PREVIEW),
         (splash_preview, SPLASH_PREVIEW),
         (splash_dark_preview, SPLASH_DARK_PREVIEW),
-        (master, SELECTION_PREVIEW),
     ):
         image.save(destination, optimize=True)
+    approved_master_bytes = MASTER_SOURCE.read_bytes()
+    MASTER.write_bytes(approved_master_bytes)
+    SELECTION_PREVIEW.write_bytes(approved_master_bytes)
 
     windows_frames = _write_windows_icon(master)
     android_outputs = _write_android_surface_marks(master, dark_mark)
@@ -484,12 +535,22 @@ def main() -> None:
             entries.append(_entry(path, image.convert("RGBA"), consumer))
 
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "identity": "Perfect! Day Compass",
         "selected_source": {
             "path": SOURCE.relative_to(ROOT).as_posix(),
             "sha256": actual_source_hash,
             "chroma_rgb": list(_sample_chroma(source)),
+            "protected_transparent_master": {
+                "path": MASTER_SOURCE.relative_to(ROOT).as_posix(),
+                "sha256": actual_master_source_hash,
+                "rgba_sha256": _rgba_sha256(master),
+            },
+            "protected_high_resolution_master": {
+                "path": MASTER_1024.relative_to(ROOT).as_posix(),
+                "sha256": actual_master_1024_hash,
+                "rgba_sha256": _rgba_sha256(master_1024),
+            },
         },
         "geometry": {
             "modules": 6,
@@ -521,10 +582,12 @@ def main() -> None:
         "outputs": sorted(entries, key=lambda item: str(item["path"])),
         "windows_ico": {
             "path": WINDOWS_ICO.relative_to(ROOT).as_posix(),
-            "sha256": _sha256(WINDOWS_ICO),
+            "hash_basis": "rgba-frame-set-v1",
+            "sha256": _rgba_frame_set_sha256(windows_frames),
             "frames": [
                 {
                     "pixels": size,
+                    "rgba_sha256": _rgba_sha256(frame),
                     "alpha_bounds": list(frame.getchannel("A").getbbox() or ()),
                     "components_alpha_128": _component_count(frame),
                 }

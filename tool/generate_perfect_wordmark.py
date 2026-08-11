@@ -12,11 +12,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from fontTools.pens.boundsPen import BoundsPen
-from fontTools.pens.svgPathPen import SVGPathPen
-from fontTools.ttLib import TTFont
-from fontTools.varLib.instancer import instantiateVariableFont
-from PIL import Image, ImageChops, ImageDraw, ImageFont
+from PIL import Image, ImageChops, ImageColor
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +20,22 @@ FONT_PATH = ROOT / "assets" / "fonts" / "PlusJakartaSans-Variable.ttf"
 OUTPUT_DIR = ROOT / "assets" / "brand"
 ANDROID_RES = ROOT / "android" / "app" / "src" / "main" / "res"
 MANIFEST = OUTPUT_DIR / "perfect-wordmark-manifest.json"
+PATH_MASTER = OUTPUT_DIR / "perfect-wordmark.svg"
+PATH_MASTER_SHA256 = "45a952196efaddb3749ccab6760420d17dc68f9f36f4922919445a8157086a2c"
+
+FOUNDATION_DIR = (
+    ROOT
+    / "docs"
+    / "codex"
+    / "2026-07-27-perfect-orbit-day-private-planner-rebuild"
+    / "design"
+    / "01-foundations"
+    / "stage03-selected"
+)
+LIGHT_RASTER_SOURCE = FOUNDATION_DIR / "perfect-wordmark.png"
+DARK_RASTER_SOURCE = FOUNDATION_DIR / "perfect-wordmark-dark.png"
+LIGHT_RASTER_SOURCE_SHA256 = "89a010f6d60f414c144045f2aeddd81a023b4e9cd9bf67c7262a77813a06e87b"
+DARK_RASTER_SOURCE_SHA256 = "3a5eefc491e2e1bb9ef51ecd279d3c8d1016f00a11abe3bf3ed0b72af3e3a0cf"
 
 WORDMARK = "Perfect!"
 WEIGHT = 660
@@ -52,37 +64,50 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _font(size: int, weight: int = WEIGHT) -> ImageFont.FreeTypeFont:
-    font = ImageFont.truetype(str(FONT_PATH), size=size)
-    font.set_variation_by_axes([weight])
-    return font
+def _rgba_sha256(image: Image.Image) -> str:
+    rgba = image.convert("RGBA")
+    digest = hashlib.sha256()
+    digest.update(b"perfect-rgba-v1\0")
+    digest.update(rgba.width.to_bytes(4, "big"))
+    digest.update(rgba.height.to_bytes(4, "big"))
+    digest.update(rgba.tobytes())
+    return digest.hexdigest()
 
 
-def _render_wordmark(*, ink: str, accent: str) -> Image.Image:
-    size = 420
-    font = _font(size)
-    canvas = Image.new("RGBA", (2400, 720), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(canvas)
+def _load_rgba(path: Path) -> Image.Image:
+    with Image.open(path) as opened:
+        return opened.convert("RGBA")
 
-    bbox = font.getbbox(WORDMARK)
-    baseline_y = 30 - bbox[1]
-    draw.text((30, baseline_y), "Perfect", font=font, fill=ink)
-    accent_x = 30 + draw.textlength("Perfect", font=font) - 5
-    draw.text((accent_x, baseline_y), "!", font=font, fill=accent)
 
-    alpha_bounds = canvas.getchannel("A").getbbox()
-    if alpha_bounds is None:
-        raise RuntimeError("Wordmark rendering produced no visible pixels.")
-    left, top, right, bottom = alpha_bounds
-    padding = 24
-    return canvas.crop(
-        (
-            max(0, left - padding),
-            max(0, top - padding),
-            min(canvas.width, right + padding),
-            min(canvas.height, bottom + padding),
-        )
-    )
+def _recolour_wordmark(source: Image.Image, *, ink: str, accent: str) -> Image.Image:
+    rgba = source.convert("RGBA")
+    alpha = rgba.getchannel("A")
+    visible_columns = [
+        any(alpha.getpixel((x, y)) > 0 for y in range(alpha.height))
+        for x in range(alpha.width)
+    ]
+    runs: list[tuple[int, int]] = []
+    start: int | None = None
+    for x, visible in enumerate([*visible_columns, False]):
+        if visible and start is None:
+            start = x
+        elif not visible and start is not None:
+            runs.append((start, x))
+            start = None
+    if len(runs) < len(WORDMARK):
+        raise ValueError("Protected wordmark raster lost a glyph component.")
+    accent_start = runs[-1][0]
+    ink_rgb = ImageColor.getrgb(ink)
+    accent_rgb = ImageColor.getrgb(accent)
+    output = Image.new("RGBA", rgba.size, (0, 0, 0, 0))
+    pixels = output.load()
+    for y in range(rgba.height):
+        for x in range(rgba.width):
+            opacity = alpha.getpixel((x, y))
+            if opacity:
+                colour = accent_rgb if x >= accent_start else ink_rgb
+                pixels[x, y] = (*colour, opacity)
+    return output
 
 
 def _resize_rgba_premultiplied(image: Image.Image, target: tuple[int, int]) -> Image.Image:
@@ -129,101 +154,85 @@ def _fit_on_canvas(
     return canvas
 
 
-def _path_svg(*, ink: str, accent: str) -> str:
-    variable_font = TTFont(FONT_PATH)
-    font = instantiateVariableFont(variable_font, {"wght": WEIGHT}, inplace=False)
-    glyph_set = font.getGlyphSet()
-    cmap = font.getBestCmap()
-    units_per_em = font["head"].unitsPerEm
-    metric_font_size = 1000
-    metric_font = _font(metric_font_size)
-    metric_draw = ImageDraw.Draw(Image.new("L", (1, 1)))
-
-    records: list[dict[str, object]] = []
-    overall_left = float("inf")
-    overall_bottom = float("inf")
-    overall_right = float("-inf")
-    overall_top = float("-inf")
-    for index, character in enumerate(WORDMARK):
-        glyph_name = cmap.get(ord(character))
-        if glyph_name is None:
-            raise ValueError(f"Missing glyph for {character!r} in {FONT_PATH.name}.")
-        glyph = glyph_set[glyph_name]
-        bounds_pen = BoundsPen(glyph_set)
-        glyph.draw(bounds_pen)
-        if bounds_pen.bounds is None:
-            raise ValueError(f"Glyph {glyph_name} has no outline.")
-        path_pen = SVGPathPen(glyph_set)
-        glyph.draw(path_pen)
-        x_pixels = metric_draw.textlength(WORDMARK[:index], font=metric_font)
-        x_units = float(x_pixels) * units_per_em / metric_font_size
-        left, bottom, right, top = bounds_pen.bounds
-        overall_left = min(overall_left, x_units + left)
-        overall_bottom = min(overall_bottom, bottom)
-        overall_right = max(overall_right, x_units + right)
-        overall_top = max(overall_top, top)
-        records.append(
-            {
-                "path": path_pen.getCommands(),
-                "x": x_units,
-                "fill": accent if character == "!" else ink,
-            }
-        )
-
-    padding = units_per_em * 0.06
-    width = (overall_right - overall_left) + (padding * 2)
-    height = (overall_top - overall_bottom) + (padding * 2)
-    origin_x = padding - overall_left
-    baseline_y = padding + overall_top
-    paths = "\n".join(
-        (
-            f'  <path fill="{record["fill"]}" d="{record["path"]}" '
-            f'transform="translate({origin_x + float(record["x"]):.3f} '
-            f'{baseline_y:.3f}) scale(1 -1)"/>'
-        )
-        for record in records
-    )
-    return (
-        '<?xml version="1.0" encoding="UTF-8"?>\n'
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width:.3f} {height:.3f}" '
-        'role="img" aria-labelledby="perfect-wordmark-title">\n'
-        '  <title id="perfect-wordmark-title">Perfect!</title>\n'
-        f"{paths}\n"
-        "</svg>\n"
-    )
+def _svg_variant(*, ink: str, accent: str) -> str:
+    source = PATH_MASTER.read_text(encoding="utf-8")
+    if source.count("<path ") != len(WORDMARK):
+        raise ValueError("Authored wordmark path master must retain eight glyph paths.")
+    if INK_LIGHT not in source or ACCENT_LIGHT not in source:
+        raise ValueError("Authored wordmark path master lost its selected colour roles.")
+    return source.replace(INK_LIGHT, ink).replace(ACCENT_LIGHT, accent)
 
 
-def _write_variant(name: str, ink: str, accent: str) -> tuple[Path, Path, Image.Image]:
+def _write_variant(
+    name: str,
+    ink: str,
+    accent: str,
+    *,
+    raster_source: Path | None = None,
+) -> tuple[Path, Path, Image.Image]:
     png_path = OUTPUT_DIR / f"{name}.png"
     svg_path = OUTPUT_DIR / f"{name}.svg"
-    raster = _render_wordmark(ink=ink, accent=accent)
-    raster.save(png_path, optimize=True)
-    svg_path.write_bytes(_path_svg(ink=ink, accent=accent).encode("utf-8"))
+    if raster_source is not None:
+        png_path.write_bytes(raster_source.read_bytes())
+        raster = _load_rgba(raster_source)
+    else:
+        raster = _recolour_wordmark(
+            _load_rgba(LIGHT_RASTER_SOURCE),
+            ink=ink,
+            accent=accent,
+        )
+        raster.save(png_path, optimize=True)
+
+    svg = _svg_variant(ink=ink, accent=accent)
+    if svg_path == PATH_MASTER:
+        if svg.encode("utf-8") != PATH_MASTER.read_bytes():
+            raise ValueError("Light wordmark path master is not canonical.")
+    else:
+        svg_path.write_bytes(svg.encode("utf-8"))
     return png_path, svg_path, raster
 
 
 def main() -> None:
     if not FONT_PATH.is_file():
         raise FileNotFoundError(FONT_PATH)
+    for path, expected_hash in (
+        (PATH_MASTER, PATH_MASTER_SHA256),
+        (LIGHT_RASTER_SOURCE, LIGHT_RASTER_SOURCE_SHA256),
+        (DARK_RASTER_SOURCE, DARK_RASTER_SOURCE_SHA256),
+    ):
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        actual_hash = _sha256(path)
+        if actual_hash != expected_hash:
+            raise ValueError(
+                f"Protected wordmark source changed: {path}; "
+                f"expected {expected_hash}, got {actual_hash}."
+            )
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     variants = [
-        ("perfect-wordmark", INK_LIGHT, ACCENT_LIGHT),
-        ("perfect-wordmark-dark", INK_DARK, ACCENT_DARK),
-        ("perfect-wordmark-high-contrast-light", HC_LIGHT, HC_LIGHT),
-        ("perfect-wordmark-high-contrast-dark", HC_DARK, HC_DARK),
+        ("perfect-wordmark", INK_LIGHT, ACCENT_LIGHT, LIGHT_RASTER_SOURCE),
+        ("perfect-wordmark-dark", INK_DARK, ACCENT_DARK, DARK_RASTER_SOURCE),
+        ("perfect-wordmark-high-contrast-light", HC_LIGHT, HC_LIGHT, None),
+        ("perfect-wordmark-high-contrast-dark", HC_DARK, HC_DARK, None),
     ]
     outputs: list[dict[str, object]] = []
     light_raster: Image.Image | None = None
-    for name, ink, accent in variants:
-        png_path, svg_path, raster = _write_variant(name, ink, accent)
+    for name, ink, accent, raster_source in variants:
+        png_path, svg_path, raster = _write_variant(
+            name,
+            ink,
+            accent,
+            raster_source=raster_source,
+        )
         if name == "perfect-wordmark":
             light_raster = raster
         outputs.extend(
             [
                 {
                     "path": png_path.relative_to(ROOT).as_posix(),
-                    "sha256": _sha256(png_path),
+                    "sha256": _rgba_sha256(raster),
+                    "hash_basis": "rgba-v1",
                     "kind": "raster-fallback",
                     "pixels": list(raster.size),
                     "alpha_bounds": list(raster.getchannel("A").getbbox() or ()),
@@ -231,6 +240,7 @@ def main() -> None:
                 {
                     "path": svg_path.relative_to(ROOT).as_posix(),
                     "sha256": _sha256(svg_path),
+                    "hash_basis": "bytes-v1",
                     "kind": "path-svg-master",
                     "glyph_paths": len(WORDMARK),
                 },
@@ -259,7 +269,8 @@ def main() -> None:
         outputs.append(
             {
                 "path": destination.relative_to(ROOT).as_posix(),
-                "sha256": _sha256(destination),
+                "sha256": _rgba_sha256(native),
+                "hash_basis": "rgba-v1",
                 "kind": "android-widget-raster",
                 "pixels": list(native.size),
                 "alpha_bounds": list(native.getchannel("A").getbbox() or ()),
@@ -267,12 +278,26 @@ def main() -> None:
         )
 
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "identity": "Perfect! authored wordmark",
         "font_source": {
             "path": FONT_PATH.relative_to(ROOT).as_posix(),
             "sha256": _sha256(FONT_PATH),
             "weight": WEIGHT,
+        },
+        "authored_sources": {
+            "path_master": {
+                "path": PATH_MASTER.relative_to(ROOT).as_posix(),
+                "sha256": PATH_MASTER_SHA256,
+            },
+            "light_raster": {
+                "path": LIGHT_RASTER_SOURCE.relative_to(ROOT).as_posix(),
+                "sha256": LIGHT_RASTER_SOURCE_SHA256,
+            },
+            "dark_raster": {
+                "path": DARK_RASTER_SOURCE.relative_to(ROOT).as_posix(),
+                "sha256": DARK_RASTER_SOURCE_SHA256,
+            },
         },
         "contract": {
             "text": WORDMARK,
