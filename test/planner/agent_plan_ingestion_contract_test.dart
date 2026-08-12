@@ -11,12 +11,12 @@ void main() {
   late Map<String, dynamic> example;
 
   setUpAll(() async {
-    migration = await File(
+    migration = (await File(
       'supabase/migrations/20260730190000_add_agent_plan_ingestion.sql',
-    ).readAsString();
-    plannerV2 = await File(
+    ).readAsString()).replaceAll('\r\n', '\n');
+    plannerV2 = (await File(
       'supabase/migrations/20260730053626_add_private_planner_v2.sql',
-    ).readAsString();
+    ).readAsString()).replaceAll('\r\n', '\n');
     schema =
         jsonDecode(
               await File(

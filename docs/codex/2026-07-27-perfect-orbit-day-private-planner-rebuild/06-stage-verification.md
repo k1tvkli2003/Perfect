@@ -2,7 +2,7 @@
 
 Date: 2026-08-10
 Stage: `06-brand-installed-identity`
-Status: local Android and source gates passed; exact-SHA trusted Windows/release gate pending
+Status: complete — local Android/source and exact-SHA trusted Windows/release gates passed
 
 ## Outcome
 
@@ -68,7 +68,7 @@ are recorded in:
 | Installed Android dark splash | Pass. Same bounds as light; night-qualified owner core remains explicitly visible on `#171821`. |
 | Installed Pixel adaptive icon | Pass. Quiet required plate, complete mark and stable mask spacing. |
 | Local Windows release compile | Host-bound failure before product link: local Visual Studio Build Tools lacks ATL `atlbase.h` required by `flutter_local_notifications_windows`. No signing/identity mutation attempted. |
-| Exact-SHA GitHub Windows/Android/release | Pending the Stage 06 push; stage remains open until the trusted main workflow, three release assets and Windows install-over gate pass. |
+| Exact-SHA GitHub Windows/Android/release | Pass; run `#47` / `31451633971` succeeded for `706f58a31294d78d66bf3404d2361efcf8b2c38e`. Release `v1.1.0-build.2047` targets that exact SHA and contains exactly APK, Portable ZIP and Setup EXE. |
 
 ## Runtime evidence
 
@@ -114,3 +114,12 @@ That same run correctly rejected nine Windows golden files whose only changed
 bounds were the installed mark/wordmark surfaces. They were regenerated from a
 detached clean worktree, inspected at compact, tablet and expanded sizes, and
 accepted only after all seven tagged scenarios passed with unchanged layout.
+
+## Hosted closure
+
+Trusted run [`31451633971`](https://github.com/k1tvkli2003/Perfect/actions/runs/31451633971)
+(`#47`) passed every job for exact Stage 06 commit
+`706f58a31294d78d66bf3404d2361efcf8b2c38e`. Immutable release
+[`v1.1.0-build.2047`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2047)
+targets that SHA and exposes exactly the install-ready Android APK, Windows Portable
+ZIP and Windows Setup EXE; Stage 06 is therefore externally closed.

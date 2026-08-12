@@ -1,21 +1,25 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-10T21:06:09+03:30
+- Last updated: 2026-08-12T02:43:37+03:30
 - Owner: Codex
 
 ## Current State
 
-Canonical 50-stage execution has closed Stages 01–04 through exact-SHA hosted runs
-`#40`–`#43` and releases `v1.1.0-build.2040`–`2043`. Stage 04 commit
-`c0a01133a7a4f8e5a7bcbffe2c51bcadbf0ae6f1` freezes `ps01-ds-1.0.0`; run
-`31404235491` passed all four jobs, including Windows install-over
-`1.1.0.42 → 1.1.0.43` with package family and LocalState preserved. Stage 05 is
-complete locally as `ps01-pages-1.0.0`: all 134 page/overlay/widget compositions,
-their three candidates, ten canonical layouts, live Copy, component consumers,
-fixtures, decisions and exact hashes are frozen. Its hosted checkpoint is pending
-commit/push; production UI remains untouched and Stage 06 is the first implementation
-stage allowed to consume this contract.
+Canonical 50-stage execution has closed Stages 01–06 through exact-SHA hosted runs
+and immutable three-asset releases. Stage 06 is externally closed on run `#47`
+(`31451633971`) for commit `706f58a31294d78d66bf3404d2361efcf8b2c38e` and
+release `v1.1.0-build.2047`.
+
+Stage 07 is locally complete and awaiting its exact-SHA hosted gate. The adaptive
+shell retains all five destination states, gives Android phone/tablet and Windows
+platform-aware navigation, keeps capture Today-only, supports keyboard/pointer/touch
+navigation and fixes the 200% phone plus 800dp tablet composition failures discovered
+in real runtime review. Analyzer is clean, the full suite passes 404/404 and the
+versionCode 2048 sibling preview installed in place without changing first install
+time. Real phone, tablet portrait and tablet landscape evidence is recorded in
+`07-stage-verification.md`; trusted Windows install-over and release remain pending
+the Stage 07 merge/push.
 
 The earlier Perfect cycles below remain historical runtime evidence; they do not
 supersede the canonical numbered execution state.

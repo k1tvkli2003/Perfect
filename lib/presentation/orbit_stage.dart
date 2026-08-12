@@ -1065,6 +1065,10 @@ class _OrbitLinearSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final bodySize = theme.textTheme.bodyMedium?.fontSize ?? 14;
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
     return DecoratedBox(
       key: const ValueKey<String>('orbit-linear-summary'),
       decoration: BoxDecoration(
@@ -1074,9 +1078,10 @@ class _OrbitLinearSummary extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(PerfectSpace.md),
-        child: Row(
-          children: [
-            Container(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final reflow = textScale >= 1.45 || constraints.maxWidth < 300;
+            final leading = Container(
               width: 48,
               height: 48,
               decoration: const BoxDecoration(
@@ -1087,53 +1092,94 @@ class _OrbitLinearSummary extends StatelessWidget {
                 Icons.track_changes_rounded,
                 color: PerfectColors.lilac,
               ),
-            ),
-            const SizedBox(width: PerfectSpace.sm),
-            Expanded(
-              child: Directionality(
-                textDirection: TextDirection.ltr,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Today’s rhythm',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      plan.next == null
-                          ? 'A clear opening — capture the next thing that matters.'
-                          : '${_formatClock(plan.now)} · Next: \u2068${plan.title}\u2069',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textDirection: TextDirection.ltr,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      plan.openCount == 0
-                          ? 'No open items'
-                          : '${plan.openCount} open items',
-                      maxLines: 1,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: PerfectColors.lilac,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
+            );
+            final title = Text(
+              'Today’s rhythm',
+              key: const ValueKey<String>('orbit-linear-title'),
+              maxLines: reflow ? 2 : 1,
+              overflow: reflow ? null : TextOverflow.ellipsis,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
               ),
-            ),
-            if (actionable)
-              Icon(Icons.arrow_forward_rounded, color: scheme.onSurfaceVariant),
-          ],
+            );
+            final detail = Text(
+              plan.next == null
+                  ? 'A clear opening — capture the next thing that matters.'
+                  : '${_formatClock(plan.now)} · Next: \u2068${plan.title}\u2069',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textDirection: TextDirection.ltr,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            );
+            final count = Text(
+              plan.openCount == 0
+                  ? 'No open items'
+                  : '${plan.openCount} open items',
+              maxLines: 1,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: PerfectColors.lilac,
+                fontWeight: FontWeight.w800,
+              ),
+            );
+            final action = actionable
+                ? Icon(
+                    Icons.arrow_forward_rounded,
+                    color: scheme.onSurfaceVariant,
+                  )
+                : null;
+            final content = reflow
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          leading,
+                          const SizedBox(width: PerfectSpace.sm),
+                          Expanded(child: title),
+                          if (action != null) ...[
+                            const SizedBox(width: PerfectSpace.xs),
+                            action,
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      detail,
+                      const SizedBox(height: 2),
+                      count,
+                    ],
+                  )
+                : Row(
+                    children: [
+                      leading,
+                      const SizedBox(width: PerfectSpace.sm),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            title,
+                            const SizedBox(height: 2),
+                            detail,
+                            const SizedBox(height: 2),
+                            count,
+                          ],
+                        ),
+                      ),
+                      ?action,
+                    ],
+                  );
+            return Directionality(
+              textDirection: TextDirection.ltr,
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: content,
+              ),
+            );
+          },
         ),
       ),
     );

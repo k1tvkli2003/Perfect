@@ -1,6 +1,6 @@
 # Stage 07 — Adaptive navigation shell
 
-Status: pending  
+Status: active — local implementation/runtime passed; exact-SHA hosted release pending
 Depends on: Stages 04–06  
 Primary surfaces: phone footer, tablet/Windows rail, page host, shortcuts
 

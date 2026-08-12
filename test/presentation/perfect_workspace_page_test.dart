@@ -382,9 +382,10 @@ void main() {
         find.byKey(const ValueKey<String>('perfect-ai-toggle')),
       );
       expect(compass.top, closeTo(stream.top, 1));
-      expect(compass.bottom, closeTo(stream.bottom, 1));
+      expect(compass.bottom, lessThan(stream.bottom));
       expect(compass.right, lessThan(stream.left));
       expect(compass.height, greaterThan(500));
+      expect(compass.height, lessThanOrEqualTo(compass.width + 170));
       expect(compass.contains(orbit.center), isTrue);
       expect(orbit.width, greaterThan(300));
       expect(orbit.height, greaterThan(300));
@@ -444,7 +445,7 @@ void main() {
   );
 
   testWidgets(
-    'medium Day Deck uses content-driven reflow at 768 900 and 1024dp',
+    'medium Day Deck uses content-driven reflow at 768 800 900 and 1024dp',
     (tester) async {
       Future<(Rect, Rect)> layoutAt(double width) async {
         await tester.binding.setSurfaceSize(Size(width, 1200));
@@ -463,6 +464,10 @@ void main() {
       final narrow = await layoutAt(768);
       expect(narrow.$1.bottom, lessThan(narrow.$2.top));
 
+      final portraitTablet = await layoutAt(800);
+      expect(portraitTablet.$1.bottom, lessThan(portraitTablet.$2.top));
+      expect(portraitTablet.$1.height, lessThan(560));
+
       final standard = await layoutAt(900);
       expect(standard.$1.right, lessThan(standard.$2.left));
       expect(standard.$1.height, greaterThan(500));
@@ -470,6 +475,87 @@ void main() {
       final roomy = await layoutAt(1024);
       expect(roomy.$1.right, lessThan(roomy.$2.left));
       expect(roomy.$1.width, greaterThan(standard.$1.width));
+    },
+  );
+
+  testWidgets(
+    'wide Android tablet keeps a compact rail until the owner expands it',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1280, 800));
+      await _pump(tester, platform: TargetPlatform.android);
+
+      expect(
+        find.byKey(const ValueKey<String>('perfect-shell-expanded')),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+        isFalse,
+      );
+      expect(find.byTooltip('Expand navigation'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Expand navigation'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
+        isTrue,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'shell changes composition only when useful content earns the next tier',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(670, 900));
+      await _pump(tester);
+      expect(
+        find.byKey(const ValueKey<String>('perfect-shell-compact')),
+        findsOneWidget,
+      );
+      await _sendControlShortcut(tester, LogicalKeyboardKey.digit2);
+      await tester.pumpAndSettle();
+      expect(
+        find.text('All open work first. Narrow only when you need to.'),
+        findsOneWidget,
+      );
+
+      await tester.binding.setSurfaceSize(const Size(700, 900));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('perfect-shell-medium')),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<NavigationRail>(find.byType(NavigationRail))
+            .selectedIndex,
+        1,
+      );
+
+      await tester.binding.setSurfaceSize(const Size(1220, 900));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('perfect-shell-medium')),
+        findsOneWidget,
+      );
+      await tester.binding.setSurfaceSize(const Size(1230, 900));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('perfect-shell-expanded')),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<NavigationRail>(find.byType(NavigationRail))
+            .selectedIndex,
+        1,
+      );
+      expect(
+        find.text('All open work first. Narrow only when you need to.'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -540,7 +626,7 @@ void main() {
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(1366, 768));
-    await _pump(tester);
+    await _pump(tester, platform: TargetPlatform.windows);
     expect(
       tester.widget<NavigationRail>(find.byType(NavigationRail)).extended,
       isTrue,
@@ -762,18 +848,21 @@ void main() {
         greaterThan(tester.getCenter(more).dx),
       );
 
-      final destinationSwitcher = find.ancestor(
-        of: find.text('Good morning'),
-        matching: find.byType(AnimatedSwitcher),
-      );
-      expect(destinationSwitcher, findsOneWidget);
       expect(
-        tester.widget<AnimatedSwitcher>(destinationSwitcher).duration,
-        Duration.zero,
+        find.byKey(
+          const ValueKey<String>('perfect-persistent-destination-host'),
+        ),
+        findsOneWidget,
       );
 
       await tester.tap(_footerDestination('tasks'));
       await tester.pump();
+      expect(find.text('Good morning'), findsNothing);
+      expect(
+        find.text('Good morning', skipOffstage: false),
+        findsOneWidget,
+        reason: 'Reduced motion swaps pages immediately but retains state.',
+      );
       expect(
         find.text('All open work first. Narrow only when you need to.'),
         findsOneWidget,
@@ -892,7 +981,11 @@ void main() {
     'expanded Windows Day Deck keeps the compass and stream adjacent',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1366, 768));
-      await _pump(tester, freezeOrbitMotion: true);
+      await _pump(
+        tester,
+        freezeOrbitMotion: true,
+        platform: TargetPlatform.windows,
+      );
 
       expect(find.byType(NavigationRail), findsOneWidget);
       expect(find.text('Inspector'), findsNothing);
@@ -944,7 +1037,11 @@ void main() {
     'wide Windows Day Deck promotes selected detail to a true third pane',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1920, 1080));
-      await _pump(tester, freezeOrbitMotion: true);
+      await _pump(
+        tester,
+        freezeOrbitMotion: true,
+        platform: TargetPlatform.windows,
+      );
       final source = _controller.tasks.singleWhere(
         (item) => item.title == 'Focus Deep Work',
       );
@@ -985,7 +1082,11 @@ void main() {
     'short Windows landscape keeps a full-scale deck in a scrollable stage',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1366, 600));
-      await _pump(tester, freezeOrbitMotion: true);
+      await _pump(
+        tester,
+        freezeOrbitMotion: true,
+        platform: TargetPlatform.windows,
+      );
 
       final compass = tester.getRect(
         find.byKey(const ValueKey<String>('day-compass-panel')),
@@ -1105,6 +1206,50 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'desktop inspector divider supports drag keyboard and a useful main pane',
+    (tester) async {
+      final navigation = PerfectWorkspaceNavigationController();
+      addTearDown(navigation.dispose);
+      await tester.binding.setSurfaceSize(const Size(1366, 820));
+      await _pump(
+        tester,
+        navigationController: navigation,
+        platform: TargetPlatform.windows,
+      );
+      final source = _controller.tasks.singleWhere(
+        (item) => item.title == 'Focus Deep Work',
+      );
+
+      navigation.showEntity(source.id);
+      await tester.pumpAndSettle();
+      final divider = find.byKey(
+        const ValueKey<String>('perfect-inspector-divider'),
+      );
+      final pane = find.byKey(const ValueKey<String>('perfect-inspector-pane'));
+      expect(divider, findsOneWidget);
+      final initialWidth = tester.getSize(pane).width;
+      expect(tester.getSize(divider).width, 48);
+
+      await tester.drag(divider, const Offset(-52, 0));
+      await tester.pumpAndSettle();
+      final draggedWidth = tester.getSize(pane).width;
+      expect(draggedWidth, greaterThan(initialWidth));
+
+      await tester.tap(divider);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+      expect(tester.getSize(pane).width, lessThan(draggedWidth));
+      expect(
+        tester
+            .getSize(find.byKey(const ValueKey<String>('perfect-tasks-scroll')))
+            .width,
+        greaterThanOrEqualTo(680),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('compact item menu duplicates and opens the duplicate editor', (
     tester,
@@ -1556,7 +1701,11 @@ void main() {
       final navigation = PerfectWorkspaceNavigationController();
       addTearDown(navigation.dispose);
       await tester.binding.setSurfaceSize(const Size(1366, 768));
-      await _pump(tester, navigationController: navigation);
+      await _pump(
+        tester,
+        navigationController: navigation,
+        platform: TargetPlatform.windows,
+      );
 
       final task = _controller.tasks.singleWhere(
         (item) => item.title == 'Focus Deep Work',
@@ -1671,6 +1820,53 @@ void main() {
   });
 
   testWidgets(
+    'Plan keeps its selected day through route changes and three shell tiers',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(900, 1000));
+      await _pump(tester);
+      await _sendControlShortcut(tester, LogicalKeyboardKey.digit3);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Next day'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('planner-back-to-today')),
+        findsOneWidget,
+      );
+      expect(find.text('No blocks yet.'), findsOneWidget);
+
+      await _sendControlShortcut(tester, LogicalKeyboardKey.digit2);
+      await tester.pumpAndSettle();
+      await tester.binding.setSurfaceSize(const Size(1366, 820));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('perfect-shell-expanded')),
+        findsOneWidget,
+      );
+      await _sendControlShortcut(tester, LogicalKeyboardKey.digit3);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('planner-back-to-today')),
+        findsOneWidget,
+      );
+      expect(find.text('No blocks yet.'), findsOneWidget);
+
+      await tester.binding.setSurfaceSize(const Size(650, 900));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('perfect-shell-compact')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('planner-back-to-today')),
+        findsOneWidget,
+      );
+      expect(find.text('No blocks yet.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'Tasks separates single and recurring work without another page',
     (tester) async {
       await _saveRecurring(
@@ -1707,7 +1903,7 @@ void main() {
   );
 
   testWidgets(
-    'task filter deck searches title note and category and survives a reflow',
+    'task search state survives destination changes and shell reflow',
     (tester) async {
       await _runControllerMutation(
         tester,
@@ -1734,6 +1930,7 @@ void main() {
             widget.decoration?.hintText == 'Find a task, note, or category…',
       );
       expect(search, findsOneWidget);
+      final searchController = tester.widget<TextField>(search).controller;
       await tester.enterText(search, 'murmurs');
       await tester.pump();
       expect(find.text('Read cardiology notes'), findsOneWidget);
@@ -1746,6 +1943,31 @@ void main() {
       expect(find.text('Open · All'), findsOneWidget);
       expect(find.text('TYPE'), findsNothing);
       expect(find.text('STATUS'), findsNothing);
+
+      await tester.tap(_footerDestination('plan'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Move across days without losing unfinished work.'),
+        findsOneWidget,
+      );
+      await tester.tap(_footerDestination('tasks'));
+      await tester.pumpAndSettle();
+
+      final restoredSearch = find.byWidgetPredicate(
+        (widget) =>
+            widget is TextField &&
+            widget.decoration?.hintText == 'Find a task, note, or category…',
+      );
+      expect(
+        tester.widget<TextField>(restoredSearch).controller,
+        same(searchController),
+      );
+      expect(
+        tester.widget<TextField>(restoredSearch).controller?.text,
+        'murmurs',
+      );
+      expect(find.text('Read cardiology notes'), findsOneWidget);
+      expect(find.text('Focus Deep Work'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
@@ -2656,6 +2878,48 @@ void main() {
     expect(find.byType(Dialog), findsNothing);
   });
 
+  testWidgets('footer and rail support local arrow Home and End navigation', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('today'));
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      1,
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.end);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      4,
+    );
+
+    await _setTestViewSize(tester, const Size(900, 900));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Today (Ctrl+1)').first);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).selectedIndex,
+      1,
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.home);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<NavigationRail>(find.byType(NavigationRail)).selectedIndex,
+      0,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'desktop shortcuts navigate, preserve quick capture focus, and dismiss local context',
     (tester) async {
@@ -2868,10 +3132,11 @@ Future<void> _pump(
   TextDirection textDirection = TextDirection.ltr,
   bool disableAnimations = false,
   bool freezeOrbitMotion = false,
+  TargetPlatform? platform,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
-      theme: PerfectTheme.light(),
+      theme: PerfectTheme.light().copyWith(platform: platform),
       builder: (context, child) {
         final mediaQuery = MediaQuery.of(context);
         var mediaQueryData = mediaQuery.copyWith(

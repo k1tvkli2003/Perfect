@@ -30,8 +30,15 @@ void main() {
     );
     expect(minimumWidth, lessThan(640));
     expect(minimumHeight, lessThan(520));
-    expect(workspace, contains('constraints.maxWidth < 640'));
-    expect(workspace, contains('constraints.maxHeight < 520'));
+    expect(workspace, contains('PerfectResponsiveGeometry.fromConstraints'));
+    expect(
+      workspace,
+      contains('geometry.isShortLandscape && constraints.maxWidth >= 520'),
+    );
+    expect(
+      workspace,
+      contains('PerfectResponsiveGeometry.expandedContentThreshold + 184'),
+    );
     expect(implementation, contains('MinimumTrackSizeForWindow(hwnd)'));
     expect(implementation, contains('MonitorFromWindow'));
     expect(implementation, contains('work.right - work.left'));

@@ -74,6 +74,11 @@ void main() {
 
       expect(find.text('Today’s rhythm'), findsOneWidget);
       expect(find.text('2 open items'), findsOneWidget);
+      final title = tester.widget<Text>(
+        find.byKey(const ValueKey<String>('orbit-linear-title')),
+      );
+      expect(title.maxLines, 2);
+      expect(title.overflow, isNull);
       expect(
         tester
             .getRect(find.text('Today’s rhythm'))

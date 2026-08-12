@@ -414,3 +414,20 @@ production UI implementation can be accepted.
 This closes design authority, not runtime fidelity. Every Stage 06–50 production
 surface still requires matched fixture capture and normalized reference/runtime/
 overlay/diff evidence before its own gate can close.
+
+## 2026-08-12 — Stage 07 adaptive navigation shell verification
+
+| Check | Method | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| Static analysis | `flutter analyze` | passed | no issues after final platform-explicit tests |
+| Full Flutter suite | `flutter test --concurrency=1 --reporter compact` | passed, 404/404 | includes source, persistence, AI, sync, widget, responsive and golden contracts |
+| Workspace shell suite | focused `perfect_workspace_page_test.dart` | passed, 60/60 | phone/tablet/Windows, RTL, 200%, short height, state retention, keyboard and every shell golden |
+| Android in-place preview | build 2048 + `adb install -r` | passed | versionCode remains 2048; firstInstallTime remains `2026-08-02 19:20:44` |
+| Phone 200% runtime | screenshot, semantics and log inspection | passed | `Today’s rhythm` reflows whole; no required phrase clips and no fatal/overflow match |
+| Tablet portrait runtime | before/after + scrolled-end inspection | passed | large dead pane removed; Day Stream and final action remain reachable |
+| Tablet landscape runtime | logical 1280×800 compact/expanded rail captures | passed | Android defaults compact, expands without overlap and retains useful two-pane weight |
+| Capture runtime | UIAutomator + input-method state | passed | capture opens as one surface and `mInputShown=false` until the field is explicitly chosen |
+| Windows local compile | not rerun | host limitation | ATL `atlbase.h` remains unavailable locally; Windows interaction/golden contracts pass |
+| Trusted exact-SHA build/release | GitHub Actions and immutable release | pending | must pass after merge/push with exactly APK, Portable ZIP and Setup EXE |
+
+Full evidence and honest proof boundaries are recorded in `07-stage-verification.md`.

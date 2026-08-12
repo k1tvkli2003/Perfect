@@ -388,3 +388,35 @@ Stage 05 changes no shipped Flutter UI, native code, route, domain, database, au
 sync or Supabase contract. Its commit/push and exact-SHA hosted checkpoint close the
 preview-before-production barrier; Stage 06 must implement from exact preview IDs,
 decomposition records and hashes rather than visual memory.
+
+## 2026-08-12 — Stage 07 adaptive shell local checkpoint
+
+### Before
+
+The shipped shell switched layouts, but route widgets were not intentionally retained
+as one stateful instrument. Android wide tablets could inherit desktop navigation,
+Windows rail behavior was not isolated in tests, intermediate resize contracts were
+thin and real 200%/800dp runtime review exposed clipped copy plus large dead space.
+
+### After
+
+- Added a keyed persistent host for Today, Tasks, Plan, Habits and More with hidden
+  pointer/semantics/ticker/focus isolation and retained filter/calendar/scroll state.
+- Made shell tiers content-driven and platform-aware; Android wide tablets default to
+  a compact rail while Windows restores the saved owner choice.
+- Added direction-aware page motion, reduced-motion behavior, local footer/rail
+  arrows/Home/End, Ctrl+1…5, Escape context dismissal and a keyboard-resizable 48dp
+  inspector divider.
+- Reflowed the 200% compact Compass summary and rebuilt 800dp portrait Today as one
+  useful reading column rather than a tiny panel stretched through empty height.
+- Verified real Android phone, tablet portrait and tablet landscape states; capture
+  opens without the IME, rail expansion does not overlap, the last stream content is
+  scroll-reachable and fatal/overflow log scans are clean.
+- `flutter analyze` passes and the full suite passes 404/404. The versionCode 2048
+  preview installed over the existing package while preserving first-install time.
+
+### Next
+
+- Merge the isolated Stage 07 commit into dirty `main` without consuming the owner's
+  five protected workspace files, then push and verify exact-SHA workflow, Windows
+  install-over and the three install-ready release assets.

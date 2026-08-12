@@ -107,6 +107,26 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       GlobalKey<_QuickCaptureDockState>();
   final GlobalKey<PerfectAiDockState> _aiDockKey =
       GlobalKey<PerfectAiDockState>();
+  final GlobalKey<_PersistentDestinationHostState> _destinationHostKey =
+      GlobalKey<_PersistentDestinationHostState>(
+        debugLabel: 'Perfect persistent destination host',
+      );
+  final GlobalKey _todayPageKey = GlobalKey(
+    debugLabel: 'Perfect Today destination',
+  );
+  final GlobalKey<_TasksPageState> _tasksPageKey = GlobalKey<_TasksPageState>(
+    debugLabel: 'Perfect Tasks destination',
+  );
+  final GlobalKey<_PlanPageState> _planPageKey = GlobalKey<_PlanPageState>(
+    debugLabel: 'Perfect Plan destination',
+  );
+  final GlobalKey _habitsPageKey = GlobalKey(
+    debugLabel: 'Perfect Habits destination',
+  );
+  final GlobalKey _morePageKey = GlobalKey(
+    debugLabel: 'Perfect More destination',
+  );
+  final PageStorageBucket _destinationPageStorage = PageStorageBucket();
   final ReadyFeedbackOverlayController _feedbackOverlayController =
       ReadyFeedbackOverlayController();
   _WorkspaceLayoutTier? _lastLayoutTier;
@@ -125,6 +145,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       const <String, PlannerTodayEligibility>{};
   Map<String, PlannerHabitDaySummary> _habitDaySummaryById =
       const <String, PlannerHabitDaySummary>{};
+  double? _inspectorWidthOverride;
 
   @override
   void initState() {
@@ -297,16 +318,18 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
               _ensureTodayProjection();
               return LayoutBuilder(
                 builder: (context, constraints) {
+                  final textScale =
+                      MediaQuery.textScalerOf(context).scale(16) / 16;
+                  final geometry = PerfectResponsiveGeometry.fromConstraints(
+                    constraints,
+                    fallbackSize: MediaQuery.sizeOf(context),
+                    textScale: textScale,
+                  );
+                  final tier = _layoutTierFor(geometry);
                   final shortLandscape =
-                      constraints.maxHeight < 520 &&
-                      constraints.maxWidth >= 520;
-                  final tier = constraints.maxWidth < 640
-                      ? _WorkspaceLayoutTier.compact
-                      : constraints.maxWidth < 1280
-                      ? _WorkspaceLayoutTier.medium
-                      : _WorkspaceLayoutTier.expanded;
+                      geometry.isShortLandscape && constraints.maxWidth >= 520;
                   _preserveQuickCaptureFocusAcross(tier);
-                  if (shortLandscape && constraints.maxWidth < 1280) {
+                  if (shortLandscape && tier != _WorkspaceLayoutTier.expanded) {
                     return _medium(context, shortLandscape: true);
                   }
                   return switch (tier) {
@@ -335,7 +358,27 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     );
   }
 
+  _WorkspaceLayoutTier _layoutTierFor(PerfectResponsiveGeometry geometry) {
+    if (geometry.isShortLandscape && geometry.availableSize.width >= 520) {
+      return _WorkspaceLayoutTier.medium;
+    }
+
+    // Expanded shell space is earned by useful content: a 1040dp primary
+    // workspace plus bounded navigation/divider chrome. Each expanded pane
+    // then reflows large text internally and suppresses the inspector before
+    // it can starve the primary work surface.
+    final expandedThreshold =
+        PerfectResponsiveGeometry.expandedContentThreshold + 184;
+    if (geometry.availableSize.width >= expandedThreshold) {
+      return _WorkspaceLayoutTier.expanded;
+    }
+    return geometry.windowClass == PerfectWindowClass.compact
+        ? _WorkspaceLayoutTier.compact
+        : _WorkspaceLayoutTier.medium;
+  }
+
   Widget _compact(BuildContext context) => Scaffold(
+    key: const ValueKey<String>('perfect-shell-compact'),
     // The footer remains visually glassy, but Today content must finish above
     // it. Letting the first live task sit under an actionable capture field
     // makes neither the task nor the field trustworthy.
@@ -352,12 +395,9 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
             onSync: widget.controller.refresh,
           ),
           Expanded(
-            child: _destinationSurface(
+            child: _destinationHost(
               context,
-              _pageContent(
-                context,
-                includeOrbit: _destination == _PerfectDestination.today,
-              ),
+              tier: _WorkspaceLayoutTier.compact,
             ),
           ),
         ],
@@ -382,6 +422,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
 
   Widget _medium(BuildContext context, {bool shortLandscape = false}) =>
       Scaffold(
+        key: const ValueKey<String>('perfect-shell-medium'),
         body: SafeArea(
           child: Row(
             children: [
@@ -415,24 +456,10 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
                       onSync: widget.controller.refresh,
                     ),
                     Expanded(
-                      child: _destinationSurface(
+                      child: _destinationHost(
                         context,
-                        _destination == _PerfectDestination.today
-                            ? _MediumTodayDeck(
-                                controller: widget.controller,
-                                now: widget.now().toLocal(),
-                                items: _todayItems,
-                                eligibilityById: _displayTodayEligibility,
-                                habitSummaryById: _displayHabitSummaries,
-                                orbitMotionEnabled: widget.orbitMotionEnabled,
-                                onInspect: _inspect,
-                                onAdd: _openEditor,
-                                onOpenPlan: () => _selectDestination(
-                                  _PerfectDestination.plan.index,
-                                ),
-                                shortLandscape: shortLandscape,
-                              )
-                            : _pageContent(context, includeOrbit: false),
+                        tier: _WorkspaceLayoutTier.medium,
+                        shortLandscape: shortLandscape,
                       ),
                     ),
                     if (_destination == _PerfectDestination.today)
@@ -448,101 +475,59 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         ),
       );
 
-  Widget _expanded(BuildContext context) => Scaffold(
-    body: SafeArea(
-      child: Row(
-        children: [
-          _NavigationRail(
-            selected: _destination,
-            onSelect: _selectDestination,
-            extended: _desktopNavigationExtended,
-            onToggleExtended: _toggleDesktopNavigationWidth,
-          ),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final textScale =
-                    MediaQuery.textScalerOf(context).scale(16) / 16;
-                final inspectorWidth = (constraints.maxWidth * .29)
-                    .clamp(300.0, 420.0)
-                    .toDouble();
-                final showAdjacentInspector =
-                    _destination != _PerfectDestination.today &&
-                    _inspected != null &&
-                    constraints.maxWidth - inspectorWidth >= 680 &&
-                    textScale < 1.5;
-
-                return Column(
-                  children: [
-                    _Header(
-                      showWordmark: _destination != _PerfectDestination.today,
-                      showContext: _destination != _PerfectDestination.today,
-                      destination: _destination,
-                      now: widget.now().toLocal(),
-                      status: widget.controller.syncStatus,
-                      onSync: widget.controller.refresh,
-                    ),
-                    Expanded(
-                      child: _destinationSurface(
-                        context,
-                        _destination == _PerfectDestination.today
-                            ? _ExpandedTodayDeck(
-                                controller: widget.controller,
-                                now: widget.now().toLocal(),
-                                items: _todayItems,
-                                eligibilityById: _displayTodayEligibility,
-                                habitSummaryById: _displayHabitSummaries,
-                                orbitMotionEnabled: widget.orbitMotionEnabled,
-                                inspected: _inspected,
-                                onInspect: _inspect,
-                                onAdd: _openEditor,
-                                onOpenPlan: () => _selectDestination(
-                                  _PerfectDestination.plan.index,
-                                ),
-                                onEditInspected: () =>
-                                    _openEditor(existing: _inspected),
-                                onClearInspection: () =>
-                                    setState(() => _inspected = null),
-                              )
-                            : Row(
-                                children: [
-                                  Expanded(
-                                    child: _pageContent(
-                                      context,
-                                      includeOrbit: false,
-                                    ),
-                                  ),
-                                  if (showAdjacentInspector)
-                                    SizedBox(
-                                      width: inspectorWidth,
-                                      child: _Inspector(
-                                        entity: _inspected,
-                                        controller: widget.controller,
-                                        onEdit: () =>
-                                            _openEditor(existing: _inspected),
-                                        onReveal: _inspect,
-                                        onClear: () =>
-                                            setState(() => _inspected = null),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                      ),
-                    ),
-                    if (_destination == _PerfectDestination.today)
-                      _WorkspaceComposerStack(
-                        aiPanel: _aiPanel(desktop: true),
-                        capture: _quickCapture(desktop: true),
-                      ),
-                  ],
-                );
-              },
+  Widget _expanded(BuildContext context) {
+    final tabletNavigation =
+        Theme.of(context).platform == TargetPlatform.android;
+    return Scaffold(
+      key: const ValueKey<String>('perfect-shell-expanded'),
+      body: SafeArea(
+        child: Row(
+          children: [
+            _NavigationRail(
+              selected: _destination,
+              onSelect: _selectDestination,
+              extended: tabletNavigation
+                  ? _tabletNavigationExtended
+                  : _desktopNavigationExtended,
+              onToggleExtended: tabletNavigation
+                  ? _toggleTabletNavigationWidth
+                  : _toggleDesktopNavigationWidth,
             ),
-          ),
-        ],
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Column(
+                    children: [
+                      _Header(
+                        showWordmark: _destination != _PerfectDestination.today,
+                        showContext: _destination != _PerfectDestination.today,
+                        destination: _destination,
+                        now: widget.now().toLocal(),
+                        status: widget.controller.syncStatus,
+                        onSync: widget.controller.refresh,
+                      ),
+                      Expanded(
+                        child: _destinationHost(
+                          context,
+                          tier: _WorkspaceLayoutTier.expanded,
+                          workspaceConstraints: constraints,
+                        ),
+                      ),
+                      if (_destination == _PerfectDestination.today)
+                        _WorkspaceComposerStack(
+                          aiPanel: _aiPanel(desktop: true),
+                          capture: _quickCapture(desktop: true),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _aiPanel({required bool desktop}) {
     final client = widget.aiClient;
@@ -574,64 +559,183 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     onOpenAiVoice: _openAiVoice,
   );
 
-  Widget _destinationSurface(BuildContext context, Widget child) {
-    return PerfectMotionSwitcher(
-      kind: PerfectTransitionKind.sharedAxisVertical,
-      direction: _navigationDirection,
-      alignment: Alignment.topCenter,
-      child: KeyedSubtree(
-        key: ValueKey<_PerfectDestination>(_destination),
-        child: child,
+  Widget _destinationHost(
+    BuildContext context, {
+    required _WorkspaceLayoutTier tier,
+    bool shortLandscape = false,
+    BoxConstraints? workspaceConstraints,
+  }) {
+    final pages = <Widget>[
+      KeyedSubtree(
+        key: _todayPageKey,
+        child: _todaySurface(tier: tier, shortLandscape: shortLandscape),
+      ),
+      _TasksPage(
+        key: _tasksPageKey,
+        controller: widget.controller,
+        onInspect: _inspect,
+        onAdd: _openEditor,
+      ),
+      _PlanPage(
+        key: _planPageKey,
+        controller: widget.controller,
+        now: widget.now().toLocal(),
+        onInspect: _inspect,
+        onAdd: _openEditor,
+      ),
+      _HabitsPage(
+        key: _habitsPageKey,
+        controller: widget.controller,
+        summaries: _displayHabitSummaries,
+        onInspect: _inspect,
+        onAdd: () => _openEditor(initialKind: PlannerEntityKind.habit),
+      ),
+      _MorePage(
+        key: _morePageKey,
+        controller: widget.controller,
+        feedbackController: widget.feedbackController,
+        onOpenFeedback: widget.feedbackController == null
+            ? null
+            : _openFeedbackCapture,
+        themeMode: widget.themeMode,
+        onThemeModeChanged: widget.onThemeModeChanged,
+        onSignOut: widget.onSignOut,
+        onAddProject: () => _openEditor(initialKind: PlannerEntityKind.project),
+        onAddArea: () => _openEditor(initialKind: PlannerEntityKind.area),
+      ),
+    ];
+
+    final composedPages =
+        tier == _WorkspaceLayoutTier.expanded && workspaceConstraints != null
+        ? pages.indexed
+              .map(
+                (entry) => entry.$1 == _PerfectDestination.today.index
+                    ? entry.$2
+                    : _expandedDestinationFrame(
+                        context,
+                        destination: _PerfectDestination.values[entry.$1],
+                        page: entry.$2,
+                        constraints: workspaceConstraints,
+                      ),
+              )
+              .toList(growable: false)
+        : pages;
+
+    return PageStorage(
+      bucket: _destinationPageStorage,
+      child: _PersistentDestinationHost(
+        key: _destinationHostKey,
+        selectedIndex: _destination.index,
+        direction: _navigationDirection,
+        children: composedPages,
       ),
     );
   }
 
-  Widget _pageContent(BuildContext context, {required bool includeOrbit}) =>
-      switch (_destination) {
-        _PerfectDestination.today => _TodayPage(
-          controller: widget.controller,
-          includeOrbit: includeOrbit,
-          now: widget.now().toLocal(),
-          ownerDisplayName: widget.ownerDisplayName,
-          items: _todayItems,
-          eligibilityById: _displayTodayEligibility,
-          habitSummaryById: _displayHabitSummaries,
-          orbitMotionEnabled: widget.orbitMotionEnabled,
-          onInspect: _inspect,
-          onAdd: _openEditor,
-          onOpenPlan: () => _selectDestination(_PerfectDestination.plan.index),
+  Widget _todaySurface({
+    required _WorkspaceLayoutTier tier,
+    required bool shortLandscape,
+  }) {
+    final now = widget.now().toLocal();
+    return switch (tier) {
+      _WorkspaceLayoutTier.compact => _TodayPage(
+        controller: widget.controller,
+        includeOrbit: true,
+        now: now,
+        ownerDisplayName: widget.ownerDisplayName,
+        items: _todayItems,
+        eligibilityById: _displayTodayEligibility,
+        habitSummaryById: _displayHabitSummaries,
+        orbitMotionEnabled: widget.orbitMotionEnabled,
+        onInspect: _inspect,
+        onAdd: _openEditor,
+        onOpenPlan: () => _selectDestination(_PerfectDestination.plan.index),
+      ),
+      _WorkspaceLayoutTier.medium => _MediumTodayDeck(
+        controller: widget.controller,
+        now: now,
+        items: _todayItems,
+        eligibilityById: _displayTodayEligibility,
+        habitSummaryById: _displayHabitSummaries,
+        orbitMotionEnabled: widget.orbitMotionEnabled,
+        onInspect: _inspect,
+        onAdd: _openEditor,
+        onOpenPlan: () => _selectDestination(_PerfectDestination.plan.index),
+        shortLandscape: shortLandscape,
+      ),
+      _WorkspaceLayoutTier.expanded => _ExpandedTodayDeck(
+        controller: widget.controller,
+        now: now,
+        items: _todayItems,
+        eligibilityById: _displayTodayEligibility,
+        habitSummaryById: _displayHabitSummaries,
+        orbitMotionEnabled: widget.orbitMotionEnabled,
+        inspected: _destination == _PerfectDestination.today
+            ? _inspected
+            : null,
+        onInspect: _inspect,
+        onAdd: _openEditor,
+        onOpenPlan: () => _selectDestination(_PerfectDestination.plan.index),
+        onEditInspected: () => _openEditor(existing: _inspected),
+        onClearInspection: () => setState(() => _inspected = null),
+      ),
+    };
+  }
+
+  Widget _expandedDestinationFrame(
+    BuildContext context, {
+    required _PerfectDestination destination,
+    required Widget page,
+    required BoxConstraints constraints,
+  }) {
+    final inspected = _inspected;
+    final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
+    const dividerWidth = 48.0;
+    const minInspectorWidth = 300.0;
+    const maxInspectorWidth = 460.0;
+    final availableInspectorWidth = math.min(
+      maxInspectorWidth,
+      constraints.maxWidth -
+          PerfectResponsiveGeometry.mediumContentThreshold -
+          dividerWidth,
+    );
+    final showInspector =
+        destination == _destination &&
+        inspected != null &&
+        availableInspectorWidth >= minInspectorWidth &&
+        textScale < 1.5;
+    if (!showInspector) return page;
+
+    final inspectorWidth =
+        (_inspectorWidthOverride ?? constraints.maxWidth * .29)
+            .clamp(minInspectorWidth, availableInspectorWidth)
+            .toDouble();
+    return Row(
+      children: [
+        Expanded(child: page),
+        _PaneDivider(
+          value: inspectorWidth,
+          min: minInspectorWidth,
+          max: availableInspectorWidth,
+          onChanged: (value) {
+            if ((_inspectorWidthOverride ?? inspectorWidth) == value) return;
+            setState(() => _inspectorWidthOverride = value);
+          },
         ),
-        _PerfectDestination.tasks => _TasksPage(
-          controller: widget.controller,
-          onInspect: _inspect,
-          onAdd: _openEditor,
+        SizedBox(
+          key: const ValueKey<String>('perfect-inspector-pane'),
+          width: inspectorWidth,
+          child: _Inspector(
+            entity: inspected,
+            controller: widget.controller,
+            onEdit: () => _openEditor(existing: inspected),
+            onReveal: _inspect,
+            onClear: () => setState(() => _inspected = null),
+          ),
         ),
-        _PerfectDestination.plan => _PlanPage(
-          controller: widget.controller,
-          now: widget.now().toLocal(),
-          onInspect: _inspect,
-          onAdd: _openEditor,
-        ),
-        _PerfectDestination.habits => _HabitsPage(
-          controller: widget.controller,
-          summaries: _displayHabitSummaries,
-          onInspect: _inspect,
-          onAdd: () => _openEditor(initialKind: PlannerEntityKind.habit),
-        ),
-        _PerfectDestination.more => _MorePage(
-          controller: widget.controller,
-          feedbackController: widget.feedbackController,
-          onOpenFeedback: widget.feedbackController == null
-              ? null
-              : _openFeedbackCapture,
-          themeMode: widget.themeMode,
-          onThemeModeChanged: widget.onThemeModeChanged,
-          onSignOut: widget.onSignOut,
-          onAddProject: () =>
-              _openEditor(initialKind: PlannerEntityKind.project),
-          onAddArea: () => _openEditor(initialKind: PlannerEntityKind.area),
-        ),
-      };
+      ],
+    );
+  }
 
   List<PlannerEntity> get _todayItems {
     final now = widget.now().toLocal();
@@ -749,6 +853,12 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
   void _selectDestination(int value) {
     final next = _PerfectDestination.values[value];
     if (next == _destination) return;
+    if (_destination == _PerfectDestination.today &&
+        next != _PerfectDestination.today) {
+      // Today alone owns capture. Preserve its controller-backed draft, but
+      // close the spatial context before the composer leaves the shell.
+      _quickCaptureDockKey.currentState?.collapse();
+    }
     if (next != _PerfectDestination.today && _aiOpen) {
       _aiDockKey.currentState?.close();
     }
@@ -918,6 +1028,370 @@ const _destinations = _PerfectDestination.values;
 
 enum _WorkspaceLayoutTier { compact, medium, expanded }
 
+class _PersistentDestinationHost extends StatefulWidget {
+  const _PersistentDestinationHost({
+    super.key,
+    required this.selectedIndex,
+    required this.direction,
+    required this.children,
+  }) : assert(selectedIndex >= 0),
+       assert(selectedIndex < children.length),
+       assert(direction != 0);
+
+  final int selectedIndex;
+  final int direction;
+  final List<Widget> children;
+
+  @override
+  State<_PersistentDestinationHost> createState() =>
+      _PersistentDestinationHostState();
+}
+
+class _PersistentDestinationHostState extends State<_PersistentDestinationHost>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    value: 1,
+  )..addStatusListener(_handleStatus);
+  int? _outgoingIndex;
+  int _direction = 1;
+  bool _reducedMotion = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reducedMotion = PerfectMotion.reduced(context);
+    _controller.duration = PerfectMotion.responsive(
+      context,
+      PerfectMotion.standard,
+    );
+    if (_reducedMotion) {
+      _outgoingIndex = null;
+      _controller.value = 1;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _PersistentDestinationHost oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    assert(widget.children.length == oldWidget.children.length);
+    if (oldWidget.selectedIndex == widget.selectedIndex) return;
+    _direction = widget.direction;
+    if (_reducedMotion) {
+      _outgoingIndex = null;
+      _controller.value = 1;
+      return;
+    }
+    _outgoingIndex = oldWidget.selectedIndex;
+    _controller.forward(from: 0);
+  }
+
+  void _handleStatus(AnimationStatus status) {
+    if (status != AnimationStatus.completed || _outgoingIndex == null) return;
+    if (mounted) setState(() => _outgoingIndex = null);
+  }
+
+  @override
+  void dispose() {
+    _controller
+      ..removeStatusListener(_handleStatus)
+      ..dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final active = widget.selectedIndex;
+    final outgoing = _outgoingIndex;
+    final paintOrder = <int>[
+      for (var index = 0; index < widget.children.length; index++)
+        if (index != active && index != outgoing) index,
+      if (outgoing != null && outgoing != active) outgoing,
+      active,
+    ];
+    return RepaintBoundary(
+      key: const ValueKey<String>('perfect-persistent-destination-host'),
+      child: ClipRect(
+        child: Stack(
+          fit: StackFit.expand,
+          children: paintOrder.map(_buildSlot).toList(growable: false),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSlot(int index) {
+    final active = index == widget.selectedIndex;
+    final outgoing = index == _outgoingIndex;
+    final visible = active || outgoing;
+    return Positioned.fill(
+      key: ValueKey<String>('perfect-destination-slot-$index'),
+      child: Offstage(
+        offstage: !visible,
+        child: TickerMode(
+          enabled: active,
+          child: IgnorePointer(
+            ignoring: !active,
+            child: ExcludeSemantics(
+              excluding: !active,
+              child: FocusScope(
+                canRequestFocus: active,
+                skipTraversal: !active,
+                descendantsAreFocusable: active,
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  child: widget.children[index],
+                  builder: (context, child) {
+                    if (!visible || _reducedMotion) return child!;
+                    final progress = PerfectMotion.modalEnter.transform(
+                      _controller.value,
+                    );
+                    final opacity = active ? progress : 1 - progress;
+                    final horizontal = active
+                        ? _direction * (1 - progress) * 14
+                        : -_direction * progress * 8;
+                    final vertical = active ? (1 - progress) * 6 : 0.0;
+                    return Opacity(
+                      opacity: opacity.clamp(0.0, 1.0),
+                      child: Transform.translate(
+                        offset: Offset(horizontal, vertical),
+                        child: child,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum _DestinationNavigationAxis { horizontal, vertical }
+
+class _MoveDestinationIntent extends Intent {
+  const _MoveDestinationIntent.delta(this.delta) : target = null;
+
+  const _MoveDestinationIntent.target(this.target) : delta = null;
+
+  final int? delta;
+  final int? target;
+}
+
+class _DestinationKeyboardScope extends StatefulWidget {
+  const _DestinationKeyboardScope({
+    super.key,
+    required this.axis,
+    required this.selectedIndex,
+    required this.onSelected,
+    required this.child,
+  });
+
+  final _DestinationNavigationAxis axis;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  final Widget child;
+
+  @override
+  State<_DestinationKeyboardScope> createState() =>
+      _DestinationKeyboardScopeState();
+}
+
+class _DestinationKeyboardScopeState extends State<_DestinationKeyboardScope> {
+  final FocusNode _focusNode = FocusNode(
+    debugLabel: 'Perfect destination keyboard scope',
+  );
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final shortcuts = <ShortcutActivator, Intent>{
+      const SingleActivator(LogicalKeyboardKey.home):
+          const _MoveDestinationIntent.target(0),
+      const SingleActivator(LogicalKeyboardKey.end):
+          _MoveDestinationIntent.target(_destinations.length - 1),
+      if (widget.axis == _DestinationNavigationAxis.horizontal) ...{
+        const SingleActivator(LogicalKeyboardKey.arrowLeft):
+            _MoveDestinationIntent.delta(rtl ? 1 : -1),
+        const SingleActivator(LogicalKeyboardKey.arrowRight):
+            _MoveDestinationIntent.delta(rtl ? -1 : 1),
+      } else ...{
+        const SingleActivator(LogicalKeyboardKey.arrowUp):
+            const _MoveDestinationIntent.delta(-1),
+        const SingleActivator(LogicalKeyboardKey.arrowDown):
+            const _MoveDestinationIntent.delta(1),
+      },
+    };
+    return Shortcuts(
+      shortcuts: shortcuts,
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          _MoveDestinationIntent: CallbackAction<_MoveDestinationIntent>(
+            onInvoke: (intent) {
+              final target =
+                  intent.target ??
+                  (widget.selectedIndex + intent.delta!).clamp(
+                    0,
+                    _destinations.length - 1,
+                  );
+              if (target != widget.selectedIndex) {
+                widget.onSelected(target);
+              }
+              return null;
+            },
+          ),
+        },
+        child: Focus(
+          focusNode: _focusNode,
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: (_) => _focusNode.requestFocus(),
+            child: FocusTraversalGroup(child: widget.child),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AdjustPaneIntent extends Intent {
+  const _AdjustPaneIntent(this.delta);
+
+  final double delta;
+}
+
+class _PaneDivider extends StatefulWidget {
+  const _PaneDivider({
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+
+  final double value;
+  final double min;
+  final double max;
+  final ValueChanged<double> onChanged;
+
+  @override
+  State<_PaneDivider> createState() => _PaneDividerState();
+}
+
+class _PaneDividerState extends State<_PaneDivider> {
+  final FocusNode _focusNode = FocusNode(
+    debugLabel: 'Perfect inspector pane divider',
+  );
+  bool _hovered = false;
+  bool _focused = false;
+  bool _dragging = false;
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _adjust(double delta) {
+    final next = (widget.value + delta).clamp(widget.min, widget.max);
+    widget.onChanged(next.toDouble());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final active = _hovered || _focused || _dragging;
+    final duration = PerfectMotion.responsive(context, PerfectMotion.quick);
+    return Semantics(
+      key: const ValueKey<String>('perfect-inspector-divider'),
+      container: true,
+      focusable: true,
+      label: 'Resize inspector pane',
+      value: '${widget.value.round()} pixels',
+      increasedValue: '${widget.max.round()} pixels maximum',
+      decreasedValue: '${widget.min.round()} pixels minimum',
+      onIncrease: () => _adjust(24),
+      onDecrease: () => _adjust(-24),
+      child: FocusableActionDetector(
+        focusNode: _focusNode,
+        mouseCursor: SystemMouseCursors.resizeColumn,
+        onShowFocusHighlight: (value) => setState(() => _focused = value),
+        onShowHoverHighlight: (value) => setState(() => _hovered = value),
+        shortcuts: <ShortcutActivator, Intent>{
+          const SingleActivator(LogicalKeyboardKey.arrowLeft):
+              _AdjustPaneIntent(rtl ? -16 : 16),
+          const SingleActivator(LogicalKeyboardKey.arrowRight):
+              _AdjustPaneIntent(rtl ? 16 : -16),
+        },
+        actions: <Type, Action<Intent>>{
+          _AdjustPaneIntent: CallbackAction<_AdjustPaneIntent>(
+            onInvoke: (intent) {
+              _adjust(intent.delta);
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (_) => _focusNode.requestFocus(),
+          onHorizontalDragStart: (_) {
+            _focusNode.requestFocus();
+            setState(() => _dragging = true);
+          },
+          onHorizontalDragUpdate: (details) {
+            _adjust(details.delta.dx * (rtl ? 1 : -1));
+          },
+          onHorizontalDragEnd: (_) => setState(() => _dragging = false),
+          onHorizontalDragCancel: () => setState(() => _dragging = false),
+          child: SizedBox(
+            width: 48,
+            child: Center(
+              child: AnimatedContainer(
+                duration: duration,
+                curve: PerfectMotion.productive,
+                width: active ? 4 : 2,
+                height: active ? 76 : 56,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(99),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: active
+                        ? <Color>[
+                            PerfectColors.apricot,
+                            PerfectColors.lilacAction,
+                          ]
+                        : <Color>[
+                            scheme.outlineVariant.withValues(alpha: .36),
+                            scheme.outlineVariant.withValues(alpha: .78),
+                          ],
+                  ),
+                  boxShadow: active
+                      ? <BoxShadow>[
+                          BoxShadow(
+                            color: PerfectColors.lilac.withValues(alpha: .22),
+                            blurRadius: 14,
+                          ),
+                        ]
+                      : const <BoxShadow>[],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _WorkspaceLoading extends StatelessWidget {
   const _WorkspaceLoading();
 
@@ -1029,83 +1503,89 @@ class _NavigationRail extends StatelessWidget {
             strength: PerfectGlassStrength.strong,
             child: Material(
               color: Colors.transparent,
-              child: NavigationRail(
-                extended: extended,
-                minExtendedWidth: expandedWidth,
-                minWidth: 76,
-                backgroundColor: Colors.transparent,
-                groupAlignment: -.18,
+              child: _DestinationKeyboardScope(
+                key: const ValueKey<String>('perfect-rail-keyboard-scope'),
+                axis: _DestinationNavigationAxis.vertical,
                 selectedIndex: selected.index,
-                onDestinationSelected: onSelect,
-                leading: Padding(
-                  padding: const EdgeInsets.only(top: PerfectSpace.md),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AnimatedSwitcher(
-                        duration: duration,
-                        switchInCurve: PerfectMotion.enter,
-                        switchOutCurve: PerfectMotion.exit,
-                        child: extended
-                            ? const SizedBox(
-                                key: ValueKey<String>('rail-wordmark'),
-                                width: 168,
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: PerfectWordmark(
-                                    fontSize: 25,
-                                    includeMark: true,
+                onSelected: onSelect,
+                child: NavigationRail(
+                  extended: extended,
+                  minExtendedWidth: expandedWidth,
+                  minWidth: 76,
+                  backgroundColor: Colors.transparent,
+                  groupAlignment: -.18,
+                  selectedIndex: selected.index,
+                  onDestinationSelected: onSelect,
+                  leading: Padding(
+                    padding: const EdgeInsets.only(top: PerfectSpace.md),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: duration,
+                          switchInCurve: PerfectMotion.enter,
+                          switchOutCurve: PerfectMotion.exit,
+                          child: extended
+                              ? const SizedBox(
+                                  key: ValueKey<String>('rail-wordmark'),
+                                  width: 168,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: PerfectWordmark(
+                                      fontSize: 25,
+                                      includeMark: true,
+                                    ),
                                   ),
+                                )
+                              : const PerfectMark(
+                                  key: ValueKey<String>('rail-mark'),
+                                  size: 40,
                                 ),
-                              )
-                            : const PerfectMark(
-                                key: ValueKey<String>('rail-mark'),
-                                size: 40,
+                        ),
+                        const SizedBox(height: PerfectSpace.xs),
+                        Semantics(
+                          button: true,
+                          label: extended
+                              ? 'Collapse navigation rail'
+                              : 'Expand navigation rail',
+                          child: IconButton(
+                            key: const ValueKey<String>(
+                              'perfect-navigation-rail-toggle',
+                            ),
+                            tooltip: extended
+                                ? 'Collapse navigation'
+                                : 'Expand navigation',
+                            onPressed: onToggleExtended,
+                            icon: AnimatedRotation(
+                              turns: extended ? .5 : 0,
+                              duration: duration,
+                              curve: PerfectMotion.productive,
+                              child: const Icon(
+                                Icons.keyboard_double_arrow_right_rounded,
                               ),
-                      ),
-                      const SizedBox(height: PerfectSpace.xs),
-                      Semantics(
-                        button: true,
-                        label: extended
-                            ? 'Collapse navigation rail'
-                            : 'Expand navigation rail',
-                        child: IconButton(
-                          key: const ValueKey<String>(
-                            'perfect-navigation-rail-toggle',
-                          ),
-                          tooltip: extended
-                              ? 'Collapse navigation'
-                              : 'Expand navigation',
-                          onPressed: onToggleExtended,
-                          icon: AnimatedRotation(
-                            turns: extended ? .5 : 0,
-                            duration: duration,
-                            curve: PerfectMotion.productive,
-                            child: const Icon(
-                              Icons.keyboard_double_arrow_right_rounded,
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  destinations: _destinations.indexed
+                      .map(
+                        (entry) => NavigationRailDestination(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          icon: Tooltip(
+                            message: '${entry.$2.label} (Ctrl+${entry.$1 + 1})',
+                            child: Icon(entry.$2.icon),
+                          ),
+                          selectedIcon: Tooltip(
+                            message: '${entry.$2.label} (Ctrl+${entry.$1 + 1})',
+                            child: Icon(entry.$2.selectedIcon),
+                          ),
+                          label: Text(entry.$2.label),
+                        ),
+                      )
+                      .toList(growable: false),
                 ),
-                destinations: _destinations.indexed
-                    .map(
-                      (entry) => NavigationRailDestination(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        icon: Tooltip(
-                          message: '${entry.$2.label} (Ctrl+${entry.$1 + 1})',
-                          child: Icon(entry.$2.icon),
-                        ),
-                        selectedIcon: Tooltip(
-                          message: '${entry.$2.label} (Ctrl+${entry.$1 + 1})',
-                          child: Icon(entry.$2.selectedIcon),
-                        ),
-                        label: Text(entry.$2.label),
-                      ),
-                    )
-                    .toList(growable: false),
               ),
             ),
           ),
@@ -1317,35 +1797,43 @@ class _CompactWorkspaceFooter extends StatelessWidget {
                 ),
                 child: Material(
                   color: Colors.transparent,
-                  child: NavigationBar(
-                    key: const ValueKey<String>('perfect-compact-navigation'),
-                    height: 68,
-                    elevation: 0,
-                    backgroundColor: Colors.transparent,
-                    surfaceTintColor: Colors.transparent,
-                    labelBehavior:
-                        NavigationDestinationLabelBehavior.alwaysHide,
+                  child: _DestinationKeyboardScope(
+                    key: const ValueKey<String>(
+                      'perfect-footer-keyboard-scope',
+                    ),
+                    axis: _DestinationNavigationAxis.horizontal,
                     selectedIndex: selectedIndex,
-                    onDestinationSelected: onDestinationSelected,
-                    destinations: _destinations
-                        .map(
-                          (destination) => NavigationDestination(
-                            key: ValueKey<String>(
-                              'perfect-footer-${destination.name}',
+                    onSelected: onDestinationSelected,
+                    child: NavigationBar(
+                      key: const ValueKey<String>('perfect-compact-navigation'),
+                      height: 68,
+                      elevation: 0,
+                      backgroundColor: Colors.transparent,
+                      surfaceTintColor: Colors.transparent,
+                      labelBehavior:
+                          NavigationDestinationLabelBehavior.alwaysHide,
+                      selectedIndex: selectedIndex,
+                      onDestinationSelected: onDestinationSelected,
+                      destinations: _destinations
+                          .map(
+                            (destination) => NavigationDestination(
+                              key: ValueKey<String>(
+                                'perfect-footer-${destination.name}',
+                              ),
+                              tooltip: destination.label,
+                              icon: _CompactDestinationGlyph(
+                                destination: destination,
+                                selected: false,
+                              ),
+                              selectedIcon: _CompactDestinationGlyph(
+                                destination: destination,
+                                selected: true,
+                              ),
+                              label: destination.label,
                             ),
-                            tooltip: destination.label,
-                            icon: _CompactDestinationGlyph(
-                              destination: destination,
-                              selected: false,
-                            ),
-                            selectedIcon: _CompactDestinationGlyph(
-                              destination: destination,
-                              selected: true,
-                            ),
-                            label: destination.label,
-                          ),
-                        )
-                        .toList(growable: false),
+                          )
+                          .toList(growable: false),
+                    ),
                   ),
                 ),
               ),
@@ -2751,18 +3239,25 @@ class _MediumTodayDeck extends StatelessWidget {
         // compact and expanded rail states can both sustain the two-pane
         // instrument + stream relationship.
         final sideBySide =
-            constraints.maxWidth >= 700 &&
-            contentWidth >= 620 &&
+            constraints.maxWidth >= 760 &&
+            contentWidth >= 700 &&
             textScale < 1.45;
         final lowHeight = constraints.maxHeight < 720;
         final stageHeight = shortLandscape
             ? (constraints.maxHeight * .94).clamp(300.0, 430.0)
             : lowHeight
             ? (constraints.maxHeight - 112).clamp(420.0, 620.0)
-            : (constraints.maxHeight - 72).clamp(560.0, 850.0);
+            : math.min(
+                (constraints.maxHeight - 72).clamp(560.0, 850.0),
+                (contentWidth * .98).clamp(560.0, 780.0),
+              );
         final compassWidth = sideBySide
             ? (contentWidth * .45).clamp(292.0, 410.0).toDouble()
             : contentWidth.toDouble();
+        final compassPanelHeight = math.min(
+          stageHeight,
+          (compassWidth + 140).clamp(512.0, 560.0),
+        );
 
         return RefreshIndicator(
           onRefresh: controller.refresh,
@@ -2792,10 +3287,11 @@ class _MediumTodayDeck extends StatelessWidget {
                           key: const ValueKey<String>('medium-day-deck'),
                           height: stageHeight,
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SizedBox(
                                 width: compassWidth,
+                                height: compassPanelHeight,
                                 child: _DayCompassPanel(
                                   items: items,
                                   now: now,
@@ -2805,15 +3301,18 @@ class _MediumTodayDeck extends StatelessWidget {
                               ),
                               const SizedBox(width: PerfectSpace.lg),
                               Expanded(
-                                child: _DayStreamPanel(
-                                  controller: controller,
-                                  items: items,
-                                  eligibilityById: eligibilityById,
-                                  habitSummaryById: habitSummaryById,
-                                  onInspect: onInspect,
-                                  onAdd: onAdd,
-                                  constrained: true,
-                                  dense: lowHeight,
+                                child: SizedBox(
+                                  height: stageHeight,
+                                  child: _DayStreamPanel(
+                                    controller: controller,
+                                    items: items,
+                                    eligibilityById: eligibilityById,
+                                    habitSummaryById: habitSummaryById,
+                                    onInspect: onInspect,
+                                    onAdd: onAdd,
+                                    constrained: true,
+                                    dense: lowHeight,
+                                  ),
                                 ),
                               ),
                             ],
@@ -4042,6 +4541,7 @@ class _TodayNextUpCard extends StatelessWidget {
 
 class _TasksPage extends StatefulWidget {
   const _TasksPage({
+    super.key,
     required this.controller,
     required this.onInspect,
     required this.onAdd,
@@ -4515,6 +5015,7 @@ IconData _taskKindFilterIcon(_TaskKindFilter filter) => switch (filter) {
 
 class _PlanPage extends StatefulWidget {
   const _PlanPage({
+    super.key,
     required this.controller,
     required this.now,
     required this.onInspect,
@@ -4899,6 +5400,7 @@ class _PlannerDayChip extends StatelessWidget {
 
 class _HabitsPage extends StatelessWidget {
   const _HabitsPage({
+    super.key,
     required this.controller,
     required this.summaries,
     required this.onInspect,
@@ -5066,6 +5568,7 @@ class _HabitOverviewBand extends StatelessWidget {
 
 class _MorePage extends StatelessWidget {
   const _MorePage({
+    super.key,
     required this.controller,
     required this.themeMode,
     required this.onThemeModeChanged,
