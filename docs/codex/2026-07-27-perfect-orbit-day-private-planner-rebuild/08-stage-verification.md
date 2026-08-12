@@ -86,6 +86,10 @@ the existing golden gate and the complete build/install-over path. The header ma
 goldens now use the repository's established `windows-golden` tag: Linux continues
 to run all geometry, semantics and state assertions while Windows owns exact raster
 comparison without weakening tolerance or rewriting platform-specific masters.
+Run `#50` / `31635595502` then caught an unformatted tag-only follow-up before
+analysis. The cause was local verification with `dart format --output=none`, which
+reports drift but intentionally does not write it. The file is now written through
+the formatter and checked again with the workflow's exact `lib test` command.
 
 ## Runtime evidence
 

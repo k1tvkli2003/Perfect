@@ -105,71 +105,73 @@ void main() {
   });
 
   for (final brightness in <Brightness>[Brightness.light, Brightness.dark]) {
-    testWidgets('sync state matrix matches ${brightness.name} glass preview', (
-      tester,
-    ) async {
-      final now = DateTime(2026, 9, 30, 23, 59);
-      await tester.binding.setSurfaceSize(const Size(920, 390));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-      final theme = brightness == Brightness.dark
-          ? PerfectTheme.dark()
-          : PerfectTheme.light();
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: theme,
-          home: Builder(
-            builder: (context) => MediaQuery(
-              data: MediaQuery.of(context).copyWith(disableAnimations: true),
-              child: Scaffold(
-                body: RepaintBoundary(
-                  key: const ValueKey<String>('perfect-header-state-matrix'),
-                  child: Column(
-                    children: [
-                      for (final status in <PlannerSyncStatus>[
-                        const PlannerSyncStatus.idle(),
-                        const PlannerSyncStatus(
-                          phase: PlannerSyncPhase.syncing,
-                        ),
-                        PlannerSyncStatus(
-                          phase: PlannerSyncPhase.offline,
-                          nextRetryAt: now.toUtc().add(
-                            const Duration(seconds: 5),
+    testWidgets(
+      'sync state matrix matches ${brightness.name} glass preview',
+      (tester) async {
+        final now = DateTime(2026, 9, 30, 23, 59);
+        await tester.binding.setSurfaceSize(const Size(920, 390));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final theme = brightness == Brightness.dark
+            ? PerfectTheme.dark()
+            : PerfectTheme.light();
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: theme,
+            home: Builder(
+              builder: (context) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(disableAnimations: true),
+                child: Scaffold(
+                  body: RepaintBoundary(
+                    key: const ValueKey<String>('perfect-header-state-matrix'),
+                    child: Column(
+                      children: [
+                        for (final status in <PlannerSyncStatus>[
+                          const PlannerSyncStatus.idle(),
+                          const PlannerSyncStatus(
+                            phase: PlannerSyncPhase.syncing,
                           ),
-                          retryAttempt: 2,
-                        ),
-                        const PlannerSyncStatus(
-                          phase: PlannerSyncPhase.needsAttention,
-                        ),
-                      ])
-                        PerfectWorkspaceHeader(
-                          destinationKey: 'today-${status.phase.name}',
-                          destinationLabel: 'Today',
-                          supportText: 'Your live day, at a glance',
-                          status: status,
-                          onSync: () async {},
-                          now: () => now,
-                          showWordmark: false,
-                        ),
-                    ],
+                          PlannerSyncStatus(
+                            phase: PlannerSyncPhase.offline,
+                            nextRetryAt: now.toUtc().add(
+                              const Duration(seconds: 5),
+                            ),
+                            retryAttempt: 2,
+                          ),
+                          const PlannerSyncStatus(
+                            phase: PlannerSyncPhase.needsAttention,
+                          ),
+                        ])
+                          PerfectWorkspaceHeader(
+                            destinationKey: 'today-${status.phase.name}',
+                            destinationLabel: 'Today',
+                            supportText: 'Your live day, at a glance',
+                            status: status,
+                            onSync: () async {},
+                            now: () => now,
+                            showWordmark: false,
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.text('Wednesday, September 30'), findsNWidgets(4));
-      expect(find.text('۸ مهر ۱۴۰۵'), findsNWidgets(4));
-      expect(find.text('Retry 5s'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-      await expectLater(
-        find.byKey(const ValueKey<String>('perfect-header-state-matrix')),
-        matchesGoldenFile('../goldens/perfect_header_${brightness.name}.png'),
-      );
-    }, tags: 'windows-golden');
+        expect(find.text('Wednesday, September 30'), findsNWidgets(4));
+        expect(find.text('۸ مهر ۱۴۰۵'), findsNWidgets(4));
+        expect(find.text('Retry 5s'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await expectLater(
+          find.byKey(const ValueKey<String>('perfect-header-state-matrix')),
+          matchesGoldenFile('../goldens/perfect_header_${brightness.name}.png'),
+        );
+      },
+      tags: 'windows-golden',
+    );
   }
 }
 
