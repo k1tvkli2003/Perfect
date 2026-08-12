@@ -7,6 +7,7 @@ import 'package:perfect/feedback/src/feedback_controller.dart';
 import 'package:perfect/feedback/src/feedback_exporter.dart';
 import 'package:perfect/feedback/src/feedback_models.dart';
 import 'package:perfect/feedback/src/feedback_repository.dart';
+import 'package:perfect/presentation/perfect_local_time.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 
 typedef ReadyFeedbackScreenshotProvider =
@@ -1129,12 +1130,7 @@ class _FeedbackEntriesBodyState extends State<_FeedbackEntriesBody> {
     ReadyFeedbackKind.note => Icons.sticky_note_2_outlined,
   };
 
-  String _formatDate(DateTime value) =>
-      '${value.year.toString().padLeft(4, '0')}-'
-      '${value.month.toString().padLeft(2, '0')}-'
-      '${value.day.toString().padLeft(2, '0')} '
-      '${value.hour.toString().padLeft(2, '0')}:'
-      '${value.minute.toString().padLeft(2, '0')}';
+  String _formatDate(DateTime value) => PerfectLocalTime.inspector(value);
 }
 
 class _FeedbackThumbnail extends StatefulWidget {
@@ -1294,12 +1290,7 @@ class _FeedbackEntryDetailsDialogState
     ReadyFeedbackKind.note => Icons.sticky_note_2_outlined,
   };
 
-  String _formatDate(DateTime value) =>
-      '${value.year.toString().padLeft(4, '0')}-'
-      '${value.month.toString().padLeft(2, '0')}-'
-      '${value.day.toString().padLeft(2, '0')} '
-      '${value.hour.toString().padLeft(2, '0')}:'
-      '${value.minute.toString().padLeft(2, '0')}';
+  String _formatDate(DateTime value) => PerfectLocalTime.inspector(value);
 
   String _screenshotMetadata(ReadyFeedbackEntry entry) {
     final dimensions =

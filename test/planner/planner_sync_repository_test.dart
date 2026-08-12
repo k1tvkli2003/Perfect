@@ -517,6 +517,7 @@ void main() {
     'non-connectivity failures retain red phase and recover with capped backoff',
     () async {
       final retryScheduler = _ControlledRetryScheduler();
+      final fixedNow = DateTime.utc(2026, 8, 6, 5, 24, 30);
       var failuresRemaining = 3;
       var pullCalls = 0;
       final remote = _FakeGateway(
@@ -541,6 +542,7 @@ void main() {
         retryBaseDelay: const Duration(milliseconds: 10),
         retryMaxDelay: const Duration(milliseconds: 25),
         retryTimerFactory: retryScheduler.schedule,
+        now: () => fixedNow,
       );
 
       await repository.syncNow();
@@ -551,6 +553,11 @@ void main() {
       expect(retryScheduler.delays, const <Duration>[
         Duration(milliseconds: 10),
       ]);
+      expect(repository.syncStatus.value.retryAttempt, 1);
+      expect(
+        repository.syncStatus.value.nextRetryAt,
+        fixedNow.add(const Duration(milliseconds: 10)),
+      );
 
       retryScheduler.fireNext();
       await _waitUntil(() => pullCalls == 2);
@@ -559,6 +566,11 @@ void main() {
         PlannerSyncPhase.needsAttention,
       );
       expect(retryScheduler.delays.last, const Duration(milliseconds: 20));
+      expect(repository.syncStatus.value.retryAttempt, 2);
+      expect(
+        repository.syncStatus.value.nextRetryAt,
+        fixedNow.add(const Duration(milliseconds: 20)),
+      );
 
       retryScheduler.fireNext();
       await _waitUntil(() => pullCalls == 3);
@@ -567,11 +579,18 @@ void main() {
         PlannerSyncPhase.needsAttention,
       );
       expect(retryScheduler.delays.last, const Duration(milliseconds: 25));
+      expect(repository.syncStatus.value.retryAttempt, 3);
+      expect(
+        repository.syncStatus.value.nextRetryAt,
+        fixedNow.add(const Duration(milliseconds: 25)),
+      );
 
       retryScheduler.fireNext();
       await _waitUntil(
         () => repository.syncStatus.value.phase == PlannerSyncPhase.idle,
       );
+      expect(repository.syncStatus.value.nextRetryAt, isNull);
+      expect(repository.syncStatus.value.retryAttempt, 0);
       expect(pullCalls, 5, reason: 'A successful sync pulls before and after.');
 
       failuresRemaining = 1;

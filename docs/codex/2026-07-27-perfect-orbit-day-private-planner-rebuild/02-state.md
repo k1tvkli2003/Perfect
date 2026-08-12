@@ -1,25 +1,25 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-12T02:43:37+03:30
+- Last updated: 2026-08-12T21:55:00+03:30
 - Owner: Codex
 
 ## Current State
 
-Canonical 50-stage execution has closed Stages 01–06 through exact-SHA hosted runs
-and immutable three-asset releases. Stage 06 is externally closed on run `#47`
-(`31451633971`) for commit `706f58a31294d78d66bf3404d2361efcf8b2c38e` and
-release `v1.1.0-build.2047`.
+Canonical 50-stage execution has externally closed Stages 01–07 through exact-SHA
+hosted runs and immutable three-asset releases. Stage 07 closed on run `#48`
+(`31549435764`) for commit `004c2567e67efc888f767b39333fb23a4a55bcbb` and
+release `v1.1.0-build.2048`.
 
-Stage 07 is locally complete and awaiting its exact-SHA hosted gate. The adaptive
-shell retains all five destination states, gives Android phone/tablet and Windows
-platform-aware navigation, keeps capture Today-only, supports keyboard/pointer/touch
-navigation and fixes the 200% phone plus 800dp tablet composition failures discovered
-in real runtime review. Analyzer is clean, the full suite passes 404/404 and the
-versionCode 2048 sibling preview installed in place without changing first install
-time. Real phone, tablet portrait and tablet landscape evidence is recorded in
-`07-stage-verification.md`; trusted Windows install-over and release remain pending
-the Stage 07 merge/push.
+Stage 08 is locally complete and awaiting its exact-SHA hosted gate. Perfect! now has
+a compact responsive glass header, deterministic Gregorian/Solar-Hijri formatting,
+a minute-aligned lifecycle-aware clock and a non-color-only sync confidence surface
+whose retry deadline comes from the real bounded backoff state. Analyzer is clean,
+the full suite passes 421/421 and versionCode 2049 installed over the existing sibling
+preview without changing first-install time. Phone light/dark/200%, sync details and
+tablet portrait/landscape runtime evidence is recorded in `08-stage-verification.md`;
+trusted Windows install-over and the exact three-asset release remain pending the
+Stage 08 merge/push.
 
 The earlier Perfect cycles below remain historical runtime evidence; they do not
 supersede the canonical numbered execution state.

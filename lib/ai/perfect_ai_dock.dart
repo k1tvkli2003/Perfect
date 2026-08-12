@@ -792,6 +792,7 @@ class PerfectAiDockState extends State<PerfectAiDock>
                   _messages.sublist(_messages.length - 20),
                 ),
           audio: clip,
+          clientLocalNow: DateTime.now(),
         ),
         cancellation: cancellation,
       );

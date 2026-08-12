@@ -18,13 +18,14 @@ import 'package:perfect/planner/sync/planner_sync_repository.dart';
 import 'package:perfect/presentation/focus_session_sheet.dart';
 import 'package:perfect/presentation/orbit_stage.dart';
 import 'package:perfect/presentation/perfect_brand.dart';
+import 'package:perfect/presentation/perfect_local_time.dart';
 import 'package:perfect/presentation/perfect_motion.dart';
 import 'package:perfect/presentation/perfect_pictogram.dart';
-import 'package:perfect/presentation/perfect_today_widget_settings_sheet.dart';
-import 'package:perfect/presentation/perfect_sync_indicator.dart';
 import 'package:perfect/presentation/planner_conflict_center_sheet.dart';
 import 'package:perfect/presentation/planner_archive_sheet.dart';
+import 'package:perfect/presentation/perfect_today_widget_settings_sheet.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
+import 'package:perfect/presentation/perfect_workspace_header.dart';
 import 'package:perfect/presentation/planner_editor.dart';
 import 'package:perfect/presentation/planner_habit_log_sheet.dart';
 import 'package:perfect/presentation/planner_insights_sheet.dart';
@@ -387,10 +388,12 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       bottom: false,
       child: Column(
         children: [
-          _Header(
+          PerfectWorkspaceHeader(
             compact: true,
-            destination: _destination,
-            now: widget.now().toLocal(),
+            destinationKey: _destination.name,
+            destinationLabel: _destination.label,
+            supportText: _headerSupportText(_destination),
+            now: widget.now,
             status: widget.controller.syncStatus,
             onSync: widget.controller.refresh,
           ),
@@ -443,15 +446,17 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
               Expanded(
                 child: Column(
                   children: [
-                    _Header(
+                    PerfectWorkspaceHeader(
                       compact: shortLandscape,
                       // The navigation rail already owns the product identity
                       // in both compact and extended states. Keep the header
                       // contextual instead of repeating the brand.
                       showWordmark: false,
                       showContext: _destination != _PerfectDestination.today,
-                      destination: _destination,
-                      now: widget.now().toLocal(),
+                      destinationKey: _destination.name,
+                      destinationLabel: _destination.label,
+                      supportText: _headerSupportText(_destination),
+                      now: widget.now,
                       status: widget.controller.syncStatus,
                       onSync: widget.controller.refresh,
                     ),
@@ -498,11 +503,13 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
                 builder: (context, constraints) {
                   return Column(
                     children: [
-                      _Header(
+                      PerfectWorkspaceHeader(
                         showWordmark: _destination != _PerfectDestination.today,
                         showContext: _destination != _PerfectDestination.today,
-                        destination: _destination,
-                        now: widget.now().toLocal(),
+                        destinationKey: _destination.name,
+                        destinationLabel: _destination.label,
+                        supportText: _headerSupportText(_destination),
+                        now: widget.now,
                         status: widget.controller.syncStatus,
                         onSync: widget.controller.refresh,
                       ),
@@ -642,6 +649,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         controller: widget.controller,
         includeOrbit: true,
         now: now,
+        nowProvider: widget.now,
         ownerDisplayName: widget.ownerDisplayName,
         items: _todayItems,
         eligibilityById: _displayTodayEligibility,
@@ -1595,136 +1603,9 @@ class _NavigationRail extends StatelessWidget {
   }
 }
 
-class _Header extends StatelessWidget {
-  const _Header({
-    required this.destination,
-    required this.now,
-    required this.status,
-    required this.onSync,
-    this.compact = false,
-    this.showWordmark = true,
-    this.showContext = true,
-  });
-
-  final _PerfectDestination destination;
-  final DateTime now;
-  final PlannerSyncStatus status;
-  final Future<void> Function() onSync;
-  final bool compact;
-  final bool showWordmark;
-  final bool showContext;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsetsDirectional.fromSTEB(
-      compact ? PerfectSpace.md : PerfectSpace.xl,
-      compact ? PerfectSpace.sm : PerfectSpace.sm,
-      compact ? PerfectSpace.md : PerfectSpace.xl,
-      compact ? 0 : PerfectSpace.xs,
-    ),
-    // Keep the greeting's calm vertical rhythm while optically lifting the
-    // brand into the safe-area gap, matching the reference header.
-    child: Transform.translate(
-      offset: Offset(0, compact ? -20 : 0),
-      child: Row(
-        children: [
-          Expanded(
-            child: compact
-                ? Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: const FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: AlignmentDirectional.centerStart,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          PerfectMark(size: 54),
-                          SizedBox(width: PerfectSpace.sm),
-                          PerfectWordmark(fontSize: 26.5),
-                        ],
-                      ),
-                    ),
-                  )
-                : !showContext
-                ? const SizedBox.shrink()
-                : PerfectMotionSwitcher(
-                    kind: PerfectTransitionKind.fade,
-                    duration: PerfectMotion.standard,
-                    reverseDuration: PerfectMotion.quick,
-                    layoutBuilder: (currentChild, previousChildren) => Stack(
-                      alignment: AlignmentDirectional.centerStart,
-                      children: <Widget>[...previousChildren, ?currentChild],
-                    ),
-                    child: KeyedSubtree(
-                      key: ValueKey<String>(
-                        'header-context-${destination.name}',
-                      ),
-                      child: PerfectStagedEntrance(
-                        rise: 12,
-                        scaleBegin: .995,
-                        duration: PerfectMotion.standard,
-                        child: Row(
-                          children: [
-                            if (showWordmark) ...[
-                              const PerfectMark(size: 32),
-                              const SizedBox(width: PerfectSpace.sm),
-                            ],
-                            Flexible(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    destination.label,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.w900),
-                                  ),
-                                  if (MediaQuery.textScalerOf(
-                                            context,
-                                          ).scale(14) /
-                                          14 <
-                                      1.35) ...[
-                                    const SizedBox(height: 1),
-                                    Text(
-                                      _headerSupportText(destination, now),
-                                      maxLines: 2,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelSmall
-                                          ?.copyWith(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-          ),
-          const SizedBox(width: PerfectSpace.sm),
-          PerfectSyncIndicator(
-            status: status,
-            onRetry: onSync,
-            compact: compact,
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-String _headerSupportText(_PerfectDestination destination, DateTime now) =>
+String _headerSupportText(_PerfectDestination destination) =>
     switch (destination) {
-      _PerfectDestination.today => _todayLabel(now),
+      _PerfectDestination.today => 'Your live day, at a glance',
       _PerfectDestination.tasks => 'Capture, shape, and finish the work',
       _PerfectDestination.plan => 'Make time visible before it fills up',
       _PerfectDestination.habits => 'Build the rhythm, not the pressure',
@@ -3031,160 +2912,153 @@ class _ExpandedTodayDeck extends StatelessWidget {
         embedded: true,
       );
 
-      return RefreshIndicator(
-        onRefresh: controller.refresh,
-        child: CustomScrollView(
-          key: const PageStorageKey<String>('perfect-expanded-today-scroll'),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          slivers: [
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(
-                horizontalPadding,
-                PerfectSpace.xs,
-                horizontalPadding,
-                PerfectSpace.xl,
-              ),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  key: const ValueKey<String>('expanded-day-deck'),
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _DayDeckHeading(
-                      now: now,
-                      items: items,
-                      habitSummaryById: habitSummaryById,
-                    ),
-                    const SizedBox(height: PerfectSpace.lg),
-                    if (sideBySide)
-                      SizedBox(
-                        key: const ValueKey<String>('expanded-day-deck-stage'),
-                        height: stageHeight,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                if (inlineInspector)
-                                  Expanded(
-                                    flex: 10,
-                                    child: _DayCompassPanel(
-                                      items: items,
-                                      now: now,
-                                      onOpenPlan: onOpenPlan,
-                                      motionEnabled: orbitMotionEnabled,
-                                    ),
-                                  )
-                                else
-                                  SizedBox(
-                                    width: compassWidth,
-                                    child: _DayCompassPanel(
-                                      items: items,
-                                      now: now,
-                                      onOpenPlan: onOpenPlan,
-                                      motionEnabled: orbitMotionEnabled,
-                                    ),
-                                  ),
-                                const SizedBox(width: PerfectSpace.lg),
-                                Expanded(
-                                  flex: inlineInspector ? 12 : 1,
-                                  child: _DayStreamPanel(
-                                    controller: controller,
-                                    items: items,
-                                    eligibilityById: eligibilityById,
-                                    habitSummaryById: habitSummaryById,
-                                    onInspect: onInspect,
-                                    onAdd: onAdd,
-                                    constrained: true,
-                                    dense: lowHeight,
-                                  ),
-                                ),
-                                if (inlineInspector) ...[
-                                  const SizedBox(width: PerfectSpace.lg),
-                                  Expanded(flex: 8, child: inspectorPanel()),
-                                ],
-                              ],
-                            ),
-                            if (inspected != null && !inlineInspector) ...[
-                              Positioned.fill(
-                                child: BlockSemantics(
-                                  child: Semantics(
-                                    button: true,
-                                    label:
-                                        'Close inspector and return to Today',
-                                    child: GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: onClearInspection,
-                                      child: ColoredBox(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .scrim
-                                            .withValues(alpha: .1),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              PositionedDirectional(
-                                key: const ValueKey<String>(
-                                  'expanded-focus-panel',
-                                ),
-                                top: 0,
-                                end: 0,
-                                bottom: 0,
-                                width: floatingInspectorWidth,
-                                child: inspectorPanel(),
-                              ),
-                            ],
-                          ],
-                        ),
-                      )
-                    else
-                      Column(
-                        key: const ValueKey<String>(
-                          'expanded-day-deck-stacked',
-                        ),
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+      return CustomScrollView(
+        key: const PageStorageKey<String>('perfect-expanded-today-scroll'),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              PerfectSpace.xs,
+              horizontalPadding,
+              PerfectSpace.xl,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                key: const ValueKey<String>('expanded-day-deck'),
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _DayDeckHeading(
+                    now: now,
+                    items: items,
+                    habitSummaryById: habitSummaryById,
+                  ),
+                  const SizedBox(height: PerfectSpace.lg),
+                  if (sideBySide)
+                    SizedBox(
+                      key: const ValueKey<String>('expanded-day-deck-stage'),
+                      height: stageHeight,
+                      child: Stack(
+                        clipBehavior: Clip.none,
                         children: [
-                          SizedBox(
-                            height: (contentWidth * .52)
-                                .clamp(460.0, 640.0)
-                                .toDouble(),
-                            child: _DayCompassPanel(
-                              items: items,
-                              now: now,
-                              onOpenPlan: onOpenPlan,
-                              motionEnabled: orbitMotionEnabled,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (inlineInspector)
+                                Expanded(
+                                  flex: 10,
+                                  child: _DayCompassPanel(
+                                    items: items,
+                                    now: now,
+                                    onOpenPlan: onOpenPlan,
+                                    motionEnabled: orbitMotionEnabled,
+                                  ),
+                                )
+                              else
+                                SizedBox(
+                                  width: compassWidth,
+                                  child: _DayCompassPanel(
+                                    items: items,
+                                    now: now,
+                                    onOpenPlan: onOpenPlan,
+                                    motionEnabled: orbitMotionEnabled,
+                                  ),
+                                ),
+                              const SizedBox(width: PerfectSpace.lg),
+                              Expanded(
+                                flex: inlineInspector ? 12 : 1,
+                                child: _DayStreamPanel(
+                                  controller: controller,
+                                  items: items,
+                                  eligibilityById: eligibilityById,
+                                  habitSummaryById: habitSummaryById,
+                                  onInspect: onInspect,
+                                  onAdd: onAdd,
+                                  constrained: true,
+                                  dense: lowHeight,
+                                ),
+                              ),
+                              if (inlineInspector) ...[
+                                const SizedBox(width: PerfectSpace.lg),
+                                Expanded(flex: 8, child: inspectorPanel()),
+                              ],
+                            ],
+                          ),
+                          if (inspected != null && !inlineInspector) ...[
+                            Positioned.fill(
+                              child: BlockSemantics(
+                                child: Semantics(
+                                  button: true,
+                                  label: 'Close inspector and return to Today',
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: onClearInspection,
+                                    child: ColoredBox(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.scrim.withValues(alpha: .1),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: PerfectSpace.lg),
-                          _DayStreamPanel(
-                            controller: controller,
-                            items: items,
-                            eligibilityById: eligibilityById,
-                            habitSummaryById: habitSummaryById,
-                            onInspect: onInspect,
-                            onAdd: onAdd,
-                            constrained: false,
-                            dense: false,
-                          ),
-                          if (inspected != null) ...[
-                            const SizedBox(height: PerfectSpace.lg),
-                            SizedBox(
-                              height: (constraints.maxHeight * .76)
-                                  .clamp(480.0, 640.0)
-                                  .toDouble(),
+                            PositionedDirectional(
+                              key: const ValueKey<String>(
+                                'expanded-focus-panel',
+                              ),
+                              top: 0,
+                              end: 0,
+                              bottom: 0,
+                              width: floatingInspectorWidth,
                               child: inspectorPanel(),
                             ),
                           ],
                         ],
                       ),
-                  ],
-                ),
+                    )
+                  else
+                    Column(
+                      key: const ValueKey<String>('expanded-day-deck-stacked'),
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SizedBox(
+                          height: (contentWidth * .52)
+                              .clamp(460.0, 640.0)
+                              .toDouble(),
+                          child: _DayCompassPanel(
+                            items: items,
+                            now: now,
+                            onOpenPlan: onOpenPlan,
+                            motionEnabled: orbitMotionEnabled,
+                          ),
+                        ),
+                        const SizedBox(height: PerfectSpace.lg),
+                        _DayStreamPanel(
+                          controller: controller,
+                          items: items,
+                          eligibilityById: eligibilityById,
+                          habitSummaryById: habitSummaryById,
+                          onInspect: onInspect,
+                          onAdd: onAdd,
+                          constrained: false,
+                          dense: false,
+                        ),
+                        if (inspected != null) ...[
+                          const SizedBox(height: PerfectSpace.lg),
+                          SizedBox(
+                            height: (constraints.maxHeight * .76)
+                                .clamp(480.0, 640.0)
+                                .toDouble(),
+                            child: inspectorPanel(),
+                          ),
+                        ],
+                      ],
+                    ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       );
     },
   );
@@ -3259,74 +3133,37 @@ class _MediumTodayDeck extends StatelessWidget {
           (compassWidth + 140).clamp(512.0, 560.0),
         );
 
-        return RefreshIndicator(
-          onRefresh: controller.refresh,
-          child: CustomScrollView(
-            key: const PageStorageKey<String>('perfect-medium-today-scroll'),
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            slivers: [
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  horizontalPadding,
-                  PerfectSpace.xs,
-                  horizontalPadding,
-                  shortLandscape ? PerfectSpace.md : PerfectSpace.xxl,
-                ),
-                sliver: SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _DayDeckHeading(
-                        now: now,
-                        items: items,
-                        habitSummaryById: habitSummaryById,
-                      ),
-                      const SizedBox(height: PerfectSpace.lg),
-                      if (sideBySide)
-                        SizedBox(
-                          key: const ValueKey<String>('medium-day-deck'),
-                          height: stageHeight,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: compassWidth,
-                                height: compassPanelHeight,
-                                child: _DayCompassPanel(
-                                  items: items,
-                                  now: now,
-                                  onOpenPlan: onOpenPlan,
-                                  motionEnabled: orbitMotionEnabled,
-                                ),
-                              ),
-                              const SizedBox(width: PerfectSpace.lg),
-                              Expanded(
-                                child: SizedBox(
-                                  height: stageHeight,
-                                  child: _DayStreamPanel(
-                                    controller: controller,
-                                    items: items,
-                                    eligibilityById: eligibilityById,
-                                    habitSummaryById: habitSummaryById,
-                                    onInspect: onInspect,
-                                    onAdd: onAdd,
-                                    constrained: true,
-                                    dense: lowHeight,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        Column(
-                          key: const ValueKey<String>('medium-day-deck'),
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+        return CustomScrollView(
+          key: const PageStorageKey<String>('perfect-medium-today-scroll'),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                PerfectSpace.xs,
+                horizontalPadding,
+                shortLandscape ? PerfectSpace.md : PerfectSpace.xxl,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _DayDeckHeading(
+                      now: now,
+                      items: items,
+                      habitSummaryById: habitSummaryById,
+                    ),
+                    const SizedBox(height: PerfectSpace.lg),
+                    if (sideBySide)
+                      SizedBox(
+                        key: const ValueKey<String>('medium-day-deck'),
+                        height: stageHeight,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(
-                              height: shortLandscape
-                                  ? stageHeight
-                                  : (contentWidth * .72).clamp(390.0, 530.0),
+                              width: compassWidth,
+                              height: compassPanelHeight,
                               child: _DayCompassPanel(
                                 items: items,
                                 now: now,
@@ -3334,25 +3171,59 @@ class _MediumTodayDeck extends StatelessWidget {
                                 motionEnabled: orbitMotionEnabled,
                               ),
                             ),
-                            const SizedBox(height: PerfectSpace.lg),
-                            _DayStreamPanel(
-                              controller: controller,
-                              items: items,
-                              eligibilityById: eligibilityById,
-                              habitSummaryById: habitSummaryById,
-                              onInspect: onInspect,
-                              onAdd: onAdd,
-                              constrained: false,
-                              dense: shortLandscape || lowHeight,
+                            const SizedBox(width: PerfectSpace.lg),
+                            Expanded(
+                              child: SizedBox(
+                                height: stageHeight,
+                                child: _DayStreamPanel(
+                                  controller: controller,
+                                  items: items,
+                                  eligibilityById: eligibilityById,
+                                  habitSummaryById: habitSummaryById,
+                                  onInspect: onInspect,
+                                  onAdd: onAdd,
+                                  constrained: true,
+                                  dense: lowHeight,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                    ],
-                  ),
+                      )
+                    else
+                      Column(
+                        key: const ValueKey<String>('medium-day-deck'),
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(
+                            height: shortLandscape
+                                ? stageHeight
+                                : (contentWidth * .72).clamp(390.0, 530.0),
+                            child: _DayCompassPanel(
+                              items: items,
+                              now: now,
+                              onOpenPlan: onOpenPlan,
+                              motionEnabled: orbitMotionEnabled,
+                            ),
+                          ),
+                          const SizedBox(height: PerfectSpace.lg),
+                          _DayStreamPanel(
+                            controller: controller,
+                            items: items,
+                            eligibilityById: eligibilityById,
+                            habitSummaryById: habitSummaryById,
+                            onInspect: onInspect,
+                            onAdd: onAdd,
+                            constrained: false,
+                            dense: shortLandscape || lowHeight,
+                          ),
+                        ],
+                      ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
@@ -3394,13 +3265,6 @@ class _DayDeckHeading extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.w800,
                 letterSpacing: -.7,
-              ),
-            ),
-            const SizedBox(height: PerfectSpace.xxs),
-            Text(
-              _todayLabel(now),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -4169,6 +4033,7 @@ class _TodayPage extends StatelessWidget {
     required this.controller,
     required this.includeOrbit,
     required this.now,
+    required this.nowProvider,
     required this.ownerDisplayName,
     required this.items,
     required this.eligibilityById,
@@ -4182,6 +4047,7 @@ class _TodayPage extends StatelessWidget {
   final PlannerWorkspaceController controller;
   final bool includeOrbit;
   final DateTime now;
+  final PerfectNow nowProvider;
   final String? ownerDisplayName;
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
@@ -4236,7 +4102,7 @@ class _TodayPage extends StatelessWidget {
             PerfectStagedEntrance(
               order: 0,
               child: _CompactTodayIntro(
-                now: now,
+                now: nowProvider,
                 ownerDisplayName: ownerDisplayName,
               ),
             ),
@@ -4310,7 +4176,7 @@ class _TodayPage extends StatelessWidget {
 class _CompactTodayIntro extends StatelessWidget {
   const _CompactTodayIntro({required this.now, required this.ownerDisplayName});
 
-  final DateTime now;
+  final PerfectNow now;
   final String? ownerDisplayName;
 
   @override
@@ -4319,33 +4185,27 @@ class _CompactTodayIntro extends StatelessWidget {
     final bodySize = theme.textTheme.bodyMedium?.fontSize ?? 14;
     final textScale =
         MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          _greeting(now, ownerDisplayName: ownerDisplayName),
-          maxLines: 2,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontSize: textScale >= 1.35 ? null : 21.5,
-            // The greeting leads with the same warm, rounded confidence as
-            // the approved reference—not a dashboard-style black weight.
-            fontWeight: FontWeight.w600,
-            letterSpacing: -.7,
-            height: 1.1,
+    return PerfectMinuteClockBuilder(
+      now: now,
+      builder: (context, current) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _greeting(current, ownerDisplayName: ownerDisplayName),
+            maxLines: 2,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontSize: textScale >= 1.35 ? null : 21.5,
+              // The greeting leads with the same warm, rounded confidence as
+              // the approved reference—not a dashboard-style black weight.
+              fontWeight: FontWeight.w600,
+              letterSpacing: -.7,
+              height: 1.1,
+            ),
           ),
-        ),
-        const SizedBox(height: PerfectSpace.xxs),
-        Text(
-          _todayLabel(now),
-          maxLines: 2,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontSize: textScale >= 1.35 ? null : 14.5,
-            color: theme.colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w500,
-            height: 1.18,
-          ),
-        ),
-      ],
+          const SizedBox(height: PerfectSpace.xxs),
+          PerfectDualDateClock.value(value: current),
+        ],
+      ),
     );
   }
 }
@@ -8553,33 +8413,6 @@ String _greeting(DateTime now, {String? ownerDisplayName}) {
   return name == null || name.isEmpty ? period : '$period, $name';
 }
 
-String _todayLabel(DateTime now) {
-  const weekdays = <String>[
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
-  const months = <String>[
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-  return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
-}
-
 String _agendaMeta(PlannerEntity entity, {required bool showKind}) {
   final time = entity.scheduledAt?.toLocal();
   final due = entity.dueAt?.toLocal();
@@ -8595,34 +8428,15 @@ String _agendaMeta(PlannerEntity entity, {required bool showKind}) {
 }
 
 String _inspectorDateTime(DateTime value) {
-  final local = value.toLocal();
-  return '${local.year}-${local.month.toString().padLeft(2, '0')}-'
-      '${local.day.toString().padLeft(2, '0')} · ${_shortTime(local)}';
+  return PerfectLocalTime.inspector(value);
 }
 
 String _shortDate(DateTime value) {
-  const months = <String>[
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${months[value.month - 1]} ${value.day}';
+  return PerfectLocalTime.gregorianShort(value);
 }
 
 String _shortTime(DateTime value) {
-  final hour = value.hour == 0
-      ? 12
-      : (value.hour > 12 ? value.hour - 12 : value.hour);
-  return '$hour:${value.minute.toString().padLeft(2, '0')} ${value.hour >= 12 ? 'PM' : 'AM'}';
+  return PerfectLocalTime.clock(value);
 }
 
 String _kindLabel(PlannerEntityKind kind) => switch (kind) {

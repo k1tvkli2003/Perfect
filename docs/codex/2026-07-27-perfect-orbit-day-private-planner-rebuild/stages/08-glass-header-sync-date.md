@@ -1,6 +1,6 @@
 # Stage 08 — Glass header, sync confidence and dual date/time
 
-Status: pending  
+Status: locally complete; exact-SHA hosted Windows/release gate pending
 Depends on: Stages 04, 05, 07  
 Primary surfaces: global header, page titles, Today Pulse, sync details
 

@@ -280,13 +280,16 @@ void main() {
   );
 
   testWidgets(
-    'compact shell keeps a short header and two genuinely floating glass docks',
+    'compact shell keeps a bounded glass header and two floating glass docks',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
       await _pump(tester, aiClient: _WorkspaceAiClient());
 
       final sync = tester.getRect(
         find.byKey(const ValueKey<String>('perfect-sync-surface')),
+      );
+      final glassHeader = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-workspace-glass-header')),
       );
       final heading = tester.getRect(find.text('Good morning'));
       final capture = tester.getRect(
@@ -296,11 +299,22 @@ void main() {
       final wordmark = tester.getRect(find.byType(PerfectWordmark));
 
       expect(sync.height, greaterThanOrEqualTo(48));
-      expect(sync.top, lessThan(18));
-      expect(wordmark.top, lessThan(32));
+      expect(glassHeader.height, lessThanOrEqualTo(76));
+      expect(sync.top, greaterThanOrEqualTo(glassHeader.top));
+      expect(sync.bottom, lessThanOrEqualTo(glassHeader.bottom));
+      expect(wordmark.top, greaterThanOrEqualTo(glassHeader.top));
+      expect(wordmark.bottom, lessThanOrEqualTo(glassHeader.bottom));
       expect(wordmark.height, greaterThan(18));
       expect(wordmark.width, greaterThan(100));
-      expect(heading.top, lessThan(110));
+      expect(heading.top, greaterThanOrEqualTo(glassHeader.bottom));
+      expect(heading.top - glassHeader.bottom, lessThan(24));
+      expect(
+        find.byKey(const ValueKey<String>('perfect-live-clock')),
+        findsOneWidget,
+      );
+      expect(find.text('9:00 AM'), findsWidgets);
+      expect(find.text('Monday, July 27'), findsOneWidget);
+      expect(find.text('۵ مرداد ۱۴۰۵'), findsOneWidget);
       expect(capture.left, greaterThan(0));
       expect(capture.right, lessThan(390));
       expect(
@@ -937,6 +951,14 @@ void main() {
     final cores = find.byKey(
       const ValueKey<String>('perfect-agenda-progress-safe-core'),
     );
+    final todayScroll = find.descendant(
+      of: find.byKey(const ValueKey<String>('perfect-today-scroll')),
+      matching: find.byType(Scrollable),
+    );
+    for (var attempt = 0; attempt < 8 && cores.evaluate().isEmpty; attempt++) {
+      await tester.drag(todayScroll, const Offset(0, -240));
+      await tester.pumpAndSettle();
+    }
     expect(cores, findsWidgets);
     for (final element in cores.evaluate()) {
       final core = find.byWidget(element.widget);

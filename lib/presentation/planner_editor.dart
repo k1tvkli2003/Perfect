@@ -8,6 +8,7 @@ import 'package:perfect/planner/domain/planner_formula.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
 import 'package:perfect/presentation/perfect_motion.dart';
 import 'package:perfect/presentation/perfect_pictogram.dart';
+import 'package:perfect/presentation/perfect_local_time.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
 import 'package:uuid/uuid.dart';
@@ -4155,11 +4156,7 @@ String _weekdayLabel(int weekday) => switch (weekday) {
 
 String _formatDateTime(DateTime value, bool allDay) {
   final local = value.toLocal();
-  final month = _monthLabels[local.month - 1];
-  if (allDay) return '$month ${local.day} · all day';
-  final hour = local.hour == 0
-      ? 12
-      : (local.hour > 12 ? local.hour - 12 : local.hour);
-  final suffix = local.hour >= 12 ? 'PM' : 'AM';
-  return '$month ${local.day} · $hour:${local.minute.toString().padLeft(2, '0')} $suffix';
+  final date = PerfectLocalTime.gregorianShort(local);
+  if (allDay) return '$date · all day';
+  return '$date · ${PerfectLocalTime.clock(local)}';
 }

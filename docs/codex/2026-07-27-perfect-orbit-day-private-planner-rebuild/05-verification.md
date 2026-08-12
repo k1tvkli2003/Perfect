@@ -431,3 +431,24 @@ overlay/diff evidence before its own gate can close.
 | Trusted exact-SHA build/release | GitHub Actions and immutable release | pending | must pass after merge/push with exactly APK, Portable ZIP and Setup EXE |
 
 Full evidence and honest proof boundaries are recorded in `07-stage-verification.md`.
+
+## 2026-08-12 — Stage 08 glass header, sync and dual date/time verification
+
+| Check | Method | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| Static analysis | `flutter analyze` | passed | no issues across the complete project |
+| Full Flutter suite | `flutter test --concurrency=1` | passed, 421/421 | includes date boundaries, clock isolation, sync repository/UI, AI, widget, wizard, feedback, responsive and golden contracts |
+| Edge Function | `npx --yes deno fmt` + `npx --yes deno check` | passed | validated UTC/local date/clock/offset context; no client provider secret |
+| Date vectors | deterministic unit tests | passed | `2024-03-20 → 1403-01-01`, `2026-08-06 → 1405-05-15`, leap Esfand, local midnight and 12 AM/PM |
+| Clock locality | widget rebuild counter + injected scheduler | passed | minute boundary is aligned and an unrelated sibling does not rebuild |
+| Sync truth | repository + indicator tests | passed | actual bounded retry deadline/attempt, green/yellow/red semantics, reduced motion and safe retry |
+| Header visual states | exact light/dark/high-contrast/200% goldens | passed | real Plus Jakarta Sans, Vazirmatn and Material Icons loaded in tests |
+| Android in-place preview | versionCode 2049 + `adb install -r -t` | passed | `firstInstallTime` remained `2026-08-02 19:20:44`; no uninstall/reset |
+| Phone runtime | light, real app dark, 200% and sync-details captures | passed | foreground package confirmed; required copy whole, controls reachable, no fatal/overflow match |
+| Tablet portrait runtime | logical 800×1280 capture + semantics | passed | compact rail, single useful column and bounded header/Compass/stream weight |
+| Tablet landscape runtime | logical 1280×800 capture + semantics | passed | adjacent Compass/stream composition, compact rail and no stretch/overlap |
+| Windows local compile | not rerun | host limitation | ATL `atlbase.h` remains unavailable locally; Windows header/sync/resize contracts pass |
+| Trusted exact-SHA build/release | GitHub Actions and immutable release | pending | must pass after merge/push with exactly APK, Portable ZIP and Setup EXE |
+
+Full implementation, UTC/local ownership, runtime evidence and proof boundaries are
+recorded in `08-stage-verification.md`.

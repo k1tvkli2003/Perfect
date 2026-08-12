@@ -1,6 +1,7 @@
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
+import 'package:perfect/presentation/perfect_local_time.dart';
 import 'package:perfect/widgets/perfect_today_widget.dart';
 
 /// Builds the single canonical Android Today-widget projection.
@@ -105,9 +106,5 @@ String _accent(PlannerEntity entity) {
 }
 
 String _timeLabel(DateTime value) {
-  final hour = value.hour == 0
-      ? 12
-      : (value.hour > 12 ? value.hour - 12 : value.hour);
-  return '$hour:${value.minute.toString().padLeft(2, '0')} '
-      '${value.hour >= 12 ? 'PM' : 'AM'}';
+  return PerfectLocalTime.clock(value);
 }

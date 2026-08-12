@@ -22,6 +22,7 @@ void main() {
         mimeType: 'audio/wav',
         duration: const Duration(seconds: 2),
       ),
+      clientLocalNow: DateTime.utc(2026, 7, 30, 10, 15),
     );
 
     expect(request.toJson(), <String, dynamic>{
@@ -42,6 +43,12 @@ void main() {
         'mime_type': 'audio/wav',
         'base64': 'AQID',
         'duration_ms': 2000,
+      },
+      'client_context': <String, dynamic>{
+        'utc_now': '2026-07-30T10:15:00.000Z',
+        'local_date': '2026-07-30',
+        'local_clock': '10:15',
+        'utc_offset_minutes': 0,
       },
     });
     expect(request.toJson(), isNot(contains('planner_context')));

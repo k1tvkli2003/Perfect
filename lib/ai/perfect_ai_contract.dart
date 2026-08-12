@@ -267,6 +267,7 @@ class PerfectAiRequest {
     required this.conversation,
     this.conversationId,
     this.audio,
+    this.clientLocalNow,
   });
 
   final String operationId;
@@ -274,6 +275,7 @@ class PerfectAiRequest {
   final List<PerfectAiMessage> conversation;
   final String? conversationId;
   final PerfectVoiceClip? audio;
+  final DateTime? clientLocalNow;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
     'schema_version': 1,
@@ -286,6 +288,25 @@ class PerfectAiRequest {
         .map((item) => item.toJson())
         .toList(growable: false),
     if (audio != null) 'audio': audio!.toJson(),
+    if (clientLocalNow != null)
+      'client_context': _clientTimeContext(clientLocalNow!),
+  };
+}
+
+Map<String, dynamic> _clientTimeContext(DateTime value) {
+  // Preserve the caller's explicit zone. Production passes DateTime.now()
+  // (device local); deterministic clients may intentionally pass UTC.
+  final local = value;
+  return <String, dynamic>{
+    'utc_now': local.toUtc().toIso8601String(),
+    'local_date':
+        '${local.year.toString().padLeft(4, '0')}-'
+        '${local.month.toString().padLeft(2, '0')}-'
+        '${local.day.toString().padLeft(2, '0')}',
+    'local_clock':
+        '${local.hour.toString().padLeft(2, '0')}:'
+        '${local.minute.toString().padLeft(2, '0')}',
+    'utc_offset_minutes': local.timeZoneOffset.inMinutes,
   };
 }
 

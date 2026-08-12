@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
+import 'package:perfect/presentation/perfect_local_time.dart';
 import 'package:uuid/uuid.dart';
 
 /// Android-only bridge for the native, resizable Perfect Today widget.
@@ -599,19 +600,5 @@ class PerfectTodayWidgetItem {
 }
 
 String _dateLabel(DateTime date) {
-  const months = <String>[
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${months[date.month - 1]} ${date.day}';
+  return PerfectLocalTime.gregorianShort(date);
 }

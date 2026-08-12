@@ -105,6 +105,26 @@ void main() {
       },
     );
 
+    test('validates device-local time before resolving relative plans', () {
+      expect(
+        source,
+        contains('validateClientTimeContext(body.client_context)'),
+      );
+      expect(source, contains('utc_offset_minutes'));
+      expect(source, contains('The device local clock does not match'));
+      expect(source, contains('Validated device time context:'));
+      expect(
+        source,
+        contains('Resolve relative dates such as today and tomorrow'),
+      );
+      expect(
+        source,
+        contains(
+          'never guess a timezone or silently reinterpret a local day as UTC',
+        ),
+      );
+    });
+
     test('requires owner confirmation before a proposal write', () {
       expect(source, contains('requires_confirmation: true'));
       expect(source, contains('action === "apply_proposal"'));

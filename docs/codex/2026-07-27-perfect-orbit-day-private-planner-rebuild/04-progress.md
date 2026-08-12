@@ -417,6 +417,43 @@ thin and real 200%/800dp runtime review exposed clipped copy plus large dead spa
 
 ### Next
 
-- Merge the isolated Stage 07 commit into dirty `main` without consuming the owner's
-  five protected workspace files, then push and verify exact-SHA workflow, Windows
-  install-over and the three install-ready release assets.
+- Complete: Stage 07 exact commit `004c2567e67efc888f767b39333fb23a4a55bcbb`
+  passed run `#48` / `31549435764`; release `v1.1.0-build.2048` targets that SHA
+  with exactly the three install-ready assets.
+
+## 2026-08-12 — Stage 08 glass header, sync confidence and dual time checkpoint
+
+### Before
+
+The phone header relied on a translated stack instead of owned geometry, wide
+surfaces repeated date copy, the clock only refreshed with broad page rebuilds and
+the sync decoration did not expose the repository's actual retry deadline. Date/time
+formatting was scattered across UI, widget, feedback and AI request paths.
+
+### After
+
+- Added a lifecycle-aware minute clock that aligns to minute boundaries and rebuilds
+  only its local subtree; injected clocks keep every test deterministic.
+- Centralized device-local Gregorian, Solar-Hijri, 12-hour and inspector formatting;
+  required Nowruz and Jalali boundary vectors are locked by tests.
+- Rebuilt the phone and wide headers as bounded theme-aware glass compositions with
+  explicit non-blur/high-contrast fallback, content-driven reflow and no negative
+  translation hack.
+- Rebuilt Cloud as authored vector geometry with green/yellow/red states, non-color
+  semantics, local last-success time, real retry countdown and a safe details/retry
+  surface. Local work stays available during offline/error states.
+- Removed scroll-to-refresh from Today; repository status and remote updates remain
+  live without resetting scroll or destination state.
+- Added validated device-local date/clock/UTC-offset context to AI requests while
+  keeping persistence and sync timestamps in UTC and provider secrets off-client.
+- Inspected real Android phone light, dark and 200% states, sync details, tablet
+  portrait and landscape. All captures belong to the confirmed foreground Perfect
+  preview package; no fatal/Flutter overflow signature matched.
+- `flutter analyze`, Deno format/check and the complete 421/421 Flutter suite pass.
+  VersionCode 2049 installed in place with the original first-install timestamp.
+
+### Next
+
+- Merge the isolated Stage 08 commit into dirty `main` while preserving the owner's
+  five protected files and retained stash, then prove the exact SHA through hosted
+  Android/Windows install-over and the immutable three-asset release.

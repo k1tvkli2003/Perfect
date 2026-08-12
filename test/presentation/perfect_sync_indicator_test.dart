@@ -9,36 +9,25 @@ void main() {
     tester,
   ) async {
     for (final testCase
-        in <
-          ({
-            PlannerSyncPhase phase,
-            String label,
-            IconData cloudIcon,
-            Color color,
-          })
-        >[
+        in <({PlannerSyncPhase phase, String label, Color color})>[
           (
             phase: PlannerSyncPhase.idle,
             label: 'Synced',
-            cloudIcon: Icons.cloud_done_outlined,
             color: PerfectColors.sync,
           ),
           (
             phase: PlannerSyncPhase.syncing,
             label: 'Syncing',
-            cloudIcon: Icons.cloud_sync_outlined,
             color: PerfectColors.apricot,
           ),
           (
             phase: PlannerSyncPhase.offline,
             label: 'Retrying',
-            cloudIcon: Icons.cloud_upload_outlined,
             color: PerfectColors.apricot,
           ),
           (
             phase: PlannerSyncPhase.needsAttention,
             label: 'Sync issue',
-            cloudIcon: Icons.cloud_off_outlined,
             color: PerfectColors.danger,
           ),
         ]) {
@@ -47,20 +36,29 @@ void main() {
         status: PlannerSyncStatus(phase: testCase.phase),
       );
       expect(find.text(testCase.label), findsOneWidget);
-      final cloudIcon = tester.widget<Icon>(find.byIcon(testCase.cloudIcon));
-      expect(cloudIcon.color, testCase.color);
       expect(
         find.byKey(
           ValueKey<String>('perfect-sync-mark-${testCase.phase.name}'),
         ),
         findsOneWidget,
       );
+      expect(
+        find.byKey(const ValueKey<String>('perfect-sync-cloud-artwork')),
+        findsOneWidget,
+      );
+      final surface = tester.widget<AnimatedContainer>(
+        find.byKey(const ValueKey<String>('perfect-sync-surface')),
+      );
+      expect(
+        (surface.decoration! as BoxDecoration).color,
+        testCase.color.withValues(alpha: .055),
+      );
       final semantics = tester.getSemantics(
         find.byKey(const ValueKey<String>('perfect-sync-indicator')),
       );
       expect(semantics.label, contains(testCase.label));
       expect(semantics.label, contains('Sync status'));
-      expect(semantics.hint, contains('Open sync details and retry'));
+      expect(semantics.hint, contains('Open sync details'));
     }
   });
 
@@ -118,9 +116,39 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(retries, 1);
-      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byType(Dialog), findsNothing);
     },
   );
+
+  testWidgets('yellow retry exposes repository deadline without hiding state', (
+    tester,
+  ) async {
+    final now = DateTime.utc(2026, 8, 6, 5, 24, 30);
+    await _pumpIndicator(
+      tester,
+      status: PlannerSyncStatus(
+        phase: PlannerSyncPhase.offline,
+        nextRetryAt: now.add(const Duration(seconds: 5)),
+        retryAttempt: 2,
+      ),
+      now: () => now,
+    );
+
+    expect(find.text('Retry 5s'), findsOneWidget);
+    final semantics = tester.getSemantics(
+      find.byKey(const ValueKey<String>('perfect-sync-indicator')),
+    );
+    expect(semantics.label, contains('Retrying'));
+    expect(semantics.label, contains('Automatic retry in 5 seconds'));
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('perfect-sync-indicator')),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Retrying'), findsOneWidget);
+    expect(find.text('Automatic retry in 5 seconds.'), findsOneWidget);
+  });
 
   testWidgets(
     'compact phone state keeps concise text and a 48dp semantic target',
@@ -170,6 +198,7 @@ Future<void> _pumpIndicator(
   Future<void> Function()? onRetry,
   bool compact = false,
   bool disableAnimations = false,
+  DateTime Function()? now,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -186,6 +215,7 @@ Future<void> _pumpIndicator(
           child: PerfectSyncIndicator(
             status: status,
             compact: compact,
+            now: now ?? DateTime.now,
             onRetry: onRetry ?? () async {},
           ),
         ),

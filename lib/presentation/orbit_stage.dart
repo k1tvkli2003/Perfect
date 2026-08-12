@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
+import 'package:perfect/presentation/perfect_local_time.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 
 /// The visual, time-first instrument at the centre of Perfect's Today page.
@@ -1199,9 +1200,7 @@ TextPainter _textPainter(String text, TextStyle style) => TextPainter(
 )..layout();
 
 String _formatClock(DateTime value) {
-  final period = value.hour >= 12 ? 'PM' : 'AM';
-  final hour = value.hour % 12 == 0 ? 12 : value.hour % 12;
-  return '$hour:${value.minute.toString().padLeft(2, '0')} $period';
+  return PerfectLocalTime.clock(value);
 }
 
 TextDirection _directionFor(String value) {

@@ -2,7 +2,7 @@
 
 Date: 2026-08-12
 Stage: `07-adaptive-navigation-shell`
-Status: local source and Android runtime gates passed; exact-SHA hosted Windows/release gate pending
+Status: complete; local, Android runtime and exact-SHA hosted Windows/release gates passed
 
 ## Outcome
 
@@ -65,7 +65,7 @@ is selected independently from width so a wide tablet does not impersonate Windo
 | Android tablet landscape runtime | Pass at logical 1280×800; compact and expanded rails inspected with no overlap. |
 | Quick Capture / IME runtime | Pass; expanded capture screenshot recorded while `mInputShown=false`. |
 | Local Windows compile | Not rerun; this host still lacks ATL `atlbase.h`. Windows source and all Windows golden/interaction contracts pass locally; trusted hosted build remains mandatory. |
-| Exact-SHA GitHub build, install-over and three-asset release | Pending Stage 07 merge/push. |
+| Exact-SHA GitHub build, install-over and three-asset release | Pass; run `#48` / `31549435764` succeeded for exact commit `004c2567e67efc888f767b39333fb23a4a55bcbb`. Release `v1.1.0-build.2048` targets that SHA and contains exactly APK, Portable ZIP and Setup EXE. |
 
 ## Runtime evidence
 
@@ -84,9 +84,12 @@ The deterministic preview fixture is development evidence, not proof of owner
 Supabase convergence or signed production-session continuity. Those remain separate
 later-stage gates.
 
-## Hosted closure condition
+## Hosted closure
 
-Stage 07 closes only after its merged `main` SHA passes the trusted GitHub workflow,
-Windows install-over preservation succeeds and the immutable release targets that
-exact SHA with exactly three directly installable assets: Android APK, Windows
-Portable ZIP and Windows Setup EXE.
+Trusted workflow run [`#48`](https://github.com/k1tvkli2003/Perfect/actions/runs/31549435764)
+passed every job for exact Stage 07 commit
+`004c2567e67efc888f767b39333fb23a4a55bcbb`. Windows install-over preservation
+passed and immutable release
+[`v1.1.0-build.2048`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2048)
+targets that SHA with exactly the Android APK, Windows Portable ZIP and Windows
+Setup EXE. Stage 07 is externally closed.

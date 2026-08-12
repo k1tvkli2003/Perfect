@@ -25,6 +25,8 @@ class PlannerSyncStatus {
     required this.phase,
     this.message,
     this.lastSuccessfulSyncAt,
+    this.nextRetryAt,
+    this.retryAttempt = 0,
   });
 
   const PlannerSyncStatus.idle({DateTime? lastSuccessfulSyncAt})
@@ -36,6 +38,25 @@ class PlannerSyncStatus {
   final PlannerSyncPhase phase;
   final String? message;
   final DateTime? lastSuccessfulSyncAt;
+
+  /// Absolute UTC deadline for the repository's already-scheduled retry.
+  final DateTime? nextRetryAt;
+  final int retryAttempt;
+
+  PlannerSyncStatus copyWith({
+    PlannerSyncPhase? phase,
+    String? message,
+    DateTime? lastSuccessfulSyncAt,
+    DateTime? nextRetryAt,
+    int? retryAttempt,
+    bool clearNextRetryAt = false,
+  }) => PlannerSyncStatus(
+    phase: phase ?? this.phase,
+    message: message ?? this.message,
+    lastSuccessfulSyncAt: lastSuccessfulSyncAt ?? this.lastSuccessfulSyncAt,
+    nextRetryAt: clearNextRetryAt ? null : nextRetryAt ?? this.nextRetryAt,
+    retryAttempt: retryAttempt ?? this.retryAttempt,
+  );
 }
 
 /// An installation-specific UUID, deliberately independent of the private
@@ -166,6 +187,7 @@ class PlannerSyncRepository {
     Duration retryBaseDelay = const Duration(seconds: 5),
     Duration retryMaxDelay = const Duration(minutes: 5),
     PlannerSyncRetryTimerFactory? retryTimerFactory,
+    this.now = DateTime.now,
   }) : _legacyStore = legacyStore ?? PersonalItemsStore(),
        _retryBaseDelay = retryBaseDelay,
        _retryMaxDelay = retryMaxDelay,
@@ -185,6 +207,7 @@ class PlannerSyncRepository {
   final Duration _retryBaseDelay;
   final Duration _retryMaxDelay;
   final PlannerSyncRetryTimerFactory _retryTimerFactory;
+  final DateTime Function() now;
   final String ownerId;
   final String deviceId;
   final ValueNotifier<PlannerSyncStatus> syncStatus =
@@ -241,6 +264,7 @@ class PlannerSyncRepository {
     syncStatus.value = PlannerSyncStatus(
       phase: PlannerSyncPhase.syncing,
       lastSuccessfulSyncAt: syncStatus.value.lastSuccessfulSyncAt,
+      retryAttempt: _consecutiveFailureCount,
     );
     try {
       await _importRemoteLegacy();
@@ -266,6 +290,7 @@ class PlannerSyncRepository {
             : PlannerSyncPhase.needsAttention,
         message: summary,
         lastSuccessfulSyncAt: syncStatus.value.lastSuccessfulSyncAt,
+        retryAttempt: _consecutiveFailureCount + 1,
       );
       _scheduleRetry();
     }
@@ -278,6 +303,10 @@ class PlannerSyncRepository {
     final multiplier = 1 << exponent;
     final calculated = _retryBaseDelay * multiplier;
     final delay = calculated > _retryMaxDelay ? _retryMaxDelay : calculated;
+    syncStatus.value = syncStatus.value.copyWith(
+      nextRetryAt: now().toUtc().add(delay),
+      retryAttempt: _consecutiveFailureCount,
+    );
     _retryTimer = _retryTimerFactory(delay, () {
       _retryTimer = null;
       if (!_disposed) unawaited(syncNow());

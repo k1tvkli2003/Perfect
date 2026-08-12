@@ -26,6 +26,13 @@ type ChatTurn = {
   created_at: string;
 };
 
+type ClientTimeContext = {
+  utc_now: string;
+  local_date: string;
+  local_clock: string;
+  utc_offset_minutes: number;
+};
+
 type AgentProposalItem = {
   id: string;
   kind: "one_off_task" | "recurring_task" | "habit" | "project";
@@ -135,6 +142,7 @@ Deno.serve(async (request) => {
     const typedMessage = optionalString(body.message, MAX_MESSAGE_CHARS) ?? "";
     const history = validateHistory(body.conversation);
     const audio = body.audio == null ? null : validateAudio(body.audio);
+    const clientTimeContext = validateClientTimeContext(body.client_context);
     if (typedMessage.length === 0 && audio === null) {
       throw new AgentError(
         "empty_message",
@@ -173,6 +181,7 @@ Deno.serve(async (request) => {
       message: effectiveMessage,
       history,
       plannerContext,
+      clientTimeContext,
     });
     const proposal = providerResult.toolArguments === null
       ? null
@@ -182,7 +191,9 @@ Deno.serve(async (request) => {
       : proposal === null
       ? "نتوانستم پاسخ قابل استفاده‌ای بسازم. دوباره با جزئیات بیشتری امتحان کن."
       : proposal.items.length === 1
-      ? `یک پیشنهاد برای «${proposal.items[0].title}» آماده کردم. جزئیاتش را ببین و اگر درست بود اعمالش کن.`
+      ? `یک پیشنهاد برای «${
+        proposal.items[0].title
+      }» آماده کردم. جزئیاتش را ببین و اگر درست بود اعمالش کن.`
       : `${proposal.items.length} مورد را در یک برنامهٔ منظم آماده کردم. قبل از نوشتن در Perfect! می‌توانی همه را مرور کنی.`;
     const message = assistantMessage(
       reply.slice(0, MAX_ASSISTANT_CHARS),
@@ -243,8 +254,8 @@ function readEnvironment() {
     supabaseUrl,
     supabaseKey,
     avalaiKey: Deno.env.get("AVALAI_API_KEY")?.trim() ?? "",
-    avalaiBaseUrl:
-      Deno.env.get("AVALAI_BASE_URL") ?? "https://api.avalai.ir/v1",
+    avalaiBaseUrl: Deno.env.get("AVALAI_BASE_URL") ??
+      "https://api.avalai.ir/v1",
   };
 }
 
@@ -424,6 +435,63 @@ function validateHistory(value: unknown): ChatTurn[] {
   return newestFirst.reverse();
 }
 
+function validateClientTimeContext(value: unknown): ClientTimeContext | null {
+  if (value == null) return null;
+  const context = requiredObject(value, "client_context");
+  const utcNow = requiredString(context.utc_now, 40, "client_context.utc_now");
+  const localDate = requiredString(
+    context.local_date,
+    10,
+    "client_context.local_date",
+  );
+  const localClock = requiredString(
+    context.local_clock,
+    5,
+    "client_context.local_clock",
+  );
+  const offset = context.utc_offset_minutes;
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(localDate) ||
+    !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(localClock) ||
+    typeof offset !== "number" ||
+    !Number.isInteger(offset) ||
+    offset < -840 ||
+    offset > 840
+  ) {
+    throw new AgentError(
+      "invalid_client_context",
+      "The device time context is invalid.",
+      400,
+    );
+  }
+  const instant = new Date(utcNow);
+  if (
+    Number.isNaN(instant.getTime()) ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3,6})?Z$/.test(utcNow)
+  ) {
+    throw new AgentError(
+      "invalid_client_context",
+      "The device UTC clock is invalid.",
+      400,
+    );
+  }
+  const projectedLocal = new Date(instant.getTime() + offset * 60000)
+    .toISOString();
+  if (`${localDate}T${localClock}` !== projectedLocal.slice(0, 16)) {
+    throw new AgentError(
+      "invalid_client_context",
+      "The device local clock does not match its UTC offset.",
+      400,
+    );
+  }
+  return {
+    utc_now: instant.toISOString(),
+    local_date: localDate,
+    local_clock: localClock,
+    utc_offset_minutes: offset,
+  };
+}
+
 function validateAudio(value: unknown) {
   const audio = requiredObject(value, "audio");
   const mimeType = requiredString(audio.mime_type, 80, "audio MIME type");
@@ -556,12 +624,14 @@ async function callPlannerAgent({
   message,
   history,
   plannerContext,
+  clientTimeContext,
 }: {
   environment: ReturnType<typeof readEnvironment>;
   userId: string;
   message: string;
   history: ChatTurn[];
   plannerContext: unknown[];
+  clientTimeContext: ClientTimeContext | null;
 }) {
   const provider = requireProviderConfiguration(environment);
   const contextJson = encodePlannerContext(plannerContext, 64000);
@@ -570,6 +640,12 @@ async function callPlannerAgent({
       role: "system",
       content: PERFECT_AGENT_SYSTEM_PROMPT,
     },
+    ...(clientTimeContext === null ? [] : [{
+      role: "system",
+      content: `Validated device time context: ${
+        JSON.stringify(clientTimeContext)
+      }. Resolve relative dates such as today and tomorrow against local_date/local_clock, then emit ISO-8601 timestamps with utc_offset_minutes preserved.`,
+    }]),
     {
       role: "system",
       content:
@@ -706,7 +782,8 @@ function normalizeToolProposal(argumentsValue: JsonObject): AgentProposal {
   const refs = new Map<string, string>();
   const rawItems = argumentsValue.items.map((raw, index) => {
     const item = requiredObject(raw, `proposal item ${index + 1}`);
-    const clientRef = optionalString(item.client_ref, 80) ?? `item-${index + 1}`;
+    const clientRef = optionalString(item.client_ref, 80) ??
+      `item-${index + 1}`;
     if (refs.has(clientRef)) {
       throw new AgentError(
         "invalid_tool_proposal",
@@ -1236,7 +1313,9 @@ function derivedUuid(source: string, discriminator: number): string {
   bytes[15] ^= discriminator;
   bytes[6] = (bytes[6] & 0x0f) | 0x50;
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  const hex = bytes.map((value) => value.toString(16).padStart(2, "0")).join("");
+  const hex = bytes.map((value) => value.toString(16).padStart(2, "0")).join(
+    "",
+  );
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${
     hex.slice(16, 20)
   }-${hex.slice(20)}`;
@@ -1553,6 +1632,8 @@ call propose_planner_bundle. Never claim data was saved: the owner must review a
 Do not call the tool for advice, brainstorming, questions, or ambiguous wishes.
 Do not overwrite, delete, archive, message external people, or invent completion state.
 Prefer the smallest useful plan. Preserve exact dates/times and the owner's timezone when stated.
+Resolve relative dates against the validated device time context when present;
+never guess a timezone or silently reinterpret a local day as UTC.
 
 Perfect payload conventions:
 - timing: {scheduled_at, due_at, all_day, end_at}; ISO-8601 with timezone
