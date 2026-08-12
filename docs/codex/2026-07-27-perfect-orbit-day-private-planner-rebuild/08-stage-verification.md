@@ -79,6 +79,14 @@ not rendered. Reduced motion freezes decorative travel without hiding state.
 | Local Windows compile | Not rerun because this host lacks ATL `atlbase.h`; hosted Windows gate remains mandatory. |
 | Exact-SHA GitHub build/install-over/release | Pending Stage 08 merge/push. |
 
+The first hosted attempt, run `#49` / `31628396176`, correctly blocked release:
+Linux passed format/analyze and 411 non-Windows tests but differed from the two
+new Windows-authored header pixel masters by 2.65% and 2.74%. Windows itself passed
+the existing golden gate and the complete build/install-over path. The header matrix
+goldens now use the repository's established `windows-golden` tag: Linux continues
+to run all geometry, semantics and state assertions while Windows owns exact raster
+comparison without weakening tolerance or rewriting platform-specific masters.
+
 ## Runtime evidence
 
 Real running-app evidence is stored under

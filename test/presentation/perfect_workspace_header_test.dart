@@ -169,7 +169,7 @@ void main() {
         find.byKey(const ValueKey<String>('perfect-header-state-matrix')),
         matchesGoldenFile('../goldens/perfect_header_${brightness.name}.png'),
       );
-    });
+    }, tags: 'windows-golden');
   }
 }
 
