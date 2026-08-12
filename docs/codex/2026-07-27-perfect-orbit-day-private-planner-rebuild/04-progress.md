@@ -452,8 +452,20 @@ formatting was scattered across UI, widget, feedback and AI request paths.
 - `flutter analyze`, Deno format/check and the complete 421/421 Flutter suite pass.
   VersionCode 2049 installed in place with the original first-install timestamp.
 
+### Hosted closure
+
+- Stage 08 source checkpoint `cc2ff2b15b81486903b425a51d351b2fa809c187`
+  passed GitHub Actions run `#51` / `31636360008` attempt 2. The first attempt was
+  rejected after the official SQLite binary download closed before its headers;
+  rerunning the same SHA, without a source workaround, proved the failure transient.
+- Quality/Android, Windows build, private build identity and atomic release jobs all
+  passed. Windows proved install-over LocalState preservation and Setup clean plus
+  idempotent rerun. Release `v1.1.0-build.2051` targets the exact commit and contains
+  only the APK, Portable ZIP and Setup EXE with GitHub-recorded SHA-256 digests.
+- The owner's five protected working-tree paths and retained pre-existing stash were
+  restored byte-for-byte after every merge/push checkpoint.
+
 ### Next
 
-- Merge the isolated Stage 08 commit into dirty `main` while preserving the owner's
-  five protected files and retained stash, then prove the exact SHA through hosted
-  Android/Windows install-over and the immutable three-asset release.
+- Close the Stage 08 documentation checkpoint through the same exact-SHA hosted gate,
+  clean its isolated branch/worktree, then begin Stage 09 motion and interaction work.

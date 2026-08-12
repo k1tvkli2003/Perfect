@@ -1,25 +1,26 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-12T21:55:00+03:30
+- Last updated: 2026-08-13T00:42:28+03:30
 - Owner: Codex
 
 ## Current State
 
-Canonical 50-stage execution has externally closed Stages 01–07 through exact-SHA
-hosted runs and immutable three-asset releases. Stage 07 closed on run `#48`
-(`31549435764`) for commit `004c2567e67efc888f767b39333fb23a4a55bcbb` and
-release `v1.1.0-build.2048`.
+Canonical 50-stage execution has externally closed Stages 01–08 through exact-SHA
+hosted runs and immutable three-asset releases. Stage 08 source checkpoint
+`cc2ff2b15b81486903b425a51d351b2fa809c187` closed on run `#51` / `31636360008`
+attempt 2 and release `v1.1.0-build.2051` after the first attempt's transient official
+SQLite download interruption. All four jobs then passed, including Windows
+install-over LocalState preservation, Setup clean/idempotent rerun and byte-verified
+publication of exactly APK, Portable ZIP and Setup EXE.
 
-Stage 08 is locally complete and awaiting its exact-SHA hosted gate. Perfect! now has
-a compact responsive glass header, deterministic Gregorian/Solar-Hijri formatting,
-a minute-aligned lifecycle-aware clock and a non-color-only sync confidence surface
-whose retry deadline comes from the real bounded backoff state. Analyzer is clean,
-the full suite passes 421/421 and versionCode 2049 installed over the existing sibling
-preview without changing first-install time. Phone light/dark/200%, sync details and
-tablet portrait/landscape runtime evidence is recorded in `08-stage-verification.md`;
-trusted Windows install-over and the exact three-asset release remain pending the
-Stage 08 merge/push.
+Perfect! now has a compact responsive glass header, deterministic Gregorian/
+Solar-Hijri formatting, a minute-aligned lifecycle-aware clock and a non-color-only
+sync confidence surface whose retry deadline comes from the real bounded backoff
+state. Analyzer is clean, the full suite passes 421/421 and versionCode 2049 installed
+over the existing sibling preview without changing first-install time. Phone
+light/dark/200%, sync details and tablet portrait/landscape runtime evidence and the
+hosted proof boundary are recorded in `08-stage-verification.md`. Stage 09 is next.
 
 The earlier Perfect cycles below remain historical runtime evidence; they do not
 supersede the canonical numbered execution state.

@@ -428,7 +428,7 @@ overlay/diff evidence before its own gate can close.
 | Tablet landscape runtime | logical 1280×800 compact/expanded rail captures | passed | Android defaults compact, expands without overlap and retains useful two-pane weight |
 | Capture runtime | UIAutomator + input-method state | passed | capture opens as one surface and `mInputShown=false` until the field is explicitly chosen |
 | Windows local compile | not rerun | host limitation | ATL `atlbase.h` remains unavailable locally; Windows interaction/golden contracts pass |
-| Trusted exact-SHA build/release | GitHub Actions and immutable release | pending | must pass after merge/push with exactly APK, Portable ZIP and Setup EXE |
+| Trusted exact-SHA build/release | run `#48` / `31549435764` + release inspection | passed | all four jobs succeeded for `004c2567e67efc888f767b39333fb23a4a55bcbb`; Windows install-over preserved LocalState, Setup clean/rerun passed and `v1.1.0-build.2048` contains exactly APK, Portable ZIP and Setup EXE |
 
 Full evidence and honest proof boundaries are recorded in `07-stage-verification.md`.
 
@@ -448,7 +448,7 @@ Full evidence and honest proof boundaries are recorded in `07-stage-verification
 | Tablet portrait runtime | logical 800×1280 capture + semantics | passed | compact rail, single useful column and bounded header/Compass/stream weight |
 | Tablet landscape runtime | logical 1280×800 capture + semantics | passed | adjacent Compass/stream composition, compact rail and no stretch/overlap |
 | Windows local compile | not rerun | host limitation | ATL `atlbase.h` remains unavailable locally; Windows header/sync/resize contracts pass |
-| Trusted exact-SHA build/release | GitHub Actions and immutable release | pending | must pass after merge/push with exactly APK, Portable ZIP and Setup EXE |
+| Trusted exact-SHA build/release | run `#51` / `31636360008`, attempt 2 + release inspection | passed | all four jobs succeeded for `cc2ff2b15b81486903b425a51d351b2fa809c187`; Windows install-over preserved LocalState, Setup clean/rerun passed and `v1.1.0-build.2051` contains exactly APK, Portable ZIP and Setup EXE |
 
 Full implementation, UTC/local ownership, runtime evidence and proof boundaries are
 recorded in `08-stage-verification.md`.

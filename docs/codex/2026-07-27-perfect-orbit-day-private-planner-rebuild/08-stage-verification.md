@@ -2,7 +2,7 @@
 
 Date: 2026-08-12
 Stage: `08-glass-header-sync-date`
-Status: local source and Android runtime gates passed; exact-SHA hosted Windows/release gate pending
+Status: complete; local runtime and exact-SHA hosted Windows/release gates passed
 
 ## Outcome
 
@@ -77,7 +77,7 @@ not rendered. Reduced motion freezes decorative travel without hiding state.
 | Sync details runtime | Pass; local state, last completion and safe `Sync now` are reachable. |
 | Tablet portrait/landscape runtime | Pass at logical 800×1280 and 1280×800 with compact rail and no overlap. |
 | Local Windows compile | Not rerun because this host lacks ATL `atlbase.h`; hosted Windows gate remains mandatory. |
-| Exact-SHA GitHub build/install-over/release | Pending Stage 08 merge/push. |
+| Exact-SHA GitHub build/install-over/release | Pass on run `#51` / `31636360008` attempt 2 for `cc2ff2b15b81486903b425a51d351b2fa809c187`. |
 
 The first hosted attempt, run `#49` / `31628396176`, correctly blocked release:
 Linux passed format/analyze and 411 non-Windows tests but differed from the two
@@ -90,6 +90,14 @@ Run `#50` / `31635595502` then caught an unformatted tag-only follow-up before
 analysis. The cause was local verification with `dart format --output=none`, which
 reports drift but intentionally does not write it. The file is now written through
 the formatter and checked again with the workflow's exact `lib test` command.
+
+Run `#51` / `31636360008` passed Quality/Android completely on its first attempt.
+Its Windows job reached the golden gate but the official SQLite hook download closed
+before a complete HTTP header arrived. No source or dependency change was used to
+mask the network failure: failed jobs were rerun for the identical commit. Attempt 2
+passed all four jobs, including Windows install-over LocalState preservation, Setup
+clean installation and idempotent rerun, exact three-asset assembly and downloaded-
+byte verification before atomic publication.
 
 ## Runtime evidence
 
@@ -106,9 +114,21 @@ foreground. The deterministic preview fixture proves composition and interaction
 owner Supabase convergence or signed production-session continuity; those remain
 separate later-stage gates.
 
-## Hosted closure condition
+## Hosted closure proof
 
-Stage 08 closes only after its merged `main` SHA passes the trusted GitHub workflow,
-Windows install-over preservation succeeds and the immutable release targets that
-exact SHA with exactly three directly installable assets: Android APK, Windows
-Portable ZIP and Windows Setup EXE.
+Stage 08 source checkpoint `cc2ff2b15b81486903b425a51d351b2fa809c187` closes on
+successful run [`#51` / `31636360008`](https://github.com/k1tvkli2003/Perfect/actions/runs/31636360008)
+attempt 2. Immutable release
+[`v1.1.0-build.2051`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2051)
+and its tag both target that exact commit. It contains exactly:
+
+- `Perfect-1.1.0-build.2051-Android.apk` — 73,606,803 bytes —
+  `sha256:75c49bc71c2482503ef4c473175fadb6601d60d2226c246f4ca5cfef1c4f4073`;
+- `Perfect-1.1.0-build.2051-Windows-Portable.zip` — 17,635,866 bytes —
+  `sha256:6501a36313a5979ff23b86aaf5bcf9e94719ad97b8eb2b87458c0e3e335c2ae8`;
+- `Perfect-1.1.0-build.2051-Windows-Setup.exe` — 24,997,488 bytes —
+  `sha256:d66ea484d8a49c40e4f0f0edf7517bb7a2c60f3d59caa92f77e2ffe5d7d05531`.
+
+This proves the trusted packaging/update path and deterministic preview runtime. It
+does not claim a real owner-account two-device Supabase convergence session; that
+remains owned by the later sync and upgrade-continuity stages.
