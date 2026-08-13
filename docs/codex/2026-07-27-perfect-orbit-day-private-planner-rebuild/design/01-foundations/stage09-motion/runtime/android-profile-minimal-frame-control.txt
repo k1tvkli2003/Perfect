@@ -1,0 +1,6 @@
+--------- beginning of main
+08-13 05:33:36.920 29870 29896 D EGL_emulation: app_time_stats: avg=2234.24ms min=24.64ms max=6596.43ms count=3
+08-13 05:33:37.208   402   402 I netd    : tetherGetStats() -> {[]} <0.27ms>
+08-13 05:33:37.639 29870 29870 I flutter : PERFECT_FRAME_CONTROL_V1 1663:2296:8104,2316:13469:20483,899:32503:37883,593:18124:40285,642:30263:38686,965:17390:40822,700:30951:40077,1401:18477:43260,410:17602:29039,616:24687:37637,910:17269:38858,720:28906:34868
+--------- beginning of system
+08-13 05:33:37.796   607   713 D ActivityManager: freezing 28552 com.google.android.googlequicksearchbox:search

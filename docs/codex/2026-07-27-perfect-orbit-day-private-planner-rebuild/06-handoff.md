@@ -1,5 +1,20 @@
 # Handoff
 
+## Canonical numbered execution — 2026-08-13
+
+Stages 01–08 are externally closed. Stage 09 is implemented and locally verified on
+the isolated `codex/stage09-global-motion` branch but is not yet closed: commit/push,
+exact-SHA hosted Windows, fast-forward merge, trusted release and cleanup remain.
+
+The current Stage 09 source has one semantic Motion system across routes, page-title
+orientation, dialogs, sheets, menus, inspector, wizard, Quick Capture, AI, selection,
+Sync and status feedback. Offstage destinations retain state but cannot paint, tick,
+hit, focus or expose semantics. Reduced motion reaches final state without spatial
+travel. Analyzer is clean and all 432 tests pass. Android profile build 2060 installed
+in place and its runtime artifacts are hash-verified. Emulator raster and local
+Windows ATL limitations are explicitly not promoted into physical/hosted proof; see
+`09-stage-verification.md`.
+
 ## Outcome
 
 Perfect! اکنون یک planner شخصی Flutter برای Android و Windows است؛ Web عمداً حذف شده است. محصول از یک فهرست ساده به Orbit Day واکنش‌گرا، Task/Habit editor بسیار قابل‌تنظیم، local-first Drift، sync خصوصی Supabase، recovery/conflict/archive، focus/reminder/insight و ویجت بومی Android تبدیل شده است.

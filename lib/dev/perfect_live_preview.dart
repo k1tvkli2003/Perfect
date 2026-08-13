@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:ui' show FrameTiming;
 
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:perfect/ai/perfect_ai_client.dart';
 import 'package:perfect/ai/perfect_ai_contract.dart';
@@ -19,9 +21,55 @@ import 'package:perfect/presentation/planner_workspace_controller.dart';
 /// AI dock against deterministic local adapters. Release builds keep using
 /// `lib/main.dart`; this entrypoint never bypasses production authentication.
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  if (kProfileMode) _PerfectPreviewFrameProbe.install(binding);
   ReadyFeedbackLogger.instance.installGlobalErrorCapture();
   runApp(const PerfectLivePreviewApp());
+}
+
+/// Emits raw Flutter build/raster timings only from the disposable profile
+/// preview. Android's `dumpsys gfxinfo` sees the host SurfaceView rather than
+/// Flutter's rendered frames, so those two ViewRoot samples are not accepted
+/// as motion-performance evidence.
+class _PerfectPreviewFrameProbe with WidgetsBindingObserver {
+  _PerfectPreviewFrameProbe._();
+
+  static void install(WidgetsBinding binding) {
+    final probe = _PerfectPreviewFrameProbe._();
+    binding
+      ..addObserver(probe)
+      ..addTimingsCallback(probe._capture);
+    Timer.periodic(const Duration(seconds: 1), (_) => probe._flush());
+  }
+
+  final List<FrameTiming> _pending = <FrameTiming>[];
+
+  void _capture(List<FrameTiming> timings) => _pending.addAll(timings);
+
+  void _flush() {
+    if (_pending.isEmpty) return;
+    final batch = List<FrameTiming>.of(_pending);
+    _pending.clear();
+    final payload = batch
+        .map(
+          (timing) =>
+              '${timing.buildDuration.inMicroseconds}:'
+              '${timing.rasterDuration.inMicroseconds}:'
+              '${timing.totalSpan.inMicroseconds}',
+        )
+        .join(',');
+    // ignore: avoid_print
+    print('PERFECT_FRAME_TIMINGS_V1 $payload');
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _flush();
+    }
+  }
 }
 
 class PerfectLivePreviewApp extends StatefulWidget {

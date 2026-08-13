@@ -206,62 +206,47 @@ class _HeaderContextCluster extends StatelessWidget {
   final bool compact;
 
   @override
-  Widget build(BuildContext context) => PerfectMotionSwitcher(
-    kind: PerfectTransitionKind.fade,
-    duration: PerfectMotion.standard,
-    reverseDuration: PerfectMotion.quick,
-    layoutBuilder: (currentChild, previousChildren) => Stack(
-      alignment: AlignmentDirectional.centerStart,
-      children: <Widget>[...previousChildren, ?currentChild],
-    ),
-    child: KeyedSubtree(
-      key: ValueKey<String>('header-context-$destinationKey'),
-      child: PerfectStagedEntrance(
-        rise: 10,
-        scaleBegin: .995,
-        duration: PerfectMotion.standard,
-        child: Row(
-          children: [
-            if (showWordmark) ...[
-              PerfectMark(size: compact ? 28 : 32),
-              const SizedBox(width: PerfectSpace.sm),
+  Widget build(BuildContext context) => KeyedSubtree(
+    key: ValueKey<String>('header-context-$destinationKey'),
+    child: Row(
+      children: [
+        if (showWordmark) ...[
+          PerfectMark(size: compact ? 28 : 32),
+          const SizedBox(width: PerfectSpace.sm),
+        ],
+        Flexible(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showContext || !showWordmark)
+                Text(
+                  destinationLabel,
+                  maxLines: 1,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -.25,
+                  ),
+                )
+              else
+                const PerfectWordmark(fontSize: 24),
+              if (supportText.isNotEmpty &&
+                  MediaQuery.textScalerOf(context).scale(14) / 14 < 1.45) ...[
+                const SizedBox(height: 1),
+                Text(
+                  supportText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ],
-            Flexible(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (showContext || !showWordmark)
-                    Text(
-                      destinationLabel,
-                      maxLines: 1,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -.25,
-                      ),
-                    )
-                  else
-                    const PerfectWordmark(fontSize: 24),
-                  if (supportText.isNotEmpty &&
-                      MediaQuery.textScalerOf(context).scale(14) / 14 <
-                          1.45) ...[
-                    const SizedBox(height: 1),
-                    Text(
-                      supportText,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+      ],
     ),
   );
 }

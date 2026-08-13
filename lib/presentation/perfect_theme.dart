@@ -224,6 +224,35 @@ class PerfectSurfaceTheme extends ThemeExtension<PerfectSurfaceTheme> {
   }
 }
 
+/// Semantic motion roles shared by routes, overlays and microinteractions.
+///
+/// Callers choose the relationship they need instead of inventing a duration.
+/// The corresponding storyboard lives under the Stage 09 motion evidence.
+enum PerfectMotionRole {
+  micro,
+  quick,
+  standard,
+  emphasized,
+  modal,
+  route,
+  feedback,
+}
+
+@immutable
+class PerfectMotionSpec {
+  const PerfectMotionSpec({
+    required this.duration,
+    required this.reverseDuration,
+    required this.curve,
+    required this.reverseCurve,
+  });
+
+  final Duration duration;
+  final Duration reverseDuration;
+  final Curve curve;
+  final Curve reverseCurve;
+}
+
 abstract final class PerfectMotion {
   /// Pointer and keyboard acknowledgement. It should feel immediate.
   static const micro = Duration(milliseconds: 90);
@@ -236,6 +265,23 @@ abstract final class PerfectMotion {
   static const modal = Duration(milliseconds: 360);
   static const route = Duration(milliseconds: 380);
   static const feedback = Duration(milliseconds: 600);
+  static const stagedGap = Duration(milliseconds: 56);
+  static const calmLoop = Duration(milliseconds: 1500);
+  static const heartbeat = Duration(milliseconds: 1680);
+  static const heartbeatRest = Duration(milliseconds: 2200);
+
+  /// Optical travel is expressed in logical pixels when the relationship is
+  /// local to one workspace. This keeps a phone and a wide Windows window
+  /// equally calm instead of moving content by a viewport percentage.
+  static const routeEnterTravel = 14.0;
+  static const routeExitTravel = 8.0;
+  static const routeVerticalTravel = 6.0;
+  static const titleRise = 10.0;
+  static const dialogRise = 12.0;
+  static const dialogScaleBegin = .96;
+  static const wizardTravel = 12.0;
+  static const stagedScaleBegin = .985;
+
   static const Curve productive = Curves.easeOutCubic;
   static const Curve enter = Curves.easeOutCubic;
   static const Curve exit = Curves.easeInCubic;
@@ -247,6 +293,51 @@ abstract final class PerfectMotion {
 
   static Duration responsive(BuildContext context, Duration duration) =>
       reduced(context) ? Duration.zero : duration;
+
+  static PerfectMotionSpec spec(PerfectMotionRole role) => switch (role) {
+    PerfectMotionRole.micro => const PerfectMotionSpec(
+      duration: micro,
+      reverseDuration: micro,
+      curve: productive,
+      reverseCurve: exit,
+    ),
+    PerfectMotionRole.quick => const PerfectMotionSpec(
+      duration: quick,
+      reverseDuration: quick,
+      curve: productive,
+      reverseCurve: exit,
+    ),
+    PerfectMotionRole.standard => const PerfectMotionSpec(
+      duration: standard,
+      reverseDuration: quick,
+      curve: productive,
+      reverseCurve: exit,
+    ),
+    PerfectMotionRole.emphasized => const PerfectMotionSpec(
+      duration: emphasized,
+      reverseDuration: standard,
+      curve: modalEnter,
+      reverseCurve: exit,
+    ),
+    PerfectMotionRole.modal => const PerfectMotionSpec(
+      duration: modal,
+      reverseDuration: standard,
+      curve: modalEnter,
+      reverseCurve: exit,
+    ),
+    PerfectMotionRole.route => const PerfectMotionSpec(
+      duration: route,
+      reverseDuration: standard,
+      curve: modalEnter,
+      reverseCurve: exit,
+    ),
+    PerfectMotionRole.feedback => const PerfectMotionSpec(
+      duration: feedback,
+      reverseDuration: standard,
+      curve: productive,
+      reverseCurve: exit,
+    ),
+  };
 
   /// Removes spatial movement while preserving the destination geometry.
   static Offset responsiveOffset(BuildContext context, Offset offset) =>
@@ -269,16 +360,31 @@ abstract final class PerfectMotion {
     reverseCurve: reverseCurve,
   );
 
+  static AnimationStyle roleStyle(
+    BuildContext context,
+    PerfectMotionRole role,
+  ) {
+    final motion = spec(role);
+    return style(
+      context,
+      duration: motion.duration,
+      reverseDuration: motion.reverseDuration,
+      curve: motion.curve,
+      reverseCurve: motion.reverseCurve,
+    );
+  }
+
+  static AnimationStyle dialogStyle(BuildContext context) =>
+      roleStyle(context, PerfectMotionRole.modal);
+
+  static AnimationStyle menuStyle(BuildContext context) =>
+      roleStyle(context, PerfectMotionRole.quick);
+
   /// The shared route style for bottom sheets. Keeping it here makes editor,
   /// log and focus surfaces feel related instead of inheriting a platform
   /// default that is too subtle for the Perfect interaction system.
-  static AnimationStyle modalSheetStyle(BuildContext context) => style(
-    context,
-    duration: modal,
-    reverseDuration: standard,
-    curve: modalEnter,
-    reverseCurve: exit,
-  );
+  static AnimationStyle modalSheetStyle(BuildContext context) =>
+      roleStyle(context, PerfectMotionRole.modal);
 }
 
 double _lerpDouble(double a, double b, double t) => a + ((b - a) * t);
@@ -1059,8 +1165,8 @@ abstract final class PerfectTheme {
 ///
 /// Android enters along the vertical reading flow, while Windows uses a short
 /// horizontal hand-off that feels at home with keyboard and rail navigation.
-/// The offset is deliberately subtle so navigation remains quick and never
-/// reads like a carousel. Reduced-motion removes both translation and fade.
+/// Incoming and outgoing routes share the hand-off, so pop and interrupted
+/// navigation continue from the current visual state instead of teleporting.
 class PerfectPageTransitionsBuilder extends PageTransitionsBuilder {
   const PerfectPageTransitionsBuilder({required this.axis});
 
@@ -1074,25 +1180,27 @@ class PerfectPageTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    if (route.isFirst || PerfectMotion.reduced(context)) return child;
+    if (PerfectMotion.reduced(context)) return child;
 
-    final curved = CurvedAnimation(
-      parent: animation,
-      curve: PerfectMotion.enter,
-      reverseCurve: PerfectMotion.exit,
-    );
-    final offset = axis == Axis.horizontal
-        ? const Offset(.038, 0)
-        : const Offset(0, .052);
-    return FadeTransition(
-      opacity: Tween<double>(begin: .0, end: 1).animate(curved),
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: offset,
-          end: Offset.zero,
-        ).animate(curved),
-        child: child,
-      ),
+    return AnimatedBuilder(
+      animation: Listenable.merge(<Listenable>[animation, secondaryAnimation]),
+      child: child,
+      builder: (context, child) {
+        final entering = PerfectMotion.enter.transform(animation.value);
+        final yielding = PerfectMotion.productive.transform(
+          secondaryAnimation.value,
+        );
+        final primaryTravel = (1 - entering) * PerfectMotion.routeEnterTravel;
+        final counterTravel = yielding * PerfectMotion.routeExitTravel;
+        final offset = axis == Axis.horizontal
+            ? Offset(primaryTravel - counterTravel, 0)
+            : Offset(0, primaryTravel - counterTravel);
+        final opacity = (entering * (1 - yielding * .08)).clamp(0.0, 1.0);
+        return Opacity(
+          opacity: opacity,
+          child: Transform.translate(offset: offset, child: child),
+        );
+      },
     );
   }
 }

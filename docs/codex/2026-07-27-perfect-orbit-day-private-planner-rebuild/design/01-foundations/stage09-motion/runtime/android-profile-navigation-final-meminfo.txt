@@ -1,0 +1,65 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 33756076 Realtime: 33756076
+
+** MEMINFO in pid 31369 [com.k1tvkli2003.perfect.preview] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap    45489    45436        0      123    46272    77912    48944    24480
+  Dalvik Heap     1923     1888        0      288     2432     6198     3099     3099
+ Dalvik Other     8765     4420        0       11    13432
+        Stack     1000     1000        0        0     1008
+       Ashmem       26        0        0        0      588
+    Other dev       27        0       16        0      336
+     .so mmap     4688      200        0       61    31492
+    .jar mmap     4887        0       72        0    42036
+    .apk mmap    20356      456    19480        0    21820
+    .ttf mmap     4623        0       12        0     9324
+    .dex mmap       50        0        0        0      852
+    .oat mmap      114        0        0        0     1664
+    .art mmap     9701     7884       16      292    22512
+   Other mmap     4407        4       32        1     9588
+      Unknown    49361    49336        4        1    49768
+        TOTAL   156194   110624    19632      777   253124    84110    52043    27579
+
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:     9788                          24944
+         Native Heap:    45436                          46272
+                Code:    20508                         116144
+               Stack:     1000                           1008
+            Graphics:        0                              0
+       Private Other:    53524
+              System:    25938
+             Unknown:                                   64756
+
+           TOTAL PSS:   156194            TOTAL RSS:   253124       TOTAL SWAP PSS:      777
+
+ Objects
+               Views:        6         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:       24        AssetManagers:        0
+       Local Binders:       21        Proxy Binders:       64
+       Parcel memory:        7         Parcel count:       30
+    Death Recipients:        0             WebViews:        0
+
+ SQL
+         MEMORY_USED:      296
+  PAGECACHE_OVERFLOW:       79          MALLOC_SIZE:       46
+
+ DATABASES
+      pgsz     dbsz   Lookaside(b) cache hits cache misses cache size  Dbname
+PER CONNECTION STATS
+         4      104            123    11    54    12  /data/user/0/com.k1tvkli2003.perfect.preview/no_backup/androidx.work.workdb
+         4        8                    0     0     0    (attached) temp
+         4      104             56     7    24     6  /data/user/0/com.k1tvkli2003.perfect.preview/no_backup/androidx.work.workdb (1)
+POOL STATS
+     cache hits  cache misses    cache size  Dbname
+             18            82           100  /data/user/0/com.k1tvkli2003.perfect.preview/no_backup/androidx.work.workdb
+
+ Asset Allocations
+    : 21K
+    : 172K
+    : 236K
+    : 17K

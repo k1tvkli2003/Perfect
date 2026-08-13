@@ -1,13 +1,29 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-13T00:42:28+03:30
+- Last updated: 2026-08-13T06:15:00+03:30
 - Owner: Codex
 
 ## Current State
 
 Canonical 50-stage execution has externally closed Stages 01–08 through exact-SHA
-hosted runs and immutable three-asset releases. Stage 08 source checkpoint
+hosted runs and immutable three-asset releases. Stage 08 documentation checkpoint
+`2e34937e8286275b1cc7e675ef6fe45dd15e6baf` is the current `main` baseline.
+Stage 09 is implemented and locally verified on isolated branch
+`codex/stage09-global-motion`; its commit, hosted Windows gate, merge and release are
+still pending and therefore the stage is not yet externally closed.
+
+Stage 09 centralizes seven semantic motion roles, reduced-motion behavior, invoker-
+anchored/focus-restoring dialogs, explicit sheet/menu transitions, persistent
+destination state with one painted route, one-shot title entrances and lifecycle-
+aware background/offstage ticker suspension. Eleven storyboards, 131 implementation
+records, 24 design hashes and nine runtime hashes pass the independent verifier.
+Analyzer is clean; the full suite passes 432/432, Workspace 60/60, Header/Sync 10/10
+and focused Motion 19/19. Android profile `1.1.0+2060` installed in place without
+changing first-install time. Local Windows still lacks ATL `atlbase.h`; exact-SHA
+hosted Windows/install-over/release proof and physical target no-jank remain open.
+
+The Stage 08 source checkpoint
 `cc2ff2b15b81486903b425a51d351b2fa809c187` closed on run `#51` / `31636360008`
 attempt 2 and release `v1.1.0-build.2051` after the first attempt's transient official
 SQLite download interruption. All four jobs then passed, including Windows
@@ -20,7 +36,7 @@ sync confidence surface whose retry deadline comes from the real bounded backoff
 state. Analyzer is clean, the full suite passes 421/421 and versionCode 2049 installed
 over the existing sibling preview without changing first-install time. Phone
 light/dark/200%, sync details and tablet portrait/landscape runtime evidence and the
-hosted proof boundary are recorded in `08-stage-verification.md`. Stage 09 is next.
+hosted proof boundary are recorded in `08-stage-verification.md`.
 
 The earlier Perfect cycles below remain historical runtime evidence; they do not
 supersede the canonical numbered execution state.

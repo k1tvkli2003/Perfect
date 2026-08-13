@@ -1043,7 +1043,7 @@ class PerfectAiDockState extends State<PerfectAiDock>
   }
 
   Future<void> _requestVoiceConsent() async {
-    final accepted = await showDialog<bool>(
+    final accepted = await showPerfectDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Start a voice note?'),

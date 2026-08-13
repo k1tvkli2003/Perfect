@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
+import 'package:perfect/presentation/perfect_motion.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
 
@@ -16,7 +17,7 @@ class PlannerArchiveSheet extends StatefulWidget {
   }) {
     if (Theme.of(context).platform == TargetPlatform.windows ||
         MediaQuery.sizeOf(context).width >= 900) {
-      return showDialog<void>(
+      return showPerfectDialog<void>(
         context: context,
         builder: (context) => Dialog(
           clipBehavior: Clip.antiAlias,

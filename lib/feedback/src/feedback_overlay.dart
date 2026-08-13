@@ -8,6 +8,7 @@ import 'package:perfect/feedback/src/feedback_exporter.dart';
 import 'package:perfect/feedback/src/feedback_models.dart';
 import 'package:perfect/feedback/src/feedback_repository.dart';
 import 'package:perfect/presentation/perfect_local_time.dart';
+import 'package:perfect/presentation/perfect_motion.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 
 typedef ReadyFeedbackScreenshotProvider =
@@ -232,6 +233,7 @@ class _ReadyFeedbackOverlayState extends State<ReadyFeedbackOverlay> {
       context: context,
       showDragHandle: true,
       useSafeArea: true,
+      sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
       builder: (context) => const _FeedbackMenuSheet(),
     );
     if (!mounted || action == null) return;
@@ -259,7 +261,7 @@ class _ReadyFeedbackOverlayState extends State<ReadyFeedbackOverlay> {
       }
     }
     if (!mounted) return;
-    final draft = await showDialog<_ReadyFeedbackDraft>(
+    final draft = await showPerfectDialog<_ReadyFeedbackDraft>(
       context: context,
       builder: (context) => _FeedbackDraftDialog(screenshot: screenshot),
     );
@@ -746,6 +748,7 @@ abstract final class ReadyFeedbackEntriesSheet {
     isScrollControlled: true,
     showDragHandle: true,
     useSafeArea: true,
+    sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
     builder: (context) => FractionallySizedBox(
       heightFactor: .82,
       child: _FeedbackEntriesBody(controller: controller),
@@ -903,7 +906,7 @@ class _FeedbackEntriesBodyState extends State<_FeedbackEntriesBody> {
                       },
                       icon: const Icon(Icons.delete_outline_rounded),
                     ),
-                    onTap: () => showDialog<void>(
+                    onTap: () => showPerfectDialog<void>(
                       context: context,
                       builder: (context) => _FeedbackEntryDetailsDialog(
                         controller: widget.controller,
@@ -934,7 +937,7 @@ class _FeedbackEntriesBodyState extends State<_FeedbackEntriesBody> {
       return;
     }
     if (!mounted) return;
-    final approved = await showDialog<bool>(
+    final approved = await showPerfectDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.privacy_tip_outlined),
@@ -1000,7 +1003,7 @@ class _FeedbackEntriesBodyState extends State<_FeedbackEntriesBody> {
   }
 
   Future<void> _confirmClear() async {
-    final approved = await showDialog<bool>(
+    final approved = await showPerfectDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Clear private feedback?'),
@@ -1039,7 +1042,7 @@ class _FeedbackEntriesBodyState extends State<_FeedbackEntriesBody> {
   }
 
   Future<void> _confirmRecovery() async {
-    final approved = await showDialog<bool>(
+    final approved = await showPerfectDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.health_and_safety_outlined),

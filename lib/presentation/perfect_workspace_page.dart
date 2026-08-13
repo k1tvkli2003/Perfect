@@ -108,10 +108,9 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       GlobalKey<_QuickCaptureDockState>();
   final GlobalKey<PerfectAiDockState> _aiDockKey =
       GlobalKey<PerfectAiDockState>();
-  final GlobalKey<_PersistentDestinationHostState> _destinationHostKey =
-      GlobalKey<_PersistentDestinationHostState>(
-        debugLabel: 'Perfect persistent destination host',
-      );
+  final GlobalKey _destinationHostKey = GlobalKey(
+    debugLabel: 'Perfect persistent destination host',
+  );
   final GlobalKey _todayPageKey = GlobalKey(
     debugLabel: 'Perfect Today destination',
   );
@@ -630,11 +629,19 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
 
     return PageStorage(
       bucket: _destinationPageStorage,
-      child: _PersistentDestinationHost(
+      child: PerfectPersistentDestinationHost(
         key: _destinationHostKey,
         selectedIndex: _destination.index,
         direction: _navigationDirection,
-        children: composedPages,
+        children: composedPages.indexed
+            .map(
+              (entry) => PerfectMotionEntryScope(
+                entryKey:
+                    '${_PerfectDestination.values[entry.$1].name}-${_destination == _PerfectDestination.values[entry.$1]}',
+                child: entry.$2,
+              ),
+            )
+            .toList(growable: false),
       ),
     );
   }
@@ -707,35 +714,35 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
           PerfectResponsiveGeometry.mediumContentThreshold -
           dividerWidth,
     );
-    final showInspector =
+    final canHostInspector =
         destination == _destination &&
-        inspected != null &&
         availableInspectorWidth >= minInspectorWidth &&
         textScale < 1.5;
-    if (!showInspector) return page;
+    if (!canHostInspector) return page;
 
     final inspectorWidth =
         (_inspectorWidthOverride ?? constraints.maxWidth * .29)
             .clamp(minInspectorWidth, availableInspectorWidth)
             .toDouble();
-    return Row(
+    return Stack(
       children: [
-        Expanded(child: page),
-        _PaneDivider(
-          value: inspectorWidth,
-          min: minInspectorWidth,
-          max: availableInspectorWidth,
-          onChanged: (value) {
-            if ((_inspectorWidthOverride ?? inspectorWidth) == value) return;
-            setState(() => _inspectorWidthOverride = value);
-          },
-        ),
-        SizedBox(
-          key: const ValueKey<String>('perfect-inspector-pane'),
-          width: inspectorWidth,
-          child: _Inspector(
+        Positioned.fill(child: page),
+        PositionedDirectional(
+          top: 0,
+          bottom: 0,
+          end: 0,
+          width: inspectorWidth + dividerWidth,
+          child: _InspectorMotionPane(
             entity: inspected,
+            width: inspectorWidth,
+            dividerWidth: dividerWidth,
+            minWidth: minInspectorWidth,
+            maxWidth: availableInspectorWidth,
             controller: widget.controller,
+            onResize: (value) {
+              if ((_inspectorWidthOverride ?? inspectorWidth) == value) return;
+              setState(() => _inspectorWidthOverride = value);
+            },
             onEdit: () => _openEditor(existing: inspected),
             onReveal: _inspect,
             onClear: () => setState(() => _inspected = null),
@@ -1018,6 +1025,82 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
   }
 }
 
+class _InspectorMotionPane extends StatelessWidget {
+  const _InspectorMotionPane({
+    required this.entity,
+    required this.width,
+    required this.dividerWidth,
+    required this.minWidth,
+    required this.maxWidth,
+    required this.controller,
+    required this.onResize,
+    required this.onEdit,
+    required this.onReveal,
+    required this.onClear,
+  });
+
+  final PlannerEntity? entity;
+  final double width;
+  final double dividerWidth;
+  final double minWidth;
+  final double maxWidth;
+  final PlannerWorkspaceController controller;
+  final ValueChanged<double> onResize;
+  final VoidCallback onEdit;
+  final ValueChanged<PlannerEntity> onReveal;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final current = entity;
+    final direction = Directionality.of(context) == TextDirection.ltr ? 1 : -1;
+    final inspectorAlignment = direction == 1
+        ? Alignment.centerRight
+        : Alignment.centerLeft;
+    return IgnorePointer(
+      ignoring: current == null,
+      child: PerfectMotionSwitcher(
+        kind: PerfectTransitionKind.sharedAxisHorizontal,
+        direction: direction,
+        duration: PerfectMotion.route,
+        reverseDuration: PerfectMotion.standard,
+        alignment: inspectorAlignment,
+        layoutBuilder: (currentChild, previousChildren) => Stack(
+          fit: StackFit.expand,
+          alignment: inspectorAlignment,
+          children: <Widget>[...previousChildren, ?currentChild],
+        ),
+        child: current == null
+            ? const SizedBox.expand(
+                key: ValueKey<String>('perfect-inspector-motion-closed'),
+              )
+            : Row(
+                key: ValueKey<String>('perfect-inspector-motion-${current.id}'),
+                children: [
+                  _PaneDivider(
+                    value: width,
+                    min: minWidth,
+                    max: maxWidth,
+                    onChanged: onResize,
+                  ),
+                  SizedBox(
+                    key: const ValueKey<String>('perfect-inspector-pane'),
+                    width: width,
+                    child: _Inspector(
+                      entity: current,
+                      controller: controller,
+                      onEdit: onEdit,
+                      onReveal: onReveal,
+                      onClear: onClear,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
 enum _PerfectDestination {
   today('Today', Icons.today_outlined, Icons.today_rounded),
   tasks('Tasks', Icons.check_circle_outline, Icons.check_circle_rounded),
@@ -1035,147 +1118,6 @@ enum _PerfectDestination {
 const _destinations = _PerfectDestination.values;
 
 enum _WorkspaceLayoutTier { compact, medium, expanded }
-
-class _PersistentDestinationHost extends StatefulWidget {
-  const _PersistentDestinationHost({
-    super.key,
-    required this.selectedIndex,
-    required this.direction,
-    required this.children,
-  }) : assert(selectedIndex >= 0),
-       assert(selectedIndex < children.length),
-       assert(direction != 0);
-
-  final int selectedIndex;
-  final int direction;
-  final List<Widget> children;
-
-  @override
-  State<_PersistentDestinationHost> createState() =>
-      _PersistentDestinationHostState();
-}
-
-class _PersistentDestinationHostState extends State<_PersistentDestinationHost>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    value: 1,
-  )..addStatusListener(_handleStatus);
-  int? _outgoingIndex;
-  int _direction = 1;
-  bool _reducedMotion = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _reducedMotion = PerfectMotion.reduced(context);
-    _controller.duration = PerfectMotion.responsive(
-      context,
-      PerfectMotion.standard,
-    );
-    if (_reducedMotion) {
-      _outgoingIndex = null;
-      _controller.value = 1;
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant _PersistentDestinationHost oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    assert(widget.children.length == oldWidget.children.length);
-    if (oldWidget.selectedIndex == widget.selectedIndex) return;
-    _direction = widget.direction;
-    if (_reducedMotion) {
-      _outgoingIndex = null;
-      _controller.value = 1;
-      return;
-    }
-    _outgoingIndex = oldWidget.selectedIndex;
-    _controller.forward(from: 0);
-  }
-
-  void _handleStatus(AnimationStatus status) {
-    if (status != AnimationStatus.completed || _outgoingIndex == null) return;
-    if (mounted) setState(() => _outgoingIndex = null);
-  }
-
-  @override
-  void dispose() {
-    _controller
-      ..removeStatusListener(_handleStatus)
-      ..dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final active = widget.selectedIndex;
-    final outgoing = _outgoingIndex;
-    final paintOrder = <int>[
-      for (var index = 0; index < widget.children.length; index++)
-        if (index != active && index != outgoing) index,
-      if (outgoing != null && outgoing != active) outgoing,
-      active,
-    ];
-    return RepaintBoundary(
-      key: const ValueKey<String>('perfect-persistent-destination-host'),
-      child: ClipRect(
-        child: Stack(
-          fit: StackFit.expand,
-          children: paintOrder.map(_buildSlot).toList(growable: false),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSlot(int index) {
-    final active = index == widget.selectedIndex;
-    final outgoing = index == _outgoingIndex;
-    final visible = active || outgoing;
-    return Positioned.fill(
-      key: ValueKey<String>('perfect-destination-slot-$index'),
-      child: Offstage(
-        offstage: !visible,
-        child: TickerMode(
-          enabled: active,
-          child: IgnorePointer(
-            ignoring: !active,
-            child: ExcludeSemantics(
-              excluding: !active,
-              child: FocusScope(
-                canRequestFocus: active,
-                skipTraversal: !active,
-                descendantsAreFocusable: active,
-                child: AnimatedBuilder(
-                  animation: _controller,
-                  child: widget.children[index],
-                  builder: (context, child) {
-                    if (!visible || _reducedMotion) return child!;
-                    final progress = PerfectMotion.modalEnter.transform(
-                      _controller.value,
-                    );
-                    final opacity = active ? progress : 1 - progress;
-                    final horizontal = active
-                        ? _direction * (1 - progress) * 14
-                        : -_direction * progress * 8;
-                    final vertical = active ? (1 - progress) * 6 : 0.0;
-                    return Opacity(
-                      opacity: opacity.clamp(0.0, 1.0),
-                      child: Transform.translate(
-                        offset: Offset(horizontal, vertical),
-                        child: child,
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 enum _DestinationNavigationAxis { horizontal, vertical }
 
@@ -1743,73 +1685,75 @@ class _CompactDestinationGlyph extends StatelessWidget {
     final duration = PerfectMotion.responsive(context, PerfectMotion.standard);
     final icon = selected ? destination.selectedIcon : destination.icon;
 
-    return TweenAnimationBuilder<double>(
-      key: selected
-          ? ValueKey<String>('perfect-footer-selected-${destination.name}')
-          : null,
-      tween: Tween<double>(begin: 0, end: selected ? 1 : 0),
-      duration: duration,
-      curve: PerfectMotion.modalEnter,
-      builder: (context, progress, child) => SizedBox(
-        width: 54,
-        height: 54,
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            Opacity(
-              opacity: progress,
-              child: Transform.translate(
-                offset: Offset(0, 2 - progress * 4),
-                child: Transform.scale(
-                  scale: .76 + progress * .24,
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: ShapeDecoration(
-                      shape: ContinuousRectangleBorder(
-                        borderRadius: BorderRadius.circular(22),
-                        side: BorderSide(
-                          color: Colors.white.withValues(alpha: .88),
-                          width: 1.2,
+    return RepaintBoundary(
+      child: TweenAnimationBuilder<double>(
+        key: selected
+            ? ValueKey<String>('perfect-footer-selected-${destination.name}')
+            : null,
+        tween: Tween<double>(begin: 0, end: selected ? 1 : 0),
+        duration: duration,
+        curve: PerfectMotion.modalEnter,
+        builder: (context, progress, child) => SizedBox(
+          width: 54,
+          height: 54,
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              Opacity(
+                opacity: progress,
+                child: Transform.translate(
+                  offset: Offset(0, 2 - progress * 4),
+                  child: Transform.scale(
+                    scale: .76 + progress * .24,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: ShapeDecoration(
+                        shape: ContinuousRectangleBorder(
+                          borderRadius: BorderRadius.circular(22),
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: .88),
+                            width: 1.2,
+                          ),
                         ),
-                      ),
-                      gradient: LinearGradient(
-                        begin: AlignmentDirectional.topStart,
-                        end: AlignmentDirectional.bottomEnd,
-                        colors: <Color>[
-                          accent.withValues(alpha: .34),
-                          companion.withValues(alpha: .22),
-                          scheme.surface.withValues(alpha: .92),
+                        gradient: LinearGradient(
+                          begin: AlignmentDirectional.topStart,
+                          end: AlignmentDirectional.bottomEnd,
+                          colors: <Color>[
+                            accent.withValues(alpha: .34),
+                            companion.withValues(alpha: .22),
+                            scheme.surface.withValues(alpha: .92),
+                          ],
+                          stops: const <double>[0, .56, 1],
+                        ),
+                        shadows: <BoxShadow>[
+                          BoxShadow(
+                            color: accent.withValues(alpha: .24),
+                            blurRadius: 18,
+                            spreadRadius: -3,
+                            offset: const Offset(0, 7),
+                          ),
+                          BoxShadow(
+                            color: scheme.shadow.withValues(alpha: .08),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
                         ],
-                        stops: const <double>[0, .56, 1],
                       ),
-                      shadows: <BoxShadow>[
-                        BoxShadow(
-                          color: accent.withValues(alpha: .24),
-                          blurRadius: 18,
-                          spreadRadius: -3,
-                          offset: const Offset(0, 7),
-                        ),
-                        BoxShadow(
-                          color: scheme.shadow.withValues(alpha: .08),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Align(
-                      alignment: const Alignment(-.58, -.62),
-                      child: Container(
-                        width: 14,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(99),
-                          gradient: LinearGradient(
-                            colors: <Color>[
-                              Colors.white.withValues(alpha: .78),
-                              Colors.white.withValues(alpha: 0),
-                            ],
+                      child: Align(
+                        alignment: const Alignment(-.58, -.62),
+                        child: Container(
+                          width: 14,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(99),
+                            gradient: LinearGradient(
+                              colors: <Color>[
+                                Colors.white.withValues(alpha: .78),
+                                Colors.white.withValues(alpha: 0),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -1817,41 +1761,46 @@ class _CompactDestinationGlyph extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-            Transform.translate(
-              offset: Offset(0, selected ? -2.3 * progress : 0),
-              child: Transform.scale(
-                scale: selected ? .88 + progress * .12 : 1,
-                child: Icon(
-                  icon,
-                  size: selected ? 24 : 23,
-                  color: selected ? PerfectColors.ink : scheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            if (selected)
-              PositionedDirectional(
-                bottom: -1,
-                child: Opacity(
-                  opacity: progress,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: <Color>[accent, accent.withValues(alpha: .12)],
-                      ),
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: accent.withValues(alpha: .45),
-                          blurRadius: 7,
-                        ),
-                      ],
-                    ),
-                    child: const SizedBox.square(dimension: 5),
+              Transform.translate(
+                offset: Offset(0, selected ? -2.3 * progress : 0),
+                child: Transform.scale(
+                  scale: selected ? .88 + progress * .12 : 1,
+                  child: Icon(
+                    icon,
+                    size: selected ? 24 : 23,
+                    color: selected
+                        ? PerfectColors.ink
+                        : scheme.onSurfaceVariant,
                   ),
                 ),
               ),
-          ],
+              if (selected)
+                PositionedDirectional(
+                  bottom: -1,
+                  child: Opacity(
+                    opacity: progress,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: <Color>[
+                            accent,
+                            accent.withValues(alpha: .12),
+                          ],
+                        ),
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                            color: accent.withValues(alpha: .45),
+                            blurRadius: 7,
+                          ),
+                        ],
+                      ),
+                      child: const SizedBox.square(dimension: 5),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -1905,10 +1854,10 @@ class _QuickCaptureDock extends StatefulWidget {
 }
 
 class _QuickCaptureDockState extends State<_QuickCaptureDock>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _pulseController = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1680),
+    duration: PerfectMotion.heartbeat,
   );
   Timer? _heartbeatTimer;
   bool _sending = false;
@@ -1916,6 +1865,7 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
   bool _fieldFocused = false;
   bool _expanded = false;
   bool _reduceMotion = false;
+  bool _foreground = true;
 
   TextEditingController get _capture => widget.captureController;
   bool get isExpanded => _expanded;
@@ -1923,9 +1873,16 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fieldFocused = widget.focusNode.hasFocus;
     _expanded = _fieldFocused || _capture.text.trim().isNotEmpty;
     widget.focusNode.addListener(_handleFocusChanged);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    _syncPulseAnimation();
   }
 
   @override
@@ -1952,6 +1909,7 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     widget.focusNode.removeListener(_handleFocusChanged);
     _heartbeatTimer?.cancel();
     _pulseController.dispose();
@@ -1971,7 +1929,10 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
   void _syncPulseAnimation() {
     if (!mounted) return;
     final shouldPulse =
-        !_expanded && !_reduceMotion && TickerMode.valuesOf(context).enabled;
+        !_expanded &&
+        !_reduceMotion &&
+        _foreground &&
+        TickerMode.valuesOf(context).enabled;
     if (shouldPulse) {
       if (!_pulseController.isAnimating && _heartbeatTimer == null) {
         _playHeartbeat();
@@ -1989,14 +1950,20 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
     if (!mounted ||
         _expanded ||
         _reduceMotion ||
+        !_foreground ||
         !TickerMode.valuesOf(context).enabled) {
       return;
     }
     _pulseController.forward(from: 0).whenComplete(() {
       if (!mounted) return;
       _pulseController.value = 0;
-      if (_expanded || _reduceMotion) return;
-      _heartbeatTimer = Timer(const Duration(milliseconds: 2200), () {
+      if (_expanded ||
+          _reduceMotion ||
+          !_foreground ||
+          !TickerMode.valuesOf(context).enabled) {
+        return;
+      }
+      _heartbeatTimer = Timer(PerfectMotion.heartbeatRest, () {
         _heartbeatTimer = null;
         _playHeartbeat();
       });
@@ -4100,70 +4067,54 @@ class _TodayPage extends StatelessWidget {
           ),
           children: [
             PerfectStagedEntrance(
-              order: 0,
+              duration: PerfectMotion.standard,
+              rise: PerfectMotion.titleRise,
               child: _CompactTodayIntro(
                 now: nowProvider,
                 ownerDisplayName: ownerDisplayName,
               ),
             ),
             if (includeOrbit) ...[
-              PerfectStagedEntrance(
-                order: 1,
-                rise: 22,
-                child: SizedBox(
-                  height: orbitHeight,
-                  child: OverflowBox(
-                    alignment: Alignment.topCenter,
-                    minWidth: viewportOrbitWidth,
-                    maxWidth: viewportOrbitWidth,
-                    child: SizedBox(
-                      width: viewportOrbitWidth,
-                      height: orbitHeight,
-                      child: OrbitStage(
-                        items: items,
-                        compact: true,
-                        now: now,
-                        onTap: onOpenPlan,
-                        motionEnabled: orbitMotionEnabled,
-                      ),
+              SizedBox(
+                height: orbitHeight,
+                child: OverflowBox(
+                  alignment: Alignment.topCenter,
+                  minWidth: viewportOrbitWidth,
+                  maxWidth: viewportOrbitWidth,
+                  child: SizedBox(
+                    width: viewportOrbitWidth,
+                    height: orbitHeight,
+                    child: OrbitStage(
+                      items: items,
+                      compact: true,
+                      now: now,
+                      onTap: onOpenPlan,
+                      motionEnabled: orbitMotionEnabled,
                     ),
                   ),
                 ),
               ),
             ],
             const SizedBox(height: PerfectSpace.sm),
-            PerfectStagedEntrance(
-              order: 2,
-              child: _TodayNextUpCard(
-                now: now,
-                items: items,
-                onInspect: onInspect,
-              ),
-            ),
+            _TodayNextUpCard(now: now, items: items, onInspect: onInspect),
             const SizedBox(height: 0),
             if (items.isEmpty)
-              PerfectStagedEntrance(
-                order: 3,
-                child: _EmptyState(
-                  icon: Icons.wb_sunny_outlined,
-                  title: 'A quiet orbit.',
-                  body: 'Capture the first thing you want to make space for.',
-                  actionLabel: 'Add a task',
-                  onAction: onAdd,
-                ),
+              _EmptyState(
+                icon: Icons.wb_sunny_outlined,
+                title: 'A quiet orbit.',
+                body: 'Capture the first thing you want to make space for.',
+                actionLabel: 'Add a task',
+                onAction: onAdd,
               )
             else
               ...items.indexed.map(
-                (entry) => PerfectStagedEntrance(
-                  order: math.min(6, entry.$1 + 3),
-                  child: _AgendaRow(
-                    entity: entry.$2,
-                    controller: controller,
-                    onInspect: onInspect,
-                    todayEligibility: eligibilityById[entry.$2.id],
-                    habitSummary: habitSummaryById[entry.$2.id],
-                    referenceStyle: true,
-                  ),
+                (entry) => _AgendaRow(
+                  entity: entry.$2,
+                  controller: controller,
+                  onInspect: onInspect,
+                  todayEligibility: eligibilityById[entry.$2.id],
+                  habitSummary: habitSummaryById[entry.$2.id],
+                  referenceStyle: true,
                 ),
               ),
           ],
@@ -5787,7 +5738,7 @@ class _PageTitle extends StatelessWidget {
           children: [
             PerfectStagedEntrance(
               key: ValueKey<String>('page-title-$title'),
-              rise: 20,
+              rise: PerfectMotion.titleRise,
               scaleBegin: .99,
               child: Text(
                 title,
@@ -5798,7 +5749,7 @@ class _PageTitle extends StatelessWidget {
             PerfectStagedEntrance(
               key: ValueKey<String>('page-subtitle-$title'),
               order: 1,
-              rise: 12,
+              rise: PerfectMotion.titleRise,
               scaleBegin: .995,
               duration: PerfectMotion.standard,
               child: Text(
@@ -5813,7 +5764,7 @@ class _PageTitle extends StatelessWidget {
         PerfectStagedEntrance(
           key: ValueKey<String>('page-add-$title'),
           order: 1,
-          rise: 10,
+          rise: PerfectMotion.titleRise,
           scaleBegin: .96,
           duration: PerfectMotion.standard,
           child: IconButton.filled(
@@ -6541,7 +6492,7 @@ class _DesktopEntityContextRegionState
             onSecondaryTapUp: (details) =>
                 unawaited(_open(details.globalPosition)),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 120),
+              duration: PerfectMotion.responsive(context, PerfectMotion.quick),
               foregroundDecoration: _showFocus
                   ? BoxDecoration(
                       borderRadius: BorderRadius.circular(26),
@@ -6605,6 +6556,7 @@ Future<void> _showEntityContextMenu(
     context: context,
     position: position,
     semanticLabel: 'Actions for ${entity.title}',
+    popUpAnimationStyle: PerfectMotion.menuStyle(context),
     items: <PopupMenuEntry<_EntityContextAction>>[
       const PopupMenuItem<_EntityContextAction>(
         value: _EntityContextAction.inspect,
@@ -6844,7 +6796,7 @@ Future<void> _confirmArchiveEntity(
   required PlannerEntity entity,
   required PlannerWorkspaceController controller,
 }) async {
-  final confirmed = await showDialog<bool>(
+  final confirmed = await showPerfectDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
       title: Text(
@@ -7006,7 +6958,7 @@ Future<void> _showOneOffRecoverySheet(
   }
 
   if (_prefersBoundedDialog(context)) {
-    await showDialog<void>(
+    await showPerfectDialog<void>(
       context: context,
       builder: (dialogContext) => Dialog(
         clipBehavior: Clip.antiAlias,
@@ -7053,7 +7005,7 @@ Future<void> _showRecurringPercentageSheet(
   );
 
   if (_prefersBoundedDialog(context)) {
-    await showDialog<void>(
+    await showPerfectDialog<void>(
       context: context,
       builder: (dialogContext) => Dialog(
         clipBehavior: Clip.antiAlias,
@@ -7828,7 +7780,10 @@ class _HabitWeekStrip extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
+                          duration: PerfectMotion.responsive(
+                            context,
+                            PerfectMotion.standard,
+                          ),
                           width: 34,
                           height: 34,
                           alignment: Alignment.center,

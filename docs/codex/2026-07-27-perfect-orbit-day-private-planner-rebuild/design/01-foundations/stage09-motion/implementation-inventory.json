@@ -1,0 +1,1061 @@
+{
+  "schema": "perfect.motion.implementation-inventory.v1",
+  "generatedAt": "2026-08-13",
+  "scope": [
+    "lib/ai",
+    "lib/auth",
+    "lib/feedback/src/feedback_overlay.dart",
+    "lib/presentation"
+  ],
+  "recordCount": 131,
+  "records": [
+    {
+      "file": "lib/ai/perfect_ai_dock.dart",
+      "line": 207,
+      "owner": "PerfectAiDockState",
+      "primitive": "PerfectMotionSwitcher",
+      "role": "motion-composer",
+      "rationale": "Owned by PerfectAiDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/ai/perfect_ai_dock.dart",
+      "line": 232,
+      "owner": "PerfectAiDockState",
+      "primitive": "AnimatedSize",
+      "role": "motion-composer",
+      "rationale": "Owned by PerfectAiDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/ai/perfect_ai_dock.dart",
+      "line": 247,
+      "owner": "PerfectAiDockState",
+      "primitive": "PerfectInteractiveSurface",
+      "role": "motion-composer",
+      "rationale": "Owned by PerfectAiDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/ai/perfect_ai_dock.dart",
+      "line": 575,
+      "owner": "PerfectAiDockState",
+      "primitive": "PerfectMotionSwitcher",
+      "role": "motion-composer",
+      "rationale": "Owned by PerfectAiDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/ai/perfect_ai_dock.dart",
+      "line": 663,
+      "owner": "PerfectAiDockState",
+      "primitive": "PerfectMotionSwitcher",
+      "role": "motion-composer",
+      "rationale": "Owned by PerfectAiDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/ai/perfect_ai_dock.dart",
+      "line": 1046,
+      "owner": "PerfectAiDockState",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by PerfectAiDockState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/ai/perfect_ai_dock.dart",
+      "line": 1430,
+      "owner": "_BrandPulse",
+      "primitive": "AnimatedContainer",
+      "role": "motion-composer",
+      "rationale": "Owned by _BrandPulse; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/ai/perfect_ai_dock.dart",
+      "line": 1746,
+      "owner": "_StarterPathTile",
+      "primitive": "PerfectInteractiveSurface",
+      "role": "motion-composer",
+      "rationale": "Owned by _StarterPathTile; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/auth/auth_page.dart",
+      "line": 131,
+      "owner": "_AuthPageState",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _AuthPageState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/feedback/src/feedback_overlay.dart",
+      "line": 143,
+      "owner": "_ReadyFeedbackOverlayState",
+      "primitive": "GestureDetector",
+      "role": "motion-selector",
+      "rationale": "Owned by _ReadyFeedbackOverlayState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/feedback/src/feedback_overlay.dart",
+      "line": 232,
+      "owner": "_ReadyFeedbackOverlayState",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by _ReadyFeedbackOverlayState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/feedback/src/feedback_overlay.dart",
+      "line": 264,
+      "owner": "_ReadyFeedbackOverlayState",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _ReadyFeedbackOverlayState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/feedback/src/feedback_overlay.dart",
+      "line": 426,
+      "owner": "_FeedbackEdgeTabState",
+      "primitive": "InkWell",
+      "role": "motion-selector",
+      "rationale": "Owned by _FeedbackEdgeTabState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/feedback/src/feedback_overlay.dart",
+      "line": 442,
+      "owner": "_FeedbackEdgeTabState",
+      "primitive": "TweenAnimationBuilder",
+      "role": "motion-selector",
+      "rationale": "Owned by _FeedbackEdgeTabState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/feedback/src/feedback_overlay.dart",
+      "line": 452,
+      "owner": "_FeedbackEdgeTabState",
+      "primitive": "AnimatedContainer",
+      "role": "motion-selector",
+      "rationale": "Owned by _FeedbackEdgeTabState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/feedback/src/feedback_overlay.dart",
+      "line": 746,
+      "owner": "ReadyFeedbackEntriesSheet",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by ReadyFeedbackEntriesSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/feedback/src/feedback_overlay.dart",
+      "line": 909,
+      "owner": "_FeedbackEntriesBodyState",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _FeedbackEntriesBodyState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/feedback/src/feedback_overlay.dart",
+      "line": 940,
+      "owner": "_FeedbackEntriesBodyState",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _FeedbackEntriesBodyState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/feedback/src/feedback_overlay.dart",
+      "line": 1006,
+      "owner": "_FeedbackEntriesBodyState",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _FeedbackEntriesBodyState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/feedback/src/feedback_overlay.dart",
+      "line": 1045,
+      "owner": "_FeedbackEntriesBodyState",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _FeedbackEntriesBodyState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/focus_session_sheet.dart",
+      "line": 26,
+      "owner": "FocusSessionSheet",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by FocusSessionSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/focus_session_sheet.dart",
+      "line": 44,
+      "owner": "FocusSessionSheet",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by FocusSessionSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/orbit_stage.dart",
+      "line": 42,
+      "owner": "_OrbitStageState",
+      "primitive": "AnimationController",
+      "role": "motion-status-log",
+      "rationale": "Owned by _OrbitStageState; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/orbit_stage.dart",
+      "line": 46,
+      "owner": "_OrbitStageState",
+      "primitive": "AnimationController",
+      "role": "motion-status-log",
+      "rationale": "Owned by _OrbitStageState; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/orbit_stage.dart",
+      "line": 231,
+      "owner": "_OrbitStageState",
+      "primitive": "AnimatedBuilder",
+      "role": "motion-status-log",
+      "rationale": "Owned by _OrbitStageState; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/orbit_stage.dart",
+      "line": 331,
+      "owner": "_OrbitStageState",
+      "primitive": "AnimatedScale",
+      "role": "motion-status-log",
+      "rationale": "Owned by _OrbitStageState; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/orbit_stage.dart",
+      "line": 336,
+      "owner": "_OrbitStageState",
+      "primitive": "AnimatedContainer",
+      "role": "motion-status-log",
+      "rationale": "Owned by _OrbitStageState; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/orbit_stage.dart",
+      "line": 365,
+      "owner": "_OrbitStageState",
+      "primitive": "InkWell",
+      "role": "motion-status-log",
+      "rationale": "Owned by _OrbitStageState; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 167,
+      "owner": "_PerfectDialogTransition",
+      "primitive": "AnimatedBuilder",
+      "role": "motion-selector",
+      "rationale": "Owned by _PerfectDialogTransition; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 388,
+      "owner": "PerfectMotionSwitcher",
+      "primitive": "PerfectMotionSwitcher",
+      "role": "motion-selector",
+      "rationale": "Owned by PerfectMotionSwitcher; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 405,
+      "owner": "PerfectMotionSwitcher",
+      "primitive": "AnimatedSwitcherLayoutBuilder",
+      "role": "motion-responsive-resize",
+      "rationale": "Owned by PerfectMotionSwitcher; uses the responsive-resize continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 413,
+      "owner": "PerfectMotionSwitcher",
+      "primitive": "AnimatedSwitcher",
+      "role": "motion-selector",
+      "rationale": "Owned by PerfectMotionSwitcher; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 494,
+      "owner": "_PerfectPersistentDestinationHostState",
+      "primitive": "AnimationController",
+      "role": "motion-route",
+      "rationale": "Owned by _PerfectPersistentDestinationHostState; uses the route continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 597,
+      "owner": "_PerfectPersistentDestinationHostState",
+      "primitive": "AnimatedBuilder",
+      "role": "motion-route",
+      "rationale": "Owned by _PerfectPersistentDestinationHostState; uses the route continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 700,
+      "owner": "PerfectStagedEntrance",
+      "primitive": "PerfectStagedEntrance",
+      "role": "motion-title",
+      "rationale": "Owned by PerfectStagedEntrance; uses the title continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 718,
+      "owner": "PerfectStagedEntrance",
+      "primitive": "PerfectStagedEntrance",
+      "role": "motion-title",
+      "rationale": "Owned by PerfectStagedEntrance; uses the title continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 721,
+      "owner": "_PerfectStagedEntranceState",
+      "primitive": "PerfectStagedEntrance",
+      "role": "motion-title",
+      "rationale": "Owned by _PerfectStagedEntranceState; uses the title continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 723,
+      "owner": "_PerfectStagedEntranceState",
+      "primitive": "AnimationController",
+      "role": "motion-title",
+      "rationale": "Owned by _PerfectStagedEntranceState; uses the title continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 783,
+      "owner": "_PerfectStagedEntranceState",
+      "primitive": "AnimatedBuilder",
+      "role": "motion-title",
+      "rationale": "Owned by _PerfectStagedEntranceState; uses the title continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 911,
+      "owner": "PerfectInteractiveSurface",
+      "primitive": "PerfectInteractiveSurface",
+      "role": "motion-selector",
+      "rationale": "Owned by PerfectInteractiveSurface; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 960,
+      "owner": "PerfectInteractiveSurface",
+      "primitive": "PerfectInteractiveSurface",
+      "role": "motion-selector",
+      "rationale": "Owned by PerfectInteractiveSurface; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 964,
+      "owner": "_PerfectInteractiveSurfaceState",
+      "primitive": "PerfectInteractiveSurface",
+      "role": "motion-selector",
+      "rationale": "Owned by _PerfectInteractiveSurfaceState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 977,
+      "owner": "_PerfectInteractiveSurfaceState",
+      "primitive": "PerfectInteractiveSurface",
+      "role": "motion-selector",
+      "rationale": "Owned by _PerfectInteractiveSurfaceState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 1122,
+      "owner": "_PerfectInteractiveSurfaceState",
+      "primitive": "TweenAnimationBuilder",
+      "role": "motion-selector",
+      "rationale": "Owned by _PerfectInteractiveSurfaceState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 1140,
+      "owner": "_PerfectInteractiveSurfaceState",
+      "primitive": "AnimatedContainer",
+      "role": "motion-selector",
+      "rationale": "Owned by _PerfectInteractiveSurfaceState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 1161,
+      "owner": "_PerfectInteractiveSurfaceState",
+      "primitive": "InkWell",
+      "role": "motion-selector",
+      "rationale": "Owned by _PerfectInteractiveSurfaceState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_motion.dart",
+      "line": 1179,
+      "owner": "_PerfectInteractiveSurfaceState",
+      "primitive": "AnimatedDefaultTextStyle",
+      "role": "motion-selector",
+      "rationale": "Owned by _PerfectInteractiveSurfaceState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_sync_indicator.dart",
+      "line": 33,
+      "owner": "_PerfectSyncIndicatorState",
+      "primitive": "AnimationController",
+      "role": "motion-sync",
+      "rationale": "Owned by _PerfectSyncIndicatorState; uses the sync continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_sync_indicator.dart",
+      "line": 211,
+      "owner": "_PerfectSyncIndicatorState",
+      "primitive": "TweenAnimationBuilder",
+      "role": "motion-sync",
+      "rationale": "Owned by _PerfectSyncIndicatorState; uses the sync continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_sync_indicator.dart",
+      "line": 217,
+      "owner": "_PerfectSyncIndicatorState",
+      "primitive": "AnimatedContainer",
+      "role": "motion-sync",
+      "rationale": "Owned by _PerfectSyncIndicatorState; uses the sync continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_sync_indicator.dart",
+      "line": 246,
+      "owner": "_PerfectSyncIndicatorState",
+      "primitive": "InkWell",
+      "role": "motion-sync",
+      "rationale": "Owned by _PerfectSyncIndicatorState; uses the sync continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_sync_indicator.dart",
+      "line": 285,
+      "owner": "_PerfectSyncIndicatorState",
+      "primitive": "AnimatedSwitcher",
+      "role": "motion-sync",
+      "rationale": "Owned by _PerfectSyncIndicatorState; uses the sync continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_sync_indicator.dart",
+      "line": 349,
+      "owner": "_PerfectSyncIndicatorState",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by _PerfectSyncIndicatorState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_sync_indicator.dart",
+      "line": 367,
+      "owner": "_PerfectSyncIndicatorState",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _PerfectSyncIndicatorState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_sync_indicator.dart",
+      "line": 564,
+      "owner": "_SyncCloudMark",
+      "primitive": "AnimatedBuilder",
+      "role": "motion-sync",
+      "rationale": "Owned by _SyncCloudMark; uses the sync continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_theme.dart",
+      "line": 1185,
+      "owner": "PerfectPageTransitionsBuilder",
+      "primitive": "AnimatedBuilder",
+      "role": "motion-route",
+      "rationale": "Owned by PerfectPageTransitionsBuilder; uses the route continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_today_widget_settings_sheet.dart",
+      "line": 17,
+      "owner": "PerfectTodayWidgetSettingsSheet",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by PerfectTodayWidgetSettingsSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_today_widget_settings_sheet.dart",
+      "line": 36,
+      "owner": "PerfectTodayWidgetSettingsSheet",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by PerfectTodayWidgetSettingsSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 313,
+      "owner": "_PerfectWorkspacePageState",
+      "primitive": "AnimatedBuilder",
+      "role": "motion-selector",
+      "rationale": "Owned by _PerfectWorkspacePageState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 1062,
+      "owner": "_InspectorMotionPane",
+      "primitive": "PerfectMotionSwitcher",
+      "role": "motion-inspector",
+      "rationale": "Owned by _InspectorMotionPane; uses the inspector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 1273,
+      "owner": "_PaneDividerState",
+      "primitive": "FocusableActionDetector",
+      "role": "motion-responsive-resize",
+      "rationale": "Owned by _PaneDividerState; uses the responsive-resize continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 1292,
+      "owner": "_PaneDividerState",
+      "primitive": "GestureDetector",
+      "role": "motion-responsive-resize",
+      "rationale": "Owned by _PaneDividerState; uses the responsive-resize continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 1307,
+      "owner": "_PaneDividerState",
+      "primitive": "AnimatedContainer",
+      "role": "motion-responsive-resize",
+      "rationale": "Owned by _PaneDividerState; uses the responsive-resize continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 1443,
+      "owner": "_NavigationRail",
+      "primitive": "AnimatedContainer",
+      "role": "motion-navigation",
+      "rationale": "Owned by _NavigationRail; uses the navigation continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 1474,
+      "owner": "_NavigationRail",
+      "primitive": "AnimatedSwitcher",
+      "role": "motion-navigation",
+      "rationale": "Owned by _NavigationRail; uses the navigation continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 1509,
+      "owner": "_NavigationRail",
+      "primitive": "AnimatedRotation",
+      "role": "motion-navigation",
+      "rationale": "Owned by _NavigationRail; uses the navigation continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 1689,
+      "owner": "_CompactDestinationGlyph",
+      "primitive": "TweenAnimationBuilder",
+      "role": "motion-navigation",
+      "rationale": "Owned by _CompactDestinationGlyph; uses the navigation continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 1858,
+      "owner": "_QuickCaptureDockState",
+      "primitive": "AnimationController",
+      "role": "motion-composer",
+      "rationale": "Owned by _QuickCaptureDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2036,
+      "owner": "_QuickCaptureDockState",
+      "primitive": "AnimatedSize",
+      "role": "motion-composer",
+      "rationale": "Owned by _QuickCaptureDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2044,
+      "owner": "_QuickCaptureDockState",
+      "primitive": "TweenAnimationBuilder",
+      "role": "motion-composer",
+      "rationale": "Owned by _QuickCaptureDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2107,
+      "owner": "_QuickCaptureDockState",
+      "primitive": "MouseRegion",
+      "role": "motion-composer",
+      "rationale": "Owned by _QuickCaptureDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2111,
+      "owner": "_QuickCaptureDockState",
+      "primitive": "AnimatedBuilder",
+      "role": "motion-composer",
+      "rationale": "Owned by _QuickCaptureDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2152,
+      "owner": "_QuickCaptureDockState",
+      "primitive": "InkWell",
+      "role": "motion-composer",
+      "rationale": "Owned by _QuickCaptureDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2372,
+      "owner": "_QuickCaptureDockState",
+      "primitive": "MouseRegion",
+      "role": "motion-composer",
+      "rationale": "Owned by _QuickCaptureDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2376,
+      "owner": "_QuickCaptureDockState",
+      "primitive": "AnimatedScale",
+      "role": "motion-composer",
+      "rationale": "Owned by _QuickCaptureDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2466,
+      "owner": "_QuickCaptureDockState",
+      "primitive": "AnimatedContainer",
+      "role": "motion-composer",
+      "rationale": "Owned by _QuickCaptureDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2524,
+      "owner": "_QuickCaptureDockState",
+      "primitive": "AnimatedSwitcher",
+      "role": "motion-composer",
+      "rationale": "Owned by _QuickCaptureDockState; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2638,
+      "owner": "_CaptureOptionButton",
+      "primitive": "AnimatedContainer",
+      "role": "motion-composer",
+      "rationale": "Owned by _CaptureOptionButton; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2677,
+      "owner": "_CaptureOptionButton",
+      "primitive": "InkWell",
+      "role": "motion-composer",
+      "rationale": "Owned by _CaptureOptionButton; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2745,
+      "owner": "_CaptureOptionIconPlate",
+      "primitive": "AnimatedContainer",
+      "role": "motion-composer",
+      "rationale": "Owned by _CaptureOptionIconPlate; uses the composer continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 2960,
+      "owner": "_ExpandedTodayDeck",
+      "primitive": "GestureDetector",
+      "role": "motion-selector",
+      "rationale": "Owned by _ExpandedTodayDeck; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 4069,
+      "owner": "_TodayPage",
+      "primitive": "PerfectStagedEntrance",
+      "role": "motion-title",
+      "rationale": "Owned by _TodayPage; uses the title continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 4296,
+      "owner": "_TodayNextUpCard",
+      "primitive": "InkWell",
+      "role": "motion-selector",
+      "rationale": "Owned by _TodayNextUpCard; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 4569,
+      "owner": "_TaskFilterDeck",
+      "primitive": "InkWell",
+      "role": "motion-selector",
+      "rationale": "Owned by _TaskFilterDeck; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 4651,
+      "owner": "_TaskFilterDeck",
+      "primitive": "AnimatedRotation",
+      "role": "motion-selector",
+      "rationale": "Owned by _TaskFilterDeck; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 4684,
+      "owner": "_TaskFilterDeck",
+      "primitive": "AnimatedSwitcher",
+      "role": "motion-selector",
+      "rationale": "Owned by _TaskFilterDeck; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 5168,
+      "owner": "_PlannerDayChip",
+      "primitive": "InkWell",
+      "role": "motion-selector",
+      "rationale": "Owned by _PlannerDayChip; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 5171,
+      "owner": "_PlannerDayChip",
+      "primitive": "AnimatedContainer",
+      "role": "motion-selector",
+      "rationale": "Owned by _PlannerDayChip; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 5633,
+      "owner": "_MoreCommandTile",
+      "primitive": "InkWell",
+      "role": "motion-selector",
+      "rationale": "Owned by _MoreCommandTile; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 5739,
+      "owner": "_PageTitle",
+      "primitive": "PerfectStagedEntrance",
+      "role": "motion-title",
+      "rationale": "Owned by _PageTitle; uses the title continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 5749,
+      "owner": "_PageTitle",
+      "primitive": "PerfectStagedEntrance",
+      "role": "motion-title",
+      "rationale": "Owned by _PageTitle; uses the title continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 5764,
+      "owner": "_PageTitle",
+      "primitive": "PerfectStagedEntrance",
+      "role": "motion-title",
+      "rationale": "Owned by _PageTitle; uses the title continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 5841,
+      "owner": "_AgendaRow",
+      "primitive": "InkWell",
+      "role": "motion-status-log",
+      "rationale": "Owned by _AgendaRow; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 5909,
+      "owner": "_AgendaRow",
+      "primitive": "InkWell",
+      "role": "motion-status-log",
+      "rationale": "Owned by _AgendaRow; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 6228,
+      "owner": "_ReferenceAgendaRow",
+      "primitive": "InkWell",
+      "role": "motion-status-log",
+      "rationale": "Owned by _ReferenceAgendaRow; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 6269,
+      "owner": "_ReferenceAgendaRow",
+      "primitive": "InkWell",
+      "role": "motion-status-log",
+      "rationale": "Owned by _ReferenceAgendaRow; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 6459,
+      "owner": "_DesktopEntityContextRegionState",
+      "primitive": "FocusableActionDetector",
+      "role": "motion-status-log",
+      "rationale": "Owned by _DesktopEntityContextRegionState; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 6488,
+      "owner": "_DesktopEntityContextRegionState",
+      "primitive": "GestureDetector",
+      "role": "motion-selector",
+      "rationale": "Owned by _DesktopEntityContextRegionState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 6494,
+      "owner": "_DesktopEntityContextRegionState",
+      "primitive": "AnimatedContainer",
+      "role": "motion-selector",
+      "rationale": "Owned by _DesktopEntityContextRegionState; uses the selector continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 6555,
+      "owner": "_DesktopEntityContextRegionState",
+      "primitive": "showMenu",
+      "role": "motion-overlay",
+      "rationale": "Owned by _DesktopEntityContextRegionState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 6799,
+      "owner": "_ContextMenuLabel",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _ContextMenuLabel; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 6961,
+      "owner": "_ContextMenuLabel",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _ContextMenuLabel; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 6981,
+      "owner": "_ContextMenuLabel",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by _ContextMenuLabel; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 7008,
+      "owner": "_ContextMenuLabel",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _ContextMenuLabel; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 7028,
+      "owner": "_ContextMenuLabel",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by _ContextMenuLabel; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 7279,
+      "owner": "_AgendaCompletionButton",
+      "primitive": "AnimatedSwitcher",
+      "role": "motion-status-log",
+      "rationale": "Owned by _AgendaCompletionButton; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 7405,
+      "owner": "_HabitCard",
+      "primitive": "InkWell",
+      "role": "motion-status-log",
+      "rationale": "Owned by _HabitCard; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 7564,
+      "owner": "_HabitDayStatus",
+      "primitive": "InkWell",
+      "role": "motion-status-log",
+      "rationale": "Owned by _HabitDayStatus; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/perfect_workspace_page.dart",
+      "line": 7782,
+      "owner": "_HabitWeekStrip",
+      "primitive": "AnimatedContainer",
+      "role": "motion-status-log",
+      "rationale": "Owned by _HabitWeekStrip; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_archive_sheet.dart",
+      "line": 20,
+      "owner": "PlannerArchiveSheet",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by PlannerArchiveSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_archive_sheet.dart",
+      "line": 39,
+      "owner": "PlannerArchiveSheet",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by PlannerArchiveSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_conflict_center_sheet.dart",
+      "line": 19,
+      "owner": "PlannerConflictCenterSheet",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by PlannerConflictCenterSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_conflict_center_sheet.dart",
+      "line": 38,
+      "owner": "PlannerConflictCenterSheet",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by PlannerConflictCenterSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_editor.dart",
+      "line": 56,
+      "owner": "PlannerEditor",
+      "primitive": "PageRouteBuilder",
+      "role": "motion-route",
+      "rationale": "Owned by PlannerEditor; uses the route continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_editor.dart",
+      "line": 68,
+      "owner": "PlannerEditor",
+      "primitive": "AnimatedBuilder",
+      "role": "motion-wizard",
+      "rationale": "Owned by PlannerEditor; uses the wizard continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_editor.dart",
+      "line": 840,
+      "owner": "_PlannerEditorState",
+      "primitive": "AnimatedContainer",
+      "role": "motion-wizard",
+      "rationale": "Owned by _PlannerEditorState; uses the wizard continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_editor.dart",
+      "line": 894,
+      "owner": "_PlannerEditorState",
+      "primitive": "PerfectInteractiveSurface",
+      "role": "motion-wizard",
+      "rationale": "Owned by _PlannerEditorState; uses the wizard continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_editor.dart",
+      "line": 906,
+      "owner": "_PlannerEditorState",
+      "primitive": "AnimatedContainer",
+      "role": "motion-wizard",
+      "rationale": "Owned by _PlannerEditorState; uses the wizard continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_editor.dart",
+      "line": 972,
+      "owner": "_PlannerEditorState",
+      "primitive": "AnimatedSwitcher",
+      "role": "motion-wizard",
+      "rationale": "Owned by _PlannerEditorState; uses the wizard continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_editor.dart",
+      "line": 1246,
+      "owner": "_PlannerEditorState",
+      "primitive": "PerfectInteractiveSurface",
+      "role": "motion-wizard",
+      "rationale": "Owned by _PlannerEditorState; uses the wizard continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_editor.dart",
+      "line": 1279,
+      "owner": "_PlannerEditorState",
+      "primitive": "AnimatedSwitcher",
+      "role": "motion-wizard",
+      "rationale": "Owned by _PlannerEditorState; uses the wizard continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_editor.dart",
+      "line": 2472,
+      "owner": "_PlannerEditorState",
+      "primitive": "PerfectInteractiveSurface",
+      "role": "motion-wizard",
+      "rationale": "Owned by _PlannerEditorState; uses the wizard continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_editor.dart",
+      "line": 3575,
+      "owner": "_PlannerEditorState",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _PlannerEditorState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_habit_log_sheet.dart",
+      "line": 28,
+      "owner": "PlannerHabitLogSheet",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by PlannerHabitLogSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_habit_log_sheet.dart",
+      "line": 35,
+      "owner": "PlannerHabitLogSheet",
+      "primitive": "GestureDetector",
+      "role": "motion-status-log",
+      "rationale": "Owned by PlannerHabitLogSheet; uses the status-log continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_habit_log_sheet.dart",
+      "line": 44,
+      "owner": "PlannerHabitLogSheet",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by PlannerHabitLogSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_habit_log_sheet.dart",
+      "line": 319,
+      "owner": "_PlannerHabitLogSheetState",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by _PlannerHabitLogSheetState; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_insights_sheet.dart",
+      "line": 19,
+      "owner": "PlannerInsightsSheet",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by PlannerInsightsSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_insights_sheet.dart",
+      "line": 38,
+      "owner": "PlannerInsightsSheet",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by PlannerInsightsSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_reminder_settings_sheet.dart",
+      "line": 19,
+      "owner": "PlannerReminderSettingsSheet",
+      "primitive": "showPerfectDialog",
+      "role": "motion-overlay",
+      "rationale": "Owned by PlannerReminderSettingsSheet; uses the overlay continuity contract."
+    },
+    {
+      "file": "lib/presentation/planner_reminder_settings_sheet.dart",
+      "line": 38,
+      "owner": "PlannerReminderSettingsSheet",
+      "primitive": "showModalBottomSheet",
+      "role": "motion-overlay",
+      "rationale": "Owned by PlannerReminderSettingsSheet; uses the overlay continuity contract."
+    }
+  ]
+}

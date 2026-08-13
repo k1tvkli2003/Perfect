@@ -1,0 +1,2 @@
+--------- beginning of main
+08-13 06:07:49.380 31369 31369 I flutter : PERFECT_FRAME_TIMINGS_V1 9620:5306:17747

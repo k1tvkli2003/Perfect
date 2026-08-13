@@ -37,14 +37,15 @@ class OrbitStage extends StatefulWidget {
   State<OrbitStage> createState() => _OrbitStageState();
 }
 
-class _OrbitStageState extends State<OrbitStage> with TickerProviderStateMixin {
+class _OrbitStageState extends State<OrbitStage>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _revealController = AnimationController(
     vsync: this,
     duration: PerfectMotion.modal,
   );
   late final AnimationController _pulseController = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1500),
+    duration: PerfectMotion.calmLoop,
   );
   Timer? _pulseTimer;
   bool _motionStarted = false;
@@ -52,6 +53,19 @@ class _OrbitStageState extends State<OrbitStage> with TickerProviderStateMixin {
   bool _hovered = false;
   bool _focused = false;
   bool _pressed = false;
+  bool _foreground = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    _syncMotion();
+  }
 
   @override
   void didChangeDependencies() {
@@ -64,6 +78,7 @@ class _OrbitStageState extends State<OrbitStage> with TickerProviderStateMixin {
     final shouldAnimate =
         widget.motionEnabled &&
         !_reduceMotion &&
+        _foreground &&
         TickerMode.valuesOf(context).enabled;
     if (!shouldAnimate) {
       _pulseTimer?.cancel();
@@ -102,6 +117,7 @@ class _OrbitStageState extends State<OrbitStage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pulseTimer?.cancel();
     _revealController.dispose();
     _pulseController.dispose();
@@ -112,14 +128,20 @@ class _OrbitStageState extends State<OrbitStage> with TickerProviderStateMixin {
     if (!mounted ||
         !widget.motionEnabled ||
         _reduceMotion ||
+        !_foreground ||
         !TickerMode.valuesOf(context).enabled) {
       return;
     }
     _pulseController.forward(from: 0).whenComplete(() {
       if (!mounted) return;
       _pulseController.value = .5;
-      if (_reduceMotion) return;
-      _pulseTimer = Timer(const Duration(milliseconds: 2100), () {
+      if (_reduceMotion ||
+          !_foreground ||
+          !widget.motionEnabled ||
+          !TickerMode.valuesOf(context).enabled) {
+        return;
+      }
+      _pulseTimer = Timer(PerfectMotion.heartbeatRest, () {
         _pulseTimer = null;
         _playPulseBurst();
       });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:perfect/app/app_config.dart';
 import 'package:perfect/auth/private_owner_identity.dart';
 import 'package:perfect/presentation/perfect_brand.dart';
+import 'package:perfect/presentation/perfect_motion.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -127,7 +128,7 @@ class _AuthPageState extends State<AuthPage> {
   Future<void> _changeConnection() async {
     final onChangeConnection = widget.onChangeConnection;
     if (onChangeConnection == null || _busy) return;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showPerfectDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Change this device’s connection?'),

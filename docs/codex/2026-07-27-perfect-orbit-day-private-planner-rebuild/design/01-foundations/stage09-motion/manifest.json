@@ -1,0 +1,213 @@
+{
+  "schema": "perfect.motion.storyboards.v1",
+  "generatedAt": "2026-08-13",
+  "authority": "fnd-motion + Stage 09 runtime contract",
+  "frameOrder": [
+    "first",
+    "mid",
+    "end",
+    "reverse",
+    "interrupted",
+    "reduced"
+  ],
+  "roles": [
+    {
+      "id": "motion-route",
+      "title": "Route hand-off",
+      "intent": "Destination order remains legible while retained route state stays offstage.",
+      "token": "route",
+      "durationMs": 380,
+      "reverseMs": 240,
+      "travel": "Navigator routes travel 14px; workspace hand-offs use one isolated 8px edge cue",
+      "focus": "Destination owns focus only after it exists; outgoing route is inert immediately.",
+      "budget": "Only the selected route paints; the isolated edge cue never revives an offstage route.",
+      "curve": "PerfectMotion.enter / PerfectMotion.exit",
+      "reduced": "Duration.zero for spatial movement; final geometry and equal semantic feedback remain.",
+      "background": "Pause decorative tickers offstage/background; resume from durable current truth.",
+      "files": {
+        "svg": "storyboards/motion-route.svg",
+        "png": "storyboards/motion-route.png"
+      }
+    },
+    {
+      "id": "motion-title",
+      "title": "Title orientation",
+      "intent": "A meaningful page entry gets one quiet orientation beat.",
+      "token": "emphasized",
+      "durationMs": 320,
+      "reverseMs": 140,
+      "travel": "10px rise, 0.985→1 scale, no bounce",
+      "focus": "Title never steals focus and never replays on sync or notifier rebuild.",
+      "budget": "Paint-only transform/opacity; subtree isolated and disposed when complete.",
+      "curve": "PerfectMotion.enter / PerfectMotion.exit",
+      "reduced": "Duration.zero for spatial movement; final geometry and equal semantic feedback remain.",
+      "background": "Pause decorative tickers offstage/background; resume from durable current truth.",
+      "files": {
+        "svg": "storyboards/motion-title.svg",
+        "png": "storyboards/motion-title.png"
+      }
+    },
+    {
+      "id": "motion-navigation",
+      "title": "Footer and rail selection",
+      "intent": "Selection acknowledgement travels without changing hit geometry.",
+      "token": "quick",
+      "durationMs": 140,
+      "reverseMs": 140,
+      "travel": "Lens/material interpolation inside a fixed 48dp target",
+      "focus": "Keyboard focus and selected semantics remain distinct and visible.",
+      "budget": "Only the selected glyph and edge cue repaint; destination-row geometry stays fixed.",
+      "curve": "PerfectMotion.enter / PerfectMotion.exit",
+      "reduced": "Duration.zero for spatial movement; final geometry and equal semantic feedback remain.",
+      "background": "Pause decorative tickers offstage/background; resume from durable current truth.",
+      "files": {
+        "svg": "storyboards/motion-navigation.svg",
+        "png": "storyboards/motion-navigation.png"
+      }
+    },
+    {
+      "id": "motion-composer",
+      "title": "Composer morph",
+      "intent": "One capture instrument changes jobs without losing draft or focus.",
+      "token": "emphasized",
+      "durationMs": 320,
+      "reverseMs": 240,
+      "travel": "Bounded height/shape morph with 8px content hand-off",
+      "focus": "IME opens only after explicit field focus; mode switches preserve the draft.",
+      "budget": "One live composer subtree after settle; old glass layer removed by end frame.",
+      "curve": "PerfectMotion.enter / PerfectMotion.exit",
+      "reduced": "Duration.zero for spatial movement; final geometry and equal semantic feedback remain.",
+      "background": "Pause decorative tickers offstage/background; resume from durable current truth.",
+      "files": {
+        "svg": "storyboards/motion-composer.svg",
+        "png": "storyboards/motion-composer.png"
+      }
+    },
+    {
+      "id": "motion-selector",
+      "title": "Selector state",
+      "intent": "Color, material and indicator explain selection without a checkmark crutch.",
+      "token": "quick",
+      "durationMs": 140,
+      "reverseMs": 140,
+      "travel": "No positional travel; color/shape/indicator interpolate in place",
+      "focus": "Control is interactive for the entire transition and announces final state once.",
+      "budget": "Paint-only transition; surrounding layout and label bounds remain stable.",
+      "curve": "PerfectMotion.enter / PerfectMotion.exit",
+      "reduced": "Duration.zero for spatial movement; final geometry and equal semantic feedback remain.",
+      "background": "Pause decorative tickers offstage/background; resume from durable current truth.",
+      "files": {
+        "svg": "storyboards/motion-selector.svg",
+        "png": "storyboards/motion-selector.png"
+      }
+    },
+    {
+      "id": "motion-status-log",
+      "title": "Status and log receipt",
+      "intent": "Rapid outcomes feel tactile while one durable mutation remains authoritative.",
+      "token": "feedback",
+      "durationMs": 600,
+      "reverseMs": 240,
+      "travel": "90ms press, 140ms arc/fill, bounded receipt then Undo",
+      "focus": "Rapid taps coalesce; Undo targets the latest committed local mutation.",
+      "budget": "Only the affected row repaints; no duplicate snackbar, sheet or write.",
+      "curve": "PerfectMotion.enter / PerfectMotion.exit",
+      "reduced": "Duration.zero for spatial movement; final geometry and equal semantic feedback remain.",
+      "background": "Pause decorative tickers offstage/background; resume from durable current truth.",
+      "files": {
+        "svg": "storyboards/motion-status-log.svg",
+        "png": "storyboards/motion-status-log.png"
+      }
+    },
+    {
+      "id": "motion-sync",
+      "title": "Sync confidence",
+      "intent": "Background work stays calm, bounded and truthful.",
+      "token": "standard",
+      "durationMs": 240,
+      "reverseMs": 140,
+      "travel": "Small orbital activity only while work is active; symbol/label crossfade",
+      "focus": "State details remain reachable; color is never the only signal.",
+      "budget": "Ticker is paused offstage/background and absent when converged or reduced.",
+      "curve": "PerfectMotion.enter / PerfectMotion.exit",
+      "reduced": "Duration.zero for spatial movement; final geometry and equal semantic feedback remain.",
+      "background": "Pause decorative tickers offstage/background; resume from durable current truth.",
+      "files": {
+        "svg": "storyboards/motion-sync.svg",
+        "png": "storyboards/motion-sync.png"
+      }
+    },
+    {
+      "id": "motion-overlay",
+      "title": "Dialog, sheet and menu",
+      "intent": "Temporary hierarchy appears from its spatial origin, not a stock surprise.",
+      "token": "modal",
+      "durationMs": 360,
+      "reverseMs": 240,
+      "travel": "Dialog 12px/0.96; sheet bounded vertical; menu anchored scale/fade",
+      "focus": "Barrier and focus trap activate with the route; invoking focus restores on close.",
+      "budget": "One overlay route and one composited surface; no duplicate child entrance.",
+      "curve": "PerfectMotion.enter / PerfectMotion.exit",
+      "reduced": "Duration.zero for spatial movement; final geometry and equal semantic feedback remain.",
+      "background": "Pause decorative tickers offstage/background; resume from durable current truth.",
+      "files": {
+        "svg": "storyboards/motion-overlay.svg",
+        "png": "storyboards/motion-overlay.png"
+      }
+    },
+    {
+      "id": "motion-inspector",
+      "title": "Inspector continuity",
+      "intent": "Selected entity and inspector remain visibly connected.",
+      "token": "route",
+      "durationMs": 380,
+      "reverseMs": 240,
+      "travel": "16px edge hand-off; selected row remains stationary",
+      "focus": "Desktop focus enters inspector only by explicit action; Escape restores context.",
+      "budget": "Inspector alone animates; list scroll anchor and row identity remain stable.",
+      "curve": "PerfectMotion.enter / PerfectMotion.exit",
+      "reduced": "Duration.zero for spatial movement; final geometry and equal semantic feedback remain.",
+      "background": "Pause decorative tickers offstage/background; resume from durable current truth.",
+      "files": {
+        "svg": "storyboards/motion-inspector.svg",
+        "png": "storyboards/motion-inspector.png"
+      }
+    },
+    {
+      "id": "motion-wizard",
+      "title": "Wizard progression",
+      "intent": "Decision order is visible while shared chrome never jumps.",
+      "token": "standard",
+      "durationMs": 240,
+      "reverseMs": 240,
+      "travel": "12px signed shared axis inside stable wizard chrome",
+      "focus": "First invalid field receives focus only after the destination step exists.",
+      "budget": "Only old/new step bodies coexist; header, footer and draft model remain single.",
+      "curve": "PerfectMotion.enter / PerfectMotion.exit",
+      "reduced": "Duration.zero for spatial movement; final geometry and equal semantic feedback remain.",
+      "background": "Pause decorative tickers offstage/background; resume from durable current truth.",
+      "files": {
+        "svg": "storyboards/motion-wizard.svg",
+        "png": "storyboards/motion-wizard.png"
+      }
+    },
+    {
+      "id": "motion-responsive-resize",
+      "title": "Responsive recomposition",
+      "intent": "Window class changes preserve work instead of staging a theatrical route.",
+      "token": "standard",
+      "durationMs": 240,
+      "reverseMs": 240,
+      "travel": "Constraint-led pane interpolation; no page translation",
+      "focus": "Draft, focus, selection and scroll survive every crossed breakpoint.",
+      "budget": "No retained duplicate glass trees; continuous resize remains directly responsive.",
+      "curve": "PerfectMotion.enter / PerfectMotion.exit",
+      "reduced": "Duration.zero for spatial movement; final geometry and equal semantic feedback remain.",
+      "background": "Pause decorative tickers offstage/background; resume from durable current truth.",
+      "files": {
+        "svg": "storyboards/motion-responsive-resize.svg",
+        "png": "storyboards/motion-responsive-resize.png"
+      }
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+{
+  "schema": "perfect.motion.profile-summary.v1",
+  "generatedAt": "2026-08-13",
+  "environment": {
+    "device": "Android emulator emulator-5554",
+    "api": 35,
+    "viewport": "1080x2400@60Hz",
+    "flutterRenderer": "skiagl",
+    "package": "com.k1tvkli2003.perfect.preview",
+    "captureAnimationScales": 1,
+    "restoredAnimationScales": 0
+  },
+  "sessions": [
+    {
+      "id": "tasks-to-plan",
+      "kind": "real-workspace-transition",
+      "file": "android-profile-single-tasks-to-plan-final-boundaries.txt",
+      "samples": 38,
+      "milliseconds": {
+        "build": {
+          "p50": 1.091,
+          "p90": 1.919,
+          "p95": 3.25,
+          "max": 9.659,
+          "over16_67ms": 0,
+          "over33_33ms": 0
+        },
+        "raster": {
+          "p50": 28.595,
+          "p90": 35.388,
+          "p95": 35.85,
+          "max": 36.846,
+          "over16_67ms": 37,
+          "over33_33ms": 10
+        },
+        "totalSpan": {
+          "p50": 49.35,
+          "p90": 60.869,
+          "p95": 63.405,
+          "max": 71.501,
+          "over16_67ms": 38,
+          "over33_33ms": 37
+        }
+      }
+    },
+    {
+      "id": "plan-to-habits",
+      "kind": "real-workspace-transition",
+      "file": "android-profile-single-plan-to-habits-final-boundaries.txt",
+      "samples": 15,
+      "milliseconds": {
+        "build": {
+          "p50": 0.949,
+          "p90": 1.5,
+          "p95": 1.539,
+          "max": 1.539,
+          "over16_67ms": 0,
+          "over33_33ms": 0
+        },
+        "raster": {
+          "p50": 27.373,
+          "p90": 38.513,
+          "p95": 40.103,
+          "max": 40.103,
+          "over16_67ms": 12,
+          "over33_33ms": 6
+        },
+        "totalSpan": {
+          "p50": 46.735,
+          "p90": 60.017,
+          "p95": 70.519,
+          "max": 70.519,
+          "over16_67ms": 14,
+          "over33_33ms": 13
+        }
+      }
+    },
+    {
+      "id": "minimal-control",
+      "kind": "same-host-renderer-control",
+      "file": "android-profile-minimal-frame-control.txt",
+      "samples": 12,
+      "milliseconds": {
+        "build": {
+          "p50": 0.72,
+          "p90": 1.663,
+          "p95": 2.316,
+          "max": 2.316,
+          "over16_67ms": 0,
+          "over33_33ms": 0
+        },
+        "raster": {
+          "p50": 18.124,
+          "p90": 30.951,
+          "p95": 32.503,
+          "max": 32.503,
+          "over16_67ms": 10,
+          "over33_33ms": 0
+        },
+        "totalSpan": {
+          "p50": 37.883,
+          "p90": 40.822,
+          "p95": 43.26,
+          "max": 43.26,
+          "over16_67ms": 11,
+          "over33_33ms": 9
+        }
+      }
+    }
+  ],
+  "idleWindows": [
+    {
+      "id": "today-idle",
+      "file": "android-profile-idle-today.txt",
+      "seconds": 6,
+      "frameBatches": 1,
+      "frames": 1
+    },
+    {
+      "id": "tasks-idle",
+      "file": "android-profile-idle-tasks.txt",
+      "seconds": 6,
+      "frameBatches": 0,
+      "frames": 0
+    }
+  ],
+  "runtimeArtifacts": {
+    "android-profile-idle-tasks.txt": "e3a5050c44f4090bd5a21f6edcf9a6588c23bcb622d2d7e77a2efd97a0c6b002",
+    "android-profile-idle-today.txt": "086d70999a6b509df75ea1765083aed6adaec6219e5dd9a575a1f2a905f99e3a",
+    "android-profile-minimal-frame-control.txt": "c9a6f29296cb57f1e0efc6712da241ca2a9048be2afa0523d78c0822cd5c3238",
+    "android-profile-motion.mp4": "d2e5f5f1cc54938bba128fc78ce129c63069731c66d72b6b361329b5eaa3ee73",
+    "android-profile-navigation-final-meminfo.txt": "41ec82f4cfd65219eb4aa28cf74585199336af80c10a383121d14bd3b22f46df",
+    "android-profile-navigation-final-ui.xml": "b2f1bef078836f52b90368165771dc42627b5136c38f9f4b9b52e32edb470a59",
+    "android-profile-navigation-final.png": "5d839197cc3c94e298ad3701b05636423cb761d7949e123cb3229091af926982",
+    "android-profile-single-plan-to-habits-final-boundaries.txt": "315f6f218c7784b17fea0dcbfc7a03806bb9a591351f39ec10614df603b5c4d2",
+    "android-profile-single-tasks-to-plan-final-boundaries.txt": "55ce22d722017c3b93db7c43885e81d436cac616706db26c02a6155effe1129f"
+  },
+  "gates": {
+    "workspaceBuildThread60Hz": "pass",
+    "noSustainedIdleTicker": "pass",
+    "absoluteEmulatorRaster": "inconclusive",
+    "physicalAndroidNoJank": "open",
+    "WindowsNoJank": "open"
+  },
+  "interpretation": [
+    "Both real workspace transitions keep every sampled Flutter build duration below 16.67ms.",
+    "Two drained six-second idle windows contain at most one frame each, so no sustained offstage or idle ticker is present.",
+    "The minimal same-package control also exceeds 16.67ms in raster work, proving a substantial host emulator/renderer floor.",
+    "Therefore the emulator is valid for lifecycle, idle-ticker and UI-thread diagnostics but cannot certify physical-device or Windows raster smoothness.",
+    "No physical-device or Windows performance claim is made by this report."
+  ]
+}

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:perfect/planner/sync/planner_sync_repository.dart';
 import 'package:perfect/presentation/perfect_local_time.dart';
+import 'package:perfect/presentation/perfect_motion.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
 
 enum PerfectSyncVisualState { current, flowing, error }
@@ -27,22 +28,36 @@ class PerfectSyncIndicator extends StatefulWidget {
 }
 
 class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final FocusNode _focusNode = FocusNode(debugLabel: 'Perfect sync indicator');
   late final AnimationController _flow = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1500),
+    duration: PerfectMotion.calmLoop,
   );
   Timer? _countdownTimer;
   int? _retrySeconds;
   bool _hovered = false;
   bool _focused = false;
   bool _pressed = false;
+  bool _foreground = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _refreshCountdown();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _foreground = state == AppLifecycleState.resumed;
+    if (_foreground) {
+      _refreshCountdown();
+    } else {
+      _countdownTimer?.cancel();
+      _countdownTimer = null;
+    }
+    _updateFlow();
   }
 
   @override
@@ -64,10 +79,12 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
   void _updateFlow() {
     final shouldFlow =
         _visual.state == PerfectSyncVisualState.flowing &&
-        !MediaQuery.disableAnimationsOf(context);
+        !MediaQuery.disableAnimationsOf(context) &&
+        TickerMode.valuesOf(context).enabled &&
+        _foreground;
     if (shouldFlow && !_flow.isAnimating) {
       _flow.repeat();
-    } else if (!shouldFlow && _flow.isAnimating) {
+    } else if (!shouldFlow && (_flow.isAnimating || _flow.value != 0)) {
       _flow
         ..stop()
         ..value = 0;
@@ -108,6 +125,7 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _countdownTimer?.cancel();
     _flow.dispose();
     _focusNode.dispose();
@@ -333,6 +351,7 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
         isScrollControlled: true,
         showDragHandle: true,
         useSafeArea: true,
+        sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
         backgroundColor: Theme.of(context).colorScheme.surface,
         builder: (sheetContext) => _SyncDetailsContent(
           status: widget.status,
@@ -345,7 +364,7 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
       );
       return;
     }
-    await showDialog<void>(
+    await showPerfectDialog<void>(
       context: context,
       builder: (dialogContext) => Dialog(
         child: ConstrainedBox(

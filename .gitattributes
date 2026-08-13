@@ -17,3 +17,15 @@ test/presentation/page_preview_quality_harness_contract_test.dart text eol=lf
 # textual brand artifact on canonical LF across Windows and Linux checkouts.
 assets/brand/*.svg text eol=lf
 assets/brand/*-manifest.json text eol=lf
+
+# Stage 09 hashes storyboard source plus the generated implementation motion
+# inventory. Canonical LF keeps the gate reproducible on Windows and Linux CI.
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage09-motion/**/*.json text eol=lf
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage09-motion/**/*.svg text eol=lf
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage09-motion/runtime/*.txt text eol=lf
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage09-motion/runtime/*.xml text eol=lf
+docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage09-motion/*.sha256 text eol=lf
+tool/generate_stage09_motion_evidence.cjs text eol=lf
+tool/summarize_stage09_motion_profile.cjs text eol=lf
+tool/verify_stage09_motion_evidence.cjs text eol=lf
+test/presentation/stage09_global_motion_system_test.dart text eol=lf

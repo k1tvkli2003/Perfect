@@ -1,0 +1,3 @@
+--------- beginning of main
+D/android.hardware.audio@7.1-impl.ranchu(  411): threadLoop: entering standby, frames: 10501376
+W/MediaProvider( 1393): isAppCloneUserPair for user 0: false

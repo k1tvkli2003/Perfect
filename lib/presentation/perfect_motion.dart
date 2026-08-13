@@ -26,6 +26,175 @@ enum PerfectGlassStrength { soft, strong }
 
 enum PerfectInteractiveTone { neutral, primary, secondary, tertiary, danger }
 
+/// Opens every Perfect dialog through the same spatial and accessibility
+/// contract instead of inheriting Flutter's fade-only default.
+Future<T?> showPerfectDialog<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  bool barrierDismissible = true,
+  Color? barrierColor,
+  String? barrierLabel,
+  bool useSafeArea = true,
+  bool useRootNavigator = true,
+  RouteSettings? routeSettings,
+  Offset? anchorPoint,
+  TraversalEdgeBehavior traversalEdgeBehavior =
+      TraversalEdgeBehavior.closedLoop,
+  bool fullscreenDialog = false,
+  bool? requestFocus,
+}) async {
+  assert(debugCheckHasMaterialLocalizations(context));
+  final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
+  final themes = InheritedTheme.capture(from: context, to: navigator.context);
+  final reduced = PerfectMotion.reduced(context);
+  final spec = PerfectMotion.spec(PerfectMotionRole.modal);
+  final mediaSize = MediaQuery.sizeOf(context);
+  final resolvedAnchor =
+      anchorPoint ??
+      _contextAnchorPoint(FocusManager.instance.primaryFocus?.context) ??
+      _contextAnchorPoint(context);
+  final origin = resolvedAnchor == null || mediaSize.isEmpty
+      ? Alignment.center
+      : Alignment(
+          ((resolvedAnchor.dx / mediaSize.width) * 2 - 1).clamp(-1.0, 1.0),
+          ((resolvedAnchor.dy / mediaSize.height) * 2 - 1).clamp(-1.0, 1.0),
+        );
+  final invokingFocus = FocusManager.instance.primaryFocus;
+  final result = await navigator.push<T>(
+    _PerfectDialogRoute<T>(
+      pageBuilder: (routeContext, animation, secondaryAnimation) {
+        Widget result = Builder(builder: builder);
+        result = themes.wrap(result);
+        if (useSafeArea) result = SafeArea(child: result);
+        return Semantics(
+          hitTestBehavior: ui.SemanticsHitTestBehavior.opaque,
+          child: result,
+        );
+      },
+      barrierDismissible: barrierDismissible,
+      barrierColor:
+          barrierColor ??
+          Theme.of(context).dialogTheme.barrierColor ??
+          Colors.black54,
+      barrierLabel:
+          barrierLabel ??
+          MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      transitionDuration: reduced ? Duration.zero : spec.duration,
+      reverseTransitionDuration: reduced ? Duration.zero : spec.reverseDuration,
+      reducedMotion: () => context.mounted && PerfectMotion.reduced(context),
+      transitionBuilder: reduced
+          ? (_, _, _, child) => child
+          : (context, animation, secondaryAnimation, child) =>
+                _PerfectDialogTransition(
+                  animation: animation,
+                  origin: origin,
+                  child: child,
+                ),
+      settings: routeSettings,
+      requestFocus: requestFocus,
+      anchorPoint: resolvedAnchor,
+      traversalEdgeBehavior: traversalEdgeBehavior,
+      fullscreenDialog: fullscreenDialog,
+    ),
+  );
+  if (invokingFocus?.context != null &&
+      (invokingFocus?.canRequestFocus ?? false)) {
+    invokingFocus!.requestFocus();
+  }
+  return result;
+}
+
+Offset? _contextAnchorPoint(BuildContext? context) {
+  if (context == null) return null;
+  final renderObject = context.findRenderObject();
+  if (renderObject is! RenderBox ||
+      !renderObject.attached ||
+      !renderObject.hasSize ||
+      renderObject.size.isEmpty) {
+    return null;
+  }
+  return renderObject.localToGlobal(renderObject.size.center(Offset.zero));
+}
+
+class _PerfectDialogRoute<T> extends RawDialogRoute<T> {
+  _PerfectDialogRoute({
+    required super.pageBuilder,
+    required super.barrierDismissible,
+    required super.barrierColor,
+    required super.barrierLabel,
+    required super.transitionDuration,
+    required this._reverseTransitionDuration,
+    required this.reducedMotion,
+    required super.transitionBuilder,
+    super.settings,
+    super.requestFocus,
+    super.anchorPoint,
+    super.traversalEdgeBehavior,
+    super.fullscreenDialog,
+  });
+
+  final Duration _reverseTransitionDuration;
+  final bool Function() reducedMotion;
+
+  @override
+  Duration get transitionDuration =>
+      reducedMotion() ? Duration.zero : super.transitionDuration;
+
+  @override
+  Duration get reverseTransitionDuration =>
+      reducedMotion() ? Duration.zero : _reverseTransitionDuration;
+
+  @override
+  bool didPop(T? result) {
+    if (reducedMotion()) controller?.reverseDuration = Duration.zero;
+    return super.didPop(result);
+  }
+}
+
+class _PerfectDialogTransition extends StatelessWidget {
+  const _PerfectDialogTransition({
+    required this.animation,
+    required this.origin,
+    required this.child,
+  });
+
+  final Animation<double> animation;
+  final Alignment origin;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      child: child,
+      builder: (context, child) {
+        final curve = animation.status == AnimationStatus.reverse
+            ? PerfectMotion.exit
+            : PerfectMotion.modalEnter;
+        final progress = PerfectMotion.reduced(context)
+            ? 1.0
+            : curve.transform(animation.value).clamp(0.0, 1.0);
+        return Opacity(
+          key: const ValueKey<String>('perfect-dialog-opacity'),
+          opacity: progress,
+          child: Transform.translate(
+            key: const ValueKey<String>('perfect-dialog-translate'),
+            offset: Offset(0, (1 - progress) * PerfectMotion.dialogRise),
+            child: Transform.scale(
+              key: const ValueKey<String>('perfect-dialog-scale'),
+              alignment: origin,
+              scale:
+                  PerfectMotion.dialogScaleBegin +
+                  progress * (1 - PerfectMotion.dialogScaleBegin),
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 /// A mixed, constraint-driven geometry model.
 ///
 /// Fixed values below are semantic bounds (touch target, readable line length,
@@ -291,6 +460,237 @@ class PerfectMotionSwitcher extends StatelessWidget {
   }
 }
 
+/// Keeps every destination subtree alive while presenting one interruptible,
+/// direction-aware cue between them.
+///
+/// Scroll, selection, draft and focus state remain mounted in the offstage
+/// destinations. Only the current destination paints; direction is explained
+/// by the moving navigation indicator, the destination title entrance and a
+/// tiny isolated edge cue. This avoids translating or fading an entire
+/// glass-heavy viewport, which would allocate a full-screen saveLayer and
+/// delay direct interaction on Android.
+class PerfectPersistentDestinationHost extends StatefulWidget {
+  const PerfectPersistentDestinationHost({
+    super.key,
+    required this.selectedIndex,
+    required this.direction,
+    required this.children,
+  }) : assert(selectedIndex >= 0),
+       assert(selectedIndex < children.length),
+       assert(direction != 0);
+
+  final int selectedIndex;
+  final int direction;
+  final List<Widget> children;
+
+  @override
+  State<PerfectPersistentDestinationHost> createState() =>
+      _PerfectPersistentDestinationHostState();
+}
+
+class _PerfectPersistentDestinationHostState
+    extends State<PerfectPersistentDestinationHost>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    value: 1,
+  );
+  int _direction = 1;
+  bool _reducedMotion = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reducedMotion = PerfectMotion.reduced(context);
+    _controller.duration = PerfectMotion.responsive(
+      context,
+      PerfectMotion.quick,
+    );
+    if (_reducedMotion) _controller.value = 1;
+  }
+
+  @override
+  void didUpdateWidget(covariant PerfectPersistentDestinationHost oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    assert(widget.children.length == oldWidget.children.length);
+    if (oldWidget.selectedIndex == widget.selectedIndex) return;
+    _direction = widget.direction;
+    if (_reducedMotion) {
+      _controller.value = 1;
+      return;
+    }
+    _controller.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      key: const ValueKey<String>('perfect-persistent-destination-host'),
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          RepaintBoundary(
+            key: const ValueKey<String>('perfect-destination-static-layer'),
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                for (var index = 0; index < widget.children.length; index++)
+                  _buildSlot(index),
+              ],
+            ),
+          ),
+          if (!_reducedMotion) _buildDirectionCue(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSlot(int index) {
+    final active = index == widget.selectedIndex;
+    return Positioned.fill(
+      key: ValueKey<String>('perfect-destination-slot-$index'),
+      child: Offstage(
+        key: ValueKey<String>('perfect-destination-offstage-$index'),
+        offstage: !active,
+        child: TickerMode(
+          enabled: active,
+          child: IgnorePointer(
+            ignoring: !active,
+            child: ExcludeSemantics(
+              excluding: !active,
+              child: FocusScope(
+                canRequestFocus: active,
+                skipTraversal: !active,
+                descendantsAreFocusable: active,
+                child: RepaintBoundary(
+                  key: ValueKey<String>(
+                    'perfect-destination-repaint-boundary-$index',
+                  ),
+                  child: KeyedSubtree(
+                    key: ValueKey<String>('perfect-destination-content-$index'),
+                    child: widget.children[index],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDirectionCue(BuildContext context) {
+    final textDirection = Directionality.of(context);
+    final physicalDirection = textDirection == TextDirection.rtl
+        ? -_direction
+        : _direction;
+    final accent = Theme.of(context).colorScheme.primary;
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: ExcludeSemantics(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              final progress = PerfectMotion.enter.transform(_controller.value);
+              final alpha = (1 - progress).clamp(0.0, 1.0);
+              return Align(
+                alignment: physicalDirection > 0
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Transform.translate(
+                  key: const ValueKey<String>('perfect-route-edge-cue'),
+                  offset: Offset(
+                    physicalDirection *
+                        (1 - progress) *
+                        PerfectMotion.routeExitTravel,
+                    0,
+                  ),
+                  child: RepaintBoundary(
+                    child: SizedBox(
+                      width: 4,
+                      height: 88,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(999),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: <Color>[
+                              accent.withValues(alpha: 0),
+                              accent.withValues(alpha: alpha * .54),
+                              accent.withValues(alpha: 0),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Owns a single meaningful-entry generation for staged descendants.
+///
+/// Rebuilding content under the same scope does not replay entrance motion.
+/// Changing [entryKey] starts one new generation, which is useful for a real
+/// destination change while remaining immune to sync/list notifier rebuilds.
+class PerfectMotionEntryScope extends StatefulWidget {
+  const PerfectMotionEntryScope({
+    super.key,
+    required this.entryKey,
+    required this.child,
+  });
+
+  final Object entryKey;
+  final Widget child;
+
+  static int generationOf(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<_PerfectMotionEntry>()
+          ?.generation ??
+      0;
+
+  @override
+  State<PerfectMotionEntryScope> createState() =>
+      _PerfectMotionEntryScopeState();
+}
+
+class _PerfectMotionEntryScopeState extends State<PerfectMotionEntryScope> {
+  int _generation = 0;
+
+  @override
+  void didUpdateWidget(covariant PerfectMotionEntryScope oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.entryKey != widget.entryKey) _generation += 1;
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      _PerfectMotionEntry(generation: _generation, child: widget.child);
+}
+
+class _PerfectMotionEntry extends InheritedWidget {
+  const _PerfectMotionEntry({required this.generation, required super.child});
+
+  final int generation;
+
+  @override
+  bool updateShouldNotify(covariant _PerfectMotionEntry oldWidget) =>
+      generation != oldWidget.generation;
+}
+
 /// A short staged rise for the distinct regions of a freshly selected page.
 ///
 /// It deliberately moves only opacity, scale and a small vertical offset. A
@@ -303,7 +703,7 @@ class PerfectStagedEntrance extends StatefulWidget {
     this.order = 0,
     this.duration = PerfectMotion.emphasized,
     this.rise = 16,
-    this.scaleBegin = .985,
+    this.scaleBegin = PerfectMotion.stagedScaleBegin,
   }) : assert(order >= 0),
        assert(rise >= 0),
        assert(scaleBegin > 0 && scaleBegin <= 1);
@@ -324,52 +724,82 @@ class _PerfectStagedEntranceState extends State<PerfectStagedEntrance>
     vsync: this,
     duration: widget.duration,
   );
-  bool _scheduled = false;
+  int? _playedGeneration;
+  int _scheduleSerial = 0;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (PerfectMotion.reduced(context)) {
+  void _scheduleFor(int generation) {
+    if (_playedGeneration == generation) return;
+    _playedGeneration = generation;
+    final serial = ++_scheduleSerial;
+    if (!TickerMode.valuesOf(context).enabled) {
       _controller.value = 1;
       return;
     }
-    if (_scheduled) return;
-    _scheduled = true;
-    final delay = Duration(milliseconds: widget.order * 56);
-    Future<void>.delayed(delay, () {
-      if (mounted && !_controller.isAnimating && _controller.value < 1) {
-        _controller.forward();
+    _controller.value = 0;
+    final gapMicros = PerfectMotion.stagedGap.inMicroseconds * widget.order;
+    if (gapMicros == 0) {
+      _controller.forward();
+      return;
+    }
+    Future<void>.delayed(Duration(microseconds: gapMicros), () {
+      if (!mounted || serial != _scheduleSerial) return;
+      if (PerfectMotion.reduced(context) ||
+          !TickerMode.valuesOf(context).enabled) {
+        _controller.value = 1;
+        return;
       }
+      _controller.forward();
     });
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final generation = PerfectMotionEntryScope.generationOf(context);
+    if (PerfectMotion.reduced(context)) {
+      _scheduleSerial += 1;
+      _playedGeneration = generation;
+      _controller.value = 1;
+      return;
+    }
+    _scheduleFor(generation);
+  }
+
+  @override
   void dispose() {
+    _scheduleSerial += 1;
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (PerfectMotion.reduced(context)) return widget.child;
     final curve = CurvedAnimation(
       parent: _controller,
       curve: PerfectMotion.modalEnter,
       reverseCurve: PerfectMotion.exit,
     );
-    return AnimatedBuilder(
-      animation: curve,
-      child: widget.child,
-      builder: (context, child) => Opacity(
-        opacity: curve.value,
-        child: Transform.translate(
-          offset: Offset(0, (1 - curve.value) * widget.rise),
-          child: Transform.scale(
-            alignment: Alignment.topCenter,
-            scale: widget.scaleBegin + ((1 - widget.scaleBegin) * curve.value),
-            child: child,
-          ),
-        ),
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: curve,
+        child: widget.child,
+        builder: (context, child) {
+          final progress = PerfectMotion.reduced(context) ? 1.0 : curve.value;
+          return Opacity(
+            key: const ValueKey<String>('perfect-staged-entrance-opacity'),
+            opacity: progress,
+            child: Transform.translate(
+              key: const ValueKey<String>('perfect-staged-entrance-translate'),
+              offset: Offset(0, (1 - progress) * widget.rise),
+              child: Transform.scale(
+                key: const ValueKey<String>('perfect-staged-entrance-scale'),
+                alignment: Alignment.topCenter,
+                scale: widget.scaleBegin + ((1 - widget.scaleBegin) * progress),
+                child: child,
+              ),
+            ),
+          );
+        },
       ),
     );
   }

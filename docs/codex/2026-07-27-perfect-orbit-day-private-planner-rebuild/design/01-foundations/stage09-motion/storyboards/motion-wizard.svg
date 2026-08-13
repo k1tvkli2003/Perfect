@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+    <defs>
+      <linearGradient id="wash" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#FFFCF7"/><stop offset="0.56" stop-color="#FFF9F0"/><stop offset="1" stop-color="#F5F0FF"/></linearGradient>
+      <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#1D2030" flood-opacity="0.08"/></filter>
+    </defs>
+    <rect width="1200" height="720" fill="url(#wash)"/>
+    <circle cx="1080" cy="70" r="132" fill="#EEEAFD" opacity=".52"/>
+    <circle cx="78" cy="692" r="126" fill="#E4F4E8" opacity=".58"/>
+    <g filter="url(#shadow)"><rect x="34" y="28" width="1132" height="650" rx="34" fill="#FFFFFF" fill-opacity=".78" stroke="#ECE5DC"/></g>
+    <rect x="54" y="52" width="48" height="48" rx="16" fill="#FFEAD7"/><path d="M68 72h20M68 79h20" stroke="#A4510E" stroke-width="3" stroke-linecap="round"/>
+    <text x="118" y="67" font-family="Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="1.5" fill="#7F68C9">PERFECT! MOTION · motion-wizard</text>
+    <text x="118" y="98" font-family="Arial, sans-serif" font-size="30" font-weight="800" fill="#1D2030">Wizard progression</text>
+    <text x="54" y="139" font-family="Arial, sans-serif" font-size="15" font-weight="600" fill="#686579"><tspan x="54" dy="0">Decision order is visible while shared chrome never jumps.</tspan></text>
+    <rect x="760" y="50" width="380" height="104" rx="22" fill="#FFFCF7" stroke="#ECE5DC"/>
+    <text x="782" y="76" font-family="Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="1.1" fill="#A4510E">STANDARD · 240MS / 240MS REVERSE</text>
+    <text x="782" y="101" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#1D2030"><tspan x="782" dy="0">12px signed shared axis inside stable wizard</tspan><tspan x="782" dy="18">chrome</tspan></text>
+
+      <g>
+        <text x="54" y="180" font-family="Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="1.3" fill="#7F68C9">FIRST 0%</text>
+
+    <rect x="54" y="198" width="330" height="122" rx="22" fill="#FFFDF9" stroke="#ECE5DC"/>
+    <rect x="72" y="220" width="118" height="78" rx="17" fill="#F7F2EB" opacity="1"/>
+    <rect x="122" y="216" width="244" height="86" rx="20" fill="#FFA34D" opacity="0.1456"/>
+    <circle cx="150" cy="245" r="13" fill="#FFA34D" opacity="0.58"/>
+    <rect x="174" y="233" width="116" height="10" rx="5" fill="#1D2030" opacity="0.48"/>
+    <rect x="174" y="254" width="86" height="8" rx="4" fill="#686579" opacity="0.38"/>
+    <rect x="174" y="274" width="64" height="7" rx="3.5" fill="#FFA34D" opacity="0.5"/>
+
+    <path d="M 340 285 c 8 -8 14 -8 22 0" fill="none" stroke="#7F68C9" stroke-width="3" stroke-linecap="round"/>
+
+        <text x="56" y="348" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#686579"><tspan x="56" dy="0">Prior geometry remains authoritative.</tspan></text>
+      </g>
+      <g>
+        <text x="430" y="180" font-family="Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="1.3" fill="#7F68C9">MID 50%</text>
+
+    <rect x="430" y="198" width="330" height="122" rx="22" fill="#FFFDF9" stroke="#ECE5DC"/>
+    <rect x="448" y="220" width="118" height="78" rx="17" fill="#F7F2EB" opacity="0.72"/>
+    <rect x="489" y="216" width="244" height="86" rx="20" fill="#7EC99B" opacity="0.34790000000000004"/>
+    <circle cx="517" cy="245" r="13" fill="#7EC99B" opacity="0.78"/>
+    <rect x="541" y="233" width="130" height="10" rx="5" fill="#1D2030" opacity="0.69"/>
+    <rect x="541" y="254" width="96" height="8" rx="4" fill="#686579" opacity="0.55"/>
+    <rect x="541" y="274" width="64" height="7" rx="3.5" fill="#7EC99B" opacity="0.69"/>
+
+    <path d="M 716 285 c 8 -8 14 -8 22 0" fill="none" stroke="#7F68C9" stroke-width="3" stroke-linecap="round"/>
+
+        <text x="432" y="348" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#686579"><tspan x="432" dy="0">Both states are bounded and interruptible.</tspan></text>
+      </g>
+      <g>
+        <text x="806" y="180" font-family="Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="1.3" fill="#7F68C9">END 100%</text>
+
+    <rect x="806" y="198" width="330" height="122" rx="22" fill="#FFFDF9" stroke="#ECE5DC"/>
+    <rect x="824" y="220" width="118" height="78" rx="17" fill="#F7F2EB" opacity="0.24"/>
+    <rect x="856" y="216" width="244" height="86" rx="20" fill="#A79ADD" opacity="0.42140000000000005"/>
+    <circle cx="884" cy="245" r="13" fill="#A79ADD" opacity="0.98"/>
+    <rect x="908" y="233" width="144" height="10" rx="5" fill="#1D2030" opacity="0.8999999999999999"/>
+    <rect x="908" y="254" width="106" height="8" rx="4" fill="#686579" opacity="0.72"/>
+    <rect x="908" y="274" width="64" height="7" rx="3.5" fill="#A79ADD" opacity="0.88"/>
+
+    <path d="M 1092 285 c 8 -8 14 -8 22 0" fill="none" stroke="#7F68C9" stroke-width="3" stroke-linecap="round"/>
+
+        <text x="808" y="348" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#686579"><tspan x="808" dy="0">Final state is usable and announced once.</tspan></text>
+      </g>
+      <g>
+        <text x="54" y="406" font-family="Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="1.3" fill="#7F68C9">REVERSE</text>
+
+    <rect x="54" y="424" width="330" height="122" rx="22" fill="#FFFDF9" stroke="#ECE5DC"/>
+    <rect x="69.264" y="446" width="118" height="78" rx="17" fill="#F7F2EB" opacity="0.6528"/>
+    <rect x="110.84" y="442" width="244" height="86" rx="20" fill="#FFA34D" opacity="0.36554"/>
+    <circle cx="138.84" cy="471" r="13" fill="#FFA34D" opacity="0.828"/>
+    <rect x="162.84" y="459" width="133.36" height="10" rx="5" fill="#1D2030" opacity="0.7404"/>
+    <rect x="162.84" y="480" width="98.4" height="8" rx="4" fill="#686579" opacity="0.5908"/>
+    <rect x="162.84" y="500" width="64" height="7" rx="3.5" fill="#FFA34D" opacity="0.7356"/>
+
+    <path d="M 340 511 c 8 -8 14 -8 22 0" fill="none" stroke="#7F68C9" stroke-width="3" stroke-linecap="round"/>
+
+        <text x="56" y="574" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#686579"><tspan x="56" dy="0">Continue from the current interpolated</tspan><tspan x="56" dy="17">value.</tspan></text>
+      </g>
+      <g>
+        <text x="430" y="406" font-family="Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="1.3" fill="#7F68C9">INTERRUPTED</text>
+
+    <rect x="430" y="424" width="330" height="122" rx="22" fill="#FFFDF9" stroke="#ECE5DC"/>
+    <rect x="448" y="446" width="118" height="78" rx="17" fill="#F7F2EB" opacity="0.804"/>
+    <rect x="491.7" y="442" width="244" height="86" rx="20" fill="#7EC99B" opacity="0.32585000000000003"/>
+    <circle cx="519.7" cy="471" r="13" fill="#7EC99B" opacity="0.72"/>
+    <rect x="543.7" y="459" width="125.8" height="10" rx="5" fill="#1D2030" opacity="0.627"/>
+    <rect x="543.7" y="480" width="93" height="8" rx="4" fill="#686579" opacity="0.499"/>
+    <rect x="543.7" y="500" width="64" height="7" rx="3.5" fill="#7EC99B" opacity="0.633"/>
+    <path d="M 716 442 l 14 0 l -7 -8 z" fill="#C44B56"/><circle cx="723" cy="441" r="3" fill="#fff"/>
+    <path d="M 716 511 c 8 -8 14 -8 22 0" fill="none" stroke="#7F68C9" stroke-width="3" stroke-linecap="round"/>
+
+        <text x="432" y="574" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#686579"><tspan x="432" dy="0">Retarget to the latest request; never</tspan><tspan x="432" dy="17">replay.</tspan></text>
+      </g>
+      <g>
+        <text x="806" y="406" font-family="Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="1.3" fill="#7F68C9">REDUCED</text>
+
+    <rect x="806" y="424" width="330" height="122" rx="22" fill="#FFFDF9" stroke="#ECE5DC"/>
+    <rect x="824" y="446" width="118" height="78" rx="17" fill="#F7F2EB" opacity="0.43999999999999995"/>
+    <rect x="856" y="442" width="244" height="86" rx="20" fill="#A79ADD" opacity="0.42140000000000005"/>
+    <circle cx="884" cy="471" r="13" fill="#A79ADD" opacity="0.98"/>
+    <rect x="908" y="459" width="144" height="10" rx="5" fill="#1D2030" opacity="0.8999999999999999"/>
+    <rect x="908" y="480" width="106" height="8" rx="4" fill="#686579" opacity="0.72"/>
+    <rect x="908" y="500" width="64" height="7" rx="3.5" fill="#A79ADD" opacity="0.88"/>
+
+    <path d="M 1090 511 h 24" stroke="#1D2030" stroke-width="3" stroke-linecap="round"/><path d="M 1096 504 l 12 14" stroke="#1D2030" stroke-width="2"/>
+
+        <text x="808" y="574" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#686579"><tspan x="808" dy="0">No spatial travel; information stays equal.</tspan></text>
+      </g>
+    <line x1="54" y1="626" x2="1140" y2="626" stroke="#ECE5DC"/>
+    <text x="54" y="650" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#1D2030"><tspan x="54" dy="0">FOCUS · First invalid field receives focus only after the destination step</tspan><tspan x="54" dy="16">exists.</tspan></text>
+    <text x="640" y="650" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#1D2030"><tspan x="640" dy="0">BUDGET · Only old/new step bodies coexist; header, footer and</tspan><tspan x="640" dy="16">draft model remain single.</tspan></text>
+  </svg>

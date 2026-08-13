@@ -1,6 +1,6 @@
 # Stage 09 — Global route and microinteraction motion system
 
-Status: pending  
+Status: implemented locally; exact-SHA hosted closure pending
 Depends on: Stages 04, 05, 07–08  
 Primary surfaces: all pages, overlays, selectors, actions and responsive changes
 
@@ -63,6 +63,45 @@ Motion must never delay authorization/transaction logic or hide failure.
 - “Modern” is simulated by animating everything.
 - A popup uses stock animation inconsistent with its spatial origin.
 - Tests settle only by using arbitrary long delays.
+
+## Implemented contract — 2026-08-13
+
+- `PerfectMotion` now owns seven semantic roles, forward/reverse timing, curves,
+  pixel-bounded travel, staged rhythm, calm loops and dynamic reduced-motion
+  resolution. Raw presentation durations and curves outside that authority are
+  rejected by an executable source contract.
+- The workspace keeps all five destination states mounted but paints, focuses,
+  hits and ticks only the selected one. A four-pixel isolated edge cue plus the
+  selected navigation glyph communicate direction without translating or fading
+  a glass-heavy viewport.
+- Major page titles receive one ten-pixel rise/fade per meaningful destination
+  entry. Sync/list/controller rebuilds do not replay it. Today deliberately avoids
+  cascading Orbit, next-up and every agenda row.
+- Every production dialog now enters from its invoker through one focus-trapped
+  fade/scale/rise route and restores invocation focus. Sheets, popup menus,
+  inspector, wizard, capture, AI, selector and log surfaces use the same vocabulary.
+- Quick Capture, Sync and Orbit tickers pause when reduced, offstage or backgrounded;
+  lifecycle resume restarts from current durable truth rather than stale animation
+  progress.
+- Eleven deterministic first/mid/end/reverse/interrupted/reduced storyboards and a
+  131-record implementation inventory are generated and hash-verified. Nine real
+  runtime artifacts are independently hashed by the profile summary/verifier.
+
+## Local gate
+
+- `flutter analyze`: pass, no issues.
+- full Flutter suite: pass, 432/432.
+- focused motion suite: pass, 19/19.
+- Workspace regression: pass, 60/60; Header/Sync regression: pass, 10/10.
+- Android profile `1.1.0+2060`: build and `adb install -r` pass; sibling preview
+  `firstInstallTime=2026-08-02 19:20:44` remained unchanged.
+- Real workspace samples keep Flutter build work below 16.67ms. Absolute emulator
+  raster smoothness is intentionally inconclusive because the minimal same-package
+  control also exceeds 16.67ms; physical Android and Windows no-jank remain open.
+- Local Windows compile reaches the plugin build and then fails because this host
+  lacks ATL `atlbase.h`; the official Windows runner is the mandatory closure gate.
+
+Full evidence and proof boundaries are recorded in `../09-stage-verification.md`.
 
 ## Handoff
 

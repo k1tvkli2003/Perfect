@@ -25,21 +25,17 @@ class PlannerHabitLogSheet extends StatefulWidget {
   }) {
     final sheet = PlannerHabitLogSheet(habit: habit, controller: controller);
     if (MediaQuery.sizeOf(context).width >= 680) {
-      return showDialog<void>(
+      return showPerfectDialog<void>(
         context: context,
-        builder: (context) => PerfectStagedEntrance(
-          rise: 22,
-          scaleBegin: .96,
-          child: Dialog(
-            insetPadding: const EdgeInsets.all(PerfectSpace.xl),
-            child: ConstrainedBox(
-              key: const ValueKey<String>('perfect-habit-log-dialog-surface'),
-              constraints: const BoxConstraints(maxWidth: 680, maxHeight: 760),
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () => FocusScope.of(context).unfocus(),
-                child: sheet,
-              ),
+        builder: (context) => Dialog(
+          insetPadding: const EdgeInsets.all(PerfectSpace.xl),
+          child: ConstrainedBox(
+            key: const ValueKey<String>('perfect-habit-log-dialog-surface'),
+            constraints: const BoxConstraints(maxWidth: 680, maxHeight: 760),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: sheet,
             ),
           ),
         ),
@@ -320,7 +316,7 @@ class _PlannerHabitLogSheetState extends State<PlannerHabitLogSheet> {
   }
 
   Future<bool> _confirmDiscardDraft() async {
-    final discard = await showDialog<bool>(
+    final discard = await showPerfectDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Change date?'),

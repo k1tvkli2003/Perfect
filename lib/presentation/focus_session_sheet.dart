@@ -23,24 +23,20 @@ class FocusSessionSheet extends StatefulWidget {
         Theme.of(context).platform == TargetPlatform.windows ||
         MediaQuery.sizeOf(context).width >= 900;
     if (desktop) {
-      return showDialog<void>(
+      return showPerfectDialog<void>(
         context: context,
-        builder: (context) => PerfectStagedEntrance(
-          rise: 22,
-          scaleBegin: .96,
-          child: Dialog(
-            clipBehavior: Clip.antiAlias,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: 560,
-                maxWidth: 680,
-                maxHeight: (MediaQuery.sizeOf(context).height - 80).clamp(
-                  560,
-                  780,
-                ),
+        builder: (context) => Dialog(
+          clipBehavior: Clip.antiAlias,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: 560,
+              maxWidth: 680,
+              maxHeight: (MediaQuery.sizeOf(context).height - 80).clamp(
+                560,
+                780,
               ),
-              child: FocusSessionSheet(controller: controller, entity: entity),
             ),
+            child: FocusSessionSheet(controller: controller, entity: entity),
           ),
         ),
       );

@@ -71,6 +71,14 @@ android {
             applicationIdSuffix = ".preview"
             versionNameSuffix = "-preview"
         }
+        getByName("profile") {
+            // Profile mode is the only meaningful way to collect Flutter
+            // frame timing, but it must remain the same disposable sibling as
+            // the debug preview. Never let a local performance run replace or
+            // read the signed private app's session and Drift database.
+            applicationIdSuffix = ".preview"
+            versionNameSuffix = "-profile"
+        }
         release {
             // CI supplies a stable private key through environment-backed
             // GitHub secrets. Local verification remains buildable with the

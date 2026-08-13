@@ -62,23 +62,29 @@ class PlannerEditor extends StatefulWidget {
         pageBuilder: (context, animation, secondaryAnimation) =>
             Scaffold(resizeToAvoidBottomInset: true, body: editor),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final curved = CurvedAnimation(
-            parent: animation,
-            curve: PerfectMotion.modalEnter,
-            reverseCurve: PerfectMotion.exit,
-          );
-          return FadeTransition(
-            opacity: curved,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, .08),
-                end: Offset.zero,
-              ).animate(curved),
-              child: ScaleTransition(
-                scale: Tween<double>(begin: .986, end: 1).animate(curved),
-                child: child,
-              ),
-            ),
+          final curve = animation.status == AnimationStatus.reverse
+              ? PerfectMotion.exit
+              : PerfectMotion.modalEnter;
+          return AnimatedBuilder(
+            animation: animation,
+            child: child,
+            builder: (context, child) {
+              final progress = curve.transform(animation.value);
+              return Opacity(
+                opacity: progress,
+                child: Transform.translate(
+                  offset: Offset(
+                    0,
+                    (1 - progress) * PerfectMotion.wizardTravel,
+                  ),
+                  child: Transform.scale(
+                    alignment: Alignment.bottomCenter,
+                    scale: .986 + progress * .014,
+                    child: child,
+                  ),
+                ),
+              );
+            },
           );
         },
       ),
@@ -3566,7 +3572,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
   Future<void> _editHabitChecklistItem(_HabitChecklistDraftItem item) async {
     final formKey = GlobalKey<FormState>();
     var draft = item.label;
-    final updated = await showDialog<String>(
+    final updated = await showPerfectDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Edit checklist label'),

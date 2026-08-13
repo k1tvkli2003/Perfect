@@ -469,3 +469,47 @@ formatting was scattered across UI, widget, feedback and AI request paths.
 
 - Close the Stage 08 documentation checkpoint through the same exact-SHA hosted gate,
   clean its isolated branch/worktree, then begin Stage 09 motion and interaction work.
+
+## 2026-08-13 — Stage 09 global motion local checkpoint
+
+### Before
+
+Perfect! had several useful animations, but duration/curve ownership was split,
+dialogs inherited a generic fade, page/content entrances could over-choreograph a
+dense Today surface and persistent destination hand-off could make an expensive
+glass viewport repaint. Lifecycle, focus return, interrupted taps and reduced motion
+were not one executable product contract.
+
+### After
+
+- Added seven named motion roles and centralized timing, reverse timing, curves,
+  optical travel and reduced-motion resolution.
+- Rebuilt workspace hand-off so only the active retained destination paints; a tiny
+  isolated edge cue and selected footer/rail glyph explain direction without moving
+  the whole viewport.
+- Added one-shot, ten-pixel page-title rise/fade that does not replay on sync/list
+  rebuilds; removed the cascading animation of Orbit, next-up and agenda rows.
+- Routed all production dialogs through an invoker-anchored, focus-trapped and focus-
+  restoring transition; sheets, menus, wizard, inspector, capture and AI now use the
+  same vocabulary.
+- Paused Quick Capture, Sync and Orbit animation work when reduced, offstage or in
+  the background; durable state remains authoritative on resume.
+- Generated 11 six-frame storyboards and a 131-record motion inventory. The verifier
+  passes 24 design hashes and nine Android runtime hashes.
+- `flutter analyze` and all 432 tests pass. Workspace is 60/60, Header/Sync 10/10 and
+  the focused Motion gate 19/19.
+- Android profile `1.1.0+2060` built and installed over the sibling preview while
+  retaining `firstInstallTime=2026-08-02 19:20:44`. Real runtime screenshot,
+  semantics, MP4, memory, navigation timing, idle windows and minimal control are
+  recorded in `09-stage-verification.md`.
+- Real workspace build-thread samples stay below 16.67ms. Emulator raster is honestly
+  inconclusive because the minimal control shows the same host floor; physical
+  Android and Windows no-jank are not claimed.
+- Local Windows compilation still stops at missing ATL `atlbase.h`; exact-SHA hosted
+  Windows/install-over/release proof remains mandatory.
+
+### Next
+
+- Commit and push the isolated Stage 09 source checkpoint, run the untrusted exact-
+  SHA branch gate, fast-forward into `main`, then require the trusted Windows/update/
+  three-asset immutable release gate before marking Stage 09 complete.

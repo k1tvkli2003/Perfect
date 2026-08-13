@@ -452,3 +452,23 @@ Full evidence and honest proof boundaries are recorded in `07-stage-verification
 
 Full implementation, UTC/local ownership, runtime evidence and proof boundaries are
 recorded in `08-stage-verification.md`.
+
+## 2026-08-13 — Stage 09 global motion local verification
+
+| Check | Method | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| Static analysis | `flutter analyze` | passed | no issues across the complete project |
+| Full Flutter suite | `flutter test --concurrency=1` | passed, 432/432 | complete current regression surface |
+| Focused motion | Stage 09 + shared motion contracts | passed, 19/19 | timing, retarget, reduced motion, focus, lifecycle, inventory and profile boundaries |
+| Workspace regression | `perfect_workspace_page_test.dart` | passed, 60/60 | responsive, RTL, 200%, keyboard, wizard, detail and status paths |
+| Header/Sync regression | focused header + indicator suites | passed, 10/10 | light/dark/high-contrast/200%, retry and reduced motion |
+| Deterministic evidence | generator + independent verifier | passed | 11 roles, 131 implementation records, 24 design hashes, nine runtime hashes |
+| Android profile/update | build 2060 + `adb install -r` | passed | `firstInstallTime` unchanged; exact preview package foreground |
+| Flutter UI thread | two real navigation captures | passed for sampled 60Hz build budget | max build 9.659ms; no sampled build frame above 16.67ms |
+| Absolute raster | real navigation + minimal control | inconclusive | minimal same-package control also exceeds 16.67ms on emulator `skiagl` |
+| Idle/offstage work | two drained six-second windows | passed | one and zero frames; no sustained ticker |
+| Local Windows compile | `flutter build windows --release` | host-blocked | missing ATL `atlbase.h`; exact-SHA hosted runner required |
+| Hosted Windows/release | GitHub Actions | pending | no completion claim until trusted main run and immutable three-asset release pass |
+
+Full evidence, artifact hashes, performance distributions and proof boundaries are
+recorded in `09-stage-verification.md`.
