@@ -2,24 +2,24 @@
 
 ## Canonical numbered execution — 2026-08-13
 
-Stages 01–09 are externally closed. Stage 10 is locally implemented and verified,
-but its exact-SHA hosted build/release and branch cleanup are still pending. Stage 09 source checkpoint
-`6ca824ef2f0dd0b3facd66c194668381e81b88d1` is merged to `main`; trusted run
-[`#54` / `31664886708`](https://github.com/k1tvkli2003/Perfect/actions/runs/31664886708)
-and release
-[`v1.1.0-build.2054`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2054)
-target that exact SHA. The current isolated Stage 10 branch must pass the same
-branch gate, main trusted signing/install-over/release gate and cleanup before Stage
-11 begins.
+Stages 01–10 are externally closed. Stage 10 source checkpoint
+`8742a676533d3337ed5d69919cd8d612e08c6024` is merged to `main`; exact-SHA branch
+run [`#56` / `31685867478`](https://github.com/k1tvkli2003/Perfect/actions/runs/31685867478)
+and trusted main run
+[`#57` / `31687276749`](https://github.com/k1tvkli2003/Perfect/actions/runs/31687276749)
+passed. Immutable release
+[`v1.1.0-build.2057`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2057)
+targets that exact SHA and contains exactly APK, Portable ZIP and Setup EXE.
 
 Stage 10 contributes four authored theme IDs, independent persisted theme/contrast
 controls, a zero-bypass semantic color contract, dedicated Clarity assets and
 Android/Windows native appearance projection. Analysis and all 444 tests pass. Real
 Android build 2062 installed over 2061 and its Daylight, Graphite, Clarity Light,
 Clarity Dark and Appearance settings captures are hash-verified. Local Windows
-compilation remains host-blocked by missing optional ATL; hosted exact-SHA Windows
-proof must be appended to `10-stage-verification.md` before this stage is called
-externally closed.
+compilation remains host-blocked by missing optional ATL, while the trusted runner
+compiled and signed the native product, preserved package family/`LocalState` across
+`1.1.0.55 → 1.1.0.57`, and passed self-contained Setup clean/idempotent rerun without
+mutating Trusted Root. Stage 11 may now begin from this closed lineage.
 
 The current Stage 09 source has one semantic Motion system across routes, page-title
 orientation, dialogs, sheets, menus, inspector, wizard, Quick Capture, AI, selection,

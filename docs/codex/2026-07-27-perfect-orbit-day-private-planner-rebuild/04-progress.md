@@ -531,7 +531,7 @@ were not one executable product contract.
   remove the isolated branch/worktree, then begin Stage 10 theme and accessibility
   motion without weakening the physical-target no-jank boundary.
 
-## 2026-08-13 — Stage 10 authored theme and contrast local checkpoint
+## 2026-08-13 — Stage 10 authored theme and contrast closed checkpoint
 
 ### Before
 
@@ -560,6 +560,10 @@ the Windows frame did not follow one effective owner appearance.
 
 ### Next
 
-- Commit the isolated Stage 10 source, pass its exact-SHA branch gate, fast-forward
-  main, pass the trusted signing/install-over/release gate, update hosted evidence
-  and remove the temporary branch/worktree before Stage 11 starts.
+- Exact-SHA branch run `31685867478` and trusted main run `31687276749` passed.
+  Windows MSIX `1.1.0.55 → 1.1.0.57` retained package family/`LocalState`; Setup
+  clean/rerun passed without Root mutation. Immutable release
+  `v1.1.0-build.2057` targets Stage 10 SHA `8742a676533d3337ed5d69919cd8d612e08c6024`
+  and contains exactly APK, Portable ZIP and Setup EXE.
+- Close the documentation checkpoint, remove the isolated Stage 10 branch/worktree
+  and begin Stage 11 from the clean trusted `main` lineage.

@@ -2,7 +2,7 @@
 
 Date: 2026-08-13
 Stage: `10-theme-contrast-system`
-Status: local source, design, tests and Android runtime passed; hosted exact-SHA closure pending
+Status: complete — local Android runtime and exact-SHA hosted release passed
 
 ## Outcome
 
@@ -57,6 +57,12 @@ source-verified but local compilation is not claimed because the installed Visua
 Studio Build Tools omit `Microsoft.VisualStudio.Component.VC.ATLMFC`, so
 `flutter_local_notifications_windows` cannot find `atlbase.h` on this host.
 
+That local host limitation is closed at product level by the trusted Windows runner
+for exact source SHA `8742a676533d3337ed5d69919cd8d612e08c6024`. The native
+desktop build, portable package, signed MSIX, install-over proof and self-contained
+Setup proof all passed in main run
+[`#57` / `31687276749`](https://github.com/k1tvkli2003/Perfect/actions/runs/31687276749).
+
 ## Real Android runtime evidence
 
 The secret-free sibling package `com.k1tvkli2003.perfect.preview` was rebuilt as
@@ -99,16 +105,33 @@ It is local debug evidence, not a distributable or signed-release claim.
 | Android install-over | pass | 2061→2062 with unchanged first-install time |
 | Real Android themes | pass | Daylight, Graphite, Clarity Light/Dark and Appearance settings captured |
 | Local Windows build | host-blocked | optional ATL `atlbase.h` absent before project runner compilation |
-| Exact-SHA hosted build/release | pending | closes Windows compile/sign/install-over and immutable three-asset release |
+| Branch exact-SHA gate | pass | run [`#56` / `31685867478`](https://github.com/k1tvkli2003/Perfect/actions/runs/31685867478) passed on the exact Stage 10 SHA |
+| Trusted main build/release | pass | run [`#57` / `31687276749`](https://github.com/k1tvkli2003/Perfect/actions/runs/31687276749) passed all four jobs on the same SHA |
+| Windows MSIX install-over | pass | `1.1.0.55 → 1.1.0.57`; package family and `LocalState` preserved |
+| Self-contained Windows Setup | pass | installed `1.1.0.57`, reran idempotently, preserved package family/`LocalState` and did not mutate Trusted Root |
+| Immutable three-asset release | pass | [`v1.1.0-build.2057`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2057) targets the exact Stage 10 SHA |
+
+## Hosted artifact closure
+
+Release `v1.1.0-build.2057` is published, non-draft and non-prerelease. It contains
+exactly the three owner-facing install artifacts and no extra checksum, certificate,
+raw MSIX, nested archive or log asset:
+
+| Artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `Perfect-1.1.0-build.2057-Android.apk` | 73,945,242 | `85ff1fb70e673a553f57bbc0683c93bb66308c16f2450d68d84487ea1796f092` |
+| `Perfect-1.1.0-build.2057-Windows-Portable.zip` | 17,672,929 | `464506c01a1d8843e85ca4d4575f6446748b80caf17ca42e457dfd23306b24ac` |
+| `Perfect-1.1.0-build.2057-Windows-Setup.exe` | 25,037,304 | `becb299c532d7ece1ce5e2cc7b1bb7d3d84d0b86d3e5064a7cea4fdd5c6ea76b` |
 
 ## Honest upgrade boundary
 
-The build-2061→2062 run proves in-place continuity for the isolated preview package;
-unit/file-backed preservation tests prove theme, contrast, auth marker, planner
-records and outbox survival across reopen. It does **not** by itself prove a signed
-production login session survived this exact theme build. Stable signing lineage
-and signed Windows install-over are accepted only after the trusted main workflow;
-the final hosted checkpoint will be appended here rather than inferred from source.
+The build-2061→2062 run proves in-place continuity for the isolated Android preview
+package; unit/file-backed preservation tests prove theme, contrast, auth marker,
+planner records and outbox survival across reopen. The trusted main workflow now
+also proves the stable Windows signing lineage and `1.1.0.55 → 1.1.0.57` signed
+install-over while retaining `LocalState`. It does **not** turn the synthetic preview
+into proof that a real signed-in production Android session survived this exact
+theme build; that narrower live-owner claim remains deliberately unmade.
 
 ## Handoff boundary
 

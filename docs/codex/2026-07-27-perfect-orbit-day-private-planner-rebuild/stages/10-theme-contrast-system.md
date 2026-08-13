@@ -1,6 +1,6 @@
 # Stage 10 — Complete light, dark and high-contrast surface system
 
-Status: local implementation and Android runtime verified; exact-SHA hosted closure pending
+Status: complete — local Android runtime and exact-SHA hosted release verified
 Depends on: Stages 04–09  
 Primary surfaces: entire app, native system chrome, widget and installer previews
 

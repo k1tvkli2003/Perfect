@@ -474,7 +474,7 @@ recorded in `08-stage-verification.md`.
 Full evidence, artifact hashes, performance distributions and proof boundaries are
 recorded in `09-stage-verification.md`.
 
-## 2026-08-13 — Stage 10 authored theme and contrast local verification
+## 2026-08-13 — Stage 10 authored theme and contrast verification
 
 | Check | Method | Result | Evidence / limit |
 | --- | --- | --- | --- |
@@ -487,7 +487,10 @@ recorded in `09-stage-verification.md`.
 | Android in-place preview | build 2062 + `adb install -r` | passed | advanced from 2061; `firstInstallTime=2026-08-02 19:20:44` unchanged |
 | Android visual/runtime | screenshot + UIAutomator + hash manifest | passed | Daylight, Graphite, Clarity Light/Dark and live Appearance controls; 13 artifacts |
 | Local Windows compile | `flutter build windows --debug` | host-blocked | optional ATL `atlbase.h` missing in `flutter_local_notifications_windows`; project runner was not compiled |
-| Exact-SHA hosted build/release | pending | mandatory authority for Windows compile/sign/install-over and immutable three-asset release |
+| Branch exact-SHA gate | run `#56` / `31685867478` | passed | exact Stage 10 SHA `8742a676533d3337ed5d69919cd8d612e08c6024` |
+| Trusted main build/release | run `#57` / `31687276749` | passed | all four jobs succeeded on the same SHA; Windows native build/sign/package and Android trusted package passed |
+| Windows update continuity | hosted MSIX + Setup proof | passed | `1.1.0.55 → 1.1.0.57`, package family/`LocalState` preserved; Setup clean/rerun did not mutate Root |
+| Immutable release | GitHub release inspection | passed | `v1.1.0-build.2057` targets the exact SHA and contains exactly APK, Portable ZIP and Setup EXE with recorded SHA-256 digests |
 
-Full local evidence and the explicit signed/session boundary are recorded in
+Full local/hosted evidence and the explicit signed/session boundary are recorded in
 `10-stage-verification.md`.
