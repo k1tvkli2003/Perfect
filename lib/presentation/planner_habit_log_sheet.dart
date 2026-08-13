@@ -667,7 +667,7 @@ class _DayStateBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _summaryColor(summary.state);
+    final color = _summaryColor(context, summary.state);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(PerfectSpace.md),
@@ -843,12 +843,15 @@ IconData _summaryIcon(PlannerHabitDayState state) => switch (state) {
   PlannerHabitDayState.missed => Icons.cancel_rounded,
 };
 
-Color _summaryColor(PlannerHabitDayState state) => switch (state) {
-  PlannerHabitDayState.pending => PerfectColors.mutedInk,
-  PlannerHabitDayState.partial => PerfectColors.lilac,
-  PlannerHabitDayState.completed => PerfectColors.mint,
-  PlannerHabitDayState.missed => PerfectColors.danger,
-};
+Color _summaryColor(BuildContext context, PlannerHabitDayState state) {
+  final semantic = PerfectSemanticTheme.of(context);
+  return switch (state) {
+    PlannerHabitDayState.pending => semantic.muted,
+    PlannerHabitDayState.partial => semantic.tertiary,
+    PlannerHabitDayState.completed => semantic.secondary,
+    PlannerHabitDayState.missed => semantic.danger,
+  };
+}
 
 TextDirection _textDirection(String value) =>
     RegExp(r'[\u0600-\u08ff]').hasMatch(value)

@@ -221,32 +221,60 @@ def _verify_mark_assets(manifest: dict[str, object]) -> None:
             f"{name} is not the expected single-ink high-contrast silhouette.",
         )
 
+    widget_variants = {
+        "perfect_widget_mark_raster.png": None,
+        "perfect_widget_mark_dark_raster.png": None,
+        "perfect_widget_mark_hc_light_raster.png": (17, 18, 24),
+        "perfect_widget_mark_hc_dark_raster.png": (255, 253, 248),
+    }
     for density, scale in DENSITIES.items():
-        widget_path = (
-            ANDROID_RES / f"drawable-{density}" / "perfect_widget_mark_raster.png"
-        )
-        with Image.open(widget_path) as opened:
-            widget = opened.convert("RGBA")
-        expected_widget = round(48 * scale)
-        _require(
-            widget.size == (expected_widget, expected_widget),
-            f"{density} widget mark is not a 48dp surface canvas.",
-        )
-        widget_bounds = _bounds(widget)
-        widget_perimeter_dp = min(
-            widget_bounds[0],
-            widget_bounds[1],
-            widget.width - widget_bounds[2],
-            widget.height - widget_bounds[3],
-        ) / scale
-        _require(
-            widget_perimeter_dp >= 3.5,
-            f"{density} widget mark crowds its canvas: {widget_bounds}",
-        )
-        _require(
-            _components(widget, threshold=192) == 7,
-            f"{density} widget mark lost a visually opaque module.",
-        )
+        widget_geometry = None
+        for filename, expected_ink in widget_variants.items():
+            widget_path = ANDROID_RES / f"drawable-{density}" / filename
+            with Image.open(widget_path) as opened:
+                widget = opened.convert("RGBA")
+            expected_widget = round(48 * scale)
+            _require(
+                widget.size == (expected_widget, expected_widget),
+                f"{density} {filename} is not a 48dp surface canvas.",
+            )
+            widget_bounds = _bounds(widget)
+            widget_perimeter_dp = min(
+                widget_bounds[0],
+                widget_bounds[1],
+                widget.width - widget_bounds[2],
+                widget.height - widget_bounds[3],
+            ) / scale
+            _require(
+                widget_perimeter_dp >= 3.5,
+                f"{density} {filename} crowds its canvas: {widget_bounds}",
+            )
+            _require(
+                _components(widget, threshold=192) == 7,
+                f"{density} {filename} lost a visually opaque module.",
+            )
+            if widget_geometry is None:
+                widget_geometry = widget_bounds
+            _require(
+                widget_bounds == widget_geometry,
+                f"{density} {filename} changed protected mark geometry.",
+            )
+            if expected_ink is not None:
+                opaque_colours = {
+                    pixel[:3]
+                    for pixel in widget.get_flattened_data()
+                    if pixel[3] >= 250
+                }
+                _require(
+                    opaque_colours
+                    and all(
+                        max(abs(actual - expected) for actual, expected in zip(colour, expected_ink))
+                        <= 7
+                        for colour in opaque_colours
+                    ),
+                    f"{density} {filename} lost its single-ink contrast role: "
+                    f"{sorted(opaque_colours)[:12]}",
+                )
 
         splash_path = (
             ANDROID_RES / f"drawable-{density}" / "perfect_splash_mark_raster.png"
@@ -329,19 +357,35 @@ def _verify_wordmark_assets(manifest: dict[str, object]) -> None:
         _require(source.count("<path ") == 8, f"{variant}.svg must contain eight glyph paths.")
         _require("Perfect!" in source, f"{variant}.svg needs one accessible title.")
 
+    native_variants = (
+        "perfect_widget_wordmark_raster.png",
+        "perfect_widget_wordmark_dark_raster.png",
+        "perfect_widget_wordmark_hc_light_raster.png",
+        "perfect_widget_wordmark_hc_dark_raster.png",
+    )
     for density, scale in DENSITIES.items():
-        path = (
-            ANDROID_RES
-            / f"drawable-{density}"
-            / "perfect_widget_wordmark_raster.png"
-        )
-        with Image.open(path) as opened:
-            wordmark = opened.convert("RGBA")
-        expected = (round(96 * scale), round(24 * scale))
-        _require(wordmark.size == expected, f"{density} native wordmark has wrong canvas.")
-        left, top, right, bottom = _bounds(wordmark)
-        _require(left > 0 and top > 0 and right < wordmark.width and bottom < wordmark.height,
-                 f"{density} native wordmark touches its canvas edge.")
+        geometry = None
+        for filename in native_variants:
+            path = ANDROID_RES / f"drawable-{density}" / filename
+            with Image.open(path) as opened:
+                wordmark = opened.convert("RGBA")
+            expected = (round(96 * scale), round(24 * scale))
+            _require(
+                wordmark.size == expected,
+                f"{density} {filename} has the wrong native canvas.",
+            )
+            bounds = _bounds(wordmark)
+            left, top, right, bottom = bounds
+            _require(
+                left > 0 and top > 0 and right < wordmark.width and bottom < wordmark.height,
+                f"{density} {filename} touches its canvas edge.",
+            )
+            if geometry is None:
+                geometry = bounds
+            _require(
+                bounds == geometry,
+                f"{density} {filename} changed authored wordmark geometry.",
+            )
 
 
 def _verify_windows_icon(manifest: dict[str, object]) -> None:

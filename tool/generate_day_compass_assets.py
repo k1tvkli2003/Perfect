@@ -371,20 +371,27 @@ def _validate_master(master: Image.Image) -> None:
 def _write_android_surface_marks(
     master: Image.Image,
     dark_mark: Image.Image,
+    high_contrast_light: Image.Image,
+    high_contrast_dark: Image.Image,
 ) -> list[Path]:
     outputs: list[Path] = []
+    widget_variants = {
+        "perfect_widget_mark_raster.png": master,
+        "perfect_widget_mark_dark_raster.png": dark_mark,
+        "perfect_widget_mark_hc_light_raster.png": high_contrast_light,
+        "perfect_widget_mark_hc_dark_raster.png": high_contrast_dark,
+    }
     for density, scale in ANDROID_DENSITIES.items():
-        widget = _compose(
-            master,
-            round(WIDGET_CANVAS_DP * scale),
-            round(WIDGET_VISIBLE_DP * scale),
-        )
-        widget_path = (
-            ANDROID_RES / f"drawable-{density}" / "perfect_widget_mark_raster.png"
-        )
-        widget_path.parent.mkdir(parents=True, exist_ok=True)
-        widget.save(widget_path, optimize=True)
-        outputs.append(widget_path)
+        for filename, variant in widget_variants.items():
+            widget = _compose(
+                variant,
+                round(WIDGET_CANVAS_DP * scale),
+                round(WIDGET_VISIBLE_DP * scale),
+            )
+            widget_path = ANDROID_RES / f"drawable-{density}" / filename
+            widget_path.parent.mkdir(parents=True, exist_ok=True)
+            widget.save(widget_path, optimize=True)
+            outputs.append(widget_path)
 
         splash = _compose(
             master,
@@ -505,7 +512,12 @@ def main() -> None:
     SELECTION_PREVIEW.write_bytes(approved_master_bytes)
 
     windows_frames = _write_windows_icon(master)
-    android_outputs = _write_android_surface_marks(master, dark_mark)
+    android_outputs = _write_android_surface_marks(
+        master,
+        dark_mark,
+        high_contrast_light,
+        high_contrast_dark,
+    )
 
     entries = [
         _entry(MASTER_1024, master_1024, "archival high-resolution mark master"),

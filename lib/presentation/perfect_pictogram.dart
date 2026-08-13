@@ -59,12 +59,10 @@ class PerfectPictogram extends StatelessWidget {
     final artwork = framed
         ? DecoratedBox(
             decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? PerfectColors.creamSurfaceHigh
-                  : PerfectColors.creamSurfaceLow,
+              color: PerfectSemanticTheme.of(context).surfaceHigh,
               borderRadius: BorderRadius.circular(size * .36),
               border: Border.all(
-                color: PerfectColors.creamStroke.withValues(alpha: .82),
+                color: PerfectSemanticTheme.of(context).outlineVariant,
               ),
             ),
             child: Padding(padding: EdgeInsets.all(size * .16), child: picture),

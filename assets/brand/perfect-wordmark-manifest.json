@@ -51,12 +51,115 @@
       ],
       "hash_basis": "rgba-v1",
       "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-hdpi/perfect_widget_wordmark_dark_raster.png",
+      "pixels": [
+        144,
+        36
+      ],
+      "sha256": "60245d400f1ccacdc7338b58f3ce5bf52388f49f84798e2a7db17c9397cd914d",
+      "theme_variant": "perfect-wordmark-dark"
+    },
+    {
+      "alpha_bounds": [
+        6,
+        4,
+        138,
+        31
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-hdpi/perfect_widget_wordmark_hc_dark_raster.png",
+      "pixels": [
+        144,
+        36
+      ],
+      "sha256": "2860eef86e5344d8b1292447eb97d533afefe1e6601455b68ba863abb0eae00a",
+      "theme_variant": "perfect-wordmark-high-contrast-dark"
+    },
+    {
+      "alpha_bounds": [
+        6,
+        4,
+        138,
+        31
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-hdpi/perfect_widget_wordmark_hc_light_raster.png",
+      "pixels": [
+        144,
+        36
+      ],
+      "sha256": "2007c29a46443f8eab2b09a5bf507b8fdb263c63fc20a4f32c85ccc39bf21dae",
+      "theme_variant": "perfect-wordmark-high-contrast-light"
+    },
+    {
+      "alpha_bounds": [
+        6,
+        4,
+        138,
+        31
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
       "path": "android/app/src/main/res/drawable-hdpi/perfect_widget_wordmark_raster.png",
       "pixels": [
         144,
         36
       ],
-      "sha256": "afa7ef1a1fb46bdebb42a1cae57200b4e8587522103390e18fdaf9ae73f0a323"
+      "sha256": "afa7ef1a1fb46bdebb42a1cae57200b4e8587522103390e18fdaf9ae73f0a323",
+      "theme_variant": "perfect-wordmark"
+    },
+    {
+      "alpha_bounds": [
+        4,
+        3,
+        92,
+        21
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-mdpi/perfect_widget_wordmark_dark_raster.png",
+      "pixels": [
+        96,
+        24
+      ],
+      "sha256": "d6e33c030fe7fcf60ec0bdcdee9c71952bd0425a57ac043c93b18c2e6f3a3a07",
+      "theme_variant": "perfect-wordmark-dark"
+    },
+    {
+      "alpha_bounds": [
+        4,
+        3,
+        92,
+        21
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-mdpi/perfect_widget_wordmark_hc_dark_raster.png",
+      "pixels": [
+        96,
+        24
+      ],
+      "sha256": "8943c2565e9ca1236d73c1ce690525dd873e09184da905dfb86da1d21401b43a",
+      "theme_variant": "perfect-wordmark-high-contrast-dark"
+    },
+    {
+      "alpha_bounds": [
+        4,
+        3,
+        92,
+        21
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-mdpi/perfect_widget_wordmark_hc_light_raster.png",
+      "pixels": [
+        96,
+        24
+      ],
+      "sha256": "c80c3a4fd0c8ee7d802960a2f8a557a86862fbaa493e86b4a9f82c18300dc05d",
+      "theme_variant": "perfect-wordmark-high-contrast-light"
     },
     {
       "alpha_bounds": [
@@ -72,7 +175,59 @@
         96,
         24
       ],
-      "sha256": "96b3350f45862f258f0236e8d60e6eb257bb714164184fefbc0df5ac0ca4a7ad"
+      "sha256": "96b3350f45862f258f0236e8d60e6eb257bb714164184fefbc0df5ac0ca4a7ad",
+      "theme_variant": "perfect-wordmark"
+    },
+    {
+      "alpha_bounds": [
+        8,
+        6,
+        184,
+        41
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xhdpi/perfect_widget_wordmark_dark_raster.png",
+      "pixels": [
+        192,
+        48
+      ],
+      "sha256": "e343bbb956e29a3c87506315cf145e532fb6233069c05a7c9792dd89ce1a9f49",
+      "theme_variant": "perfect-wordmark-dark"
+    },
+    {
+      "alpha_bounds": [
+        8,
+        6,
+        184,
+        41
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xhdpi/perfect_widget_wordmark_hc_dark_raster.png",
+      "pixels": [
+        192,
+        48
+      ],
+      "sha256": "63f5d1fc46c98f86747aaba4d42a8c093435a3820ec5fffc6d49c4c7a22523e8",
+      "theme_variant": "perfect-wordmark-high-contrast-dark"
+    },
+    {
+      "alpha_bounds": [
+        8,
+        6,
+        184,
+        41
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xhdpi/perfect_widget_wordmark_hc_light_raster.png",
+      "pixels": [
+        192,
+        48
+      ],
+      "sha256": "b3772f6db208cb051fe3dd6bef9cf48030f86a2e1fa44a9db0d55eaf0e9808c9",
+      "theme_variant": "perfect-wordmark-high-contrast-light"
     },
     {
       "alpha_bounds": [
@@ -88,7 +243,59 @@
         192,
         48
       ],
-      "sha256": "ba4ad46045425dbe7a9938fe530edf3a4fa2eaf755be7357cd2921679f4999b1"
+      "sha256": "ba4ad46045425dbe7a9938fe530edf3a4fa2eaf755be7357cd2921679f4999b1",
+      "theme_variant": "perfect-wordmark"
+    },
+    {
+      "alpha_bounds": [
+        12,
+        9,
+        276,
+        62
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xxhdpi/perfect_widget_wordmark_dark_raster.png",
+      "pixels": [
+        288,
+        72
+      ],
+      "sha256": "a596cd0c90b075c462bb38571c882d2cb28603118c54d9732d0edb707ebb8c79",
+      "theme_variant": "perfect-wordmark-dark"
+    },
+    {
+      "alpha_bounds": [
+        12,
+        9,
+        276,
+        62
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xxhdpi/perfect_widget_wordmark_hc_dark_raster.png",
+      "pixels": [
+        288,
+        72
+      ],
+      "sha256": "31b6edf457b20051cd619b56bea60109e3de58bb9631f38f869ef8dcb69863c9",
+      "theme_variant": "perfect-wordmark-high-contrast-dark"
+    },
+    {
+      "alpha_bounds": [
+        12,
+        9,
+        276,
+        62
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xxhdpi/perfect_widget_wordmark_hc_light_raster.png",
+      "pixels": [
+        288,
+        72
+      ],
+      "sha256": "f25c518d7693460a894fe8f47a95c8199784eb17a055bf3607c304b5ba205ea1",
+      "theme_variant": "perfect-wordmark-high-contrast-light"
     },
     {
       "alpha_bounds": [
@@ -104,7 +311,59 @@
         288,
         72
       ],
-      "sha256": "fbf23ab9d9b59dd2d9bd3c9179f799485b2e35a55340b4bb7fc667abbee6bb30"
+      "sha256": "fbf23ab9d9b59dd2d9bd3c9179f799485b2e35a55340b4bb7fc667abbee6bb30",
+      "theme_variant": "perfect-wordmark"
+    },
+    {
+      "alpha_bounds": [
+        16,
+        12,
+        368,
+        83
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xxxhdpi/perfect_widget_wordmark_dark_raster.png",
+      "pixels": [
+        384,
+        96
+      ],
+      "sha256": "84dbdc92586089dddd9ab772981ab7e80e30a0916a9d02ccdd2f40dcc9402487",
+      "theme_variant": "perfect-wordmark-dark"
+    },
+    {
+      "alpha_bounds": [
+        16,
+        12,
+        368,
+        83
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xxxhdpi/perfect_widget_wordmark_hc_dark_raster.png",
+      "pixels": [
+        384,
+        96
+      ],
+      "sha256": "7c5ec1d7111ba5f0cd22d57a41106c3443287349116ebe2487ad559a2f65e01b",
+      "theme_variant": "perfect-wordmark-high-contrast-dark"
+    },
+    {
+      "alpha_bounds": [
+        16,
+        12,
+        368,
+        83
+      ],
+      "hash_basis": "rgba-v1",
+      "kind": "android-widget-raster",
+      "path": "android/app/src/main/res/drawable-xxxhdpi/perfect_widget_wordmark_hc_light_raster.png",
+      "pixels": [
+        384,
+        96
+      ],
+      "sha256": "cf2fd4331087fea11176ce13ff00ef99db284e70fb19d5b9bd949261f1618ef0",
+      "theme_variant": "perfect-wordmark-high-contrast-light"
     },
     {
       "alpha_bounds": [
@@ -120,7 +379,8 @@
         384,
         96
       ],
-      "sha256": "75410a5b20888f0837e4383f9937668683ec16371a109365a1850b6c4f0a3693"
+      "sha256": "75410a5b20888f0837e4383f9937668683ec16371a109365a1850b6c4f0a3693",
+      "theme_variant": "perfect-wordmark"
     },
     {
       "alpha_bounds": [

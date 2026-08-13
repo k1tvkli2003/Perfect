@@ -195,7 +195,7 @@ class _FocusSessionSheetState extends State<FocusSessionSheet> {
                 CircularProgressIndicator(
                   value: progress,
                   strokeWidth: 13,
-                  color: PerfectColors.apricot,
+                  color: PerfectSemanticTheme.of(context).primary,
                   backgroundColor: Theme.of(
                     context,
                   ).colorScheme.outline.withValues(alpha: .45),

@@ -218,7 +218,7 @@ class _OrbitStageState extends State<OrbitStage>
     final diameter = math
         .min(math.min(availableWidth, availableHeight), maximumDiameter)
         .toDouble();
-    final theme = Theme.of(context);
+    final semantic = PerfectSemanticTheme.of(context);
 
     return Center(
       child: SizedBox.square(
@@ -238,7 +238,6 @@ class _OrbitStageState extends State<OrbitStage>
                 parent: _revealController,
                 curve: PerfectMotion.modalEnter,
               ).value;
-              final dark = theme.brightness == Brightness.dark;
               return Stack(
                 alignment: Alignment.center,
                 clipBehavior: Clip.none,
@@ -249,7 +248,7 @@ class _OrbitStageState extends State<OrbitStage>
                       size: Size.square(diameter),
                       painter: _DayPulseDialPainter(
                         plan: plan,
-                        dark: dark,
+                        semantic: semantic,
                         layer: _DayPulseDialLayer.backdrop,
                         pulse: _pulseController.value,
                         hovered: _hovered,
@@ -259,7 +258,7 @@ class _OrbitStageState extends State<OrbitStage>
                   ),
                   _OrbitGraphicRing(
                     diameter: diameter,
-                    dark: dark,
+                    themeId: semantic.id,
                     reveal: reveal,
                   ),
                   RepaintBoundary(
@@ -268,7 +267,7 @@ class _OrbitStageState extends State<OrbitStage>
                       size: Size.square(diameter),
                       painter: _DayPulseDialPainter(
                         plan: plan,
-                        dark: dark,
+                        semantic: semantic,
                         layer: _DayPulseDialLayer.overlay,
                         pulse: _pulseController.value,
                         hovered: _hovered,
@@ -375,10 +374,14 @@ class _OrbitStageState extends State<OrbitStage>
             overlayColor: WidgetStateProperty.resolveWith((states) {
               if (!interactive) return Colors.transparent;
               if (states.contains(WidgetState.pressed)) {
-                return PerfectColors.lilac.withValues(alpha: .10);
+                return PerfectSemanticTheme.of(
+                  context,
+                ).tertiary.withValues(alpha: .10);
               }
               if (states.contains(WidgetState.hovered)) {
-                return PerfectColors.lilac.withValues(alpha: .035);
+                return PerfectSemanticTheme.of(
+                  context,
+                ).tertiary.withValues(alpha: .035);
               }
               return Colors.transparent;
             }),
@@ -486,7 +489,7 @@ class _OrbitCentre extends StatelessWidget {
                 _formatClock(plan.now),
                 maxLines: 1,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: PerfectColors.lilac,
+                  color: PerfectSemanticTheme.of(context).tertiary,
                   fontSize: timeSize,
                   height: 1,
                   fontWeight: FontWeight.w500,
@@ -521,7 +524,7 @@ class _OrbitCentre extends StatelessWidget {
               SizedBox(height: diameter * .028),
               _HeartbeatLine(
                 amplitude: pulse,
-                color: PerfectColors.lilac,
+                color: PerfectSemanticTheme.of(context).tertiary,
                 width: (diameter * .22).clamp(64.0, 108.0),
               ),
               Text(
@@ -603,12 +606,12 @@ class _HeartbeatPainter extends CustomPainter {
 class _OrbitGraphicRing extends StatelessWidget {
   const _OrbitGraphicRing({
     required this.diameter,
-    required this.dark,
+    required this.themeId,
     required this.reveal,
   });
 
   final double diameter;
-  final bool dark;
+  final String themeId;
   final double reveal;
 
   @override
@@ -622,9 +625,15 @@ class _OrbitGraphicRing extends StatelessWidget {
           // while the 6 AM / 6 PM anchors no longer fight the canvas edge.
           scale: .92625 + progress * .02375,
           child: SvgPicture.asset(
-            dark
-                ? 'assets/brand/orbit_period_ring_dark.svg'
-                : 'assets/brand/orbit_period_ring_light.svg',
+            switch (themeId) {
+              'theme-hc-light-clarity' =>
+                'assets/brand/orbit_period_ring_hc_light.svg',
+              'theme-hc-dark-clarity' =>
+                'assets/brand/orbit_period_ring_hc_dark.svg',
+              'theme-dark-graphite-bloom' =>
+                'assets/brand/orbit_period_ring_dark.svg',
+              _ => 'assets/brand/orbit_period_ring_light.svg',
+            },
             width: diameter,
             height: diameter,
             fit: BoxFit.contain,
@@ -641,7 +650,7 @@ enum _DayPulseDialLayer { backdrop, overlay }
 class _DayPulseDialPainter extends CustomPainter {
   const _DayPulseDialPainter({
     required this.plan,
-    required this.dark,
+    required this.semantic,
     required this.layer,
     required this.pulse,
     required this.hovered,
@@ -649,7 +658,7 @@ class _DayPulseDialPainter extends CustomPainter {
   });
 
   final _OrbitPlan plan;
-  final bool dark;
+  final PerfectSemanticTheme semantic;
   final _DayPulseDialLayer layer;
   final double pulse;
   final bool hovered;
@@ -659,10 +668,9 @@ class _DayPulseDialPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final shortest = math.min(size.width, size.height);
     final center = Offset(size.width / 2, size.height / 2);
-    final surface = dark
-        ? const Color(0xff292c3d)
-        : PerfectColors.creamElevated;
-    final stroke = dark ? const Color(0xff494d61) : PerfectColors.creamStroke;
+    final surface = semantic.surfaceHigh;
+    final stroke = semantic.outlineVariant;
+    final highContrast = semantic.highContrast;
     // The authored ring is rendered at 95% so its live clock labels have a
     // deliberate gutter. These values are the asset's 440/70/395 geometry at
     // the same scale; the marker, arc copy and ticks therefore stay locked to
@@ -677,7 +685,9 @@ class _DayPulseDialPainter extends CustomPainter {
         outerRadius + shortest * .024,
         Paint()
           ..color = surface
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, shortest * .028),
+          ..maskFilter = highContrast
+              ? null
+              : MaskFilter.blur(BlurStyle.normal, shortest * .028),
       );
       canvas.drawCircle(
         center,
@@ -685,7 +695,9 @@ class _DayPulseDialPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(1, shortest * .004)
-          ..color = Colors.white.withValues(alpha: dark ? .10 : .84),
+          ..color = highContrast
+              ? semantic.outline
+              : semantic.surfaceLowest.withValues(alpha: .84),
       );
       canvas.drawCircle(
         center,
@@ -693,7 +705,7 @@ class _DayPulseDialPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(1, shortest * .004)
-          ..color = stroke.withValues(alpha: .76),
+          ..color = stroke.withValues(alpha: highContrast ? 1 : .76),
       );
       canvas.drawCircle(
         center,
@@ -701,17 +713,32 @@ class _DayPulseDialPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(1, shortest * .003)
-          ..color = stroke.withValues(alpha: .72),
+          ..color = stroke.withValues(alpha: highContrast ? 1 : .72),
       );
       _drawTicks(
         canvas,
         center: center,
         radius: innerTickRadius,
         shortest: shortest,
-        color: dark ? const Color(0xffa8a5b5) : const Color(0xffc7bcaf),
+        color: semantic.muted,
       );
       return;
     }
+
+    // The authored period bands stay deliberately pastel in every theme.
+    // Their live curved copy therefore needs the semantic colour intended for
+    // text *on* that family, not the accent itself (which becomes light in
+    // Graphite and would disappear over the matching band).
+    final useFilledActionInk = semantic.brightness == Brightness.dark;
+    final morningInk = useFilledActionInk
+        ? semantic.onSecondary
+        : semantic.onSecondaryContainer;
+    final afternoonInk = useFilledActionInk
+        ? semantic.onPrimary
+        : semantic.onPrimaryContainer;
+    final eveningInk = useFilledActionInk
+        ? semantic.onTertiary
+        : semantic.onTertiaryContainer;
 
     _drawPeriodLabel(
       canvas,
@@ -722,7 +749,7 @@ class _DayPulseDialPainter extends CustomPainter {
       angle: _clockAngle(8.85),
       title: 'MORNING',
       detail: '6AM - 12PM',
-      color: dark ? const Color(0xffa9dfbb) : const Color(0xff267f80),
+      color: morningInk,
     );
     _drawPeriodLabel(
       canvas,
@@ -733,7 +760,7 @@ class _DayPulseDialPainter extends CustomPainter {
       angle: _clockAngle(15.15),
       title: 'AFTERNOON',
       detail: '12PM - 6PM',
-      color: dark ? const Color(0xffffbd7c) : const Color(0xff9f6430),
+      color: afternoonInk,
     );
     _drawPeriodLabel(
       canvas,
@@ -744,7 +771,7 @@ class _DayPulseDialPainter extends CustomPainter {
       angle: _clockAngle(21.72),
       title: 'EVENING',
       detail: '6PM - 12AM',
-      color: dark ? const Color(0xffcfc5ff) : const Color(0xff7662b5),
+      color: eveningInk,
     );
 
     _drawClockLabel(
@@ -755,7 +782,7 @@ class _DayPulseDialPainter extends CustomPainter {
       primary: '12',
       secondary: 'NOON',
       shortest: shortest,
-      color: dark ? const Color(0xffd2ccbf) : const Color(0xffa99d90),
+      color: semantic.muted,
     );
     _drawClockLabel(
       canvas,
@@ -767,7 +794,7 @@ class _DayPulseDialPainter extends CustomPainter {
       primary: '6',
       secondary: 'PM',
       shortest: shortest,
-      color: dark ? const Color(0xffd2ccbf) : const Color(0xffa99d90),
+      color: semantic.muted,
     );
     _drawClockLabel(
       canvas,
@@ -777,7 +804,7 @@ class _DayPulseDialPainter extends CustomPainter {
       primary: '12',
       secondary: 'MIDNIGHT',
       shortest: shortest,
-      color: dark ? const Color(0xffd2ccbf) : const Color(0xffa99d90),
+      color: semantic.muted,
     );
     _drawClockLabel(
       canvas,
@@ -788,7 +815,7 @@ class _DayPulseDialPainter extends CustomPainter {
       primary: '6',
       secondary: 'AM',
       shortest: shortest,
-      color: dark ? const Color(0xffd2ccbf) : const Color(0xffa99d90),
+      color: semantic.muted,
     );
 
     _drawNowMarker(
@@ -799,7 +826,8 @@ class _DayPulseDialPainter extends CustomPainter {
       hour: plan.now.hour + plan.now.minute / 60 + plan.now.second / 3600,
       pulse: pulse,
       surface: surface,
-      color: PerfectColors.lilac,
+      color: semantic.tertiary,
+      ink: semantic.onTertiary,
     );
     if (hovered || focused) {
       canvas.drawCircle(
@@ -808,7 +836,9 @@ class _DayPulseDialPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = focused ? 2.2 : 1.4
-          ..color = PerfectColors.lilac.withValues(alpha: focused ? .58 : .3),
+          ..color = semantic.focus.withValues(
+            alpha: highContrast ? 1 : (focused ? .58 : .3),
+          ),
       );
     }
   }
@@ -1014,6 +1044,7 @@ class _DayPulseDialPainter extends CustomPainter {
     required double pulse,
     required Color surface,
     required Color color,
+    required Color ink,
   }) {
     final angle = _clockAngle(hour);
     final point = _point(center, radius, angle);
@@ -1064,7 +1095,7 @@ class _DayPulseDialPainter extends CustomPainter {
         ..strokeWidth = math.max(1.5, shortest * .0045)
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
-        ..color = Colors.white.withValues(alpha: .94),
+        ..color = ink,
     );
   }
 
@@ -1072,7 +1103,7 @@ class _DayPulseDialPainter extends CustomPainter {
   bool shouldRepaint(covariant _DayPulseDialPainter oldDelegate) =>
       oldDelegate.plan.semanticValue != plan.semanticValue ||
       oldDelegate.plan.now != plan.now ||
-      oldDelegate.dark != dark ||
+      oldDelegate.semantic != semantic ||
       oldDelegate.layer != layer ||
       oldDelegate.pulse != pulse ||
       oldDelegate.hovered != hovered ||
@@ -1104,16 +1135,17 @@ class _OrbitLinearSummary extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final reflow = textScale >= 1.45 || constraints.maxWidth < 300;
+            final semantic = PerfectSemanticTheme.of(context);
             final leading = Container(
               width: 48,
               height: 48,
-              decoration: const BoxDecoration(
-                color: PerfectColors.lilacSoft,
+              decoration: BoxDecoration(
+                color: semantic.tertiaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.track_changes_rounded,
-                color: PerfectColors.lilac,
+                color: semantic.onTertiaryContainer,
               ),
             );
             final title = Text(
@@ -1142,7 +1174,7 @@ class _OrbitLinearSummary extends StatelessWidget {
                   : '${plan.openCount} open items',
               maxLines: 1,
               style: theme.textTheme.labelMedium?.copyWith(
-                color: PerfectColors.lilac,
+                color: semantic.tertiary,
                 fontWeight: FontWeight.w800,
               ),
             );

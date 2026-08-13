@@ -305,7 +305,7 @@ class PerfectDualDateClock extends StatelessWidget {
                           ? Theme.of(context).textTheme.titleSmall
                           : Theme.of(context).textTheme.titleMedium)
                       ?.copyWith(
-                        color: PerfectColors.lilac,
+                        color: PerfectSemanticTheme.of(context).tertiary,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -.25,
                       ),

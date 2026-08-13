@@ -5,7 +5,13 @@ import android.app.PendingIntent
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.StateListDrawable
 import android.os.Bundle
+import android.R.attr.state_enabled
+import android.R.attr.state_focused
+import android.R.attr.state_pressed
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
@@ -43,13 +49,15 @@ class PerfectWidgetQuickAddActivity : Activity() {
     setFinishOnTouchOutside(true)
     setContentView(R.layout.perfect_widget_quick_add)
 
+    val prefs = getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+    applyAppearance(PerfectNativeAppearance.resolve(this, prefs))
+
     titleInput = findViewById(R.id.quick_add_title)
     submitButton = findViewById(R.id.quick_add_submit)
     timeButton = findViewById(R.id.quick_add_time)
     clearTimeButton = findViewById(R.id.quick_add_clear_time)
     errorView = findViewById(R.id.quick_add_error)
 
-    val prefs = getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
     val hasSession =
         !prefs.getString(PerfectTodayWidgetStore.OWNER_ID_KEY, null).isNullOrBlank() &&
             !prefs.getString(
@@ -87,6 +95,130 @@ class PerfectWidgetQuickAddActivity : Activity() {
     titleInput.post {
       (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
           .showSoftInput(titleInput, InputMethodManager.SHOW_IMPLICIT)
+    }
+  }
+
+  private fun applyAppearance(appearance: PerfectNativeAppearance) {
+    findViewById<View>(R.id.quick_add_root).background = rounded(
+        colour = appearance.canvas,
+        stroke = appearance.outline,
+        strokeWidth = if (appearance.highContrast) 2 else 1,
+        radius = 28f,
+    )
+    findViewById<android.widget.ImageView>(R.id.quick_add_mark)
+        .setImageResource(appearance.markResource)
+    findViewById<TextView>(R.id.quick_add_heading).setTextColor(appearance.ink)
+    findViewById<TextView>(R.id.quick_add_subtitle).setTextColor(appearance.muted)
+    findViewById<TextView>(R.id.quick_add_signed_out_message).setTextColor(appearance.muted)
+
+    val input = findViewById<EditText>(R.id.quick_add_title)
+    input.setTextColor(appearance.ink)
+    input.setHintTextColor(appearance.muted)
+    input.background = stateful(
+        focused = rounded(
+            colour = appearance.surface,
+            stroke = appearance.focus,
+            strokeWidth = 2,
+            radius = 18f,
+        ),
+        pressed = rounded(
+            colour = appearance.surfaceHigh,
+            stroke = appearance.focus,
+            strokeWidth = if (appearance.highContrast) 2 else 1,
+            radius = 18f,
+        ),
+        normal = rounded(
+            colour = appearance.surface,
+            stroke = appearance.outline,
+            strokeWidth = if (appearance.highContrast) 2 else 1,
+            radius = 18f,
+        ),
+    )
+
+    val secondary = findViewById<Button>(R.id.quick_add_time)
+    secondary.setTextColor(appearance.ink)
+    secondary.background = stateful(
+        pressed = rounded(
+            colour = appearance.surfaceHigh,
+            stroke = appearance.focus,
+            strokeWidth = if (appearance.highContrast) 2 else 1,
+            radius = 16f,
+        ),
+        normal = rounded(
+            colour = appearance.surface,
+            stroke = appearance.outline,
+            strokeWidth = if (appearance.highContrast) 2 else 1,
+            radius = 16f,
+        ),
+    )
+    for (id in intArrayOf(R.id.quick_add_clear_time, R.id.quick_add_cancel)) {
+      findViewById<Button>(id).setTextColor(appearance.muted)
+    }
+    findViewById<TextView>(R.id.quick_add_error).setTextColor(appearance.danger)
+
+    val primaryText = ColorStateList(
+        arrayOf(intArrayOf(-state_enabled), intArrayOf()),
+        intArrayOf(appearance.muted, appearance.onPrimary),
+    )
+    for (id in intArrayOf(R.id.quick_add_submit, R.id.quick_add_open_app)) {
+      val button = findViewById<Button>(id)
+      button.setTextColor(primaryText)
+      button.background = primaryButton(appearance)
+    }
+  }
+
+  private fun primaryButton(appearance: PerfectNativeAppearance): StateListDrawable =
+      StateListDrawable().apply {
+        addState(
+            intArrayOf(-state_enabled),
+            rounded(
+                colour = appearance.surfaceHigh,
+                stroke = appearance.outline,
+                strokeWidth = if (appearance.highContrast) 2 else 0,
+                radius = 18f,
+            ),
+        )
+        addState(
+            intArrayOf(state_pressed),
+            rounded(
+                colour = appearance.focus,
+                stroke = appearance.ink,
+                strokeWidth = if (appearance.highContrast) 2 else 0,
+                radius = 18f,
+            ),
+        )
+        addState(
+            intArrayOf(),
+            rounded(
+                colour = appearance.primary,
+                stroke = appearance.outline,
+                strokeWidth = if (appearance.highContrast) 2 else 0,
+                radius = 18f,
+            ),
+        )
+      }
+
+  private fun stateful(
+      normal: GradientDrawable,
+      pressed: GradientDrawable,
+      focused: GradientDrawable? = null,
+  ): StateListDrawable = StateListDrawable().apply {
+    if (focused != null) addState(intArrayOf(state_focused), focused)
+    addState(intArrayOf(state_pressed), pressed)
+    addState(intArrayOf(), normal)
+  }
+
+  private fun rounded(
+      colour: Int,
+      stroke: Int,
+      strokeWidth: Int,
+      radius: Float,
+  ): GradientDrawable = GradientDrawable().apply {
+    shape = GradientDrawable.RECTANGLE
+    setColor(colour)
+    cornerRadius = radius * resources.displayMetrics.density
+    if (strokeWidth > 0) {
+      setStroke((strokeWidth * resources.displayMetrics.density).toInt(), stroke)
     }
   }
 

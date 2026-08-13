@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum PerfectContrastMode { system, high }
+
 abstract final class PerfectPreferences {
   static const themeModeKey = 'perfect.theme_mode';
+  static const contrastModeKey = 'perfect.contrast_mode';
   static const navigationRailExtendedKey =
       'perfect.windows_navigation_rail_extended';
 
@@ -18,6 +21,19 @@ abstract final class PerfectPreferences {
   static Future<void> saveThemeMode(ThemeMode mode) async {
     final preferences = await SharedPreferences.getInstance();
     await preferences.setString(themeModeKey, mode.name);
+  }
+
+  static Future<PerfectContrastMode> readContrastMode() async {
+    final preferences = await SharedPreferences.getInstance();
+    return switch (preferences.getString(contrastModeKey)) {
+      'high' => PerfectContrastMode.high,
+      _ => PerfectContrastMode.system,
+    };
+  }
+
+  static Future<void> saveContrastMode(PerfectContrastMode mode) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(contrastModeKey, mode.name);
   }
 
   static Future<bool?> readNavigationRailExtended() async {

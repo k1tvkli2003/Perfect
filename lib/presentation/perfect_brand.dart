@@ -12,8 +12,7 @@ class PerfectMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final media = MediaQuery.maybeOf(context);
-    final highContrast = media?.highContrast ?? false;
+    final highContrast = PerfectContrast.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
     final asset = highContrast
         ? dark
@@ -62,8 +61,7 @@ class PerfectWordmark extends StatelessWidget {
         (MediaQuery.maybeTextScalerOf(context) ?? TextScaler.noScaling).scale(
           fontSize,
         );
-    final media = MediaQuery.maybeOf(context);
-    final highContrast = media?.highContrast ?? false;
+    final highContrast = PerfectContrast.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
     final asset = highContrast
         ? dark

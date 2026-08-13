@@ -87,7 +87,10 @@ class _PlannerArchiveSheetState extends State<PlannerArchiveSheet> {
       children: [
         Row(
           children: [
-            const Icon(Icons.inventory_2_outlined, color: PerfectColors.lilac),
+            Icon(
+              Icons.inventory_2_outlined,
+              color: PerfectSemanticTheme.of(context).tertiary,
+            ),
             const SizedBox(width: PerfectSpace.xs),
             Expanded(
               child: Text(

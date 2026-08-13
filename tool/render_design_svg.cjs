@@ -46,6 +46,20 @@ async function main() {
       deviceScaleFactor: 1,
     });
     await page.goto(pathToFileURL(input).href, { waitUntil: 'load' });
+    const documentState = await page.evaluate(() => ({
+      rootTag: document.documentElement?.tagName?.toLowerCase() ?? '',
+      parserErrorCount: document.querySelectorAll('parsererror').length,
+      bodyText: document.body?.innerText?.slice(0, 240) ?? '',
+    }));
+    if (
+      documentState.rootTag !== 'svg' ||
+      documentState.parserErrorCount > 0 ||
+      documentState.bodyText.includes('This page contains the following errors:')
+    ) {
+      throw new Error(
+        `SVG parse failure for ${input}: root=${documentState.rootTag} parserErrors=${documentState.parserErrorCount} ${documentState.bodyText}`,
+      );
+    }
     await page.screenshot({ path: output, fullPage: false });
   } finally {
     await browser.close();

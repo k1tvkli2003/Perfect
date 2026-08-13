@@ -86,7 +86,10 @@ class _PlannerInsightsSheetState extends State<PlannerInsightsSheet> {
       children: [
         Row(
           children: [
-            const Icon(Icons.insights_outlined, color: PerfectColors.apricot),
+            Icon(
+              Icons.insights_outlined,
+              color: PerfectSemanticTheme.of(context).primary,
+            ),
             const SizedBox(width: PerfectSpace.xs),
             Expanded(
               child: Text(
@@ -144,22 +147,22 @@ class _PlannerInsightsSheetState extends State<PlannerInsightsSheet> {
                       _InsightMetric(
                         label: 'Active tasks',
                         value: '${insight.activeTaskCount}',
-                        color: PerfectColors.apricot,
+                        color: PerfectSemanticTheme.of(context).primary,
                       ),
                       _InsightMetric(
                         label: 'One-off done',
                         value: '${insight.completedTaskCount}',
-                        color: PerfectColors.mint,
+                        color: PerfectSemanticTheme.of(context).secondary,
                       ),
                       _InsightMetric(
                         label: 'Recorded wins',
                         value: '${insight.completedOccurrences}',
-                        color: PerfectColors.lilac,
+                        color: PerfectSemanticTheme.of(context).tertiary,
                       ),
                       _InsightMetric(
                         label: 'Habit check-ins',
                         value: '${insight.habitCheckIns}',
-                        color: PerfectColors.mint,
+                        color: PerfectSemanticTheme.of(context).secondary,
                       ),
                     ],
                   ),

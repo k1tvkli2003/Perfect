@@ -13,22 +13,22 @@ void main() {
           (
             phase: PlannerSyncPhase.idle,
             label: 'Synced',
-            color: PerfectColors.sync,
+            color: PerfectSemanticTheme.light.sync,
           ),
           (
             phase: PlannerSyncPhase.syncing,
             label: 'Syncing',
-            color: PerfectColors.apricot,
+            color: PerfectSemanticTheme.light.warning,
           ),
           (
             phase: PlannerSyncPhase.offline,
             label: 'Retrying',
-            color: PerfectColors.apricot,
+            color: PerfectSemanticTheme.light.warning,
           ),
           (
             phase: PlannerSyncPhase.needsAttention,
             label: 'Sync issue',
-            color: PerfectColors.danger,
+            color: PerfectSemanticTheme.light.danger,
           ),
         ]) {
       await _pumpIndicator(

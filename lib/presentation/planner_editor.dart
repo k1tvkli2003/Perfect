@@ -2027,7 +2027,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
               (color) => ChoiceChip(
                 avatar: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: _plannerColorValue(color),
+                    color: _plannerColorValue(context, color),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: Theme.of(context).colorScheme.outline,
@@ -2406,7 +2406,8 @@ class _PlannerEditorState extends State<PlannerEditor> {
   );
 
   Widget _trackingMethodChooser(BuildContext context) {
-    const options =
+    final semantic = PerfectSemanticTheme.of(context);
+    final options =
         <
           ({
             String value,
@@ -2422,7 +2423,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
             description:
                 'A simple success, miss, pending, or partial check-in.',
             icon: Icons.check_circle_outline_rounded,
-            accent: PerfectColors.mint,
+            accent: semantic.secondary,
           ),
           (
             value: 'count',
@@ -2430,14 +2431,14 @@ class _PlannerEditorState extends State<PlannerEditor> {
             description:
                 'Measure pages, glasses, repetitions, distance, or any unit.',
             icon: Icons.pin_outlined,
-            accent: PerfectColors.apricot,
+            accent: semantic.primary,
           ),
           (
             value: 'duration',
             title: 'Timer',
             description: 'Track a duration with a daily target or limit.',
             icon: Icons.timer_outlined,
-            accent: PerfectColors.lilac,
+            accent: semantic.tertiary,
           ),
           (
             value: 'checklist',
@@ -2445,14 +2446,14 @@ class _PlannerEditorState extends State<PlannerEditor> {
             description:
                 'Build a routine from sub-steps and define its success rule.',
             icon: Icons.checklist_rounded,
-            accent: PerfectColors.mint,
+            accent: semantic.secondary,
           ),
           (
             value: 'avoid',
             title: 'Limit / avoid',
             description: 'Keep a behavior at or below a limit—including zero.',
             icon: Icons.do_not_disturb_alt_rounded,
-            accent: PerfectColors.lilac,
+            accent: semantic.tertiary,
           ),
         ];
     return LayoutBuilder(
@@ -2702,7 +2703,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
                                   : Icons.add_circle_outline_rounded,
                               size: 20,
                               color: item.required
-                                  ? PerfectColors.mint
+                                  ? PerfectSemanticTheme.of(context).secondary
                                   : Theme.of(
                                       context,
                                     ).colorScheme.onSurfaceVariant,
@@ -3357,7 +3358,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
           : result.error ?? 'This formula needs a value.',
       style: Theme.of(context).textTheme.bodySmall?.copyWith(
         color: result.isValid
-            ? PerfectColors.mint
+            ? PerfectSemanticTheme.of(context).secondary
             : Theme.of(context).colorScheme.error,
       ),
     );
@@ -4112,13 +4113,16 @@ String _plannerIconLabel(String icon) => switch (icon) {
   _ => 'Perfect',
 };
 
-Color _plannerColorValue(String color) => switch (color) {
-  'mint' => PerfectColors.mint,
-  'lilac' => PerfectColors.lilac,
-  'rose' => PerfectColors.danger,
-  'ink' => PerfectColors.ink,
-  _ => PerfectColors.apricot,
-};
+Color _plannerColorValue(BuildContext context, String color) {
+  final semantic = PerfectSemanticTheme.of(context);
+  return switch (color) {
+    'mint' => semantic.secondary,
+    'lilac' => semantic.tertiary,
+    'rose' => semantic.danger,
+    'ink' => semantic.ink,
+    _ => semantic.primary,
+  };
+}
 
 String _plannerColorLabel(String color) => switch (color) {
   'mint' => 'Mint',

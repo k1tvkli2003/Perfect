@@ -114,6 +114,201 @@ void main() {
   );
 
   testWidgets(
+    'theme and contrast switches preserve page identity, draft, focus, scroll and destination',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.runAsync(() async {
+        for (var index = 0; index < 8; index++) {
+          await _controller.saveEntity(
+            kind: PlannerEntityKind.oneOffTask,
+            payload: <String, dynamic>{
+              ...defaultPlannerPayload(title: 'Theme continuity $index'),
+              PlannerPayloadKeys.timing: <String, dynamic>{
+                'scheduled_at': _previewNow
+                    .add(Duration(minutes: index + 1))
+                    .toUtc()
+                    .toIso8601String(),
+              },
+            },
+          );
+        }
+        await _controller.refresh();
+      });
+      final harnessKey = GlobalKey<_ThemeContrastHarnessState>();
+      await tester.pumpWidget(
+        _ThemeContrastHarness(key: harnessKey, controller: _controller),
+      );
+      await tester.pumpAndSettle();
+
+      final workspaceBefore = tester.state(find.byType(PerfectWorkspacePage));
+      final todayScrollable = find
+          .descendant(
+            of: find.byKey(const ValueKey<String>('perfect-today-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      await tester.drag(todayScrollable, const Offset(0, -260));
+      await tester.pumpAndSettle();
+      final offsetBefore = tester
+          .state<ScrollableState>(todayScrollable)
+          .position
+          .pixels;
+      expect(offsetBefore, greaterThan(0));
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
+      );
+      await tester.pumpAndSettle();
+      final capture = find.byKey(
+        const ValueKey<String>('perfect_quick_capture'),
+      );
+      await tester.tap(capture);
+      await tester.enterText(capture, 'Keep this private draft');
+      await tester.pump();
+      expect(tester.widget<TextField>(capture).focusNode?.hasFocus, isTrue);
+
+      harnessKey.currentState!.setContrast(PerfectContrastMode.high);
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.state(find.byType(PerfectWorkspacePage)),
+        same(workspaceBefore),
+      );
+      expect(
+        tester.widget<TextField>(capture).controller?.text,
+        'Keep this private draft',
+      );
+      expect(tester.widget<TextField>(capture).focusNode?.hasFocus, isTrue);
+      expect(
+        tester.state<ScrollableState>(todayScrollable).position.pixels,
+        closeTo(offsetBefore, .5),
+      );
+      expect(
+        PerfectSemanticTheme.of(tester.element(capture)).id,
+        'theme-hc-light-clarity',
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-collapse')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(_footerDestination('tasks'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('perfect-tasks-scroll')),
+        findsOneWidget,
+      );
+
+      harnessKey.currentState!.setTheme(ThemeMode.dark);
+      await tester.pumpAndSettle();
+      expect(
+        tester.state(find.byType(PerfectWorkspacePage)),
+        same(workspaceBefore),
+      );
+      expect(
+        find.byKey(const ValueKey<String>('perfect-tasks-scroll')),
+        findsOneWidget,
+      );
+      expect(
+        PerfectSemanticTheme.of(
+          tester.element(
+            find.byKey(const ValueKey<String>('perfect-tasks-scroll')),
+          ),
+        ).id,
+        'theme-hc-dark-clarity',
+      );
+
+      await tester.tap(_footerDestination('today'));
+      await tester.pumpAndSettle();
+      final collapsedCapture = find.byKey(
+        const ValueKey<String>('perfect-quick-capture-toggle'),
+      );
+      if (collapsedCapture.evaluate().isNotEmpty) {
+        await tester.tap(collapsedCapture);
+        await tester.pumpAndSettle();
+      }
+      expect(
+        tester.widget<TextField>(capture).controller?.text,
+        'Keep this private draft',
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Stage 10 authored theme matrix stays composed on phone tablet and Windows',
+    (tester) async {
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final harnessKey = GlobalKey<_ThemeContrastHarnessState>();
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      await tester.pumpWidget(
+        _ThemeContrastHarness(key: harnessKey, controller: _controller),
+      );
+      await tester.pumpAndSettle();
+
+      Future<void> capture({
+        required Size size,
+        required ThemeMode themeMode,
+        required PerfectContrastMode contrastMode,
+        required String expectedThemeId,
+        required String golden,
+      }) async {
+        await tester.binding.setSurfaceSize(size);
+        harnessKey.currentState!
+          ..setTheme(themeMode)
+          ..setContrast(contrastMode);
+        await tester.pumpAndSettle();
+        final workspace = find.byType(PerfectWorkspacePage);
+        expect(workspace, findsOneWidget);
+        expect(
+          PerfectSemanticTheme.of(tester.element(workspace)).id,
+          expectedThemeId,
+        );
+        expect(tester.takeException(), isNull);
+        await expectLater(workspace, matchesGoldenFile(golden));
+      }
+
+      await capture(
+        size: const Size(390, 844),
+        themeMode: ThemeMode.dark,
+        contrastMode: PerfectContrastMode.system,
+        expectedThemeId: 'theme-dark-graphite-bloom',
+        golden: '../goldens/perfect_stage10_phone_dark.png',
+      );
+      await capture(
+        size: const Size(390, 844),
+        themeMode: ThemeMode.light,
+        contrastMode: PerfectContrastMode.high,
+        expectedThemeId: 'theme-hc-light-clarity',
+        golden: '../goldens/perfect_stage10_phone_clarity_light.png',
+      );
+      await capture(
+        size: const Size(900, 1200),
+        themeMode: ThemeMode.dark,
+        contrastMode: PerfectContrastMode.system,
+        expectedThemeId: 'theme-dark-graphite-bloom',
+        golden: '../goldens/perfect_stage10_tablet_dark.png',
+      );
+      await capture(
+        size: const Size(1600, 900),
+        themeMode: ThemeMode.dark,
+        contrastMode: PerfectContrastMode.system,
+        expectedThemeId: 'theme-dark-graphite-bloom',
+        golden: '../goldens/perfect_stage10_windows_dark.png',
+      );
+      await capture(
+        size: const Size(1600, 900),
+        themeMode: ThemeMode.dark,
+        contrastMode: PerfectContrastMode.high,
+        expectedThemeId: 'theme-hc-dark-clarity',
+        golden: '../goldens/perfect_stage10_windows_clarity_dark.png',
+      );
+    },
+    tags: 'windows-golden',
+  );
+
+  testWidgets(
     'compact AI toggle lives inside quick capture and opens above it',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
@@ -3197,6 +3392,56 @@ Future<void> _pump(
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _ThemeContrastHarness extends StatefulWidget {
+  const _ThemeContrastHarness({super.key, required this.controller});
+
+  final PlannerWorkspaceController controller;
+
+  @override
+  State<_ThemeContrastHarness> createState() => _ThemeContrastHarnessState();
+}
+
+class _ThemeContrastHarnessState extends State<_ThemeContrastHarness> {
+  ThemeMode _themeMode = ThemeMode.light;
+  PerfectContrastMode _contrastMode = PerfectContrastMode.system;
+
+  void setTheme(ThemeMode value) => setState(() => _themeMode = value);
+
+  void setContrast(PerfectContrastMode value) =>
+      setState(() => _contrastMode = value);
+
+  @override
+  Widget build(BuildContext context) {
+    final forceClarity = _contrastMode == PerfectContrastMode.high;
+    return MaterialApp(
+      theme: forceClarity
+          ? PerfectTheme.highContrastLight()
+          : PerfectTheme.light(),
+      darkTheme: forceClarity
+          ? PerfectTheme.highContrastDark()
+          : PerfectTheme.dark(),
+      highContrastTheme: PerfectTheme.highContrastLight(),
+      highContrastDarkTheme: PerfectTheme.highContrastDark(),
+      themeMode: _themeMode,
+      themeAnimationDuration: Duration.zero,
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(disableAnimations: true),
+        child: child ?? const SizedBox.shrink(),
+      ),
+      home: PerfectWorkspacePage(
+        controller: widget.controller,
+        themeMode: _themeMode,
+        contrastMode: _contrastMode,
+        onThemeModeChanged: setTheme,
+        onContrastModeChanged: setContrast,
+        onSignOut: () async {},
+        now: () => _previewNow,
+        orbitMotionEnabled: false,
+      ),
+    );
+  }
 }
 
 class _WorkspaceFeedbackRepository extends ReadyFeedbackRepository {

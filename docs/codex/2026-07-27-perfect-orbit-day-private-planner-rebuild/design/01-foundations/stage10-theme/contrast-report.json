@@ -1,0 +1,804 @@
+{
+  "standard_text_threshold": 4.5,
+  "high_contrast_text_threshold": 7,
+  "non_text_and_focus_threshold": 3,
+  "note": "Ratios are necessary but not sufficient. Generated contact sheets still require visual comparison for hierarchy, muddy glass and pastel separation.",
+  "themes": [
+    {
+      "theme_id": "theme-light-daylight",
+      "brightness": "light",
+      "contrast": "standard",
+      "exact_pair_count": 19,
+      "failures": [],
+      "pairs": [
+        {
+          "foreground_role": "ink",
+          "background_role": "canvas",
+          "purpose": "primary text",
+          "foreground": "#1D2030",
+          "background": "#FFFCF7",
+          "ratio": 15.77,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "muted",
+          "background_role": "surface",
+          "purpose": "secondary text",
+          "foreground": "#605D70",
+          "background": "#FBF6EF",
+          "ratio": 5.92,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "primary",
+          "background_role": "surface",
+          "purpose": "primary action on surface",
+          "foreground": "#9D4C0B",
+          "background": "#FBF6EF",
+          "ratio": 5.62,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onPrimary",
+          "background_role": "primary",
+          "purpose": "filled primary action",
+          "foreground": "#FFFFFF",
+          "background": "#9D4C0B",
+          "ratio": 6.05,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onPrimaryContainer",
+          "background_role": "primaryContainer",
+          "purpose": "primary container copy",
+          "foreground": "#462000",
+          "background": "#FFE6CF",
+          "ratio": 11.91,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "secondary",
+          "background_role": "surface",
+          "purpose": "habit/rhythm foreground",
+          "foreground": "#2F7650",
+          "background": "#FBF6EF",
+          "ratio": 5.1,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSecondary",
+          "background_role": "secondary",
+          "purpose": "filled rhythm action",
+          "foreground": "#FFFFFF",
+          "background": "#2F7650",
+          "ratio": 5.49,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSecondaryContainer",
+          "background_role": "secondaryContainer",
+          "purpose": "rhythm container copy",
+          "foreground": "#123622",
+          "background": "#DDF3E5",
+          "ratio": 11.43,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "tertiary",
+          "background_role": "surface",
+          "purpose": "focus/reflection foreground",
+          "foreground": "#6652AD",
+          "background": "#FBF6EF",
+          "ratio": 5.79,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onTertiary",
+          "background_role": "tertiary",
+          "purpose": "filled focus action",
+          "foreground": "#FFFFFF",
+          "background": "#6652AD",
+          "ratio": 6.22,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onTertiaryContainer",
+          "background_role": "tertiaryContainer",
+          "purpose": "focus container copy",
+          "foreground": "#2E245F",
+          "background": "#EEEAFD",
+          "ratio": 11.62,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "sync",
+          "background_role": "surface",
+          "purpose": "synced status label",
+          "foreground": "#16796F",
+          "background": "#FBF6EF",
+          "ratio": 4.88,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSyncContainer",
+          "background_role": "syncContainer",
+          "purpose": "sync container copy",
+          "foreground": "#073B37",
+          "background": "#D8F3EF",
+          "ratio": 10.64,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "warning",
+          "background_role": "surface",
+          "purpose": "syncing/retrying label",
+          "foreground": "#855300",
+          "background": "#FBF6EF",
+          "ratio": 6.04,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onWarningContainer",
+          "background_role": "warningContainer",
+          "purpose": "warning container copy",
+          "foreground": "#3E2600",
+          "background": "#FFF0C2",
+          "ratio": 12.48,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "danger",
+          "background_role": "surface",
+          "purpose": "error label",
+          "foreground": "#B53145",
+          "background": "#FBF6EF",
+          "ratio": 5.6,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onDangerContainer",
+          "background_role": "dangerContainer",
+          "purpose": "error container copy",
+          "foreground": "#650E20",
+          "background": "#FFE1E5",
+          "ratio": 10.48,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "outline",
+          "background_role": "surface",
+          "purpose": "interactive boundary",
+          "foreground": "#777280",
+          "background": "#FBF6EF",
+          "ratio": 4.34,
+          "threshold": 3,
+          "pass": true
+        },
+        {
+          "foreground_role": "focus",
+          "background_role": "surface",
+          "purpose": "focus perimeter",
+          "foreground": "#8E4208",
+          "background": "#FBF6EF",
+          "ratio": 6.66,
+          "threshold": 3,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "theme_id": "theme-dark-graphite-bloom",
+      "brightness": "dark",
+      "contrast": "standard",
+      "exact_pair_count": 19,
+      "failures": [],
+      "pairs": [
+        {
+          "foreground_role": "ink",
+          "background_role": "canvas",
+          "purpose": "primary text",
+          "foreground": "#F9F7FF",
+          "background": "#141620",
+          "ratio": 16.97,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "muted",
+          "background_role": "surface",
+          "purpose": "secondary text",
+          "foreground": "#C9C5D4",
+          "background": "#202331",
+          "ratio": 9.23,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "primary",
+          "background_role": "surface",
+          "purpose": "primary action on surface",
+          "foreground": "#FFC184",
+          "background": "#202331",
+          "ratio": 9.82,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onPrimary",
+          "background_role": "primary",
+          "purpose": "filled primary action",
+          "foreground": "#2A1200",
+          "background": "#FFC184",
+          "ratio": 11.15,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onPrimaryContainer",
+          "background_role": "primaryContainer",
+          "purpose": "primary container copy",
+          "foreground": "#FFE3C4",
+          "background": "#4C3322",
+          "ratio": 9.44,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "secondary",
+          "background_role": "surface",
+          "purpose": "habit/rhythm foreground",
+          "foreground": "#A8DFB9",
+          "background": "#202331",
+          "ratio": 10.34,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSecondary",
+          "background_role": "secondary",
+          "purpose": "filled rhythm action",
+          "foreground": "#092115",
+          "background": "#A8DFB9",
+          "ratio": 11.23,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSecondaryContainer",
+          "background_role": "secondaryContainer",
+          "purpose": "rhythm container copy",
+          "foreground": "#D8F5E1",
+          "background": "#233B2D",
+          "ratio": 10.41,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "tertiary",
+          "background_role": "surface",
+          "purpose": "focus/reflection foreground",
+          "foreground": "#D1C6FF",
+          "background": "#202331",
+          "ratio": 9.83,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onTertiary",
+          "background_role": "tertiary",
+          "purpose": "filled focus action",
+          "foreground": "#1C143B",
+          "background": "#D1C6FF",
+          "ratio": 10.91,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onTertiaryContainer",
+          "background_role": "tertiaryContainer",
+          "purpose": "focus container copy",
+          "foreground": "#ECE7FF",
+          "background": "#36314E",
+          "ratio": 10.22,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "sync",
+          "background_role": "surface",
+          "purpose": "synced status label",
+          "foreground": "#74D8CD",
+          "background": "#202331",
+          "ratio": 9.25,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSyncContainer",
+          "background_role": "syncContainer",
+          "purpose": "sync container copy",
+          "foreground": "#CBFFF8",
+          "background": "#173D3A",
+          "ratio": 10.88,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "warning",
+          "background_role": "surface",
+          "purpose": "syncing/retrying label",
+          "foreground": "#FFD17A",
+          "background": "#202331",
+          "ratio": 10.89,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onWarningContainer",
+          "background_role": "warningContainer",
+          "purpose": "warning container copy",
+          "foreground": "#FFF0C7",
+          "background": "#4B360D",
+          "ratio": 10.12,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "danger",
+          "background_role": "surface",
+          "purpose": "error label",
+          "foreground": "#FFB2BB",
+          "background": "#202331",
+          "ratio": 9.17,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "onDangerContainer",
+          "background_role": "dangerContainer",
+          "purpose": "error container copy",
+          "foreground": "#FFE0E4",
+          "background": "#512832",
+          "ratio": 10.02,
+          "threshold": 4.5,
+          "pass": true
+        },
+        {
+          "foreground_role": "outline",
+          "background_role": "surface",
+          "purpose": "interactive boundary",
+          "foreground": "#9B97AA",
+          "background": "#202331",
+          "ratio": 5.5,
+          "threshold": 3,
+          "pass": true
+        },
+        {
+          "foreground_role": "focus",
+          "background_role": "surface",
+          "purpose": "focus perimeter",
+          "foreground": "#FFD0A2",
+          "background": "#202331",
+          "ratio": 10.99,
+          "threshold": 3,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "theme_id": "theme-hc-light-clarity",
+      "brightness": "light",
+      "contrast": "high",
+      "exact_pair_count": 19,
+      "failures": [],
+      "pairs": [
+        {
+          "foreground_role": "ink",
+          "background_role": "canvas",
+          "purpose": "primary text",
+          "foreground": "#090A0F",
+          "background": "#FFFFFF",
+          "ratio": 19.78,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "muted",
+          "background_role": "surface",
+          "purpose": "secondary text",
+          "foreground": "#292B35",
+          "background": "#FFFFFF",
+          "ratio": 14.08,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "primary",
+          "background_role": "surface",
+          "purpose": "primary action on surface",
+          "foreground": "#6D2E00",
+          "background": "#FFFFFF",
+          "ratio": 10.29,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onPrimary",
+          "background_role": "primary",
+          "purpose": "filled primary action",
+          "foreground": "#FFFFFF",
+          "background": "#6D2E00",
+          "ratio": 10.29,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onPrimaryContainer",
+          "background_role": "primaryContainer",
+          "purpose": "primary container copy",
+          "foreground": "#160900",
+          "background": "#FFF0E1",
+          "ratio": 17.52,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "secondary",
+          "background_role": "surface",
+          "purpose": "habit/rhythm foreground",
+          "foreground": "#145D34",
+          "background": "#FFFFFF",
+          "ratio": 7.94,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSecondary",
+          "background_role": "secondary",
+          "purpose": "filled rhythm action",
+          "foreground": "#FFFFFF",
+          "background": "#145D34",
+          "ratio": 7.94,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSecondaryContainer",
+          "background_role": "secondaryContainer",
+          "purpose": "rhythm container copy",
+          "foreground": "#062012",
+          "background": "#E8F8EE",
+          "ratio": 15.61,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "tertiary",
+          "background_role": "surface",
+          "purpose": "focus/reflection foreground",
+          "foreground": "#3E2A82",
+          "background": "#FFFFFF",
+          "ratio": 11.3,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onTertiary",
+          "background_role": "tertiary",
+          "purpose": "filled focus action",
+          "foreground": "#FFFFFF",
+          "background": "#3E2A82",
+          "ratio": 11.3,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onTertiaryContainer",
+          "background_role": "tertiaryContainer",
+          "purpose": "focus container copy",
+          "foreground": "#10072E",
+          "background": "#F0ECFF",
+          "ratio": 16.62,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "sync",
+          "background_role": "surface",
+          "purpose": "synced status label",
+          "foreground": "#00564F",
+          "background": "#FFFFFF",
+          "ratio": 8.59,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSyncContainer",
+          "background_role": "syncContainer",
+          "purpose": "sync container copy",
+          "foreground": "#001F1C",
+          "background": "#E1FFFB",
+          "ratio": 16.41,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "warning",
+          "background_role": "surface",
+          "purpose": "syncing/retrying label",
+          "foreground": "#633D00",
+          "background": "#FFFFFF",
+          "ratio": 9.55,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onWarningContainer",
+          "background_role": "warningContainer",
+          "purpose": "warning container copy",
+          "foreground": "#211300",
+          "background": "#FFF4CC",
+          "ratio": 16.47,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "danger",
+          "background_role": "surface",
+          "purpose": "error label",
+          "foreground": "#8C1025",
+          "background": "#FFFFFF",
+          "ratio": 9.48,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onDangerContainer",
+          "background_role": "dangerContainer",
+          "purpose": "error container copy",
+          "foreground": "#2F000A",
+          "background": "#FFE8EB",
+          "ratio": 15.99,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "outline",
+          "background_role": "surface",
+          "purpose": "interactive boundary",
+          "foreground": "#4A4B55",
+          "background": "#FFFFFF",
+          "ratio": 8.65,
+          "threshold": 3,
+          "pass": true
+        },
+        {
+          "foreground_role": "focus",
+          "background_role": "surface",
+          "purpose": "focus perimeter",
+          "foreground": "#6D2E00",
+          "background": "#FFFFFF",
+          "ratio": 10.29,
+          "threshold": 3,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "theme_id": "theme-hc-dark-clarity",
+      "brightness": "dark",
+      "contrast": "high",
+      "exact_pair_count": 19,
+      "failures": [],
+      "pairs": [
+        {
+          "foreground_role": "ink",
+          "background_role": "canvas",
+          "purpose": "primary text",
+          "foreground": "#FFFFFF",
+          "background": "#000000",
+          "ratio": 21,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "muted",
+          "background_role": "surface",
+          "purpose": "secondary text",
+          "foreground": "#F0EDF7",
+          "background": "#08090D",
+          "ratio": 17.21,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "primary",
+          "background_role": "surface",
+          "purpose": "primary action on surface",
+          "foreground": "#FFD1A3",
+          "background": "#08090D",
+          "ratio": 14.12,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onPrimary",
+          "background_role": "primary",
+          "purpose": "filled primary action",
+          "foreground": "#100700",
+          "background": "#FFD1A3",
+          "ratio": 14.16,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onPrimaryContainer",
+          "background_role": "primaryContainer",
+          "purpose": "primary container copy",
+          "foreground": "#FFF0DF",
+          "background": "#3B1D00",
+          "ratio": 13.79,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "secondary",
+          "background_role": "surface",
+          "purpose": "habit/rhythm foreground",
+          "foreground": "#AEF2C4",
+          "background": "#08090D",
+          "ratio": 15.44,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSecondary",
+          "background_role": "secondary",
+          "purpose": "filled rhythm action",
+          "foreground": "#001308",
+          "background": "#AEF2C4",
+          "ratio": 14.86,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSecondaryContainer",
+          "background_role": "secondaryContainer",
+          "purpose": "rhythm container copy",
+          "foreground": "#E2FFEA",
+          "background": "#092B19",
+          "ratio": 14.39,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "tertiary",
+          "background_role": "surface",
+          "purpose": "focus/reflection foreground",
+          "foreground": "#DED4FF",
+          "background": "#08090D",
+          "ratio": 14.18,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onTertiary",
+          "background_role": "tertiary",
+          "purpose": "filled focus action",
+          "foreground": "#11092F",
+          "background": "#DED4FF",
+          "ratio": 13.56,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onTertiaryContainer",
+          "background_role": "tertiaryContainer",
+          "purpose": "focus container copy",
+          "foreground": "#F4F0FF",
+          "background": "#21174F",
+          "ratio": 14.43,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "sync",
+          "background_role": "surface",
+          "purpose": "synced status label",
+          "foreground": "#99FFF3",
+          "background": "#08090D",
+          "ratio": 17.01,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onSyncContainer",
+          "background_role": "syncContainer",
+          "purpose": "sync container copy",
+          "foreground": "#E0FFFB",
+          "background": "#003D38",
+          "ratio": 11.52,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "warning",
+          "background_role": "surface",
+          "purpose": "syncing/retrying label",
+          "foreground": "#FFE59A",
+          "background": "#08090D",
+          "ratio": 16.04,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onWarningContainer",
+          "background_role": "warningContainer",
+          "purpose": "warning container copy",
+          "foreground": "#FFF5D8",
+          "background": "#422C00",
+          "ratio": 12.13,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "danger",
+          "background_role": "surface",
+          "purpose": "error label",
+          "foreground": "#FFC2C8",
+          "background": "#08090D",
+          "ratio": 13.08,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "onDangerContainer",
+          "background_role": "dangerContainer",
+          "purpose": "error container copy",
+          "foreground": "#FFECEF",
+          "background": "#490716",
+          "ratio": 13.96,
+          "threshold": 7,
+          "pass": true
+        },
+        {
+          "foreground_role": "outline",
+          "background_role": "surface",
+          "purpose": "interactive boundary",
+          "foreground": "#FFFFFF",
+          "background": "#08090D",
+          "ratio": 19.9,
+          "threshold": 3,
+          "pass": true
+        },
+        {
+          "foreground_role": "focus",
+          "background_role": "surface",
+          "purpose": "focus perimeter",
+          "foreground": "#FFD1A3",
+          "background": "#08090D",
+          "ratio": 14.12,
+          "threshold": 3,
+          "pass": true
+        }
+      ]
+    }
+  ]
+}

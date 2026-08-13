@@ -473,3 +473,21 @@ recorded in `08-stage-verification.md`.
 
 Full evidence, artifact hashes, performance distributions and proof boundaries are
 recorded in `09-stage-verification.md`.
+
+## 2026-08-13 — Stage 10 authored theme and contrast local verification
+
+| Check | Method | Result | Evidence / limit |
+| --- | --- | --- | --- |
+| Static analysis | `flutter analyze --no-pub` | passed | no issues across the complete project |
+| Full Flutter suite | `flutter test --concurrency=1` | passed, 444/444 | persistence, AI, sync, themes, workspace, goldens and native contracts |
+| Semantic role scan | independent Stage 10 runtime verifier | passed | 57 Dart files; zero reusable raw-color violations |
+| Design freeze | independent Stage 10 design verifier | passed | 4 themes, 181 components, 134 pages, 76 measured pairs, 6 boards, 20 hashes |
+| Authored assets | brand + Orbit verifiers | passed | 68 declared brand outputs and two Clarity Orbit variants |
+| Android native surface | source/assets/layout contract | passed | 4 widget layouts, 40 rasters, 16 status icons, 4 surfaces and Quick Add projection |
+| Android in-place preview | build 2062 + `adb install -r` | passed | advanced from 2061; `firstInstallTime=2026-08-02 19:20:44` unchanged |
+| Android visual/runtime | screenshot + UIAutomator + hash manifest | passed | Daylight, Graphite, Clarity Light/Dark and live Appearance controls; 13 artifacts |
+| Local Windows compile | `flutter build windows --debug` | host-blocked | optional ATL `atlbase.h` missing in `flutter_local_notifications_windows`; project runner was not compiled |
+| Exact-SHA hosted build/release | pending | mandatory authority for Windows compile/sign/install-over and immutable three-asset release |
+
+Full local evidence and the explicit signed/session boundary are recorded in
+`10-stage-verification.md`.

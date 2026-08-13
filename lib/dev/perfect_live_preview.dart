@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:perfect/ai/perfect_ai_client.dart';
 import 'package:perfect/ai/perfect_ai_contract.dart';
+import 'package:perfect/app/perfect_preferences.dart';
+import 'package:perfect/app/perfect_system_appearance.dart';
 import 'package:perfect/feedback/ready_feedback_capture.dart';
 import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
@@ -81,29 +83,52 @@ class PerfectLivePreviewApp extends StatefulWidget {
 
 class _PerfectLivePreviewAppState extends State<PerfectLivePreviewApp> {
   ThemeMode _themeMode = ThemeMode.light;
+  PerfectContrastMode _contrastMode = PerfectContrastMode.system;
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: 'Perfect!',
-    debugShowCheckedModeBanner: false,
-    theme: PerfectTheme.light(),
-    darkTheme: PerfectTheme.dark(),
-    themeMode: _themeMode,
-    home: _PerfectLivePreviewWorkspace(
+  Widget build(BuildContext context) {
+    final forcedHighContrast = _contrastMode == PerfectContrastMode.high;
+    return MaterialApp(
+      title: 'Perfect!',
+      debugShowCheckedModeBanner: false,
+      theme: forcedHighContrast
+          ? PerfectTheme.highContrastLight()
+          : PerfectTheme.light(),
+      darkTheme: forcedHighContrast
+          ? PerfectTheme.highContrastDark()
+          : PerfectTheme.dark(),
+      highContrastTheme: PerfectTheme.highContrastLight(),
+      highContrastDarkTheme: PerfectTheme.highContrastDark(),
       themeMode: _themeMode,
-      onThemeModeChanged: (value) => setState(() => _themeMode = value),
-    ),
-  );
+      themeAnimationDuration: PerfectMotion.standard,
+      themeAnimationCurve: PerfectMotion.productive,
+      builder: (context, child) => PerfectSystemAppearanceProjection(
+        themeMode: _themeMode,
+        contrastMode: _contrastMode,
+        child: child ?? const SizedBox.shrink(),
+      ),
+      home: _PerfectLivePreviewWorkspace(
+        themeMode: _themeMode,
+        contrastMode: _contrastMode,
+        onThemeModeChanged: (value) => setState(() => _themeMode = value),
+        onContrastModeChanged: (value) => setState(() => _contrastMode = value),
+      ),
+    );
+  }
 }
 
 class _PerfectLivePreviewWorkspace extends StatefulWidget {
   const _PerfectLivePreviewWorkspace({
     required this.themeMode,
+    required this.contrastMode,
     required this.onThemeModeChanged,
+    required this.onContrastModeChanged,
   });
 
   final ThemeMode themeMode;
+  final PerfectContrastMode contrastMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
+  final ValueChanged<PerfectContrastMode> onContrastModeChanged;
 
   @override
   State<_PerfectLivePreviewWorkspace> createState() =>
@@ -218,7 +243,9 @@ class _PerfectLivePreviewWorkspaceState
         now: () => _previewReferenceNow,
         ownerDisplayName: 'Alex',
         themeMode: widget.themeMode,
+        contrastMode: widget.contrastMode,
         onThemeModeChanged: widget.onThemeModeChanged,
+        onContrastModeChanged: widget.onContrastModeChanged,
         onSignOut: () async {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(

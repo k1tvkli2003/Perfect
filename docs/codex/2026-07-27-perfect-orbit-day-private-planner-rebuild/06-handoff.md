@@ -2,13 +2,24 @@
 
 ## Canonical numbered execution — 2026-08-13
 
-Stages 01–09 are externally closed. Stage 09 source checkpoint
+Stages 01–09 are externally closed. Stage 10 is locally implemented and verified,
+but its exact-SHA hosted build/release and branch cleanup are still pending. Stage 09 source checkpoint
 `6ca824ef2f0dd0b3facd66c194668381e81b88d1` is merged to `main`; trusted run
 [`#54` / `31664886708`](https://github.com/k1tvkli2003/Perfect/actions/runs/31664886708)
 and release
 [`v1.1.0-build.2054`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2054)
-target that exact SHA. The remaining closure work is this documentation checkpoint's
-own exact-SHA gate and isolated branch/worktree cleanup before Stage 10 begins.
+target that exact SHA. The current isolated Stage 10 branch must pass the same
+branch gate, main trusted signing/install-over/release gate and cleanup before Stage
+11 begins.
+
+Stage 10 contributes four authored theme IDs, independent persisted theme/contrast
+controls, a zero-bypass semantic color contract, dedicated Clarity assets and
+Android/Windows native appearance projection. Analysis and all 444 tests pass. Real
+Android build 2062 installed over 2061 and its Daylight, Graphite, Clarity Light,
+Clarity Dark and Appearance settings captures are hash-verified. Local Windows
+compilation remains host-blocked by missing optional ATL; hosted exact-SHA Windows
+proof must be appended to `10-stage-verification.md` before this stage is called
+externally closed.
 
 The current Stage 09 source has one semantic Motion system across routes, page-title
 orientation, dialogs, sheets, menus, inspector, wizard, Quick Capture, AI, selection,

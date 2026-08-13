@@ -138,27 +138,27 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
       label: 'Synced',
       detail:
           'All durable planner changes are synced across your Perfect devices.',
-      color: PerfectColors.sync,
+      tone: _SyncTone.current,
     ),
     PlannerSyncPhase.syncing => const _SyncVisual(
       state: PerfectSyncVisualState.flowing,
       label: 'Syncing',
       detail: 'Perfect is sending or receiving durable changes now.',
-      color: PerfectColors.apricot,
+      tone: _SyncTone.flowing,
     ),
     PlannerSyncPhase.offline => const _SyncVisual(
       state: PerfectSyncVisualState.flowing,
       label: 'Retrying',
       detail:
           'Changes are safe on this device. Automatic sync will retry with bounded backoff.',
-      color: PerfectColors.apricot,
+      tone: _SyncTone.flowing,
     ),
     PlannerSyncPhase.needsAttention => const _SyncVisual(
       state: PerfectSyncVisualState.error,
       label: 'Sync issue',
       detail:
           'The last sync did not finish. Local planning remains available while Perfect retries.',
-      color: PerfectColors.danger,
+      tone: _SyncTone.error,
     ),
   };
 
@@ -180,10 +180,10 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
 
   @override
   Widget build(BuildContext context) {
-    final visual = _visual;
+    final visual = _visual.resolve(context);
     final scheme = Theme.of(context).colorScheme;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    final highContrast = MediaQuery.highContrastOf(context);
+    final highContrast = PerfectContrast.of(context);
     final radius = BorderRadius.circular(19);
     final surfaceAlpha = highContrast
         ? .16
@@ -355,7 +355,7 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
         backgroundColor: Theme.of(context).colorScheme.surface,
         builder: (sheetContext) => _SyncDetailsContent(
           status: widget.status,
-          visual: _visual,
+          visual: _visual.resolve(sheetContext),
           flow: _flow,
           retryDetail: _retryDetail,
           onRetry: widget.onRetry,
@@ -371,7 +371,7 @@ class _PerfectSyncIndicatorState extends State<PerfectSyncIndicator>
           constraints: const BoxConstraints(maxWidth: 470),
           child: _SyncDetailsContent(
             status: widget.status,
-            visual: _visual,
+            visual: _visual.resolve(dialogContext),
             flow: _flow,
             retryDetail: _retryDetail,
             onRetry: widget.onRetry,
@@ -483,10 +483,10 @@ class _SyncDetailsContentState extends State<_SyncDetailsContent> {
             Container(
               padding: const EdgeInsets.all(PerfectSpace.sm),
               decoration: BoxDecoration(
-                color: PerfectColors.mintSoft,
+                color: PerfectSemanticTheme.of(context).secondaryContainer,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: PerfectColors.mint.withValues(alpha: .28),
+                  color: PerfectSemanticTheme.of(context).secondary,
                 ),
               ),
               child: const Row(
@@ -530,18 +530,39 @@ class _SyncDetailsContentState extends State<_SyncDetailsContent> {
   }
 }
 
+enum _SyncTone { current, flowing, error }
+
 class _SyncVisual {
   const _SyncVisual({
     required this.state,
     required this.label,
     required this.detail,
-    required this.color,
-  });
+    required this.tone,
+    Color? color,
+  }) : _resolvedColor = color;
 
   final PerfectSyncVisualState state;
   final String label;
   final String detail;
-  final Color color;
+  final _SyncTone tone;
+  final Color? _resolvedColor;
+  Color get color =>
+      _resolvedColor ?? (throw StateError('Resolve sync visual before paint.'));
+
+  _SyncVisual resolve(BuildContext context) {
+    final semantic = PerfectSemanticTheme.of(context);
+    return _SyncVisual(
+      state: state,
+      label: label,
+      detail: detail,
+      tone: tone,
+      color: switch (tone) {
+        _SyncTone.current => semantic.sync,
+        _SyncTone.flowing => semantic.warning,
+        _SyncTone.error => semantic.danger,
+      },
+    );
+  }
 }
 
 class _SyncCloudMark extends StatelessWidget {
@@ -569,7 +590,7 @@ class _SyncCloudMark extends StatelessWidget {
           color: visual.color,
           state: visual.state,
           progress: flow.value,
-          highContrast: MediaQuery.highContrastOf(context),
+          highContrast: PerfectContrast.of(context),
         ),
       ),
     ),

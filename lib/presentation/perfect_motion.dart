@@ -75,7 +75,7 @@ Future<T?> showPerfectDialog<T>({
       barrierColor:
           barrierColor ??
           Theme.of(context).dialogTheme.barrierColor ??
-          Colors.black54,
+          Theme.of(context).colorScheme.scrim,
       barrierLabel:
           barrierLabel ??
           MaterialLocalizations.of(context).modalBarrierDismissLabel,
@@ -843,7 +843,7 @@ class PerfectGlassSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = PerfectSurfaceTheme.of(context);
-    final highContrast = MediaQuery.highContrastOf(context);
+    final highContrast = PerfectContrast.of(context);
     final resolvedRadius = borderRadius.resolve(Directionality.of(context));
     final strong = strength == PerfectGlassStrength.strong;
     final resolvedTint =
@@ -1044,7 +1044,7 @@ class _PerfectInteractiveSurfaceState extends State<PerfectInteractiveSurface> {
         final states = _statesController.value;
         final scheme = Theme.of(context).colorScheme;
         final tokens = PerfectSurfaceTheme.of(context);
-        final highContrast = MediaQuery.highContrastOf(context);
+        final highContrast = PerfectContrast.of(context);
         final disabled = states.contains(WidgetState.disabled);
         final selected = states.contains(WidgetState.selected);
         final hovered = states.contains(WidgetState.hovered);

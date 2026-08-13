@@ -1,6 +1,8 @@
 #include "flutter_window.h"
 
+#include <flutter/standard_method_codec.h>
 #include <optional>
+#include <variant>
 
 #include "flutter/generated_plugin_registrant.h"
 
@@ -25,6 +27,49 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
+  appearance_channel_ = std::make_unique<
+      flutter::MethodChannel<flutter::EncodableValue>>(
+      flutter_controller_->engine()->messenger(),
+      "com.k1tvkli2003.perfect/system_appearance",
+      &flutter::StandardMethodCodec::GetInstance());
+  appearance_channel_->SetMethodCallHandler(
+      [this](const flutter::MethodCall<flutter::EncodableValue>& call,
+             std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>
+                 result) {
+        if (call.method_name() != "apply" || call.arguments() == nullptr) {
+          result->NotImplemented();
+          return;
+        }
+        const auto* arguments =
+            std::get_if<flutter::EncodableMap>(call.arguments());
+        if (arguments == nullptr) {
+          result->Error("invalid_arguments", "Appearance payload is not a map.");
+          return;
+        }
+        const auto read_bool = [arguments](const char* key, bool fallback) {
+          const auto entry = arguments->find(flutter::EncodableValue(key));
+          if (entry == arguments->end()) return fallback;
+          const auto* value = std::get_if<bool>(&entry->second);
+          return value == nullptr ? fallback : *value;
+        };
+        const auto read_argb = [arguments](const char* key, DWORD fallback) {
+          const auto entry = arguments->find(flutter::EncodableValue(key));
+          if (entry == arguments->end()) return fallback;
+          if (const auto* value = std::get_if<int32_t>(&entry->second)) {
+            return static_cast<DWORD>(*value);
+          }
+          if (const auto* value = std::get_if<int64_t>(&entry->second)) {
+            return static_cast<DWORD>(*value);
+          }
+          return fallback;
+        };
+        ApplyAppTheme(read_bool("dark", false),
+                      read_bool("highContrast", false),
+                      read_argb("canvasArgb", 0xff141620),
+                      read_argb("inkArgb", 0xfff9f7ff),
+                      read_argb("outlineArgb", 0xff5a5f72));
+        result->Success();
+      });
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -40,6 +85,7 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  appearance_channel_.reset();
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }

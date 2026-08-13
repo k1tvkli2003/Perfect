@@ -530,3 +530,36 @@ were not one executable product contract.
 - Close this documentation checkpoint through the same exact-SHA trusted gate,
   remove the isolated branch/worktree, then begin Stage 10 theme and accessibility
   motion without weakening the physical-target no-jank boundary.
+
+## 2026-08-13 — Stage 10 authored theme and contrast local checkpoint
+
+### Before
+
+Dark appearance still inherited light-first assumptions, Clarity had no complete
+product path, shared components could bypass semantic roles, Orbit artwork and
+curved labels had theme-dependent readability gaps, and native widget/Quick Add plus
+the Windows frame did not follow one effective owner appearance.
+
+### After
+
+- Authored four complete theme registries and froze their IDs, roles, measured
+  contrast and component/page consumers.
+- Eliminated reusable raw color bypasses; added semantic scrim, inverse surfaces,
+  interaction ink and zero-blur Clarity material.
+- Added dedicated Clarity Orbit assets and fixed curved label ink against every
+  pastel period arc.
+- Added persisted contrast selection and a native appearance projection for Android
+  application mode/widget/Quick Add and Windows DWM/system high contrast.
+- Extended the development Preview to expose the same independent Theme/Clarity
+  controls as production, then installed build 2062 in place and captured four live
+  compositions plus the settings surface.
+- Refreshed and expanded phone/tablet/Windows goldens only after side-by-side visual
+  inspection; the full suite now passes 444/444.
+- Hash-locked 13 real Android runtime artifacts and made the independent verifier
+  reject evidence drift.
+
+### Next
+
+- Commit the isolated Stage 10 source, pass its exact-SHA branch gate, fast-forward
+  main, pass the trusted signing/install-over/release gate, update hosted evidence
+  and remove the temporary branch/worktree before Stage 11 starts.

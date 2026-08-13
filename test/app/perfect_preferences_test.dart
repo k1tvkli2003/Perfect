@@ -22,4 +22,28 @@ void main() {
     });
     expect(await PerfectPreferences.readThemeMode(), ThemeMode.system);
   });
+
+  test(
+    'contrast mode survives reads and unknown values fail to system',
+    () async {
+      expect(
+        await PerfectPreferences.readContrastMode(),
+        PerfectContrastMode.system,
+      );
+
+      await PerfectPreferences.saveContrastMode(PerfectContrastMode.high);
+      expect(
+        await PerfectPreferences.readContrastMode(),
+        PerfectContrastMode.high,
+      );
+
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        PerfectPreferences.contrastModeKey: 'future-contrast',
+      });
+      expect(
+        await PerfectPreferences.readContrastMode(),
+        PerfectContrastMode.system,
+      );
+    },
+  );
 }

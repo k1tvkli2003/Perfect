@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -150,9 +151,23 @@ class PerfectTodayWidgetProvider : HomeWidgetProvider() {
         snapshot: PerfectTodayWidgetStore.Snapshot,
         layout: Int,
     ): RemoteViews {
+      val data = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
       val isStale = snapshot.ownerId.isNotBlank() && !snapshot.isCurrentDay
       val visibleItems = if (isStale) emptyList() else snapshot.items
+      val appearance = PerfectNativeAppearance.resolve(context, data)
       return RemoteViews(context.packageName, layout).apply {
+        setInt(
+            R.id.widget_root,
+            "setBackgroundResource",
+            appearance.widgetSurfaceResource,
+        )
+        setTextColor(R.id.widget_date, appearance.muted)
+        setTextColor(R.id.widget_freshness, appearance.sync)
+        setTextColor(R.id.widget_orbit_hint, appearance.muted)
+        setTextColor(R.id.widget_empty, appearance.muted)
+        setTextColor(R.id.widget_quick_add, appearance.ink)
+        setImageViewResource(R.id.widget_brand_mark, appearance.markResource)
+        setImageViewResource(R.id.widget_open_today, appearance.wordmarkResource)
         setTextViewText(
             R.id.widget_date,
             if (isStale) "Today" else snapshot.dateLabel.ifBlank { "Today" },
@@ -242,6 +257,7 @@ class PerfectTodayWidgetProvider : HomeWidgetProvider() {
         setOnClickPendingIntent(R.id.widget_quick_add, quickAdd)
         if (layout == R.layout.perfect_today_widget_large) {
           setOnClickPendingIntent(R.id.widget_open_today_footer, openToday)
+          setTextColor(R.id.widget_open_today_footer, appearance.ink)
         }
       }
     }
@@ -397,13 +413,15 @@ private class PerfectTodayRemoteViewsFactory(
     private val compact: Boolean,
 ) : RemoteViewsService.RemoteViewsFactory {
   private var items: List<PerfectTodayWidgetStore.Item> = emptyList()
+  private var appearance = PerfectNativeAppearance.resolve(context)
 
   override fun onCreate() = Unit
 
   override fun onDataSetChanged() {
-    val snapshot = PerfectTodayWidgetStore.read(
-        context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE),
-    )
+    val preferences =
+        context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+    val snapshot = PerfectTodayWidgetStore.read(preferences)
+    appearance = PerfectNativeAppearance.resolve(context, preferences)
     items = if (snapshot.isCurrentDay) snapshot.items else emptyList()
   }
 
@@ -423,11 +441,13 @@ private class PerfectTodayRemoteViewsFactory(
     val item = items[position]
     return RemoteViews(context.packageName, itemLayout).apply {
       setTextViewText(R.id.widget_item_title, item.title)
-      setImageViewResource(R.id.widget_item_check, item.iconResource)
+      setImageViewResource(R.id.widget_item_check, appearance.iconResource(item))
+      setTextColor(R.id.widget_item_title, appearance.ink)
       if (!compact) {
         setTextViewText(R.id.widget_item_meta, item.time)
         setTextViewText(R.id.widget_item_state, item.stateLabel)
-        setTextColor(R.id.widget_item_state, Color.parseColor(item.stateColor))
+        setTextColor(R.id.widget_item_meta, appearance.muted)
+        setTextColor(R.id.widget_item_state, appearance.stateColor(item))
       }
       setContentDescription(
           R.id.widget_item_check,
@@ -449,6 +469,162 @@ private class PerfectTodayRemoteViewsFactory(
       items.getOrNull(position)?.id?.hashCode()?.toLong() ?: position.toLong()
 
   override fun hasStableIds(): Boolean = true
+}
+
+internal data class PerfectNativeAppearance(
+    val dark: Boolean,
+    val highContrast: Boolean,
+    val widgetSurfaceResource: Int,
+    val markResource: Int,
+    val wordmarkResource: Int,
+    val ink: Int,
+    val muted: Int,
+    val primary: Int,
+    val onPrimary: Int,
+    val secondary: Int,
+    val tertiary: Int,
+    val sync: Int,
+    val danger: Int,
+    val canvas: Int,
+    val surface: Int,
+    val surfaceHigh: Int,
+    val outline: Int,
+    val focus: Int,
+) {
+  fun stateColor(item: PerfectTodayWidgetStore.Item): Int = when (item.state) {
+    "completed" -> secondary
+    "missed" -> danger
+    "partial" -> tertiary
+    else -> when (item.accent) {
+      "mint" -> secondary
+      "lilac" -> tertiary
+      else -> primary
+    }
+  }
+
+  fun iconResource(item: PerfectTodayWidgetStore.Item): Int = when {
+    highContrast && dark -> when (item.state) {
+      "completed" -> R.drawable.perfect_widget_status_completed_hc_dark
+      "missed" -> R.drawable.perfect_widget_status_missed_hc_dark
+      "partial" -> R.drawable.perfect_widget_status_partial_hc_dark
+      else -> R.drawable.perfect_widget_status_pending_hc_dark
+    }
+    highContrast -> when (item.state) {
+      "completed" -> R.drawable.perfect_widget_status_completed_hc_light
+      "missed" -> R.drawable.perfect_widget_status_missed_hc_light
+      "partial" -> R.drawable.perfect_widget_status_partial_hc_light
+      else -> R.drawable.perfect_widget_status_pending_hc_light
+    }
+    dark -> when (item.state) {
+      "completed" -> R.drawable.perfect_widget_status_completed_dark
+      "missed" -> R.drawable.perfect_widget_status_missed_dark
+      "partial" -> R.drawable.perfect_widget_status_partial_dark
+      else -> R.drawable.perfect_widget_status_pending_dark
+    }
+    else -> when (item.state) {
+      "completed" -> R.drawable.perfect_widget_status_completed
+      "missed" -> R.drawable.perfect_widget_status_missed
+      "partial" -> R.drawable.perfect_widget_status_partial
+      else -> R.drawable.perfect_widget_status_pending
+    }
+  }
+
+  companion object {
+    fun resolve(
+        context: Context,
+        preferences: SharedPreferences =
+            context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE),
+    ): PerfectNativeAppearance {
+      val systemDark =
+          context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+              Configuration.UI_MODE_NIGHT_YES
+      val dark = preferences.getBoolean("perfect_appearance_dark", systemDark)
+      val highContrast =
+          preferences.getBoolean("perfect_appearance_high_contrast", false)
+      return when {
+        highContrast && dark -> PerfectNativeAppearance(
+            dark = true,
+            highContrast = true,
+            widgetSurfaceResource = R.drawable.perfect_widget_surface_hc_dark,
+            markResource = R.drawable.perfect_widget_mark_hc_dark_raster,
+            wordmarkResource = R.drawable.perfect_widget_wordmark_hc_dark_raster,
+            ink = Color.WHITE,
+            muted = Color.rgb(240, 237, 247),
+            primary = Color.rgb(255, 209, 163),
+            onPrimary = Color.rgb(16, 7, 0),
+            secondary = Color.rgb(174, 242, 196),
+            tertiary = Color.rgb(222, 212, 255),
+            sync = Color.rgb(153, 255, 243),
+            danger = Color.rgb(255, 194, 200),
+            canvas = Color.BLACK,
+            surface = Color.rgb(8, 9, 13),
+            surfaceHigh = Color.rgb(23, 25, 34),
+            outline = Color.WHITE,
+            focus = Color.rgb(255, 209, 163),
+        )
+        highContrast -> PerfectNativeAppearance(
+            dark = false,
+            highContrast = true,
+            widgetSurfaceResource = R.drawable.perfect_widget_surface_hc_light,
+            markResource = R.drawable.perfect_widget_mark_hc_light_raster,
+            wordmarkResource = R.drawable.perfect_widget_wordmark_hc_light_raster,
+            ink = Color.rgb(9, 10, 15),
+            muted = Color.rgb(41, 43, 53),
+            primary = Color.rgb(109, 46, 0),
+            onPrimary = Color.WHITE,
+            secondary = Color.rgb(20, 93, 52),
+            tertiary = Color.rgb(62, 42, 130),
+            sync = Color.rgb(0, 86, 79),
+            danger = Color.rgb(140, 16, 37),
+            canvas = Color.WHITE,
+            surface = Color.WHITE,
+            surfaceHigh = Color.rgb(232, 232, 236),
+            outline = Color.rgb(74, 75, 85),
+            focus = Color.rgb(109, 46, 0),
+        )
+        dark -> PerfectNativeAppearance(
+            dark = true,
+            highContrast = false,
+            widgetSurfaceResource = R.drawable.perfect_widget_surface_dark,
+            markResource = R.drawable.perfect_widget_mark_dark_raster,
+            wordmarkResource = R.drawable.perfect_widget_wordmark_dark_raster,
+            ink = Color.rgb(249, 247, 255),
+            muted = Color.rgb(201, 197, 212),
+            primary = Color.rgb(255, 193, 132),
+            onPrimary = Color.rgb(42, 18, 0),
+            secondary = Color.rgb(168, 223, 185),
+            tertiary = Color.rgb(209, 198, 255),
+            sync = Color.rgb(116, 216, 205),
+            danger = Color.rgb(255, 178, 187),
+            canvas = Color.rgb(20, 22, 32),
+            surface = Color.rgb(32, 35, 49),
+            surfaceHigh = Color.rgb(41, 45, 61),
+            outline = Color.rgb(155, 151, 170),
+            focus = Color.rgb(255, 208, 162),
+        )
+        else -> PerfectNativeAppearance(
+            dark = false,
+            highContrast = false,
+            widgetSurfaceResource = R.drawable.perfect_widget_surface,
+            markResource = R.drawable.perfect_widget_mark_raster,
+            wordmarkResource = R.drawable.perfect_widget_wordmark_raster,
+            ink = Color.rgb(29, 32, 48),
+            muted = Color.rgb(96, 93, 112),
+            primary = Color.rgb(157, 76, 11),
+            onPrimary = Color.WHITE,
+            secondary = Color.rgb(47, 118, 80),
+            tertiary = Color.rgb(102, 82, 173),
+            sync = Color.rgb(22, 121, 111),
+            danger = Color.rgb(181, 49, 69),
+            canvas = Color.rgb(255, 252, 247),
+            surface = Color.WHITE,
+            surfaceHigh = Color.rgb(244, 238, 231),
+            outline = Color.rgb(119, 114, 128),
+            focus = Color.rgb(142, 66, 8),
+        )
+      }
+    }
+  }
 }
 
 internal object PerfectTodayWidgetStore {
@@ -489,14 +665,6 @@ internal object PerfectTodayWidgetStore {
       val percent: Int,
       val accent: String,
   ) {
-    val iconResource: Int
-      get() = when (state) {
-        "completed" -> R.drawable.perfect_widget_status_completed
-        "missed" -> R.drawable.perfect_widget_status_missed
-        "partial" -> R.drawable.perfect_widget_status_partial
-        else -> R.drawable.perfect_widget_status_pending
-      }
-
     val stateLabel: String
       get() = when (state) {
         "completed" -> "Done"
@@ -505,17 +673,6 @@ internal object PerfectTodayWidgetStore {
         else -> "Empty"
       }
 
-    val stateColor: String
-      get() = when (state) {
-        "completed" -> "#FF7EC99B"
-        "missed" -> "#FFC8505A"
-        "partial" -> "#FFA79ADD"
-        else -> when (accent) {
-          "mint" -> "#FF7EC99B"
-          "lilac" -> "#FFA79ADD"
-          else -> "#FFFFA34D"
-        }
-      }
   }
 
   data class Action(

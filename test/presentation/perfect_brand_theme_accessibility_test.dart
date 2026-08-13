@@ -175,6 +175,14 @@ void main() {
     for (final entry in <MapEntry<String, ThemeData>>[
       MapEntry<String, ThemeData>('light', PerfectTheme.light()),
       MapEntry<String, ThemeData>('dark', PerfectTheme.dark()),
+      MapEntry<String, ThemeData>(
+        'high contrast light',
+        PerfectTheme.highContrastLight(),
+      ),
+      MapEntry<String, ThemeData>(
+        'high contrast dark',
+        PerfectTheme.highContrastDark(),
+      ),
     ]) {
       test('${entry.key} semantic foreground pairs meet text contrast', () {
         final scheme = entry.value.colorScheme;
@@ -260,6 +268,49 @@ void main() {
       expect(midpoint.glassBlur, lightSurfaces.glassBlur);
     });
 
+    test('contrast themes are structural authored modes, not dark aliases', () {
+      final light = PerfectTheme.light();
+      final dark = PerfectTheme.dark();
+      final clarityLight = PerfectTheme.highContrastLight();
+      final clarityDark = PerfectTheme.highContrastDark();
+      final clarityLightSemantics = clarityLight
+          .extension<PerfectSemanticTheme>()!;
+      final clarityDarkSemantics = clarityDark
+          .extension<PerfectSemanticTheme>()!;
+      final clarityLightSurfaces = clarityLight
+          .extension<PerfectSurfaceTheme>()!;
+      final clarityDarkSurfaces = clarityDark.extension<PerfectSurfaceTheme>()!;
+
+      expect(clarityLightSemantics.id, 'theme-hc-light-clarity');
+      expect(clarityDarkSemantics.id, 'theme-hc-dark-clarity');
+      expect(clarityLightSemantics.highContrast, isTrue);
+      expect(clarityDarkSemantics.highContrast, isTrue);
+      expect(
+        clarityLight.colorScheme.surface,
+        isNot(light.colorScheme.surface),
+      );
+      expect(clarityDark.colorScheme.surface, isNot(dark.colorScheme.surface));
+      expect(clarityLightSurfaces.glassBlur, 0);
+      expect(clarityDarkSurfaces.glassBlur, 0);
+      expect(clarityLightSurfaces.glassBlurStrong, 0);
+      expect(clarityDarkSurfaces.glassBlurStrong, 0);
+      final lightFocusBorder =
+          clarityLight.inputDecorationTheme.focusedBorder!
+              as OutlineInputBorder;
+      final darkFocusBorder =
+          clarityDark.inputDecorationTheme.focusedBorder! as OutlineInputBorder;
+      expect(lightFocusBorder.borderSide.width, greaterThanOrEqualTo(2));
+      expect(darkFocusBorder.borderSide.width, greaterThanOrEqualTo(2));
+      expect(
+        _contrast(clarityLightSemantics.canvas, clarityLightSemantics.ink),
+        greaterThanOrEqualTo(7),
+      );
+      expect(
+        _contrast(clarityDarkSemantics.canvas, clarityDarkSemantics.ink),
+        greaterThanOrEqualTo(7),
+      );
+    });
+
     test('control themes share motion and perceivable pointer states', () {
       final theme = PerfectTheme.light();
       final filled = theme.filledButtonTheme.style!;
@@ -333,6 +384,8 @@ void main() {
       for (final theme in <ThemeData>[
         PerfectTheme.light(),
         PerfectTheme.dark(),
+        PerfectTheme.highContrastLight(),
+        PerfectTheme.highContrastDark(),
       ]) {
         expect(
           theme.colorScheme.outline,
@@ -346,12 +399,7 @@ void main() {
           greaterThanOrEqualTo(3),
         );
         final cardShape = theme.cardTheme.shape! as RoundedRectangleBorder;
-        expect(
-          cardShape.side.color,
-          theme.brightness == Brightness.dark
-              ? theme.colorScheme.outlineVariant.withValues(alpha: .9)
-              : theme.colorScheme.outlineVariant,
-        );
+        expect(cardShape.side.color, theme.colorScheme.outlineVariant);
       }
     });
   });

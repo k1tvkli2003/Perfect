@@ -62,6 +62,14 @@ class Win32Window {
   // enter maximized state instead of flashing in a restored normal window.
   void SetInitialMaximized(bool maximized);
 
+  // Applies Perfect's effective in-app appearance to the non-client frame.
+  // Native Windows Contrast Themes keep priority through system colors.
+  void ApplyAppTheme(bool dark,
+                     bool high_contrast,
+                     DWORD canvas_argb,
+                     DWORD ink_argb,
+                     DWORD outline_argb);
+
   // Return a RECT representing the bounds of the current client area.
   RECT GetClientArea();
 

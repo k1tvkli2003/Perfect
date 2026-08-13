@@ -332,13 +332,15 @@ class PerfectAiDockState extends State<PerfectAiDock>
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: PerfectColors.mintSoft,
+                  color: PerfectSemanticTheme.of(context).secondaryContainer,
                   borderRadius: BorderRadius.circular(99),
                 ),
                 child: Text(
                   '${_proposal!.items.length}',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: PerfectColors.ink,
+                    color: PerfectSemanticTheme.of(
+                      context,
+                    ).onSecondaryContainer,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -378,7 +380,7 @@ class PerfectAiDockState extends State<PerfectAiDock>
             borderRadius: const BorderRadius.all(
               Radius.circular(PerfectRadius.dock),
             ),
-            borderColor: MediaQuery.highContrastOf(context)
+            borderColor: PerfectContrast.of(context)
                 ? tokens.strokeStrong
                 : scheme.tertiary.withValues(alpha: .48),
             tint: Color.alphaBlend(
@@ -656,8 +658,8 @@ class PerfectAiDockState extends State<PerfectAiDock>
                 : 'Send to Perfect AI',
             style: IconButton.styleFrom(
               minimumSize: const Size.square(48),
-              backgroundColor: PerfectColors.apricot,
-              foregroundColor: PerfectColors.ink,
+              backgroundColor: PerfectSemanticTheme.of(context).primary,
+              foregroundColor: PerfectSemanticTheme.of(context).onPrimary,
             ),
             onPressed: !hasInput || _recording || _applying ? null : _submit,
             icon: PerfectMotionSwitcher(
@@ -1427,32 +1429,32 @@ class _BrandPulse extends StatelessWidget {
   final bool compact;
 
   @override
-  Widget build(BuildContext context) => AnimatedContainer(
-    duration: PerfectMotion.responsive(context, PerfectMotion.standard),
-    width: compact ? 40 : 46,
-    height: compact ? 40 : 46,
-    padding: EdgeInsets.all(compact ? 5 : 6),
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: Theme.of(context).colorScheme.surface,
-      border: Border.all(
-        color: active ? PerfectColors.apricot : PerfectColors.lilac,
-        width: active ? 2 : 1,
+  Widget build(BuildContext context) {
+    final semantic = PerfectSemanticTheme.of(context);
+    final accent = active ? semantic.primary : semantic.tertiary;
+    return AnimatedContainer(
+      duration: PerfectMotion.responsive(context, PerfectMotion.standard),
+      width: compact ? 40 : 46,
+      height: compact ? 40 : 46,
+      padding: EdgeInsets.all(compact ? 5 : 6),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: semantic.surface,
+        border: Border.all(color: accent, width: active ? 2 : 1),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: .18),
+            blurRadius: active ? 18 : 8,
+          ),
+        ],
       ),
-      boxShadow: [
-        BoxShadow(
-          color: (active ? PerfectColors.apricot : PerfectColors.lilac)
-              .withValues(alpha: .18),
-          blurRadius: active ? 18 : 8,
-        ),
-      ],
-    ),
-    child: Semantics(
-      image: true,
-      label: 'Perfect Day Compass',
-      child: const ExcludeSemantics(child: _BrandAsset()),
-    ),
-  );
+      child: Semantics(
+        image: true,
+        label: 'Perfect Day Compass',
+        child: const ExcludeSemantics(child: _BrandAsset()),
+      ),
+    );
+  }
 }
 
 class _BrandAsset extends StatelessWidget {
@@ -1473,9 +1475,9 @@ class _BrandAsset extends StatelessWidget {
           child: Container(
             width: 7,
             height: 7,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: PerfectColors.apricot,
+              color: PerfectSemanticTheme.of(context).primary,
             ),
           ),
         ),
@@ -2043,10 +2045,10 @@ class _ProposalPreviewState extends State<_ProposalPreview> {
           bottomEnd: Radius.circular(PerfectRadius.panel),
         ),
         border: Border.all(
-          color: MediaQuery.highContrastOf(context)
+          color: PerfectContrast.of(context)
               ? tokens.strokeStrong
               : scheme.secondary.withValues(alpha: .62),
-          width: MediaQuery.highContrastOf(context) ? 2 : 1,
+          width: PerfectContrast.of(context) ? 2 : 1,
         ),
       ),
       child: Column(

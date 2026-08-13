@@ -217,7 +217,7 @@ def main() -> None:
         ("perfect-wordmark-high-contrast-dark", HC_DARK, HC_DARK, None),
     ]
     outputs: list[dict[str, object]] = []
-    light_raster: Image.Image | None = None
+    raster_variants: dict[str, Image.Image] = {}
     for name, ink, accent, raster_source in variants:
         png_path, svg_path, raster = _write_variant(
             name,
@@ -225,8 +225,7 @@ def main() -> None:
             accent,
             raster_source=raster_source,
         )
-        if name == "perfect-wordmark":
-            light_raster = raster
+        raster_variants[name] = raster
         outputs.extend(
             [
                 {
@@ -247,8 +246,18 @@ def main() -> None:
             ]
         )
 
-    if light_raster is None:
-        raise RuntimeError("Light wordmark variant was not generated.")
+    native_names = {
+        "perfect-wordmark": "perfect_widget_wordmark_raster.png",
+        "perfect-wordmark-dark": "perfect_widget_wordmark_dark_raster.png",
+        "perfect-wordmark-high-contrast-light": (
+            "perfect_widget_wordmark_hc_light_raster.png"
+        ),
+        "perfect-wordmark-high-contrast-dark": (
+            "perfect_widget_wordmark_hc_dark_raster.png"
+        ),
+    }
+    if set(raster_variants) != set(native_names):
+        raise RuntimeError("The complete native wordmark theme set was not generated.")
     for density, scale in ANDROID_DENSITIES.items():
         canvas = (
             round(WIDGET_WORDMARK_CANVAS_DP[0] * scale),
@@ -258,24 +267,22 @@ def main() -> None:
             round(WIDGET_WORDMARK_VISIBLE_DP[0] * scale),
             round(WIDGET_WORDMARK_VISIBLE_DP[1] * scale),
         )
-        native = _fit_on_canvas(light_raster, canvas, visible)
-        destination = (
-            ANDROID_RES
-            / f"drawable-{density}"
-            / "perfect_widget_wordmark_raster.png"
-        )
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        native.save(destination, optimize=True)
-        outputs.append(
-            {
-                "path": destination.relative_to(ROOT).as_posix(),
-                "sha256": _rgba_sha256(native),
-                "hash_basis": "rgba-v1",
-                "kind": "android-widget-raster",
-                "pixels": list(native.size),
-                "alpha_bounds": list(native.getchannel("A").getbbox() or ()),
-            }
-        )
+        for variant, filename in native_names.items():
+            native = _fit_on_canvas(raster_variants[variant], canvas, visible)
+            destination = ANDROID_RES / f"drawable-{density}" / filename
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            native.save(destination, optimize=True)
+            outputs.append(
+                {
+                    "path": destination.relative_to(ROOT).as_posix(),
+                    "sha256": _rgba_sha256(native),
+                    "hash_basis": "rgba-v1",
+                    "kind": "android-widget-raster",
+                    "theme_variant": variant,
+                    "pixels": list(native.size),
+                    "alpha_bounds": list(native.getchannel("A").getbbox() or ()),
+                }
+            )
 
     manifest = {
         "schema_version": 2,

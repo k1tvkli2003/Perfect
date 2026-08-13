@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:perfect/ai/perfect_ai_client.dart';
 import 'package:perfect/app/app_config.dart';
 import 'package:perfect/app/perfect_preferences.dart';
+import 'package:perfect/app/perfect_system_appearance.dart';
 import 'package:perfect/auth/auth_page.dart';
 import 'package:perfect/auth/configuration_page.dart';
 import 'package:perfect/feedback/ready_feedback_capture.dart';
@@ -34,16 +35,19 @@ class PerfectAppBootstrapResult {
   const PerfectAppBootstrapResult({
     required this.themeMode,
     required this.supabaseReady,
+    this.contrastMode = PerfectContrastMode.system,
     this.configurationError,
   });
 
   final ThemeMode themeMode;
+  final PerfectContrastMode contrastMode;
   final bool supabaseReady;
   final Object? configurationError;
 }
 
 Future<PerfectAppBootstrapResult> _bootstrapPerfectApp() async {
   final themeModeFuture = _readThemeModeSafely();
+  final contrastModeFuture = _readContrastModeSafely();
   var supabaseReady = false;
   Object? configurationError;
   try {
@@ -60,9 +64,18 @@ Future<PerfectAppBootstrapResult> _bootstrapPerfectApp() async {
   }
   return PerfectAppBootstrapResult(
     themeMode: await themeModeFuture,
+    contrastMode: await contrastModeFuture,
     supabaseReady: supabaseReady,
     configurationError: configurationError,
   );
+}
+
+Future<PerfectContrastMode> _readContrastModeSafely() async {
+  try {
+    return await PerfectPreferences.readContrastMode();
+  } on Object {
+    return PerfectContrastMode.system;
+  }
 }
 
 Future<ThemeMode> _readThemeModeSafely() async {
@@ -89,6 +102,7 @@ class PerfectApp extends StatefulWidget {
 
 class _PerfectAppState extends State<PerfectApp> {
   ThemeMode _themeMode = ThemeMode.system;
+  PerfectContrastMode _contrastMode = PerfectContrastMode.system;
   bool _bootstrapComplete = false;
   bool _supabaseReady = false;
   Object? _configurationError;
@@ -138,6 +152,7 @@ class _PerfectAppState extends State<PerfectApp> {
     if (!mounted) return;
     setState(() {
       _themeMode = result.themeMode;
+      _contrastMode = result.contrastMode;
       _supabaseReady = result.supabaseReady;
       _configurationError = result.configurationError;
       _bootstrapComplete = true;
@@ -148,6 +163,12 @@ class _PerfectAppState extends State<PerfectApp> {
     if (_themeMode == value) return;
     setState(() => _themeMode = value);
     unawaited(PerfectPreferences.saveThemeMode(value));
+  }
+
+  void _changeContrastMode(PerfectContrastMode value) {
+    if (_contrastMode == value) return;
+    setState(() => _contrastMode = value);
+    unawaited(PerfectPreferences.saveContrastMode(value));
   }
 
   Future<void> _configureSupabase({
@@ -188,25 +209,43 @@ class _PerfectAppState extends State<PerfectApp> {
   }
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: 'Perfect!',
-    debugShowCheckedModeBanner: false,
-    theme: PerfectTheme.light(),
-    darkTheme: PerfectTheme.dark(),
-    themeMode: _themeMode,
-    home: !_bootstrapComplete
-        ? const _PerfectBootstrapSurface()
-        : _supabaseReady
-        ? _AuthenticatedApp(
-            themeMode: _themeMode,
-            onThemeModeChanged: _changeThemeMode,
-            onChangeSupabaseConnection: _changeSupabaseConnection,
-          )
-        : ConfigurationPage(
-            onConnect: _configureSupabase,
-            initialError: _configurationError,
-          ),
-  );
+  Widget build(BuildContext context) {
+    final forcedHighContrast = _contrastMode == PerfectContrastMode.high;
+    return MaterialApp(
+      title: 'Perfect!',
+      debugShowCheckedModeBanner: false,
+      theme: forcedHighContrast
+          ? PerfectTheme.highContrastLight()
+          : PerfectTheme.light(),
+      darkTheme: forcedHighContrast
+          ? PerfectTheme.highContrastDark()
+          : PerfectTheme.dark(),
+      highContrastTheme: PerfectTheme.highContrastLight(),
+      highContrastDarkTheme: PerfectTheme.highContrastDark(),
+      themeMode: _themeMode,
+      themeAnimationDuration: PerfectMotion.standard,
+      themeAnimationCurve: PerfectMotion.productive,
+      builder: (context, child) => PerfectSystemAppearanceProjection(
+        themeMode: _themeMode,
+        contrastMode: _contrastMode,
+        child: child ?? const SizedBox.shrink(),
+      ),
+      home: !_bootstrapComplete
+          ? const _PerfectBootstrapSurface()
+          : _supabaseReady
+          ? _AuthenticatedApp(
+              themeMode: _themeMode,
+              contrastMode: _contrastMode,
+              onThemeModeChanged: _changeThemeMode,
+              onContrastModeChanged: _changeContrastMode,
+              onChangeSupabaseConnection: _changeSupabaseConnection,
+            )
+          : ConfigurationPage(
+              onConnect: _configureSupabase,
+              initialError: _configurationError,
+            ),
+    );
+  }
 }
 
 class _PerfectBootstrapSurface extends StatelessWidget {
@@ -291,12 +330,16 @@ class _PerfectBootstrapSurface extends StatelessWidget {
 class _AuthenticatedApp extends StatefulWidget {
   const _AuthenticatedApp({
     required this.themeMode,
+    required this.contrastMode,
     required this.onThemeModeChanged,
+    required this.onContrastModeChanged,
     required this.onChangeSupabaseConnection,
   });
 
   final ThemeMode themeMode;
+  final PerfectContrastMode contrastMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
+  final ValueChanged<PerfectContrastMode> onContrastModeChanged;
   final Future<void> Function() onChangeSupabaseConnection;
 
   @override
@@ -346,7 +389,9 @@ class _AuthenticatedAppState extends State<_AuthenticatedApp> {
           key: ValueKey<String>(session.user.id),
           userId: session.user.id,
           themeMode: widget.themeMode,
+          contrastMode: widget.contrastMode,
           onThemeModeChanged: widget.onThemeModeChanged,
+          onContrastModeChanged: widget.onContrastModeChanged,
         );
       },
     );
@@ -358,12 +403,16 @@ class _PlannerWorkspaceScope extends StatefulWidget {
     super.key,
     required this.userId,
     required this.themeMode,
+    required this.contrastMode,
     required this.onThemeModeChanged,
+    required this.onContrastModeChanged,
   });
 
   final String userId;
   final ThemeMode themeMode;
+  final PerfectContrastMode contrastMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
+  final ValueChanged<PerfectContrastMode> onContrastModeChanged;
 
   @override
   State<_PlannerWorkspaceScope> createState() => _PlannerWorkspaceScopeState();
@@ -603,7 +652,9 @@ class _PlannerWorkspaceScopeState extends State<_PlannerWorkspaceScope>
             feedbackController: _feedbackController,
             aiClient: SupabasePerfectAiClient(Supabase.instance.client),
             themeMode: widget.themeMode,
+            contrastMode: widget.contrastMode,
             onThemeModeChanged: widget.onThemeModeChanged,
+            onContrastModeChanged: widget.onContrastModeChanged,
             onSignOut: _signOut,
             navigationController: _navigationController,
           );

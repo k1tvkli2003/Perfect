@@ -269,9 +269,7 @@ class _Command extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.all(PerfectSpace.md),
     decoration: BoxDecoration(
-      color: Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xff2a2d3e)
-          : const Color(0xfff7f2eb),
+      color: PerfectSemanticTheme.of(context).surfaceHigh,
       borderRadius: BorderRadius.circular(18),
     ),
     child: SelectableText(command, textDirection: TextDirection.ltr),
@@ -292,8 +290,8 @@ class _SetupStep extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 13,
-          backgroundColor: PerfectColors.apricotSoft,
-          foregroundColor: PerfectColors.ink,
+          backgroundColor: PerfectSemanticTheme.of(context).primaryContainer,
+          foregroundColor: PerfectSemanticTheme.of(context).onPrimaryContainer,
           child: Text(number),
         ),
         const SizedBox(width: PerfectSpace.sm),

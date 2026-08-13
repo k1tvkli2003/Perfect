@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-08-13",
+  "platform": "Android emulator",
+  "avd": "Codex_API35",
+  "package": "com.k1tvkli2003.perfect.preview",
+  "activity": "com.k1tvkli2003.perfect.MainActivity",
+  "install_contract": {
+    "previous_version_code": 2061,
+    "installed_version_code": 2062,
+    "version_name": "1.1.0-preview",
+    "method": "adb install -r",
+    "first_install_time_before": "2026-08-02 19:20:44",
+    "first_install_time_after": "2026-08-02 19:20:44",
+    "result": "pass"
+  },
+  "disposable_apk": {
+    "committed": false,
+    "bytes": 174249974,
+    "sha256": "e89518b7b339bb2717926164e425796c3832892401af7fa4361d8bc45d7173b2",
+    "claim": "Secret-free debug preview evidence only; not a signed distributable."
+  },
+  "artifacts": [
+    {
+      "file": "perfect-stage10-android-appearance-clarity-light-build2062.png",
+      "bytes": 245361,
+      "sha256": "4dd5bdd0bd499ae8393f05afba6a146204613d674081420c1c8ece62c9f3eef0"
+    },
+    {
+      "file": "perfect-stage10-android-appearance-clarity-light-build2062.xml",
+      "bytes": 13385,
+      "sha256": "3ec666c0e04da366f86dbd2a3d106b227a989dafe99a295fa1ea91395bf5d58e"
+    },
+    {
+      "file": "perfect-stage10-android-clarity-dark-build2062.png",
+      "bytes": 340192,
+      "sha256": "c7813396418d388a85b925183534f7a289584aa1eded5cd4c6b65ae41c717d1b"
+    },
+    {
+      "file": "perfect-stage10-android-clarity-dark-build2062.xml",
+      "bytes": 11558,
+      "sha256": "3531a220bcc77a5328185e1c90f49ec6e6055aaed11f26f19398003271ed2702"
+    },
+    {
+      "file": "perfect-stage10-android-clarity-light-build2062.png",
+      "bytes": 339440,
+      "sha256": "68b6d3445f33a4ed021c1958aaf694b8ea9e0de2fd3dbbfa582ba1c7332e3ed6"
+    },
+    {
+      "file": "perfect-stage10-android-clarity-light-build2062.xml",
+      "bytes": 11558,
+      "sha256": "3531a220bcc77a5328185e1c90f49ec6e6055aaed11f26f19398003271ed2702"
+    },
+    {
+      "file": "perfect-stage10-android-dark-build2062.png",
+      "bytes": 446826,
+      "sha256": "2ad18da3b37ecf3349319913565f864aa57b448588344359cae5bab2463b860c"
+    },
+    {
+      "file": "perfect-stage10-android-dark-build2062.xml",
+      "bytes": 11558,
+      "sha256": "aedc7c2617a246ea0d80c8d26a76cf3d59c5cf95bd0dbbb46f821824dfa9cd03"
+    },
+    {
+      "file": "perfect-stage10-android-light-build2061.png",
+      "bytes": 486605,
+      "sha256": "0b30d61f3b1736ab429c6ad03f9aabd9ec01d52858c3c12475326d0befc676a7"
+    },
+    {
+      "file": "perfect-stage10-android-light-build2061.xml",
+      "bytes": 11558,
+      "sha256": "c906327502c832578ddff39c30de593803013bb3ab28ae158fe6f7af2df671a5"
+    },
+    {
+      "file": "perfect-stage10-android-light-build2062.png",
+      "bytes": 486599,
+      "sha256": "91d67047b0dc6ce93c5b2a965873d4ddc39f23e3948b6ae7595e9227c8372969"
+    },
+    {
+      "file": "perfect-stage10-android-light-build2062.xml",
+      "bytes": 11558,
+      "sha256": "c906327502c832578ddff39c30de593803013bb3ab28ae158fe6f7af2df671a5"
+    },
+    {
+      "file": "perfect-stage10-android-more-build2062.xml",
+      "bytes": 13385,
+      "sha256": "ebfac632f0c250af54addbeee9aef90c1fa6723797b8a24b227bd8320ba71de3"
+    }
+  ],
+  "limits": [
+    "Preview fixtures are synthetic and isolated from owner production data.",
+    "This proves in-place preview continuity, not signed production session continuity.",
+    "Hosted exact-SHA jobs remain the authority for Windows compilation and signed packaging."
+  ]
+}

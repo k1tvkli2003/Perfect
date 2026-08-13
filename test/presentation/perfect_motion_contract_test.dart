@@ -268,7 +268,10 @@ void main() {
       expect(tester.getSize(surface), initialSize);
       final focusedDecoration =
           tester.widget<AnimatedContainer>(surface).decoration as BoxDecoration;
-      expect(focusedDecoration.border!.top.color, PerfectColors.apricotAction);
+      expect(
+        focusedDecoration.border!.top.color,
+        PerfectSurfaceTheme.light.focusRing,
+      );
       expect(focusedDecoration.boxShadow, isNotEmpty);
 
       final gesture = await tester.startGesture(tester.getCenter(surface));

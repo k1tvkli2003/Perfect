@@ -10,6 +10,9 @@ void main() {
         'android/app/src/main/kotlin/com/k1tvkli2003/perfect/'
         'PerfectTodayWidgetProvider.kt',
       ).readAsStringSync().replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+      final mainActivity = File(
+        'android/app/src/main/kotlin/com/k1tvkli2003/perfect/MainActivity.kt',
+      ).readAsStringSync();
       final manifest = File(
         'android/app/src/main/AndroidManifest.xml',
       ).readAsStringSync();
@@ -36,8 +39,22 @@ void main() {
             'android/app/src/main/res/layout/perfect_today_widget_$size.xml',
           ).readAsStringSync(),
       ];
+      const densities = <String>['mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi'];
+      const appearanceSuffixes = <String>['', '_dark', '_hc_light', '_hc_dark'];
 
       expect(layouts.every((layout) => layout.contains('<ListView')), isTrue);
+      expect(
+        layouts.every(
+          (layout) => layout.contains('android:id="@+id/widget_root"'),
+        ),
+        isTrue,
+      );
+      expect(
+        layouts.every(
+          (layout) => layout.contains('android:id="@+id/widget_brand_mark"'),
+        ),
+        isTrue,
+      );
       expect(
         layouts.every(
           (layout) => layout.contains('android:id="@+id/widget_quick_add"'),
@@ -59,6 +76,11 @@ void main() {
       expect(provider, contains('SizeF(260f, 220f)'));
       expect(provider, contains('PerfectTodayWidgetRefreshReceiver'));
       expect(provider, contains('setImageViewResource'));
+      expect(provider, contains('PerfectNativeAppearance.resolve'));
+      expect(provider, contains('R.id.widget_root'));
+      expect(provider, contains('appearance.widgetSurfaceResource'));
+      expect(provider, contains('appearance.markResource'));
+      expect(provider, contains('appearance.wordmarkResource'));
       expect(provider, contains('perfect_widget_status_completed'));
       expect(provider, isNot(contains('"completed" -> "✓"')));
       expect(provider, contains('setAndAllowWhileIdle'));
@@ -129,6 +151,12 @@ void main() {
       );
       expect(
         quickAddActivity,
+        contains('applyAppearance(PerfectNativeAppearance.resolve'),
+      );
+      expect(quickAddActivity, contains('appearance.highContrast'));
+      expect(quickAddActivity, contains('appearance.markResource'));
+      expect(
+        quickAddActivity,
         contains('HomeWidgetBackgroundIntent.getBroadcast'),
       );
       expect(quickAddActivity, isNot(contains('PlannerDatabase')));
@@ -146,6 +174,60 @@ void main() {
         ),
         isTrue,
       );
+      expect(
+        mainActivity,
+        contains('com.k1tvkli2003.perfect/system_appearance'),
+      );
+      expect(mainActivity, contains('perfect_appearance_theme_id'));
+      expect(mainActivity, contains('perfect_appearance_high_contrast'));
+      expect(mainActivity, contains('setApplicationNightMode'));
+      expect(mainActivity, contains('PerfectTodayWidgetProvider.refresh'));
+
+      for (final density in densities) {
+        for (final suffix in appearanceSuffixes) {
+          expect(
+            File(
+              'android/app/src/main/res/drawable-$density/'
+              'perfect_widget_mark${suffix}_raster.png',
+            ).existsSync(),
+            isTrue,
+            reason: 'missing $density mark$suffix',
+          );
+          expect(
+            File(
+              'android/app/src/main/res/drawable-$density/'
+              'perfect_widget_wordmark${suffix}_raster.png',
+            ).existsSync(),
+            isTrue,
+            reason: 'missing $density wordmark$suffix',
+          );
+        }
+      }
+      for (final suffix in appearanceSuffixes) {
+        expect(
+          File(
+            'android/app/src/main/res/drawable/'
+            'perfect_widget_surface$suffix.xml',
+          ).existsSync(),
+          isTrue,
+          reason: 'missing widget surface$suffix',
+        );
+        for (final state in <String>[
+          'pending',
+          'completed',
+          'partial',
+          'missed',
+        ]) {
+          expect(
+            File(
+              'android/app/src/main/res/drawable/'
+              'perfect_widget_status_$state$suffix.xml',
+            ).existsSync(),
+            isTrue,
+            reason: 'missing $state status$suffix',
+          );
+        }
+      }
     },
   );
 }

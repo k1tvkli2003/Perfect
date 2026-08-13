@@ -68,7 +68,9 @@ class PerfectWorkspacePage extends StatefulWidget {
     required this.controller,
     required this.onSignOut,
     required this.themeMode,
+    this.contrastMode = PerfectContrastMode.system,
     required this.onThemeModeChanged,
+    this.onContrastModeChanged,
     this.now = DateTime.now,
     this.ownerDisplayName,
     this.navigationController,
@@ -81,7 +83,9 @@ class PerfectWorkspacePage extends StatefulWidget {
   final PlannerWorkspaceController controller;
   final Future<void> Function() onSignOut;
   final ThemeMode themeMode;
+  final PerfectContrastMode contrastMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
+  final ValueChanged<PerfectContrastMode>? onContrastModeChanged;
   final DateTime Function() now;
   final String? ownerDisplayName;
   final PerfectWorkspaceNavigationController? navigationController;
@@ -604,7 +608,9 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
             ? null
             : _openFeedbackCapture,
         themeMode: widget.themeMode,
+        contrastMode: widget.contrastMode,
         onThemeModeChanged: widget.onThemeModeChanged,
+        onContrastModeChanged: widget.onContrastModeChanged,
         onSignOut: widget.onSignOut,
         onAddProject: () => _openEditor(initialKind: PlannerEntityKind.project),
         onAddArea: () => _openEditor(initialKind: PlannerEntityKind.area),
@@ -1316,8 +1322,8 @@ class _PaneDividerState extends State<_PaneDivider> {
                     end: Alignment.bottomCenter,
                     colors: active
                         ? <Color>[
-                            PerfectColors.apricot,
-                            PerfectColors.lilacAction,
+                            PerfectSemanticTheme.of(context).primary,
+                            PerfectSemanticTheme.of(context).tertiary,
                           ]
                         : <Color>[
                             scheme.outlineVariant.withValues(alpha: .36),
@@ -1327,7 +1333,9 @@ class _PaneDividerState extends State<_PaneDivider> {
                   boxShadow: active
                       ? <BoxShadow>[
                           BoxShadow(
-                            color: PerfectColors.lilac.withValues(alpha: .22),
+                            color: PerfectSemanticTheme.of(
+                              context,
+                            ).tertiary.withValues(alpha: .22),
                             blurRadius: 14,
                           ),
                         ]
@@ -1612,9 +1620,13 @@ class _CompactWorkspaceFooter extends StatelessWidget {
                     begin: AlignmentDirectional.topStart,
                     end: AlignmentDirectional.bottomEnd,
                     colors: <Color>[
-                      Colors.white.withValues(alpha: .20),
+                      PerfectSemanticTheme.of(
+                        context,
+                      ).surfaceLowest.withValues(alpha: .20),
                       theme.colorScheme.surface.withValues(alpha: .06),
-                      PerfectColors.lilacSoft.withValues(alpha: .09),
+                      PerfectSemanticTheme.of(
+                        context,
+                      ).tertiaryContainer.withValues(alpha: .09),
                     ],
                   ),
                 ),
@@ -1680,8 +1692,8 @@ class _CompactDestinationGlyph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final accent = _destinationAccent(destination);
-    final companion = _destinationCompanion(destination);
+    final accent = _destinationAccent(context, destination);
+    final companion = _destinationCompanion(context, destination);
     final duration = PerfectMotion.responsive(context, PerfectMotion.standard);
     final icon = selected ? destination.selectedIcon : destination.icon;
 
@@ -1713,7 +1725,11 @@ class _CompactDestinationGlyph extends StatelessWidget {
                         shape: ContinuousRectangleBorder(
                           borderRadius: BorderRadius.circular(22),
                           side: BorderSide(
-                            color: Colors.white.withValues(alpha: .88),
+                            color: PerfectContrast.of(context)
+                                ? PerfectSemanticTheme.of(context).outline
+                                : PerfectSemanticTheme.of(
+                                    context,
+                                  ).surfaceLowest.withValues(alpha: .88),
                             width: 1.2,
                           ),
                         ),
@@ -1750,8 +1766,12 @@ class _CompactDestinationGlyph extends StatelessWidget {
                             borderRadius: BorderRadius.circular(99),
                             gradient: LinearGradient(
                               colors: <Color>[
-                                Colors.white.withValues(alpha: .78),
-                                Colors.white.withValues(alpha: 0),
+                                PerfectSemanticTheme.of(
+                                  context,
+                                ).surfaceLowest.withValues(alpha: .78),
+                                PerfectSemanticTheme.of(
+                                  context,
+                                ).surfaceLowest.withValues(alpha: 0),
                               ],
                             ),
                           ),
@@ -1769,7 +1789,7 @@ class _CompactDestinationGlyph extends StatelessWidget {
                     icon,
                     size: selected ? 24 : 23,
                     color: selected
-                        ? PerfectColors.ink
+                        ? PerfectSemanticTheme.of(context).ink
                         : scheme.onSurfaceVariant,
                   ),
                 ),
@@ -1807,23 +1827,33 @@ class _CompactDestinationGlyph extends StatelessWidget {
   }
 }
 
-Color _destinationAccent(_PerfectDestination destination) =>
-    switch (destination) {
-      _PerfectDestination.today => PerfectColors.apricot,
-      _PerfectDestination.tasks => PerfectColors.sync,
-      _PerfectDestination.plan => PerfectColors.lilacAction,
-      _PerfectDestination.habits => PerfectColors.mint,
-      _PerfectDestination.more => PerfectColors.lilac,
-    };
+Color _destinationAccent(
+  BuildContext context,
+  _PerfectDestination destination,
+) {
+  final semantic = PerfectSemanticTheme.of(context);
+  return switch (destination) {
+    _PerfectDestination.today => semantic.primary,
+    _PerfectDestination.tasks => semantic.sync,
+    _PerfectDestination.plan => semantic.tertiary,
+    _PerfectDestination.habits => semantic.secondary,
+    _PerfectDestination.more => semantic.tertiary,
+  };
+}
 
-Color _destinationCompanion(_PerfectDestination destination) =>
-    switch (destination) {
-      _PerfectDestination.today => PerfectColors.lilac,
-      _PerfectDestination.tasks => PerfectColors.mint,
-      _PerfectDestination.plan => PerfectColors.apricot,
-      _PerfectDestination.habits => PerfectColors.lilac,
-      _PerfectDestination.more => PerfectColors.sync,
-    };
+Color _destinationCompanion(
+  BuildContext context,
+  _PerfectDestination destination,
+) {
+  final semantic = PerfectSemanticTheme.of(context);
+  return switch (destination) {
+    _PerfectDestination.today => semantic.tertiary,
+    _PerfectDestination.tasks => semantic.secondary,
+    _PerfectDestination.plan => semantic.primary,
+    _PerfectDestination.habits => semantic.tertiary,
+    _PerfectDestination.more => semantic.sync,
+  };
+}
 
 class _QuickCaptureDock extends StatefulWidget {
   const _QuickCaptureDock({
@@ -2033,7 +2063,7 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
               constraints: BoxConstraints(maxWidth: maxDockWidth),
               child: TapRegion(
                 onTapOutside: (_) => _collapse(),
-                child: AnimatedSize(
+                child: _MotionAwareAnimatedSize(
                   alignment: AlignmentDirectional.bottomCenter,
                   duration: PerfectMotion.responsive(
                     context,
@@ -2123,16 +2153,16 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
                 shape: BoxShape.circle,
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: PerfectColors.sync.withValues(
-                      alpha: .10 + heartbeat * .08,
-                    ),
+                    color: PerfectSemanticTheme.of(
+                      context,
+                    ).sync.withValues(alpha: .10 + heartbeat * .08),
                     blurRadius: 14 + heartbeat * 10,
                     offset: const Offset(0, 6),
                   ),
                   BoxShadow(
-                    color: PerfectColors.lilac.withValues(
-                      alpha: .10 + heartbeat * .07,
-                    ),
+                    color: PerfectSemanticTheme.of(
+                      context,
+                    ).tertiary.withValues(alpha: .10 + heartbeat * .07),
                     blurRadius: 18 + heartbeat * 8,
                     offset: const Offset(0, 10),
                   ),
@@ -2146,7 +2176,11 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
                 strength: PerfectGlassStrength.soft,
                 enableBlur: false,
                 tint: scheme.surface.withValues(alpha: .94),
-                borderColor: Colors.white.withValues(alpha: .68),
+                borderColor: PerfectContrast.of(context)
+                    ? PerfectSemanticTheme.of(context).outline
+                    : PerfectSemanticTheme.of(
+                        context,
+                      ).surfaceLowest.withValues(alpha: .68),
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
@@ -2165,10 +2199,12 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: <Color>[
-                                  PerfectColors.mint.withValues(alpha: .92),
-                                  PerfectColors.lilacAction.withValues(
-                                    alpha: .96,
-                                  ),
+                                  PerfectSemanticTheme.of(
+                                    context,
+                                  ).secondary.withValues(alpha: .92),
+                                  PerfectSemanticTheme.of(
+                                    context,
+                                  ).tertiary.withValues(alpha: .96),
                                 ],
                               ),
                             ),
@@ -2191,7 +2227,9 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
                                 width: 11,
                                 height: 11,
                                 decoration: BoxDecoration(
-                                  color: PerfectColors.apricot,
+                                  color: PerfectSemanticTheme.of(
+                                    context,
+                                  ).primary,
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: scheme.surface,
@@ -2318,13 +2356,23 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
               begin: AlignmentDirectional.topStart,
               end: AlignmentDirectional.bottomEnd,
               colors: <Color>[
-                PerfectColors.mintSoft.withValues(alpha: .92),
-                PerfectColors.lilacSoft.withValues(alpha: .82),
+                PerfectSemanticTheme.of(
+                  context,
+                ).secondaryContainer.withValues(alpha: .92),
+                PerfectSemanticTheme.of(
+                  context,
+                ).tertiaryContainer.withValues(alpha: .82),
               ],
             ),
             shape: ContinuousRectangleBorder(
               borderRadius: BorderRadius.circular(18),
-              side: BorderSide(color: Colors.white.withValues(alpha: .76)),
+              side: BorderSide(
+                color: PerfectContrast.of(context)
+                    ? PerfectSemanticTheme.of(context).outline
+                    : PerfectSemanticTheme.of(
+                        context,
+                      ).surfaceLowest.withValues(alpha: .76),
+              ),
             ),
           ),
           child: const Center(
@@ -2390,17 +2438,25 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
           enableBlur: false,
           tint: scheme.surface.withValues(alpha: .94),
           borderColor: _fieldFocused
-              ? PerfectColors.lilac.withValues(alpha: .62)
-              : Colors.white.withValues(alpha: .58),
+              ? PerfectSemanticTheme.of(context).focus
+              : PerfectContrast.of(context)
+              ? PerfectSemanticTheme.of(context).outline
+              : PerfectSemanticTheme.of(
+                  context,
+                ).surfaceLowest.withValues(alpha: .58),
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: AlignmentDirectional.topStart,
                 end: AlignmentDirectional.bottomEnd,
                 colors: <Color>[
-                  PerfectColors.mintSoft.withValues(alpha: .34),
+                  PerfectSemanticTheme.of(
+                    context,
+                  ).secondaryContainer.withValues(alpha: .34),
                   scheme.surface.withValues(alpha: .18),
-                  PerfectColors.lilacSoft.withValues(alpha: .38),
+                  PerfectSemanticTheme.of(
+                    context,
+                  ).tertiaryContainer.withValues(alpha: .38),
                 ],
               ),
             ),
@@ -2472,13 +2528,15 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
           borderRadius: BorderRadius.circular(27),
           border: Border.all(
             color: _fieldFocused
-                ? PerfectColors.lilac.withValues(alpha: .78)
+                ? PerfectSemanticTheme.of(context).focus
                 : scheme.outline.withValues(alpha: .25),
           ),
           boxShadow: _fieldFocused
               ? <BoxShadow>[
                   BoxShadow(
-                    color: PerfectColors.lilac.withValues(alpha: .12),
+                    color: PerfectSemanticTheme.of(
+                      context,
+                    ).tertiary.withValues(alpha: .12),
                     blurRadius: 16,
                   ),
                 ]
@@ -2553,14 +2611,14 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
                 style: IconButton.styleFrom(
                   padding: EdgeInsets.zero,
                   shape: const CircleBorder(),
-                  foregroundColor: Colors.white,
+                  foregroundColor: PerfectSemanticTheme.of(context).onTertiary,
                 ),
                 onPressed: _capture.text.trim().isEmpty
                     ? widget.focusNode.requestFocus
                     : _submit,
-                icon: const _CaptureActionDisc(
-                  color: PerfectColors.lilacAction,
-                  child: PerfectPictogram(
+                icon: _CaptureActionDisc(
+                  color: PerfectSemanticTheme.of(context).tertiary,
+                  child: const PerfectPictogram(
                     name: 'send',
                     size: 23,
                     semanticLabel: 'Save quick capture',
@@ -2587,6 +2645,34 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
     } finally {
       if (mounted) setState(() => _sending = false);
     }
+  }
+}
+
+class _MotionAwareAnimatedSize extends StatelessWidget {
+  const _MotionAwareAnimatedSize({
+    required this.alignment,
+    required this.duration,
+    required this.curve,
+    required this.clipBehavior,
+    required this.child,
+  });
+
+  final AlignmentGeometry alignment;
+  final Duration duration;
+  final Curve curve;
+  final Clip clipBehavior;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (PerfectMotion.reduced(context)) return child;
+    return AnimatedSize(
+      alignment: alignment,
+      duration: duration,
+      curve: curve,
+      clipBehavior: clipBehavior,
+      child: child,
+    );
   }
 }
 
@@ -2617,15 +2703,16 @@ class _CaptureOptionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final semantic = PerfectSemanticTheme.of(context);
     final accent = switch (tone) {
-      _CaptureOptionTone.plan => PerfectColors.apricot,
-      _CaptureOptionTone.ai => PerfectColors.lilacAction,
-      _CaptureOptionTone.voice => PerfectColors.sync,
+      _CaptureOptionTone.plan => semantic.primary,
+      _CaptureOptionTone.ai => semantic.tertiary,
+      _CaptureOptionTone.voice => semantic.sync,
     };
     final companion = switch (tone) {
-      _CaptureOptionTone.plan => PerfectColors.mint,
-      _CaptureOptionTone.ai => PerfectColors.mint,
-      _CaptureOptionTone.voice => PerfectColors.lilac,
+      _CaptureOptionTone.plan => semantic.secondary,
+      _CaptureOptionTone.ai => semantic.secondary,
+      _CaptureOptionTone.voice => semantic.tertiary,
     };
     final radius = BorderRadius.circular(vertical ? 20 : 18);
     final duration = PerfectMotion.responsive(context, PerfectMotion.standard);
@@ -3245,22 +3332,22 @@ class _DayDeckHeading extends StatelessWidget {
               icon: Icons.route_rounded,
               value: '${items.length}',
               label: 'planned',
-              color: PerfectColors.apricot,
-              background: PerfectColors.apricotSoft,
+              color: PerfectSemanticTheme.of(context).primary,
+              background: PerfectSemanticTheme.of(context).primaryContainer,
             ),
             _DeckMetric(
               icon: Icons.done_all_rounded,
               value: '$completed',
               label: 'complete',
-              color: PerfectColors.mint,
-              background: PerfectColors.mintSoft,
+              color: PerfectSemanticTheme.of(context).secondary,
+              background: PerfectSemanticTheme.of(context).secondaryContainer,
             ),
             _DeckMetric(
               icon: Icons.spa_outlined,
               value: '$loggedHabits',
               label: 'habits',
-              color: PerfectColors.lilac,
-              background: PerfectColors.lilacSoft,
+              color: PerfectSemanticTheme.of(context).tertiary,
+              background: PerfectSemanticTheme.of(context).tertiaryContainer,
             ),
           ],
         );
@@ -3370,7 +3457,7 @@ class _DayCompassPanel extends StatelessWidget {
             eyebrow: 'DAY COMPASS',
             title: 'Your rhythm, at a glance',
             icon: Icons.explore_outlined,
-            color: PerfectColors.apricot,
+            color: PerfectSemanticTheme.of(context).primary,
             action: IconButton(
               tooltip: 'Open day plan',
               onPressed: onOpenPlan,
@@ -3421,7 +3508,7 @@ class _DayStreamPanel extends StatelessWidget {
         eyebrow: 'DAY STREAM',
         title: 'Today’s flow',
         icon: Icons.view_timeline_outlined,
-        color: PerfectColors.mint,
+        color: PerfectSemanticTheme.of(context).secondary,
         action: FilledButton.tonalIcon(
           onPressed: onAdd,
           icon: const Icon(Icons.add_rounded, size: 18),
@@ -3442,7 +3529,7 @@ class _DayStreamPanel extends StatelessWidget {
       SizedBox(height: dense ? PerfectSpace.xs : PerfectSpace.md),
       _DayStreamZone(
         key: const ValueKey<String>('day-stream-habit-zone'),
-        color: PerfectColors.mintSoft,
+        color: PerfectSemanticTheme.of(context).secondaryContainer,
         icon: Icons.spa_outlined,
         title: 'Habit pulse',
         dense: dense,
@@ -3673,7 +3760,7 @@ class _DayStreamTimeline extends StatelessWidget {
                             width: 10,
                             height: 10,
                             decoration: BoxDecoration(
-                              color: _colorFor(entity),
+                              color: _colorFor(context, entity),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -3734,7 +3821,7 @@ class _DayStreamZone extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: PerfectColors.ink),
+              Icon(icon, size: 18, color: PerfectSemanticTheme.of(context).ink),
               const SizedBox(width: PerfectSpace.xs),
               Text(
                 title,
@@ -3763,7 +3850,7 @@ class _NextUpZone extends StatelessWidget {
     final next = items.isEmpty ? null : items.first;
     return _DayStreamZone(
       key: const ValueKey<String>('day-stream-next-zone'),
-      color: PerfectColors.lilacSoft,
+      color: PerfectSemanticTheme.of(context).tertiaryContainer,
       icon: Icons.bolt_rounded,
       title: 'Next up',
       dense: dense,
@@ -3868,7 +3955,7 @@ class _DayCompletionZone extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 8,
-                color: PerfectColors.mint,
+                color: PerfectSemanticTheme.of(context).secondary,
                 backgroundColor: Theme.of(context).colorScheme.outlineVariant,
               ),
             ),
@@ -3881,7 +3968,7 @@ class _DayCompletionZone extends StatelessWidget {
                       child: _SignalMeasure(
                         value: '$remaining',
                         label: 'open',
-                        color: PerfectColors.apricot,
+                        color: PerfectSemanticTheme.of(context).primary,
                       ),
                     ),
                     const SizedBox(width: PerfectSpace.sm),
@@ -3889,7 +3976,7 @@ class _DayCompletionZone extends StatelessWidget {
                       child: _SignalMeasure(
                         value: '$completed',
                         label: 'complete',
-                        color: PerfectColors.mint,
+                        color: PerfectSemanticTheme.of(context).secondary,
                       ),
                     ),
                   ],
@@ -3970,10 +4057,10 @@ class _DayStreamEmpty extends StatelessWidget {
       padding: const EdgeInsets.all(PerfectSpace.lg),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             Icons.wb_sunny_outlined,
             size: 34,
-            color: PerfectColors.apricot,
+            color: PerfectSemanticTheme.of(context).primary,
           ),
           const SizedBox(height: PerfectSpace.xs),
           Text(
@@ -4214,23 +4301,23 @@ class _TodayNextUpCard extends StatelessWidget {
     Widget leadingIcon() => Container(
       width: 38,
       height: 38,
-      decoration: const BoxDecoration(
-        color: PerfectColors.lilac,
+      decoration: BoxDecoration(
+        color: PerfectSemanticTheme.of(context).tertiary,
         shape: BoxShape.circle,
       ),
-      child: const Icon(
+      child: Icon(
         Icons.track_changes_rounded,
-        color: Colors.white,
+        color: PerfectSemanticTheme.of(context).onTertiary,
         size: 21,
       ),
     );
     Widget detailLine({bool includeChevron = false}) => Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
+        Icon(
           Icons.schedule_outlined,
           size: 17,
-          color: PerfectColors.lilac,
+          color: PerfectSemanticTheme.of(context).tertiary,
         ),
         const SizedBox(width: 4),
         Flexible(
@@ -4239,7 +4326,7 @@ class _TodayNextUpCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: PerfectColors.lilac,
+              color: PerfectSemanticTheme.of(context).tertiary,
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
@@ -4264,7 +4351,7 @@ class _TodayNextUpCard extends StatelessWidget {
           label,
           maxLines: 1,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: PerfectColors.lilac,
+            color: PerfectSemanticTheme.of(context).tertiary,
             fontSize: 11,
             fontWeight: FontWeight.w800,
             letterSpacing: .9,
@@ -5054,8 +5141,8 @@ class _PlannerDateDeck extends StatelessWidget {
                     Container(
                       width: 10,
                       height: 10,
-                      decoration: const BoxDecoration(
-                        color: PerfectColors.apricot,
+                      decoration: BoxDecoration(
+                        color: PerfectSemanticTheme.of(context).primary,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -5174,11 +5261,13 @@ class _PlannerDayChip extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 62),
           padding: const EdgeInsets.symmetric(vertical: PerfectSpace.xs),
           decoration: BoxDecoration(
-            color: selected ? PerfectColors.apricotSoft : Colors.transparent,
+            color: selected
+                ? PerfectSemanticTheme.of(context).primaryContainer
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: selected
-                  ? PerfectColors.apricot.withValues(alpha: .72)
+                  ? PerfectSemanticTheme.of(context).primary
                   : today
                   ? scheme.secondary.withValues(alpha: .66)
                   : Colors.transparent,
@@ -5346,7 +5435,7 @@ class _HabitOverviewBand extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 9,
-                      color: PerfectColors.mint,
+                      color: PerfectSemanticTheme.of(context).secondary,
                       backgroundColor: scheme.surface.withValues(alpha: .72),
                     ),
                   ),
@@ -5382,7 +5471,9 @@ class _MorePage extends StatelessWidget {
     super.key,
     required this.controller,
     required this.themeMode,
+    required this.contrastMode,
     required this.onThemeModeChanged,
+    this.onContrastModeChanged,
     required this.onSignOut,
     required this.onAddProject,
     required this.onAddArea,
@@ -5392,7 +5483,9 @@ class _MorePage extends StatelessWidget {
 
   final PlannerWorkspaceController controller;
   final ThemeMode themeMode;
+  final PerfectContrastMode contrastMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
+  final ValueChanged<PerfectContrastMode>? onContrastModeChanged;
   final Future<void> Function() onSignOut;
   final VoidCallback onAddProject;
   final VoidCallback onAddArea;
@@ -5400,163 +5493,232 @@ class _MorePage extends StatelessWidget {
   final VoidCallback? onOpenFeedback;
 
   @override
-  Widget build(BuildContext context) => _PageScrollFrame(
-    maxWidth: 1120,
-    children: [
-      _PageTitle(
-        title: 'More',
-        subtitle: 'Private controls, not public settings.',
-      ),
-      const SizedBox(height: PerfectSpace.md),
-      if (feedbackController case final feedback?) ...[
-        Semantics(
-          container: true,
-          label: 'Private feedback and diagnostics settings',
-          child: Card(
-            clipBehavior: Clip.antiAlias,
-            child: ReadyFeedbackSettingsTile(
-              controller: feedback,
-              onCapture: onOpenFeedback,
+  Widget build(BuildContext context) {
+    final semantic = PerfectSemanticTheme.of(context);
+    return _PageScrollFrame(
+      maxWidth: 1120,
+      children: [
+        _PageTitle(
+          title: 'More',
+          subtitle: 'Private controls, not public settings.',
+        ),
+        const SizedBox(height: PerfectSpace.md),
+        if (feedbackController case final feedback?) ...[
+          Semantics(
+            container: true,
+            label: 'Private feedback and diagnostics settings',
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              child: ReadyFeedbackSettingsTile(
+                controller: feedback,
+                onCapture: onOpenFeedback,
+              ),
+            ),
+          ),
+          const SizedBox(height: PerfectSpace.md),
+        ],
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(PerfectSpace.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Appearance',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: PerfectSpace.xxs),
+                Text(
+                  'Choose the light environment separately from contrast.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: PerfectSpace.sm),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final mode = SegmentedButton<ThemeMode>(
+                      showSelectedIcon: false,
+                      segments: const [
+                        ButtonSegment(
+                          value: ThemeMode.system,
+                          icon: Icon(Icons.brightness_auto_outlined),
+                          label: Text('System'),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.light,
+                          icon: Icon(Icons.light_mode_outlined),
+                          label: Text('Light'),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.dark,
+                          icon: Icon(Icons.dark_mode_outlined),
+                          label: Text('Dark'),
+                        ),
+                      ],
+                      selected: <ThemeMode>{themeMode},
+                      onSelectionChanged: (selection) =>
+                          onThemeModeChanged(selection.first),
+                    );
+                    final contrast = SegmentedButton<PerfectContrastMode>(
+                      showSelectedIcon: false,
+                      segments: const [
+                        ButtonSegment(
+                          value: PerfectContrastMode.system,
+                          icon: Icon(Icons.settings_brightness_outlined),
+                          label: Text('System contrast'),
+                        ),
+                        ButtonSegment(
+                          value: PerfectContrastMode.high,
+                          icon: Icon(Icons.contrast_rounded),
+                          label: Text('Clarity'),
+                        ),
+                      ],
+                      selected: <PerfectContrastMode>{contrastMode},
+                      onSelectionChanged: onContrastModeChanged == null
+                          ? null
+                          : (selection) =>
+                                onContrastModeChanged!(selection.first),
+                    );
+                    if (constraints.maxWidth < 700) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: mode,
+                          ),
+                          const SizedBox(height: PerfectSpace.sm),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: contrast,
+                          ),
+                        ],
+                      );
+                    }
+                    return Wrap(
+                      spacing: PerfectSpace.sm,
+                      runSpacing: PerfectSpace.sm,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [mode, contrast],
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ),
         const SizedBox(height: PerfectSpace.md),
-      ],
-      Card(
-        child: Padding(
-          padding: const EdgeInsets.all(PerfectSpace.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Appearance',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: PerfectSpace.xs),
-              SegmentedButton<ThemeMode>(
-                segments: const [
-                  ButtonSegment(value: ThemeMode.system, label: Text('System')),
-                  ButtonSegment(value: ThemeMode.light, label: Text('Light')),
-                  ButtonSegment(value: ThemeMode.dark, label: Text('Dark')),
-                ],
-                selected: <ThemeMode>{themeMode},
-                onSelectionChanged: (selection) =>
-                    onThemeModeChanged(selection.first),
-              ),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(height: PerfectSpace.md),
-      _MoreCommandGroup(
-        title: 'Workspace structure',
-        commands: [
-          _MoreCommand(
-            icon: Icons.folder_outlined,
-            title: 'Projects',
-            subtitle: '${controller.projects.length} active · create or edit',
-            tint: PerfectColors.apricotSoft,
-            onTap: onAddProject,
-          ),
-          _MoreCommand(
-            icon: Icons.grid_view_rounded,
-            title: 'Areas',
-            subtitle: '${controller.areas.length} active · organize contexts',
-            tint: PerfectColors.mintSoft,
-            onTap: onAddArea,
-          ),
-        ],
-      ),
-      const SizedBox(height: PerfectSpace.md),
-      _MoreCommandGroup(
-        title: 'Focus and review',
-        commands: [
-          _MoreCommand(
-            icon: Icons.timer_outlined,
-            title: 'Focus',
-            subtitle: 'Pomodoro, countdown, and stopwatch',
-            tint: PerfectColors.apricotSoft,
-            onTap: () =>
-                FocusSessionSheet.show(context, controller: controller),
-          ),
-          _MoreCommand(
-            icon: Icons.insights_outlined,
-            title: 'Your rhythm',
-            subtitle: 'Private insight from tasks, habits, and focus',
-            tint: PerfectColors.lilacSoft,
-            onTap: () =>
-                PlannerInsightsSheet.show(context, controller: controller),
-          ),
-          _MoreCommand(
-            icon: Icons.inventory_2_outlined,
-            title: 'Archive',
-            subtitle: 'Restore anything you archived',
-            tint: Theme.of(context).colorScheme.surfaceContainerHigh,
-            onTap: () =>
-                PlannerArchiveSheet.show(context, controller: controller),
-          ),
-        ],
-      ),
-      const SizedBox(height: PerfectSpace.md),
-      _MoreCommandGroup(
-        title: 'Devices and resilience',
-        commands: [
-          _MoreCommand(
-            icon: Icons.notifications_none_rounded,
-            title: 'Reminders & quiet hours',
-            subtitle: 'Multiple alerts with device-local delivery',
-            tint: PerfectColors.apricotSoft,
-            onTap: () => PlannerReminderSettingsSheet.show(
-              context,
-              controller: controller,
-            ),
-          ),
-          if (controller.todayWidgetSettings.isAvailable)
+        _MoreCommandGroup(
+          title: 'Workspace structure',
+          commands: [
             _MoreCommand(
-              icon: Icons.widgets_outlined,
-              title: 'Perfect Today widget',
-              subtitle: 'Resize, scroll, complete, and quick-add',
-              tint: PerfectColors.mintSoft,
-              onTap: () => PerfectTodayWidgetSettingsSheet.show(
+              icon: Icons.folder_outlined,
+              title: 'Projects',
+              subtitle: '${controller.projects.length} active · create or edit',
+              tint: semantic.primaryContainer,
+              onTap: onAddProject,
+            ),
+            _MoreCommand(
+              icon: Icons.grid_view_rounded,
+              title: 'Areas',
+              subtitle: '${controller.areas.length} active · organize contexts',
+              tint: semantic.secondaryContainer,
+              onTap: onAddArea,
+            ),
+          ],
+        ),
+        const SizedBox(height: PerfectSpace.md),
+        _MoreCommandGroup(
+          title: 'Focus and review',
+          commands: [
+            _MoreCommand(
+              icon: Icons.timer_outlined,
+              title: 'Focus',
+              subtitle: 'Pomodoro, countdown, and stopwatch',
+              tint: semantic.primaryContainer,
+              onTap: () =>
+                  FocusSessionSheet.show(context, controller: controller),
+            ),
+            _MoreCommand(
+              icon: Icons.insights_outlined,
+              title: 'Your rhythm',
+              subtitle: 'Private insight from tasks, habits, and focus',
+              tint: semantic.tertiaryContainer,
+              onTap: () =>
+                  PlannerInsightsSheet.show(context, controller: controller),
+            ),
+            _MoreCommand(
+              icon: Icons.inventory_2_outlined,
+              title: 'Archive',
+              subtitle: 'Restore anything you archived',
+              tint: Theme.of(context).colorScheme.surfaceContainerHigh,
+              onTap: () =>
+                  PlannerArchiveSheet.show(context, controller: controller),
+            ),
+          ],
+        ),
+        const SizedBox(height: PerfectSpace.md),
+        _MoreCommandGroup(
+          title: 'Devices and resilience',
+          commands: [
+            _MoreCommand(
+              icon: Icons.notifications_none_rounded,
+              title: 'Reminders & quiet hours',
+              subtitle: 'Multiple alerts with device-local delivery',
+              tint: semantic.primaryContainer,
+              onTap: () => PlannerReminderSettingsSheet.show(
                 context,
                 controller: controller,
               ),
             ),
-          _MoreCommand(
-            icon: Icons.merge_type_rounded,
-            title: 'Conflict center',
-            subtitle: 'Review simultaneous edits that need you',
-            tint: PerfectColors.lilacSoft,
-            onTap: () => PlannerConflictCenterSheet.show(
-              context,
-              controller: controller,
+            if (controller.todayWidgetSettings.isAvailable)
+              _MoreCommand(
+                icon: Icons.widgets_outlined,
+                title: 'Perfect Today widget',
+                subtitle: 'Resize, scroll, complete, and quick-add',
+                tint: semantic.secondaryContainer,
+                onTap: () => PerfectTodayWidgetSettingsSheet.show(
+                  context,
+                  controller: controller,
+                ),
+              ),
+            _MoreCommand(
+              icon: Icons.merge_type_rounded,
+              title: 'Conflict center',
+              subtitle: 'Review simultaneous edits that need you',
+              tint: semantic.tertiaryContainer,
+              onTap: () => PlannerConflictCenterSheet.show(
+                context,
+                controller: controller,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: PerfectSpace.md),
+        Card(
+          child: ListTile(
+            leading: Icon(
+              _syncIcon(controller.syncStatus.phase),
+              color: _syncColor(context, controller.syncStatus.phase),
+            ),
+            title: const Text('Sync & diagnostics'),
+            subtitle: Text(_syncCopy(controller.syncStatus)),
+            trailing: TextButton(
+              onPressed: controller.refresh,
+              child: const Text('Sync now'),
             ),
           ),
-        ],
-      ),
-      const SizedBox(height: PerfectSpace.md),
-      Card(
-        child: ListTile(
-          leading: Icon(
-            _syncIcon(controller.syncStatus.phase),
-            color: _syncColor(controller.syncStatus.phase),
-          ),
-          title: const Text('Sync & diagnostics'),
-          subtitle: Text(_syncCopy(controller.syncStatus)),
-          trailing: TextButton(
-            onPressed: controller.refresh,
-            child: const Text('Sync now'),
-          ),
         ),
-      ),
-      const SizedBox(height: PerfectSpace.md),
-      OutlinedButton.icon(
-        onPressed: onSignOut,
-        icon: const Icon(Icons.logout_rounded),
-        label: const Text('Sign out of this private space'),
-      ),
-    ],
-  );
+        const SizedBox(height: PerfectSpace.md),
+        OutlinedButton.icon(
+          onPressed: onSignOut,
+          icon: const Icon(Icons.logout_rounded),
+          label: const Text('Sign out of this private space'),
+        ),
+      ],
+    );
+  }
 }
 
 @immutable
@@ -5643,7 +5805,10 @@ class _MoreCommandTile extends StatelessWidget {
                   color: command.tint,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(command.icon, color: PerfectColors.ink),
+                child: Icon(
+                  command.icon,
+                  color: PerfectSemanticTheme.of(context).ink,
+                ),
               ),
               const SizedBox(width: PerfectSpace.sm),
               Expanded(
@@ -5810,7 +5975,7 @@ class _AgendaRow extends StatelessWidget {
         (habitSummary?.state == PlannerHabitDayState.missed);
     final requiresRecoveryDecision =
         todayEligibility?.requiresDecision ?? false;
-    final color = _colorFor(entity);
+    final color = _colorFor(context, entity);
     if (referenceStyle) {
       return _DesktopEntityContextRegion(
         key: ValueKey<String>('entity-context-${entity.id}'),
@@ -6353,7 +6518,7 @@ class _ReferenceAgendaStatus extends StatelessWidget {
         'MISSED',
         maxLines: 1,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: PerfectColors.danger,
+          color: PerfectSemanticTheme.of(context).danger,
           fontWeight: FontWeight.w900,
           letterSpacing: .6,
         ),
@@ -6497,7 +6662,7 @@ class _DesktopEntityContextRegionState
                   ? BoxDecoration(
                       borderRadius: BorderRadius.circular(26),
                       border: Border.all(
-                        color: PerfectColors.apricot,
+                        color: PerfectSemanticTheme.of(context).focus,
                         width: 2,
                       ),
                     )
@@ -7234,7 +7399,11 @@ class _AgendaCompletionButton extends StatelessWidget {
           habit: entity,
           controller: controller,
         ),
-        icon: _habitSummaryVisual(habitSummary, referenceStyle: referenceStyle),
+        icon: _habitSummaryVisual(
+          context,
+          habitSummary,
+          referenceStyle: referenceStyle,
+        ),
       );
     }
     if (entity.kind == PlannerEntityKind.recurringTask) {
@@ -7249,7 +7418,7 @@ class _AgendaCompletionButton extends StatelessWidget {
             icon: _animatedTaskProgressVisual(
               context,
               progress,
-              fallback: _colorFor(entity),
+              fallback: _colorFor(context, entity),
               referenceStyle: referenceStyle,
             ),
           );
@@ -7264,7 +7433,7 @@ class _AgendaCompletionButton extends StatelessWidget {
       icon: _animatedTaskProgressVisual(
         context,
         progress,
-        fallback: _colorFor(entity),
+        fallback: _colorFor(context, entity),
         referenceStyle: referenceStyle,
       ),
     );
@@ -7391,13 +7560,15 @@ class _HabitCard extends StatelessWidget {
                 Container(
                   width: 52,
                   height: 52,
-                  decoration: const BoxDecoration(
-                    color: PerfectColors.mintSoft,
+                  decoration: BoxDecoration(
+                    color: PerfectSemanticTheme.of(context).secondaryContainer,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     _habitTrackingIcon(method),
-                    color: PerfectColors.mint,
+                    color: PerfectSemanticTheme.of(
+                      context,
+                    ).onSecondaryContainer,
                   ),
                 ),
                 const SizedBox(width: PerfectSpace.sm),
@@ -7602,6 +7773,7 @@ class _HabitDayStatus extends StatelessWidget {
 }
 
 Widget _habitSummaryVisual(
+  BuildContext context,
   PlannerHabitDaySummary? summary, {
   bool referenceStyle = false,
 }) {
@@ -7613,8 +7785,10 @@ Widget _habitSummaryVisual(
           value: summary!.progressPercent / 100,
           strokeWidth: 2.8,
           strokeCap: StrokeCap.round,
-          color: PerfectColors.lilac,
-          backgroundColor: PerfectColors.lilac.withValues(alpha: .16),
+          color: PerfectSemanticTheme.of(context).tertiary,
+          backgroundColor: PerfectSemanticTheme.of(
+            context,
+          ).tertiary.withValues(alpha: .16),
         ),
       );
     }
@@ -7624,8 +7798,8 @@ Widget _habitSummaryVisual(
         fit: BoxFit.scaleDown,
         child: Text(
           '${summary!.progressPercent}%',
-          style: const TextStyle(
-            color: PerfectColors.lilac,
+          style: TextStyle(
+            color: PerfectSemanticTheme.of(context).tertiary,
             fontWeight: FontWeight.w900,
           ),
         ),
@@ -7635,10 +7809,12 @@ Widget _habitSummaryVisual(
   return Icon(
     _habitSummaryIcon(summary?.state),
     color: switch (summary?.state) {
-      PlannerHabitDayState.completed => PerfectColors.mint,
-      PlannerHabitDayState.missed => PerfectColors.danger,
-      PlannerHabitDayState.partial => PerfectColors.lilac,
-      _ => PerfectColors.mutedInk,
+      PlannerHabitDayState.completed => PerfectSemanticTheme.of(
+        context,
+      ).secondary,
+      PlannerHabitDayState.missed => PerfectSemanticTheme.of(context).danger,
+      PlannerHabitDayState.partial => PerfectSemanticTheme.of(context).tertiary,
+      _ => PerfectSemanticTheme.of(context).muted,
     },
   );
 }
@@ -7652,9 +7828,11 @@ IconData _habitSummaryIcon(PlannerHabitDayState? state) => switch (state) {
 
 Color _habitSummaryColor(PlannerHabitDayState? state, BuildContext context) =>
     switch (state) {
-      PlannerHabitDayState.completed => PerfectColors.mint,
-      PlannerHabitDayState.missed => PerfectColors.danger,
-      PlannerHabitDayState.partial => PerfectColors.lilac,
+      PlannerHabitDayState.completed => PerfectSemanticTheme.of(
+        context,
+      ).secondary,
+      PlannerHabitDayState.missed => PerfectSemanticTheme.of(context).danger,
+      PlannerHabitDayState.partial => PerfectSemanticTheme.of(context).tertiary,
       _ => Theme.of(context).colorScheme.onSurfaceVariant,
     };
 
@@ -7789,16 +7967,18 @@ class _HabitWeekStrip extends StatelessWidget {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: scheduled
-                                ? PerfectColors.mintSoft
+                                ? PerfectSemanticTheme.of(
+                                    context,
+                                  ).secondaryContainer
                                 : Theme.of(
                                     context,
                                   ).colorScheme.surfaceContainerHighest,
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: isToday
-                                  ? PerfectColors.apricot
+                                  ? PerfectSemanticTheme.of(context).primary
                                   : scheduled
-                                  ? PerfectColors.mint
+                                  ? PerfectSemanticTheme.of(context).secondary
                                   : Colors.transparent,
                               width: isToday ? 2 : 1,
                             ),
@@ -7811,7 +7991,9 @@ class _HabitWeekStrip extends StatelessWidget {
                                       ? FontWeight.w900
                                       : FontWeight.w700,
                                   color: scheduled
-                                      ? PerfectColors.mint
+                                      ? PerfectSemanticTheme.of(
+                                          context,
+                                        ).secondary
                                       : Theme.of(
                                           context,
                                         ).colorScheme.onSurfaceVariant,
@@ -7974,7 +8156,7 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.all(PerfectSpace.xxl),
       child: Column(
         children: [
-          Icon(icon, size: 44, color: PerfectColors.apricot),
+          Icon(icon, size: 44, color: PerfectSemanticTheme.of(context).primary),
           const SizedBox(height: PerfectSpace.sm),
           Text(title, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: PerfectSpace.xs),
@@ -8173,7 +8355,7 @@ class _InspectorFocusPrompt extends StatelessWidget {
         : 'Scheduled for ${_shortTime(entity.scheduledAt!.toLocal())}';
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: PerfectColors.lilacSoft,
+        color: PerfectSemanticTheme.of(context).tertiaryContainer,
         borderRadius: BorderRadius.circular(22),
       ),
       child: Padding(
@@ -8182,9 +8364,9 @@ class _InspectorFocusPrompt extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(
+            Icon(
               Icons.center_focus_strong_rounded,
-              color: PerfectColors.lilac,
+              color: PerfectSemanticTheme.of(context).onTertiaryContainer,
               size: 28,
             ),
             const SizedBox(height: PerfectSpace.sm),
@@ -8228,10 +8410,10 @@ class _InspectorEmpty extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
+        Icon(
           Icons.touch_app_outlined,
           size: 42,
-          color: PerfectColors.lilac,
+          color: PerfectSemanticTheme.of(context).tertiary,
         ),
         const SizedBox(height: PerfectSpace.sm),
         Text('Select an item', style: Theme.of(context).textTheme.titleMedium),
@@ -8416,7 +8598,7 @@ Widget _taskProgressVisual(
   required Color fallback,
   bool referenceStyle = false,
 }) {
-  final color = _taskProgressColor(progress, fallback: fallback);
+  final color = _taskProgressColor(context, progress, fallback: fallback);
   if (referenceStyle && progress.isPartial) {
     return SizedBox.square(
       dimension: 30,
@@ -8448,12 +8630,15 @@ Widget _taskProgressVisual(
 }
 
 Color _taskProgressColor(
+  BuildContext context,
   PlannerTaskProgress progress, {
   required Color fallback,
 }) => switch (progress.state) {
   PlannerTaskProgressState.pending => fallback,
-  PlannerTaskProgressState.completed => PerfectColors.mint,
-  PlannerTaskProgressState.missed => PerfectColors.danger,
+  PlannerTaskProgressState.completed => PerfectSemanticTheme.of(
+    context,
+  ).secondary,
+  PlannerTaskProgressState.missed => PerfectSemanticTheme.of(context).danger,
   PlannerTaskProgressState.partial => fallback,
 };
 
@@ -8468,7 +8653,7 @@ String _taskProgressTooltip(
     '${progress.percent}% progress · clear task outcome',
 };
 
-Color _colorFor(PlannerEntity entity) {
+Color _colorFor(BuildContext context, PlannerEntity entity) {
   // The editor persists the owner’s explicit swatch at the payload root. Use
   // it before any category fallback so a Work task can legitimately be mint
   // while another Work task stays apricot—category and color are separate
@@ -8478,34 +8663,34 @@ Color _colorFor(PlannerEntity entity) {
     fallback: '',
   ).toLowerCase();
   final explicitColor = switch (explicit) {
-    'mint' => PerfectColors.mint,
-    'lilac' => PerfectColors.lilac,
-    'rose' => PerfectColors.danger,
-    'ink' => PerfectColors.ink,
-    'apricot' || 'orange' => PerfectColors.apricot,
+    'mint' => PerfectSemanticTheme.of(context).secondary,
+    'lilac' => PerfectSemanticTheme.of(context).tertiary,
+    'rose' => PerfectSemanticTheme.of(context).danger,
+    'ink' => PerfectSemanticTheme.of(context).ink,
+    'apricot' || 'orange' => PerfectSemanticTheme.of(context).primary,
     _ => null,
   };
   if (explicitColor != null) return explicitColor;
   return switch (entity.kind) {
-    PlannerEntityKind.habit => PerfectColors.mint,
-    PlannerEntityKind.project => PerfectColors.lilac,
-    PlannerEntityKind.area => PerfectColors.lilac,
-    _ => _categoryColor(entity),
+    PlannerEntityKind.habit => PerfectSemanticTheme.of(context).secondary,
+    PlannerEntityKind.project => PerfectSemanticTheme.of(context).tertiary,
+    PlannerEntityKind.area => PerfectSemanticTheme.of(context).tertiary,
+    _ => _categoryColor(context, entity),
   };
 }
 
-Color _categoryColor(PlannerEntity entity) {
+Color _categoryColor(BuildContext context, PlannerEntity entity) {
   final category = safeJsonString(
     entity.payload['category'],
     fallback: '',
   ).toLowerCase();
   if (<String>{'health', 'home', 'personal'}.contains(category)) {
-    return PerfectColors.mint;
+    return PerfectSemanticTheme.of(context).secondary;
   }
   if (<String>{'study', 'finance'}.contains(category)) {
-    return PerfectColors.lilac;
+    return PerfectSemanticTheme.of(context).tertiary;
   }
-  return PerfectColors.apricot;
+  return PerfectSemanticTheme.of(context).primary;
 }
 
 TextDirection _textDirection(String value) =>
@@ -8520,12 +8705,15 @@ IconData _syncIcon(PlannerSyncPhase phase) => switch (phase) {
   PlannerSyncPhase.needsAttention => Icons.error_outline_rounded,
 };
 
-Color _syncColor(PlannerSyncPhase phase) => switch (phase) {
-  PlannerSyncPhase.idle => PerfectColors.mint,
-  PlannerSyncPhase.syncing => PerfectColors.apricot,
-  PlannerSyncPhase.offline => PerfectColors.lilac,
-  PlannerSyncPhase.needsAttention => PerfectColors.danger,
-};
+Color _syncColor(BuildContext context, PlannerSyncPhase phase) {
+  final semantic = PerfectSemanticTheme.of(context);
+  return switch (phase) {
+    PlannerSyncPhase.idle => semantic.sync,
+    PlannerSyncPhase.syncing => semantic.warning,
+    PlannerSyncPhase.offline => semantic.tertiary,
+    PlannerSyncPhase.needsAttention => semantic.danger,
+  };
+}
 
 String _syncCopy(PlannerSyncStatus status) => switch (status.phase) {
   PlannerSyncPhase.idle =>

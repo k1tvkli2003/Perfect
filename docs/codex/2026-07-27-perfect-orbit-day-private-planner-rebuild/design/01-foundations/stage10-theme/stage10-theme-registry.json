@@ -1,0 +1,179 @@
+{
+  "catalog_version": "ps01-theme-2.0.0",
+  "generated_at": "2026-08-13",
+  "direction": "Graphite Bloom / Perfect Day Instrument",
+  "source_catalogs": {
+    "stage04": "ps01-ds-1.0.0",
+    "stage05": "ps01-pages-1.0.0"
+  },
+  "counts": {
+    "foundations": 3,
+    "themes": 4,
+    "candidates": 3,
+    "components": 181,
+    "component_theme_variants": 543,
+    "pages": 134,
+    "page_theme_layout_variants": 938,
+    "measured_contrast_pairs": 76,
+    "boards": 6
+  },
+  "selected_candidate": "candidate-graphite-bloom",
+  "foundations": [
+    {
+      "foundation_id": "fnd-color-roles",
+      "source_catalog_version": "ps01-ds-1.0.0",
+      "source_previews": {
+        "anatomy.svg": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-color-roles/anatomy.svg",
+          "sha256": "a74894eec904fd212b3c408807b15106d77f23b6305485e50ff17c0486503c6a"
+        },
+        "specimen.png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-color-roles/specimen.png",
+          "sha256": "c6af7004cc2cb64a0cd376e4247ce47239bd60ccbaa5c8b83f6993f18676c70f"
+        },
+        "stress.png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-color-roles/stress.png",
+          "sha256": "5333772af8b56e479a2903d0550d25604a6703f9799ff490a81b70ef01fe2daa"
+        }
+      },
+      "stage10_variant_ids": [
+        "theme-light-daylight",
+        "theme-dark-graphite-bloom",
+        "theme-hc-light-clarity",
+        "theme-hc-dark-clarity"
+      ]
+    },
+    {
+      "foundation_id": "fnd-material",
+      "source_catalog_version": "ps01-ds-1.0.0",
+      "source_previews": {
+        "anatomy.svg": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-material/anatomy.svg",
+          "sha256": "9415770eb41623aa75e5bf0fdff1233661f48efe9c6afc995ffe55061ccb71ec"
+        },
+        "specimen.png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-material/specimen.png",
+          "sha256": "6ca31385ff67581dd92c16e9d0015e828a71a639ed2b2e5d6c3ee6d801444a21"
+        },
+        "stress.png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-material/stress.png",
+          "sha256": "71c47668940980d5b17a1df07ee00f6fcd3bbcc7703617c9552bd2a14e2110ce"
+        }
+      },
+      "stage10_variant_ids": [
+        "theme-light-daylight",
+        "theme-dark-graphite-bloom",
+        "theme-hc-light-clarity",
+        "theme-hc-dark-clarity"
+      ]
+    },
+    {
+      "foundation_id": "fnd-focus-a11y",
+      "source_catalog_version": "ps01-ds-1.0.0",
+      "source_previews": {
+        "anatomy.svg": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-focus-a11y/anatomy.svg",
+          "sha256": "2021aa4f1da62d4c5462ab7f1cc4f60477a08cdf3ad704229c1b2551da54930f"
+        },
+        "specimen.png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-focus-a11y/specimen.png",
+          "sha256": "e2f5785e76bc06828cc676d70cb3d9780c912833c54fe111ec8a44f057dec202"
+        },
+        "stress.png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage04-system/fnd-focus-a11y/stress.png",
+          "sha256": "0e3cc92c62325bde964dd71bb708253581e24e9a2fdc1246d1a68e46d473e880"
+        }
+      },
+      "stage10_variant_ids": [
+        "theme-light-daylight",
+        "theme-dark-graphite-bloom",
+        "theme-hc-light-clarity",
+        "theme-hc-dark-clarity"
+      ]
+    }
+  ],
+  "artifacts": {
+    "theme_tokens": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/theme-tokens.json",
+    "contrast_report": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/contrast-report.json",
+    "component_freeze": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/component-theme-freeze.json",
+    "page_freeze": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/page-theme-freeze.json",
+    "decision": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/decision.md",
+    "source_map": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/source-of-truth-map.md",
+    "mismatch_ledger": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/preview-runtime-mismatch-ledger.md",
+    "boards": [
+      {
+        "id": "candidate-comparison",
+        "viewport": "2400x1120",
+        "svg": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/candidate-comparison.svg",
+          "sha256": "ba8c84908423eb935492b921207b0752d0755903da825b0160ecd3fa25b17def"
+        },
+        "png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/candidate-comparison.png",
+          "sha256": "0163add6e0ec37f597bed7b5dba060f3cef6b9416163bdbe24a6d454156a51d7"
+        }
+      },
+      {
+        "id": "theme-foundations",
+        "viewport": "2400x1110",
+        "svg": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/theme-foundations.svg",
+          "sha256": "efa37513d1e3475a2fc0f4cf0058671d457112f0a39422078b4663b2996d7d93"
+        },
+        "png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/theme-foundations.png",
+          "sha256": "82cacd2d674a3d3b72b6b978a278aa1b8e51248873801754c763d07729aaf83a"
+        }
+      },
+      {
+        "id": "phone-empty-dense-matrix",
+        "viewport": "2400x1530",
+        "svg": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/phone-empty-dense-matrix.svg",
+          "sha256": "8467934deb6472a971b14226b8f445148b8fb0c1ef29bdfcaa44259128341521"
+        },
+        "png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/phone-empty-dense-matrix.png",
+          "sha256": "5932c17d1737d42f1f007e7f893b86b7278bfe2d85dd93f50dc948b9994ad1e2"
+        }
+      },
+      {
+        "id": "adaptive-tablet-windows-matrix",
+        "viewport": "2400x1420",
+        "svg": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/adaptive-tablet-windows-matrix.svg",
+          "sha256": "7deaa9f63ecfdb9500d05fdd9d677ff40c1145d38abf195f69bd066a39b4fcf7"
+        },
+        "png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/adaptive-tablet-windows-matrix.png",
+          "sha256": "30f866cc0a6ebfb34b8cb237c0b2827e14081b778b25ee856511a59ba356b638"
+        }
+      },
+      {
+        "id": "component-state-matrix",
+        "viewport": "2400x1320",
+        "svg": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/component-state-matrix.svg",
+          "sha256": "ae667b36bf0fa32ce69e8f09c8b48aab7348f1185d923ef012254ca8ac401a75"
+        },
+        "png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/component-state-matrix.png",
+          "sha256": "1012995c8d22c350aaba0a55567873dcbca1c5a1b8826ffac02e313779119ae0"
+        }
+      },
+      {
+        "id": "native-surface-matrix",
+        "viewport": "2400x1350",
+        "svg": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/native-surface-matrix.svg",
+          "sha256": "47e33c177795ee28ed99f7ea6e2ffc4d76a6b9aafbc6f0ccd8cae241b3702100"
+        },
+        "png": {
+          "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/01-foundations/stage10-theme/native-surface-matrix.png",
+          "sha256": "ca80365bad54e3d7fda5db7510b8f4fc68c7db0cfe28ae1091047166e9ea40ee"
+        }
+      }
+    ]
+  },
+  "acceptance": "Design-only Copy entry gate. Runtime fidelity requires Stage 10 implementation, exact-build screenshots, contrast tests and native theme proof."
+}

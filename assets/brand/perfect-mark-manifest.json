@@ -54,6 +54,57 @@
       "components_alpha_128": 6,
       "consumer": "Android native widget",
       "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-hdpi/perfect_widget_mark_dark_raster.png",
+      "pixels": [
+        72,
+        72
+      ],
+      "sha256": "db4456ac89de7609d167a5191556f975a0d43321e3e2d3589ab85e2a3fcd1274"
+    },
+    {
+      "alpha_bounds": [
+        10,
+        6,
+        61,
+        66
+      ],
+      "components_alpha_128": 6,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-hdpi/perfect_widget_mark_hc_dark_raster.png",
+      "pixels": [
+        72,
+        72
+      ],
+      "sha256": "cf301320a0f88f5b2de2fe2076692918628b43fb9aaacc4a9f0de37f4b5ef608"
+    },
+    {
+      "alpha_bounds": [
+        10,
+        6,
+        61,
+        66
+      ],
+      "components_alpha_128": 6,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-hdpi/perfect_widget_mark_hc_light_raster.png",
+      "pixels": [
+        72,
+        72
+      ],
+      "sha256": "ccb94d404f42a8229e54cc04b901a95de8c1ec1f2bf0487484c029b65b28b12a"
+    },
+    {
+      "alpha_bounds": [
+        10,
+        6,
+        61,
+        66
+      ],
+      "components_alpha_128": 6,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-hdpi/perfect_widget_mark_raster.png",
       "pixels": [
         72,
@@ -77,6 +128,57 @@
         288
       ],
       "sha256": "f0876f2f07ec9082fdb8dfc8788a532e85b9579ac11bed11831a54447ecc23d1"
+    },
+    {
+      "alpha_bounds": [
+        7,
+        4,
+        41,
+        44
+      ],
+      "components_alpha_128": 3,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-mdpi/perfect_widget_mark_dark_raster.png",
+      "pixels": [
+        48,
+        48
+      ],
+      "sha256": "39a44b07010a64a320e4206e8885aaba3c93f6e2622c8b6b24a70f5278c75421"
+    },
+    {
+      "alpha_bounds": [
+        7,
+        4,
+        41,
+        44
+      ],
+      "components_alpha_128": 3,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-mdpi/perfect_widget_mark_hc_dark_raster.png",
+      "pixels": [
+        48,
+        48
+      ],
+      "sha256": "080dbbd8d9bde6378d95bc53d0bf382b0e94b3b785c33d7d86cf97511bf44979"
+    },
+    {
+      "alpha_bounds": [
+        7,
+        4,
+        41,
+        44
+      ],
+      "components_alpha_128": 3,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-mdpi/perfect_widget_mark_hc_light_raster.png",
+      "pixels": [
+        48,
+        48
+      ],
+      "sha256": "44a3ad5d35ec11e6df9446f98416b8e43b84d79abe041e7fb7ed8bc24d51c7f8"
     },
     {
       "alpha_bounds": [
@@ -207,6 +309,57 @@
       "components_alpha_128": 7,
       "consumer": "Android native widget",
       "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-xhdpi/perfect_widget_mark_dark_raster.png",
+      "pixels": [
+        96,
+        96
+      ],
+      "sha256": "9a85a0ae57ba5a7d933bd446e87b3ad51b698b6e5192c37364cbfc4d348ccb17"
+    },
+    {
+      "alpha_bounds": [
+        13,
+        8,
+        82,
+        88
+      ],
+      "components_alpha_128": 7,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-xhdpi/perfect_widget_mark_hc_dark_raster.png",
+      "pixels": [
+        96,
+        96
+      ],
+      "sha256": "9332309c47dee66c2b7f9952cccfda9ae118aff726cd1e4ef70b326bbedb3ab0"
+    },
+    {
+      "alpha_bounds": [
+        13,
+        8,
+        82,
+        88
+      ],
+      "components_alpha_128": 7,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-xhdpi/perfect_widget_mark_hc_light_raster.png",
+      "pixels": [
+        96,
+        96
+      ],
+      "sha256": "180996710d1087d6fc8841cd10a6ac3e247180711417c0fb8fb6c1aaa239f863"
+    },
+    {
+      "alpha_bounds": [
+        13,
+        8,
+        82,
+        88
+      ],
+      "components_alpha_128": 7,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-xhdpi/perfect_widget_mark_raster.png",
       "pixels": [
         96,
@@ -241,6 +394,57 @@
       "components_alpha_128": 7,
       "consumer": "Android native widget",
       "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-xxhdpi/perfect_widget_mark_dark_raster.png",
+      "pixels": [
+        144,
+        144
+      ],
+      "sha256": "ef9aa6cdedd153e5a9aed21d47def6d028b5e88408aa34ce88df6c05277e429b"
+    },
+    {
+      "alpha_bounds": [
+        20,
+        12,
+        123,
+        132
+      ],
+      "components_alpha_128": 7,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-xxhdpi/perfect_widget_mark_hc_dark_raster.png",
+      "pixels": [
+        144,
+        144
+      ],
+      "sha256": "9f7eeab5803c6863acd6524028d54d2e516d430a9c81a87ad89b4858204cbe8f"
+    },
+    {
+      "alpha_bounds": [
+        20,
+        12,
+        123,
+        132
+      ],
+      "components_alpha_128": 7,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-xxhdpi/perfect_widget_mark_hc_light_raster.png",
+      "pixels": [
+        144,
+        144
+      ],
+      "sha256": "798348488fd9fa599263d8d74fa720b2c7341827eb2b77eea3d41fb1ed23770b"
+    },
+    {
+      "alpha_bounds": [
+        20,
+        12,
+        123,
+        132
+      ],
+      "components_alpha_128": 7,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
       "path": "android/app/src/main/res/drawable-xxhdpi/perfect_widget_mark_raster.png",
       "pixels": [
         144,
@@ -264,6 +468,57 @@
         1152
       ],
       "sha256": "b3ad6c84df8cd80fb3027960b500e121287bf7d17d7c6c5347547e7325b9866a"
+    },
+    {
+      "alpha_bounds": [
+        27,
+        16,
+        164,
+        176
+      ],
+      "components_alpha_128": 7,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-xxxhdpi/perfect_widget_mark_dark_raster.png",
+      "pixels": [
+        192,
+        192
+      ],
+      "sha256": "f3f5070d7cbc8e5de1e17179d9d29395e0e2971a4e66ff5e1261fca22b182421"
+    },
+    {
+      "alpha_bounds": [
+        27,
+        16,
+        164,
+        176
+      ],
+      "components_alpha_128": 7,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-xxxhdpi/perfect_widget_mark_hc_dark_raster.png",
+      "pixels": [
+        192,
+        192
+      ],
+      "sha256": "408d6ce9096a7be2ff1b25456319494195069d0294b258efdb3cf341ce83c54a"
+    },
+    {
+      "alpha_bounds": [
+        27,
+        16,
+        164,
+        176
+      ],
+      "components_alpha_128": 7,
+      "consumer": "Android native widget",
+      "hash_basis": "rgba-v1",
+      "path": "android/app/src/main/res/drawable-xxxhdpi/perfect_widget_mark_hc_light_raster.png",
+      "pixels": [
+        192,
+        192
+      ],
+      "sha256": "ed5097577a53543adeff89dcc9e62060c58379c617df5fbb546dcaf73b6340f5"
     },
     {
       "alpha_bounds": [

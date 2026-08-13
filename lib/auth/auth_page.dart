@@ -235,7 +235,7 @@ class _AuthPageState extends State<AuthPage> {
                         _message!,
                         style: TextStyle(
                           color: _message!.startsWith('Recovery')
-                              ? PerfectColors.mint
+                              ? PerfectSemanticTheme.of(context).secondary
                               : Theme.of(context).colorScheme.error,
                         ),
                       ),

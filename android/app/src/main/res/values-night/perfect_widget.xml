@@ -1,0 +1,10 @@
+<resources>
+    <color name="perfect_widget_surface">#FF1A1D28</color>
+    <color name="perfect_widget_ink">#FFF9F7FF</color>
+    <color name="perfect_widget_muted">#FFC9C5D4</color>
+    <color name="perfect_widget_stroke">#FF5A5F72</color>
+    <color name="perfect_widget_apricot">#FFFFC184</color>
+    <color name="perfect_widget_mint">#FFA8DFB9</color>
+    <color name="perfect_widget_lilac">#FFD1C6FF</color>
+    <color name="perfect_widget_danger">#FFFFB2BB</color>
+</resources>

@@ -61,6 +61,334 @@ abstract final class PerfectRadius {
   static const pill = 999.0;
 }
 
+/// The authored semantic color registry shared by Flutter surfaces, custom
+/// painters, status affordances and native appearance projections.
+///
+/// Components consume roles from this extension instead of branching on
+/// brightness or importing a light-only swatch. High contrast is an authored
+/// product here: it has its own boundaries, status colors and focus role.
+@immutable
+class PerfectSemanticTheme extends ThemeExtension<PerfectSemanticTheme> {
+  const PerfectSemanticTheme({
+    required this.id,
+    required this.brightness,
+    required this.highContrast,
+    required this.canvas,
+    required this.surfaceLowest,
+    required this.surfaceLow,
+    required this.surface,
+    required this.surfaceHigh,
+    required this.surfaceHighest,
+    required this.ink,
+    required this.muted,
+    required this.primary,
+    required this.onPrimary,
+    required this.primaryVivid,
+    required this.primaryContainer,
+    required this.onPrimaryContainer,
+    required this.secondary,
+    required this.onSecondary,
+    required this.secondaryVivid,
+    required this.secondaryContainer,
+    required this.onSecondaryContainer,
+    required this.tertiary,
+    required this.onTertiary,
+    required this.tertiaryVivid,
+    required this.tertiaryContainer,
+    required this.onTertiaryContainer,
+    required this.sync,
+    required this.syncContainer,
+    required this.onSyncContainer,
+    required this.warning,
+    required this.warningContainer,
+    required this.onWarningContainer,
+    required this.danger,
+    required this.dangerContainer,
+    required this.onDangerContainer,
+    required this.outline,
+    required this.outlineVariant,
+    required this.focus,
+    required this.shadow,
+  });
+
+  final String id;
+  final Brightness brightness;
+  final bool highContrast;
+  final Color canvas;
+  final Color surfaceLowest;
+  final Color surfaceLow;
+  final Color surface;
+  final Color surfaceHigh;
+  final Color surfaceHighest;
+  final Color ink;
+  final Color muted;
+  final Color primary;
+  final Color onPrimary;
+  final Color primaryVivid;
+  final Color primaryContainer;
+  final Color onPrimaryContainer;
+  final Color secondary;
+  final Color onSecondary;
+  final Color secondaryVivid;
+  final Color secondaryContainer;
+  final Color onSecondaryContainer;
+  final Color tertiary;
+  final Color onTertiary;
+  final Color tertiaryVivid;
+  final Color tertiaryContainer;
+  final Color onTertiaryContainer;
+  final Color sync;
+  final Color syncContainer;
+  final Color onSyncContainer;
+  final Color warning;
+  final Color warningContainer;
+  final Color onWarningContainer;
+  final Color danger;
+  final Color dangerContainer;
+  final Color onDangerContainer;
+  final Color outline;
+  final Color outlineVariant;
+  final Color focus;
+  final Color shadow;
+
+  static PerfectSemanticTheme of(BuildContext context) =>
+      Theme.of(context).extension<PerfectSemanticTheme>() ??
+      (Theme.of(context).brightness == Brightness.dark ? dark : light);
+
+  static const light = PerfectSemanticTheme(
+    id: 'theme-light-daylight',
+    brightness: Brightness.light,
+    highContrast: false,
+    canvas: Color(0xfffffcf7),
+    surfaceLowest: Color(0xffffffff),
+    surfaceLow: Color(0xfffffaf4),
+    surface: Color(0xfffbf6ef),
+    surfaceHigh: Color(0xfff4eee7),
+    surfaceHighest: Color(0xffeee7df),
+    ink: Color(0xff1d2030),
+    muted: Color(0xff605d70),
+    primary: Color(0xff9d4c0b),
+    onPrimary: Color(0xffffffff),
+    primaryVivid: Color(0xffffa34d),
+    primaryContainer: Color(0xffffe6cf),
+    onPrimaryContainer: Color(0xff462000),
+    secondary: Color(0xff2f7650),
+    onSecondary: Color(0xffffffff),
+    secondaryVivid: Color(0xff7ec99b),
+    secondaryContainer: Color(0xffddf3e5),
+    onSecondaryContainer: Color(0xff123622),
+    tertiary: Color(0xff6652ad),
+    onTertiary: Color(0xffffffff),
+    tertiaryVivid: Color(0xffa79add),
+    tertiaryContainer: Color(0xffeeeafd),
+    onTertiaryContainer: Color(0xff2e245f),
+    sync: Color(0xff16796f),
+    syncContainer: Color(0xffd8f3ef),
+    onSyncContainer: Color(0xff073b37),
+    warning: Color(0xff855300),
+    warningContainer: Color(0xfffff0c2),
+    onWarningContainer: Color(0xff3e2600),
+    danger: Color(0xffb53145),
+    dangerContainer: Color(0xffffe1e5),
+    onDangerContainer: Color(0xff650e20),
+    outline: Color(0xff777280),
+    outlineVariant: Color(0xffddd4cb),
+    focus: Color(0xff8e4208),
+    shadow: Color(0xff4b3d32),
+  );
+
+  static const dark = PerfectSemanticTheme(
+    id: 'theme-dark-graphite-bloom',
+    brightness: Brightness.dark,
+    highContrast: false,
+    canvas: Color(0xff141620),
+    surfaceLowest: Color(0xff11131b),
+    surfaceLow: Color(0xff1a1d28),
+    surface: Color(0xff202331),
+    surfaceHigh: Color(0xff292d3d),
+    surfaceHighest: Color(0xff323648),
+    ink: Color(0xfff9f7ff),
+    muted: Color(0xffc9c5d4),
+    primary: Color(0xffffc184),
+    onPrimary: Color(0xff2a1200),
+    primaryVivid: Color(0xffffb66c),
+    primaryContainer: Color(0xff4c3322),
+    onPrimaryContainer: Color(0xffffe3c4),
+    secondary: Color(0xffa8dfb9),
+    onSecondary: Color(0xff092115),
+    secondaryVivid: Color(0xff8fd8a8),
+    secondaryContainer: Color(0xff233b2d),
+    onSecondaryContainer: Color(0xffd8f5e1),
+    tertiary: Color(0xffd1c6ff),
+    onTertiary: Color(0xff1c143b),
+    tertiaryVivid: Color(0xffbcadf4),
+    tertiaryContainer: Color(0xff36314e),
+    onTertiaryContainer: Color(0xffece7ff),
+    sync: Color(0xff74d8cd),
+    syncContainer: Color(0xff173d3a),
+    onSyncContainer: Color(0xffcbfff8),
+    warning: Color(0xffffd17a),
+    warningContainer: Color(0xff4b360d),
+    onWarningContainer: Color(0xfffff0c7),
+    danger: Color(0xffffb2bb),
+    dangerContainer: Color(0xff512832),
+    onDangerContainer: Color(0xffffe0e4),
+    outline: Color(0xff9b97aa),
+    outlineVariant: Color(0xff5a5f72),
+    focus: Color(0xffffd0a2),
+    shadow: Color(0xff080910),
+  );
+
+  static const highContrastLight = PerfectSemanticTheme(
+    id: 'theme-hc-light-clarity',
+    brightness: Brightness.light,
+    highContrast: true,
+    canvas: Color(0xffffffff),
+    surfaceLowest: Color(0xffffffff),
+    surfaceLow: Color(0xfff7f7f9),
+    surface: Color(0xffffffff),
+    surfaceHigh: Color(0xffe8e8ec),
+    surfaceHighest: Color(0xffd9d9df),
+    ink: Color(0xff090a0f),
+    muted: Color(0xff292b35),
+    primary: Color(0xff6d2e00),
+    onPrimary: Color(0xffffffff),
+    primaryVivid: Color(0xff9b4300),
+    primaryContainer: Color(0xfffff0e1),
+    onPrimaryContainer: Color(0xff160900),
+    secondary: Color(0xff145d34),
+    onSecondary: Color(0xffffffff),
+    secondaryVivid: Color(0xff207a47),
+    secondaryContainer: Color(0xffe8f8ee),
+    onSecondaryContainer: Color(0xff062012),
+    tertiary: Color(0xff3e2a82),
+    onTertiary: Color(0xffffffff),
+    tertiaryVivid: Color(0xff5740a5),
+    tertiaryContainer: Color(0xfff0ecff),
+    onTertiaryContainer: Color(0xff10072e),
+    sync: Color(0xff00564f),
+    syncContainer: Color(0xffe1fffb),
+    onSyncContainer: Color(0xff001f1c),
+    warning: Color(0xff633d00),
+    warningContainer: Color(0xfffff4cc),
+    onWarningContainer: Color(0xff211300),
+    danger: Color(0xff8c1025),
+    dangerContainer: Color(0xffffe8eb),
+    onDangerContainer: Color(0xff2f000a),
+    outline: Color(0xff4a4b55),
+    outlineVariant: Color(0xff70717d),
+    focus: Color(0xff6d2e00),
+    shadow: Color(0x00000000),
+  );
+
+  static const highContrastDark = PerfectSemanticTheme(
+    id: 'theme-hc-dark-clarity',
+    brightness: Brightness.dark,
+    highContrast: true,
+    canvas: Color(0xff000000),
+    surfaceLowest: Color(0xff000000),
+    surfaceLow: Color(0xff050609),
+    surface: Color(0xff08090d),
+    surfaceHigh: Color(0xff171922),
+    surfaceHighest: Color(0xff242630),
+    ink: Color(0xffffffff),
+    muted: Color(0xfff0edf7),
+    primary: Color(0xffffd1a3),
+    onPrimary: Color(0xff100700),
+    primaryVivid: Color(0xffffbd7c),
+    primaryContainer: Color(0xff3b1d00),
+    onPrimaryContainer: Color(0xfffff0df),
+    secondary: Color(0xffaef2c4),
+    onSecondary: Color(0xff001308),
+    secondaryVivid: Color(0xff89e4a7),
+    secondaryContainer: Color(0xff092b19),
+    onSecondaryContainer: Color(0xffe2ffea),
+    tertiary: Color(0xffded4ff),
+    onTertiary: Color(0xff11092f),
+    tertiaryVivid: Color(0xffc5b7ff),
+    tertiaryContainer: Color(0xff21174f),
+    onTertiaryContainer: Color(0xfff4f0ff),
+    sync: Color(0xff99fff3),
+    syncContainer: Color(0xff003d38),
+    onSyncContainer: Color(0xffe0fffb),
+    warning: Color(0xffffe59a),
+    warningContainer: Color(0xff422c00),
+    onWarningContainer: Color(0xfffff5d8),
+    danger: Color(0xffffc2c8),
+    dangerContainer: Color(0xff490716),
+    onDangerContainer: Color(0xffffecef),
+    outline: Color(0xffffffff),
+    outlineVariant: Color(0xffa6a6b0),
+    focus: Color(0xffffd1a3),
+    shadow: Color(0x00000000),
+  );
+
+  @override
+  PerfectSemanticTheme copyWith() => this;
+
+  @override
+  PerfectSemanticTheme lerp(
+    covariant ThemeExtension<PerfectSemanticTheme>? other,
+    double t,
+  ) {
+    if (other is! PerfectSemanticTheme) return this;
+    Color blend(Color from, Color to) => Color.lerp(from, to, t)!;
+    return PerfectSemanticTheme(
+      id: t < .5 ? id : other.id,
+      brightness: t < .5 ? brightness : other.brightness,
+      highContrast: t < .5 ? highContrast : other.highContrast,
+      canvas: blend(canvas, other.canvas),
+      surfaceLowest: blend(surfaceLowest, other.surfaceLowest),
+      surfaceLow: blend(surfaceLow, other.surfaceLow),
+      surface: blend(surface, other.surface),
+      surfaceHigh: blend(surfaceHigh, other.surfaceHigh),
+      surfaceHighest: blend(surfaceHighest, other.surfaceHighest),
+      ink: blend(ink, other.ink),
+      muted: blend(muted, other.muted),
+      primary: blend(primary, other.primary),
+      onPrimary: blend(onPrimary, other.onPrimary),
+      primaryVivid: blend(primaryVivid, other.primaryVivid),
+      primaryContainer: blend(primaryContainer, other.primaryContainer),
+      onPrimaryContainer: blend(onPrimaryContainer, other.onPrimaryContainer),
+      secondary: blend(secondary, other.secondary),
+      onSecondary: blend(onSecondary, other.onSecondary),
+      secondaryVivid: blend(secondaryVivid, other.secondaryVivid),
+      secondaryContainer: blend(secondaryContainer, other.secondaryContainer),
+      onSecondaryContainer: blend(
+        onSecondaryContainer,
+        other.onSecondaryContainer,
+      ),
+      tertiary: blend(tertiary, other.tertiary),
+      onTertiary: blend(onTertiary, other.onTertiary),
+      tertiaryVivid: blend(tertiaryVivid, other.tertiaryVivid),
+      tertiaryContainer: blend(tertiaryContainer, other.tertiaryContainer),
+      onTertiaryContainer: blend(
+        onTertiaryContainer,
+        other.onTertiaryContainer,
+      ),
+      sync: blend(sync, other.sync),
+      syncContainer: blend(syncContainer, other.syncContainer),
+      onSyncContainer: blend(onSyncContainer, other.onSyncContainer),
+      warning: blend(warning, other.warning),
+      warningContainer: blend(warningContainer, other.warningContainer),
+      onWarningContainer: blend(onWarningContainer, other.onWarningContainer),
+      danger: blend(danger, other.danger),
+      dangerContainer: blend(dangerContainer, other.dangerContainer),
+      onDangerContainer: blend(onDangerContainer, other.onDangerContainer),
+      outline: blend(outline, other.outline),
+      outlineVariant: blend(outlineVariant, other.outlineVariant),
+      focus: blend(focus, other.focus),
+      shadow: blend(shadow, other.shadow),
+    );
+  }
+}
+
+abstract final class PerfectContrast {
+  static bool of(BuildContext context) =>
+      PerfectSemanticTheme.of(context).highContrast ||
+      MediaQuery.maybeOf(context)?.highContrast == true;
+}
+
 /// Theme-level material and state-layer tokens for branded surfaces.
 ///
 /// Keeping these values in a [ThemeExtension] lets custom Flutter surfaces use
@@ -113,18 +441,18 @@ class PerfectSurfaceTheme extends ThemeExtension<PerfectSurfaceTheme> {
       (Theme.of(context).brightness == Brightness.dark ? dark : light);
 
   static const light = PerfectSurfaceTheme(
-    canvas: PerfectColors.cream,
-    canvasAccent: Color(0xfffff5ea),
-    surface: PerfectColors.creamSurfaceLow,
-    surfaceRaised: PerfectColors.creamElevated,
-    glass: Color(0xd9ffffff),
-    glassStrong: Color(0xf2ffffff),
-    stroke: PerfectColors.creamStroke,
-    strokeStrong: PerfectColors.accessibleOutline,
-    focusRing: PerfectColors.apricotAction,
-    hoverLayer: Color(0x14a4510e),
-    focusLayer: Color(0x1fa4510e),
-    pressedLayer: Color(0x29a4510e),
+    canvas: Color(0xfffffcf7),
+    canvasAccent: Color(0xfffff4e8),
+    surface: Color(0xfffffaf4),
+    surfaceRaised: Color(0xffffffff),
+    glass: Color(0xf7ffffff),
+    glassStrong: Color(0xfcffffff),
+    stroke: Color(0xffddd4cb),
+    strokeStrong: Color(0xff777280),
+    focusRing: Color(0xff8e4208),
+    hoverLayer: Color(0x149d4c0b),
+    focusLayer: Color(0x1f9d4c0b),
+    pressedLayer: Color(0x299d4c0b),
     selectedLayer: Color(0x33ffa34d),
     ambientShadow: Color(0x144b3d32),
     keyShadow: Color(0x1f4b3d32),
@@ -134,24 +462,66 @@ class PerfectSurfaceTheme extends ThemeExtension<PerfectSurfaceTheme> {
   );
 
   static const dark = PerfectSurfaceTheme(
-    canvas: PerfectColors.night,
-    canvasAccent: Color(0xff211f2e),
-    surface: PerfectColors.nightSurfaceLow,
-    surfaceRaised: PerfectColors.nightSurfaceHigh,
-    glass: Color(0xd9232635),
-    glassStrong: Color(0xf2292c3d),
-    stroke: PerfectColors.nightStroke,
-    strokeStrong: PerfectColors.accessibleNightOutline,
-    focusRing: Color(0xffffbd7c),
-    hoverLayer: Color(0x1fffbd7c),
-    focusLayer: Color(0x2effbd7c),
-    pressedLayer: Color(0x3dffbd7c),
-    selectedLayer: Color(0x3dffbd7c),
-    ambientShadow: Color(0x3d100f18),
-    keyShadow: Color(0x66100f18),
+    canvas: Color(0xff141620),
+    canvasAccent: Color(0xff201e2b),
+    surface: Color(0xff1a1d28),
+    surfaceRaised: Color(0xff292d3d),
+    glass: Color(0xe81e2230),
+    glassStrong: Color(0xf5282c3c),
+    stroke: Color(0xff5a5f72),
+    strokeStrong: Color(0xff9b97aa),
+    focusRing: Color(0xffffd0a2),
+    hoverLayer: Color(0x1fffc184),
+    focusLayer: Color(0x2effc184),
+    pressedLayer: Color(0x3dffc184),
+    selectedLayer: Color(0x3dffc184),
+    ambientShadow: Color(0x3d080910),
+    keyShadow: Color(0x66080910),
     glassBlur: 18,
     glassBlurStrong: 26,
     disabledOpacity: .48,
+  );
+
+  static const highContrastLight = PerfectSurfaceTheme(
+    canvas: Color(0xffffffff),
+    canvasAccent: Color(0xffffffff),
+    surface: Color(0xfff7f7f9),
+    surfaceRaised: Color(0xffffffff),
+    glass: Color(0xffffffff),
+    glassStrong: Color(0xffffffff),
+    stroke: Color(0xff70717d),
+    strokeStrong: Color(0xff4a4b55),
+    focusRing: Color(0xff6d2e00),
+    hoverLayer: Color(0x1f6d2e00),
+    focusLayer: Color(0x336d2e00),
+    pressedLayer: Color(0x476d2e00),
+    selectedLayer: Color(0x339b4300),
+    ambientShadow: Color(0x00000000),
+    keyShadow: Color(0x00000000),
+    glassBlur: 0,
+    glassBlurStrong: 0,
+    disabledOpacity: .58,
+  );
+
+  static const highContrastDark = PerfectSurfaceTheme(
+    canvas: Color(0xff000000),
+    canvasAccent: Color(0xff000000),
+    surface: Color(0xff050609),
+    surfaceRaised: Color(0xff171922),
+    glass: Color(0xff08090d),
+    glassStrong: Color(0xff08090d),
+    stroke: Color(0xffa6a6b0),
+    strokeStrong: Color(0xffffffff),
+    focusRing: Color(0xffffd1a3),
+    hoverLayer: Color(0x33ffd1a3),
+    focusLayer: Color(0x47ffd1a3),
+    pressedLayer: Color(0x5cffd1a3),
+    selectedLayer: Color(0x47ffbd7c),
+    ambientShadow: Color(0x00000000),
+    keyShadow: Color(0x00000000),
+    glassBlur: 0,
+    glassBlurStrong: 0,
+    disabledOpacity: .62,
   );
 
   @override
@@ -390,87 +760,66 @@ abstract final class PerfectMotion {
 double _lerpDouble(double a, double b, double t) => a + ((b - a) * t);
 
 abstract final class PerfectTheme {
-  static ThemeData light() => _theme(Brightness.light);
-  static ThemeData dark() => _theme(Brightness.dark);
+  static ThemeData light() => _theme(PerfectSemanticTheme.light);
+  static ThemeData dark() => _theme(PerfectSemanticTheme.dark);
+  static ThemeData highContrastLight() =>
+      _theme(PerfectSemanticTheme.highContrastLight);
+  static ThemeData highContrastDark() =>
+      _theme(PerfectSemanticTheme.highContrastDark);
 
-  static ThemeData _theme(Brightness brightness) {
+  static ThemeData _theme(PerfectSemanticTheme semantic) {
+    final brightness = semantic.brightness;
     final dark = brightness == Brightness.dark;
-    final surface = dark
-        ? PerfectColors.nightSurface
-        : PerfectColors.creamElevated;
-    final background = dark ? PerfectColors.night : PerfectColors.cream;
-    final foreground = dark ? const Color(0xfff7f4ff) : PerfectColors.ink;
-    final muted = dark ? const Color(0xffc8c4d5) : PerfectColors.mutedInk;
-    final primary = dark
-        ? const Color(0xffffbd7c)
-        : PerfectColors.apricotAction;
-    final secondary = dark ? const Color(0xffa9dfbb) : PerfectColors.mint;
-    final tertiary = dark ? const Color(0xffcfc5ff) : PerfectColors.lilac;
-    final inputFill = dark ? const Color(0xff2a2d3e) : const Color(0xfffffdfb);
-    final surfaces = dark
-        ? PerfectSurfaceTheme.dark
-        : PerfectSurfaceTheme.light;
+    final highContrast = semantic.highContrast;
+    final surface = semantic.surface;
+    final background = semantic.canvas;
+    final foreground = semantic.ink;
+    final muted = semantic.muted;
+    final primary = semantic.primary;
+    final secondary = semantic.secondary;
+    final tertiary = semantic.tertiary;
+    final inputFill = semantic.surfaceLowest;
+    final surfaces = switch ((dark, highContrast)) {
+      (false, false) => PerfectSurfaceTheme.light,
+      (true, false) => PerfectSurfaceTheme.dark,
+      (false, true) => PerfectSurfaceTheme.highContrastLight,
+      (true, true) => PerfectSurfaceTheme.highContrastDark,
+    };
     final scheme = ColorScheme(
       brightness: brightness,
       primary: primary,
-      onPrimary: dark ? PerfectColors.ink : PerfectColors.cream,
-      primaryContainer: dark
-          ? const Color(0xff4a3527)
-          : PerfectColors.apricotSoft,
-      onPrimaryContainer: dark ? PerfectColors.apricotSoft : PerfectColors.ink,
+      onPrimary: semantic.onPrimary,
+      primaryContainer: semantic.primaryContainer,
+      onPrimaryContainer: semantic.onPrimaryContainer,
       secondary: secondary,
-      onSecondary: PerfectColors.ink,
-      secondaryContainer: dark
-          ? const Color(0xff253c31)
-          : PerfectColors.mintSoft,
-      onSecondaryContainer: dark ? PerfectColors.mintSoft : PerfectColors.ink,
+      onSecondary: semantic.onSecondary,
+      secondaryContainer: semantic.secondaryContainer,
+      onSecondaryContainer: semantic.onSecondaryContainer,
       tertiary: tertiary,
-      onTertiary: PerfectColors.ink,
-      tertiaryContainer: dark
-          ? const Color(0xff37334f)
-          : PerfectColors.lilacSoft,
-      onTertiaryContainer: dark ? PerfectColors.lilacSoft : PerfectColors.ink,
-      error: dark ? const Color(0xffffaab0) : PerfectColors.danger,
-      onError: dark ? PerfectColors.ink : PerfectColors.cream,
-      errorContainer: dark ? const Color(0xff542c35) : PerfectColors.dangerSoft,
-      onErrorContainer: dark
-          ? const Color(0xffffd9dc)
-          : PerfectColors.onDangerSoft,
+      onTertiary: semantic.onTertiary,
+      tertiaryContainer: semantic.tertiaryContainer,
+      onTertiaryContainer: semantic.onTertiaryContainer,
+      error: semantic.danger,
+      onError: semantic.onPrimary,
+      errorContainer: semantic.dangerContainer,
+      onErrorContainer: semantic.onDangerContainer,
       surface: surface,
       onSurface: foreground,
-      surfaceDim: dark
-          ? PerfectColors.night
-          : PerfectColors.creamSurfaceHighest,
-      surfaceBright: dark
-          ? PerfectColors.nightSurfaceHigh
-          : PerfectColors.creamElevated,
-      surfaceContainerLowest: dark
-          ? PerfectColors.night
-          : PerfectColors.creamElevated,
-      surfaceContainerLow: dark
-          ? PerfectColors.nightSurfaceLow
-          : PerfectColors.creamSurfaceLow,
-      surfaceContainer: dark
-          ? PerfectColors.nightSurface
-          : PerfectColors.creamSurface,
-      surfaceContainerHigh: dark
-          ? PerfectColors.nightSurfaceHigh
-          : PerfectColors.creamSurfaceHigh,
-      surfaceContainerHighest: dark
-          ? PerfectColors.nightSurfaceHighest
-          : PerfectColors.creamSurfaceHighest,
+      surfaceDim: dark ? semantic.canvas : semantic.surfaceHighest,
+      surfaceBright: semantic.surfaceHigh,
+      surfaceContainerLowest: semantic.surfaceLowest,
+      surfaceContainerLow: semantic.surfaceLow,
+      surfaceContainer: semantic.surface,
+      surfaceContainerHigh: semantic.surfaceHigh,
+      surfaceContainerHighest: semantic.surfaceHighest,
       onSurfaceVariant: muted,
-      outline: dark
-          ? PerfectColors.accessibleNightOutline
-          : PerfectColors.accessibleOutline,
-      outlineVariant: dark
-          ? PerfectColors.nightStroke
-          : PerfectColors.creamStroke,
-      shadow: dark ? const Color(0xff100f18) : const Color(0xff4b3d32),
-      scrim: PerfectColors.ink.withValues(alpha: .52),
-      inverseSurface: dark ? PerfectColors.cream : PerfectColors.ink,
-      onInverseSurface: dark ? PerfectColors.ink : PerfectColors.cream,
-      inversePrimary: dark ? PerfectColors.apricot : const Color(0xffffbd7c),
+      outline: semantic.outline,
+      outlineVariant: semantic.outlineVariant,
+      shadow: semantic.shadow,
+      scrim: semantic.ink.withValues(alpha: highContrast ? .78 : .52),
+      inverseSurface: semantic.ink,
+      onInverseSurface: semantic.canvas,
+      inversePrimary: semantic.primaryVivid,
       surfaceTint: Colors.transparent,
     );
     final base = ThemeData(
@@ -598,13 +947,13 @@ abstract final class PerfectTheme {
       if (states.contains(WidgetState.disabled)) {
         return scheme.surfaceContainerHighest.withValues(alpha: .76);
       }
-      return dark ? scheme.primary : PerfectColors.apricot;
+      return highContrast ? scheme.primary : semantic.primaryVivid;
     }
 
     Color? actionForeground(Set<WidgetState> states) =>
         states.contains(WidgetState.disabled)
         ? scheme.onSurface.withValues(alpha: surfaces.disabledOpacity)
-        : PerfectColors.ink;
+        : (highContrast ? scheme.onPrimary : semantic.onPrimary);
 
     final filledButtonStyle = ButtonStyle(
       animationDuration: PerfectMotion.standard,
@@ -626,13 +975,13 @@ abstract final class PerfectTheme {
         final focused = states.contains(WidgetState.focused);
         return BorderSide(
           color: focused ? surfaces.focusRing : Colors.transparent,
-          width: 1.5,
+          width: focused && highContrast ? 3 : 1.5,
         );
       }),
     );
 
     return base.copyWith(
-      extensions: <ThemeExtension<dynamic>>[surfaces],
+      extensions: <ThemeExtension<dynamic>>[semantic, surfaces],
       textTheme: textTheme,
       primaryTextTheme: textTheme,
       iconTheme: IconThemeData(color: foreground, size: 22),
@@ -666,7 +1015,8 @@ abstract final class PerfectTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(PerfectRadius.card),
           side: BorderSide(
-            color: scheme.outlineVariant.withValues(alpha: dark ? .9 : 1),
+            color: scheme.outlineVariant.withValues(alpha: dark ? 1 : 1),
+            width: highContrast ? 2 : 1,
           ),
         ),
       ),
@@ -689,11 +1039,17 @@ abstract final class PerfectTheme {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(PerfectRadius.control),
-          borderSide: BorderSide(color: scheme.outline),
+          borderSide: BorderSide(
+            color: scheme.outline,
+            width: highContrast ? 2 : 1,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(PerfectRadius.control),
-          borderSide: BorderSide(color: scheme.outline),
+          borderSide: BorderSide(
+            color: scheme.outline,
+            width: highContrast ? 2 : 1,
+          ),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(PerfectRadius.control),
@@ -703,7 +1059,10 @@ abstract final class PerfectTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(PerfectRadius.control),
-          borderSide: BorderSide(color: scheme.primary, width: 2),
+          borderSide: BorderSide(
+            color: surfaces.focusRing,
+            width: highContrast ? 3 : 2,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(PerfectRadius.control),
@@ -753,7 +1112,9 @@ abstract final class PerfectTheme {
               color: states.contains(WidgetState.focused)
                   ? surfaces.focusRing
                   : scheme.outline,
-              width: states.contains(WidgetState.focused) ? 2 : 1.25,
+              width: states.contains(WidgetState.focused)
+                  ? (highContrast ? 3 : 2)
+                  : (highContrast ? 2 : 1.25),
             );
           }),
         ),
@@ -815,14 +1176,17 @@ abstract final class PerfectTheme {
           overlayColor: WidgetStateProperty.resolveWith(actionOverlay),
           side: WidgetStateProperty.resolveWith(
             (states) => states.contains(WidgetState.focused)
-                ? BorderSide(color: surfaces.focusRing, width: 2)
+                ? BorderSide(
+                    color: surfaces.focusRing,
+                    width: highContrast ? 3 : 2,
+                  )
                 : BorderSide.none,
           ),
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: dark ? scheme.primary : PerfectColors.apricot,
-        foregroundColor: PerfectColors.ink,
+        backgroundColor: highContrast ? scheme.primary : semantic.primaryVivid,
+        foregroundColor: highContrast ? scheme.onPrimary : semantic.onPrimary,
         focusColor: surfaces.focusLayer,
         hoverColor: surfaces.hoverLayer,
         splashColor: surfaces.pressedLayer,
@@ -995,7 +1359,9 @@ abstract final class PerfectTheme {
               color: states.contains(WidgetState.focused)
                   ? surfaces.focusRing
                   : scheme.outlineVariant,
-              width: states.contains(WidgetState.focused) ? 2 : 1,
+              width: states.contains(WidgetState.focused)
+                  ? (highContrast ? 3 : 2)
+                  : (highContrast ? 2 : 1),
             ),
           ),
           textStyle: buttonTextStyle,
@@ -1003,13 +1369,17 @@ abstract final class PerfectTheme {
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: surfaces.surfaceRaised,
+        barrierColor: scheme.scrim,
         surfaceTintColor: Colors.transparent,
         shadowColor: surfaces.keyShadow,
         elevation: 10,
         insetPadding: const EdgeInsets.all(PerfectSpace.xl),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(PerfectRadius.panel),
-          side: BorderSide(color: scheme.outlineVariant),
+          side: BorderSide(
+            color: highContrast ? scheme.outline : scheme.outlineVariant,
+            width: highContrast ? 2 : 1,
+          ),
         ),
         titleTextStyle: textTheme.titleLarge,
         contentTextStyle: textTheme.bodyMedium,
@@ -1082,15 +1452,15 @@ abstract final class PerfectTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: dark ? const Color(0xfff7f4ff) : PerfectColors.ink,
+        backgroundColor: scheme.inverseSurface,
         elevation: 6,
         insetPadding: const EdgeInsets.all(PerfectSpace.md),
         contentTextStyle: textTheme.bodyMedium?.copyWith(
-          color: dark ? PerfectColors.ink : Colors.white,
+          color: scheme.onInverseSurface,
         ),
         actionTextColor: dark
-            ? PerfectColors.apricotAction
-            : PerfectColors.apricot,
+            ? PerfectSemanticTheme.light.primary
+            : semantic.primaryVivid,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(PerfectRadius.control),
         ),

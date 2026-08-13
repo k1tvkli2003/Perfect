@@ -290,3 +290,27 @@ Perfect Cycle 1 روی commit `a793531279174f735ad1e247f96a5213613dabb1` با wo
 - No production Flutter/native/domain/database/auth/sync/Supabase source changed.
   Existing user prototypes, `.vscode`, `NUL` and retained stash remain unaccepted
   and unstaged. The hosted Stage 05 checkpoint follows its dedicated commit/push.
+
+## Stage 10 authored theme and contrast system — 2026-08-13 local checkpoint
+
+- Four stable authored themes now exist: Daylight, Graphite Bloom, Clarity Light
+  and Clarity Dark. Clarity removes blur and strengthens hierarchy/boundaries rather
+  than mechanically transforming the standard themes.
+- Theme and contrast are independent persisted owner choices. A switch preserves
+  destination, page identity, draft, focus, scroll and active workspace state.
+- All reusable Dart UI outside the theme registry now has zero direct
+  `PerfectColors`, raw white/black or raw ARGB bypasses. Dialog scrims, snackbars,
+  painters, status, focus and interaction ink resolve through semantic roles.
+- Android receives the effective appearance through a deduplicated native channel;
+  all four widget sizes and Quick Add use 40 themed brand rasters, 16 status vectors
+  and four authored surfaces. Windows receives DWM caption/text/border roles and
+  respects system high contrast.
+- The full 444-test suite and analysis pass. Stage 10 design and runtime verifiers
+  pass 76 contrast pairs, 181 components, 134 pages, zero raw-color violations and
+  13 hash-locked Android runtime artifacts.
+- Secret-free Android preview build 2062 installed over 2061 with unchanged
+  `firstInstallTime`; Daylight, Graphite and both Clarity compositions plus the live
+  Appearance controls were visually inspected at 1080×2400.
+- Local Windows compilation is honestly blocked before the project runner by the
+  host's missing optional ATL `atlbase.h`; exact-SHA hosted Windows compilation,
+  signing, install-over and three-asset release remain the Stage 10 closure gate.

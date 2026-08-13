@@ -16,6 +16,15 @@ namespace {
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
+#ifndef DWMWA_BORDER_COLOR
+#define DWMWA_BORDER_COLOR 34
+#endif
+#ifndef DWMWA_CAPTION_COLOR
+#define DWMWA_CAPTION_COLOR 35
+#endif
+#ifndef DWMWA_TEXT_COLOR
+#define DWMWA_TEXT_COLOR 36
+#endif
 
 constexpr const wchar_t kWindowClassName[] = L"FLUTTER_RUNNER_WIN32_WINDOW";
 
@@ -49,6 +58,18 @@ struct SavedWindowPlacement {
 static int g_active_window_count = 0;
 
 using EnableNonClientDpiScaling = BOOL __stdcall(HWND hwnd);
+
+COLORREF ArgbToColorRef(DWORD argb) {
+  return RGB((argb >> 16) & 0xff, (argb >> 8) & 0xff, argb & 0xff);
+}
+
+bool IsWindowsContrastThemeActive() {
+  HIGHCONTRAST contrast{};
+  contrast.cbSize = sizeof(contrast);
+  return SystemParametersInfo(SPI_GETHIGHCONTRAST, sizeof(contrast), &contrast,
+                              0) &&
+         (contrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+}
 
 // Scale helper to convert logical scaler values to physical using passed in
 // scale factor
@@ -396,6 +417,43 @@ bool Win32Window::ReadSavedPlacement(Point* origin,
 
 void Win32Window::SetInitialMaximized(bool maximized) {
   initial_maximized_ = maximized;
+}
+
+void Win32Window::ApplyAppTheme(bool dark,
+                                bool high_contrast,
+                                DWORD canvas_argb,
+                                DWORD ink_argb,
+                                DWORD outline_argb) {
+  if (!window_handle_) {
+    return;
+  }
+
+  BOOL enable_dark_mode = dark ? TRUE : FALSE;
+  DwmSetWindowAttribute(window_handle_, DWMWA_USE_IMMERSIVE_DARK_MODE,
+                        &enable_dark_mode, sizeof(enable_dark_mode));
+
+  const bool use_system_colors = IsWindowsContrastThemeActive();
+  COLORREF caption_color = use_system_colors
+                               ? GetSysColor(COLOR_WINDOW)
+                               : ArgbToColorRef(canvas_argb);
+  COLORREF text_color = use_system_colors ? GetSysColor(COLOR_WINDOWTEXT)
+                                          : ArgbToColorRef(ink_argb);
+  COLORREF border_color = use_system_colors
+                              ? GetSysColor(COLOR_WINDOWFRAME)
+                              : ArgbToColorRef(outline_argb);
+  if (high_contrast && !use_system_colors) {
+    // Authored Clarity still uses explicit structural boundaries when the
+    // owner enables it independently of a Windows Contrast Theme.
+    border_color = ArgbToColorRef(outline_argb);
+  }
+  DwmSetWindowAttribute(window_handle_, DWMWA_CAPTION_COLOR, &caption_color,
+                        sizeof(caption_color));
+  DwmSetWindowAttribute(window_handle_, DWMWA_TEXT_COLOR, &text_color,
+                        sizeof(text_color));
+  DwmSetWindowAttribute(window_handle_, DWMWA_BORDER_COLOR, &border_color,
+                        sizeof(border_color));
+  RedrawWindow(window_handle_, nullptr, nullptr,
+               RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
 }
 
 void Win32Window::SavePlacement(HWND const window) {
