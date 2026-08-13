@@ -468,7 +468,8 @@ recorded in `08-stage-verification.md`.
 | Absolute raster | real navigation + minimal control | inconclusive | minimal same-package control also exceeds 16.67ms on emulator `skiagl` |
 | Idle/offstage work | two drained six-second windows | passed | one and zero frames; no sustained ticker |
 | Local Windows compile | `flutter build windows --release` | host-blocked | missing ATL `atlbase.h`; exact-SHA hosted runner required |
-| Hosted Windows/release | GitHub Actions | pending | no completion claim until trusted main run and immutable three-asset release pass |
+| Branch exact-SHA gate | run `31663309577`, attempt 2 | passed | exact source `6ca824ef2f0dd0b3facd66c194668381e81b88d1`; 432 tests, APK/checksum/upload and Windows portable passed after one unchanged retry for a transient Gradle download EOF |
+| Trusted Windows/update/release | run `#54` / `31664886708` + release inspection | passed | all four jobs succeeded; MSIX `1.1.0.52 → 1.1.0.54` and Setup clean/rerun preserved package family/LocalState; `v1.1.0-build.2054` targets the exact SHA and contains exactly APK, Portable ZIP and Setup EXE |
 
 Full evidence, artifact hashes, performance distributions and proof boundaries are
 recorded in `09-stage-verification.md`.

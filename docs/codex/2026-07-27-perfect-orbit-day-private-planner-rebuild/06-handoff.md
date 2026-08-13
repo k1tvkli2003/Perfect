@@ -2,9 +2,13 @@
 
 ## Canonical numbered execution — 2026-08-13
 
-Stages 01–08 are externally closed. Stage 09 is implemented and locally verified on
-the isolated `codex/stage09-global-motion` branch but is not yet closed: commit/push,
-exact-SHA hosted Windows, fast-forward merge, trusted release and cleanup remain.
+Stages 01–09 are externally closed. Stage 09 source checkpoint
+`6ca824ef2f0dd0b3facd66c194668381e81b88d1` is merged to `main`; trusted run
+[`#54` / `31664886708`](https://github.com/k1tvkli2003/Perfect/actions/runs/31664886708)
+and release
+[`v1.1.0-build.2054`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2054)
+target that exact SHA. The remaining closure work is this documentation checkpoint's
+own exact-SHA gate and isolated branch/worktree cleanup before Stage 10 begins.
 
 The current Stage 09 source has one semantic Motion system across routes, page-title
 orientation, dialogs, sheets, menus, inspector, wizard, Quick Capture, AI, selection,
@@ -13,7 +17,9 @@ hit, focus or expose semantics. Reduced motion reaches final state without spati
 travel. Analyzer is clean and all 432 tests pass. Android profile build 2060 installed
 in place and its runtime artifacts are hash-verified. Emulator raster and local
 Windows ATL limitations are explicitly not promoted into physical/hosted proof; see
-`09-stage-verification.md`.
+`09-stage-verification.md`. Hosted Windows build/signing, install-over LocalState and
+Setup clean/idempotent rerun are now proven; physical Android and Windows no-jank
+measurement remains explicitly open.
 
 ## Outcome
 

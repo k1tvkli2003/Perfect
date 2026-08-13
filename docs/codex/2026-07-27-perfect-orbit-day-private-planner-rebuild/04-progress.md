@@ -508,8 +508,25 @@ were not one executable product contract.
 - Local Windows compilation still stops at missing ATL `atlbase.h`; exact-SHA hosted
   Windows/install-over/release proof remains mandatory.
 
+### Hosted closure
+
+- Source checkpoint `6ca824ef2f0dd0b3facd66c194668381e81b88d1` passed branch run
+  [`31663309577`](https://github.com/k1tvkli2003/Perfect/actions/runs/31663309577)
+  attempt 2. Attempt 1's Android build ended only because the official Gradle wrapper
+  download returned `Unexpected end of file from server`; the same SHA then passed
+  all 432 tests, APK build/checksum/upload and the Windows portable gate unchanged.
+- The source was fast-forwarded to `main`. Trusted run
+  [`#54` / `31664886708`](https://github.com/k1tvkli2003/Perfect/actions/runs/31664886708)
+  passed all four jobs, including signed Android, signed Windows packaging,
+  `1.1.0.52 → 1.1.0.54` MSIX install-over with package family/LocalState preserved,
+  and Setup clean-install plus idempotent rerun without mutating Root.
+- Immutable release
+  [`v1.1.0-build.2054`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2054)
+  and its tag target the exact source SHA and contain exactly the install-ready APK,
+  Windows Portable ZIP and Windows Setup EXE recorded in `09-stage-verification.md`.
+
 ### Next
 
-- Commit and push the isolated Stage 09 source checkpoint, run the untrusted exact-
-  SHA branch gate, fast-forward into `main`, then require the trusted Windows/update/
-  three-asset immutable release gate before marking Stage 09 complete.
+- Close this documentation checkpoint through the same exact-SHA trusted gate,
+  remove the isolated branch/worktree, then begin Stage 10 theme and accessibility
+  motion without weakening the physical-target no-jank boundary.

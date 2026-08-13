@@ -2,7 +2,7 @@
 
 Date: 2026-08-13
 Stage: `09-global-motion-system`
-Status: local implementation verified; exact-SHA hosted Windows/release closure pending
+Status: source checkpoint externally closed on exact-SHA trusted run and release
 
 ## Outcome
 
@@ -121,14 +121,37 @@ It is profile evidence, not a distributable signed release.
 | Real Android screenshot/recording | pass | exact foreground package; current final source composition |
 | Local Windows release build | blocked by host | missing ATL `atlbase.h` in `flutter_local_notifications_windows`; hosted runner mandatory |
 | Physical Android no-jank | open | emulator renderer control is too slow for an absolute raster claim |
-| Windows no-jank/install-over/release | pending | must pass on exact source SHA in GitHub Actions |
+| Hosted Windows install-over/release | pass | exact source SHA passed signed Windows build, MSIX/Setup update proofs and three-asset release |
+| Physical Windows no-jank | open | hosted compilation and package execution do not substitute for frame timing on target hardware |
 
-## Hosted closure contract
+## Hosted closure proof
 
-Stage 09 is not complete until the source commit passes the manually dispatched
-untrusted branch run, is fast-forwarded to `main`, and that exact main SHA passes all
-trusted jobs. The trusted run must prove Windows build, raw install-over LocalState,
-Setup clean/idempotent rerun, exact three-asset assembly and immutable publication.
-Release/tag target, asset names, byte sizes and GitHub SHA-256 digests must be added
-to this file after publication. Physical Android and Windows frame-jank remain open
-unless measured on those actual targets; hosted compilation cannot substitute.
+Source checkpoint `6ca824ef2f0dd0b3facd66c194668381e81b88d1` passed manually
+dispatched branch run
+[`31663309577`](https://github.com/k1tvkli2003/Perfect/actions/runs/31663309577)
+attempt 2. Attempt 1 passed format, analysis and all 432 tests, then the Android step
+received `Unexpected end of file from server` while downloading the official Gradle
+wrapper. Retrying only failed jobs on the unchanged SHA passed Android build,
+checksum and artifact upload; the Windows portable job had already passed.
+
+After fast-forward to `main`, trusted run
+[`#54` / `31664886708`](https://github.com/k1tvkli2003/Perfect/actions/runs/31664886708)
+passed all four jobs. Windows MSIX install-over advanced `1.1.0.52 → 1.1.0.54`
+while preserving package family and LocalState. Setup clean-install and its second,
+idempotent invocation both passed without mutating Root. Android signing, package
+verification, checksum and upload also passed.
+
+Immutable release
+[`v1.1.0-build.2054`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2054)
+and its tag target the exact source commit. GitHub reports exactly three assets:
+
+- `Perfect-1.1.0-build.2054-Android.apk` — 73,672,339 bytes —
+  `sha256:1b59536d7c06b7c48994b4ba96a5656a09ec81d6d3ce885f5c6b900c01cb6f31`;
+- `Perfect-1.1.0-build.2054-Windows-Portable.zip` — 17,646,412 bytes —
+  `sha256:976f7fd39c4c20671510503f957a478f7d28c635cae7b2d6175b8c2c653fac8a`;
+- `Perfect-1.1.0-build.2054-Windows-Setup.exe` — 25,008,984 bytes —
+  `sha256:a8fbb3f4f1f3131cf8b270bb5aba8830c833ba04592de86cb88b388782189b1e`.
+
+This closes source, packaging and update continuity for Stage 09. Physical Android
+and Windows frame-jank remain open unless measured on those actual targets; hosted
+compilation cannot substitute.

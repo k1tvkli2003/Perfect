@@ -1,6 +1,6 @@
 # Stage 09 — Global route and microinteraction motion system
 
-Status: implemented locally; exact-SHA hosted closure pending
+Status: externally closed on source checkpoint `6ca824ef2f0dd0b3facd66c194668381e81b88d1`
 Depends on: Stages 04, 05, 07–08  
 Primary surfaces: all pages, overlays, selectors, actions and responsive changes
 
@@ -105,5 +105,7 @@ Full evidence and proof boundaries are recorded in `../09-stage-verification.md`
 
 ## Handoff
 
-Stage 10 receives stable motion tokens for theme-state transitions. Commit motion
-tests, recordings and code; push/release and leave clean `main`.
+Stage 10 receives stable motion tokens for theme-state transitions. Branch run
+`31663309577` attempt 2 and trusted main run `#54` / `31664886708` close the exact
+source SHA; release `v1.1.0-build.2054` contains exactly APK, Portable ZIP and Setup.
+Physical-target no-jank remains a later runtime gate rather than a hosted-build claim.

@@ -1,17 +1,17 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-13T06:15:00+03:30
+- Last updated: 2026-08-13T07:34:44+03:30
 - Owner: Codex
 
 ## Current State
 
-Canonical 50-stage execution has externally closed Stages 01–08 through exact-SHA
-hosted runs and immutable three-asset releases. Stage 08 documentation checkpoint
-`2e34937e8286275b1cc7e675ef6fe45dd15e6baf` is the current `main` baseline.
-Stage 09 is implemented and locally verified on isolated branch
-`codex/stage09-global-motion`; its commit, hosted Windows gate, merge and release are
-still pending and therefore the stage is not yet externally closed.
+Canonical 50-stage execution has externally closed Stages 01–09 through exact-SHA
+hosted runs and immutable three-asset releases. Stage 09 source checkpoint
+`6ca824ef2f0dd0b3facd66c194668381e81b88d1` is merged to `main` and closed by
+trusted run [`#54` / `31664886708`](https://github.com/k1tvkli2003/Perfect/actions/runs/31664886708)
+and immutable release
+[`v1.1.0-build.2054`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2054).
 
 Stage 09 centralizes seven semantic motion roles, reduced-motion behavior, invoker-
 anchored/focus-restoring dialogs, explicit sheet/menu transitions, persistent
@@ -20,8 +20,11 @@ aware background/offstage ticker suspension. Eleven storyboards, 131 implementat
 records, 24 design hashes and nine runtime hashes pass the independent verifier.
 Analyzer is clean; the full suite passes 432/432, Workspace 60/60, Header/Sync 10/10
 and focused Motion 19/19. Android profile `1.1.0+2060` installed in place without
-changing first-install time. Local Windows still lacks ATL `atlbase.h`; exact-SHA
-hosted Windows/install-over/release proof and physical target no-jank remain open.
+changing first-install time. The local host still lacks ATL `atlbase.h`, but the
+official Windows runner built and signed the app, preserved package family and
+LocalState across `1.1.0.52 → 1.1.0.54`, and passed Setup clean/idempotent rerun.
+Physical Android and Windows no-jank measurement remains open and is not inferred
+from hosted compilation.
 
 The Stage 08 source checkpoint
 `cc2ff2b15b81486903b425a51d351b2fa809c187` closed on run `#51` / `31636360008`
