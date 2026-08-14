@@ -1,5 +1,35 @@
 # Progress
 
+## 2026-08-14 — Stage 11 Today Pulse preview gate
+
+### Before
+
+Orbit still dominated Today, repeated the next task, split tablet/desktop attention
+between a circular instrument and the stream, and degraded into weak geometry in
+short-height and enlarged-text layouts.
+
+### Preview decision
+
+- Explored three structurally distinct replacements and selected
+  `today-pulse-dayline-v2`; rejected a dashboard-like split ticker and an
+  administrative metric ledger.
+- Built eight deterministic boards for component states, phone density,
+  short-height/200% stress, tablet/Windows, themes, motion and measured geometry.
+- Rejected the first two renders for sync/Plan collision, date/metric baseline
+  overlap, weak row clearance, stretched desktop composition, footer occlusion,
+  dead tablet space and short-rail escape; corrected each defect before approval.
+- Froze one semantic instrument containing only live local time, Gregorian/Jalali
+  date, done/remaining projection, next temporal boundary and Plan. Task/habit
+  titles and mutations remain exclusively in the stream.
+- Generator and independent verifier now pass with 8 boards, 21 manifest-tracked
+  artifacts and 8 required states.
+
+### Next
+
+- Implement the live projection and adaptive Flutter component, remove every Orbit
+  runtime/semantic/motion path, then close preview/runtime comparisons on Android
+  and Windows-sized captures without resetting scroll or owner data.
+
 ## 2026-08-05 — Critics freeze and Focus Studio direction
 
 | Time | Status | Entry | Evidence |
@@ -567,3 +597,46 @@ the Windows frame did not follow one effective owner appearance.
   and contains exactly APK, Portable ZIP and Setup EXE.
 - Close the documentation checkpoint, remove the isolated Stage 10 branch/worktree
   and begin Stage 11 from the clean trusted `main` lineage.
+
+## 2026-08-14 — Stage 11 Today Pulse local checkpoint
+
+### Before
+
+Orbit still consumed the dominant Today viewport, repeated orientation/task
+information already owned by the stream, carried dedicated theme assets and kept
+phone/tablet/Windows around a circular model the approved direction had retired.
+
+### After
+
+- Deleted Orbit production source, assets, generator and dedicated accessibility
+  test; added a regression contract that keeps the retired model out of source,
+  assets, widget tree and semantics.
+- Implemented a compact adaptive Today Pulse with live local time, Gregorian/Jalali
+  date, daily completed/remaining/review projection, next start/due/cross-midnight
+  boundary, one Plan action and an authored semantic Dayline.
+- Recomputed task truth from daily occurrences and habit truth from day summaries;
+  unresolved recurrence remains pending and cannot inherit lifecycle completion.
+- Removed the duplicated Today header clock, Plan command, next-up title and habit
+  summary. Stream rows retain identity, mutation and scroll ownership.
+- Rebalanced sparse/short/wide Today composition and corrected the final Inspector
+  action/fact geometry discovered through side-by-side golden inspection.
+- Regenerated and visually inspected 14 workspace goldens. Analysis is clean and
+  the complete suite passes 449/449.
+- `1.1.0-preview+2064` installed over 2063 without changing the original install
+  time. Fresh phone, tablet portrait, tablet landscape and scrolled-final-row
+  evidence is hash-locked across nine files; the clean launch has zero relevant
+  fatal/Flutter/overflow matches.
+- Stage 10 runtime verification and the expanded Stage 11 verifier pass. Historical
+  exact-byte Stage 04/10 design-manifest scripts remain CRLF-sensitive on this
+  Windows checkout; the corresponding HEAD blob hashes and Flutter contract tests
+  match, so this is not treated as product drift.
+- Local Windows build still stops at the machine's missing ATL `atlbase.h` before
+  linking the notification plugin. Hosted exact-SHA Windows packaging remains the
+  authority.
+
+### Next
+
+- Commit and push the isolated Stage 11 checkpoint, require the exact SHA to pass
+  hosted Android and Windows gates, fast-forward trusted `main`, prove Windows
+  install-over/LocalState plus Setup rerun, publish exactly APK/Portable/Setup, then
+  record closure and remove every Stage 11 branch/worktree.

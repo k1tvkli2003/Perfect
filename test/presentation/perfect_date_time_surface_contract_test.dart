@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   final workspace = _read('lib/presentation/perfect_workspace_page.dart');
   final editor = _read('lib/presentation/planner_editor.dart');
-  final orbit = _read('lib/presentation/orbit_stage.dart');
+  final pulse = _read('lib/presentation/today_pulse.dart');
   final widgetBridge = _read('lib/widgets/perfect_today_widget.dart');
   final widgetProjector = _read(
     'lib/widgets/perfect_today_widget_projector.dart',
@@ -19,12 +19,13 @@ void main() {
   final localStore = _read('lib/planner/data/planner_local_store.dart');
 
   test('user-facing surfaces share one local calendar vocabulary', () {
-    expect(workspace, contains('PerfectDualDateClock.value(value: current)'));
     expect(workspace, contains('PerfectLocalTime.inspector(value)'));
     expect(workspace, contains('PerfectLocalTime.clock(value)'));
     expect(editor, contains('PerfectLocalTime.gregorianShort(local)'));
     expect(editor, contains('PerfectLocalTime.clock(local)'));
-    expect(orbit, contains('PerfectLocalTime.clock(value)'));
+    expect(pulse, contains('PerfectLocalTime.clock(local)'));
+    expect(pulse, contains('PerfectLocalTime.gregorianLong(current)'));
+    expect(pulse, contains('PerfectLocalTime.jalaliLong(current)'));
     expect(widgetBridge, contains('PerfectLocalTime.gregorianShort(date)'));
     expect(widgetProjector, contains('PerfectLocalTime.clock(value)'));
     expect(feedback, contains('PerfectLocalTime.inspector(value)'));

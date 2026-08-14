@@ -1,0 +1,26 @@
+{
+  "concept_id": "today-pulse-dayline-v2",
+  "live_layers": [
+    "time and AM/PM",
+    "Gregorian and Jalali dates with direction isolation",
+    "complete/remaining projection copy",
+    "next boundary copy",
+    "Plan control and semantics",
+    "sync state and retry semantics",
+    "Dayline progress value and non-color cues"
+  ],
+  "authored_layers": [
+    "theme-specific material field",
+    "semantic linear Dayline stroke",
+    "bounded soft bloom",
+    "project-owned vector icons"
+  ],
+  "forbidden_flattening": [
+    "planner data",
+    "time/date",
+    "status",
+    "actions",
+    "screen-reader copy"
+  ],
+  "implementation_boundary": "Preview geometry is authoritative; all dynamic values remain live Flutter semantics."
+}

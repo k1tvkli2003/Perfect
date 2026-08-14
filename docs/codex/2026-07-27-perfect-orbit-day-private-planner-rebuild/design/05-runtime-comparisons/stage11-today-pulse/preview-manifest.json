@@ -1,0 +1,114 @@
+{
+  "stage": 11,
+  "generated_at": "2026-08-14",
+  "generator": "tool/generate_stage11_today_pulse.cjs",
+  "concept_id": "today-pulse-dayline-v2",
+  "board_count": 8,
+  "files": [
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/adaptive-matrix.png",
+      "bytes": 607911,
+      "sha256": "3c0ce46e6994b7fc4b81106787ab33d0b081c1814f7cd48686d70b6775b885a0"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/adaptive-matrix.svg",
+      "bytes": 1311691,
+      "sha256": "94144177a3d55a5c8c8e9006148b2b7b7ca60cf513ed1a1888862f9466173096"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/candidate-comparison.png",
+      "bytes": 473187,
+      "sha256": "3a7258817ca1724f1f1c24a19e7bda8154ac8f87be555988be36297eaed156e4"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/candidate-comparison.svg",
+      "bytes": 567139,
+      "sha256": "ac08c5e2ecf3d5d548ca55f3e0f2cd16d29dad509f901925bf550ead6d1f2a5e"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/component-state-matrix.png",
+      "bytes": 675057,
+      "sha256": "e74de8705c0ff6f91982f617c762f46c9de734610e8c8f67ab5ac6e5291efe02"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/component-state-matrix.svg",
+      "bytes": 583819,
+      "sha256": "9b8f4550230e96b327703746031017fbaf2bfac806f25a0b6be362c968e4f22e"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/decision.md",
+      "bytes": 1256,
+      "sha256": "b6bfad907becd9a2a560cd19e388f3241701940091869428b209452f3ab6b29c"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/decomposition-manifest.json",
+      "bytes": 741,
+      "sha256": "df62cc62b0f5df5146347f950720b9c489108f9f37af1d0dfac714e7ea93b47d"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/geometry-axis-board.png",
+      "bytes": 458498,
+      "sha256": "542e94b25f3b735ab2c3f11e01faf70dce2d8e74aab4719ec1a01af23aeaa1d5"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/geometry-axis-board.svg",
+      "bytes": 563944,
+      "sha256": "64bf40c0acca42df81d330707df02ac86383fe58a42eb3d4b65621d918682146"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/layout-contract.json",
+      "bytes": 6743,
+      "sha256": "f9e7c640c0939763849214b3a6d08bdf7f66812512ae46934d901226c2431ebe"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/motion-storyboard.png",
+      "bytes": 587624,
+      "sha256": "31dbf5a1422d5d6dd7a6854aa5d7bace98a3083a6db9bad6a3109d50c9c9e858"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/motion-storyboard.svg",
+      "bytes": 644773,
+      "sha256": "84920092d1e159b900b2c67587ca7c6d5194cbe7d4c4f9fbb754c6d3fbfe2615"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/phone-density-matrix.png",
+      "bytes": 540900,
+      "sha256": "a0eba61056331cf276a6f3efa5b316bddb23b6e1ee77435452dcc4deece7b6d9"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/phone-density-matrix.svg",
+      "bytes": 641823,
+      "sha256": "627ee8a2e6b8b2867efff6b347ce0ea92bdf24ad2b421b4f379ca58fcc0a8ad6"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/preview-runtime-mismatch-ledger.md",
+      "bytes": 2316,
+      "sha256": "3c9196bfe98a553e8b0dae2f27b02cd052f90b84666e01447959b83f3188e34b"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/stress-responsive-matrix.png",
+      "bytes": 531942,
+      "sha256": "06a42281db093541559e49c42813d77d1b217f3fdc3ae1ec92e0f0f629a6b284"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/stress-responsive-matrix.svg",
+      "bytes": 600850,
+      "sha256": "c753573731014fff3180fb52bbbbf97f2cc7e6b2a797fab8e7e2bf37c6738499"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/symmetry-ledger.md",
+      "bytes": 883,
+      "sha256": "6f460aa97fb41e58c0aed07f55323fff946cfe4bf42a71884cf4f16186970aec"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/theme-system-matrix.png",
+      "bytes": 503725,
+      "sha256": "1e669098615bb66cdf996002e1fd4d6bec55cd22defcdb608eb719bc335d1d7d"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/theme-system-matrix.svg",
+      "bytes": 571458,
+      "sha256": "90994f7fbb79a296c6d1a45dae89101fd37b526c67a3f0f1d9513506139fb025"
+    }
+  ]
+}

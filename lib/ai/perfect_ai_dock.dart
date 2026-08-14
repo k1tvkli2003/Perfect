@@ -1450,7 +1450,7 @@ class _BrandPulse extends StatelessWidget {
       ),
       child: Semantics(
         image: true,
-        label: 'Perfect Day Compass',
+        label: 'Perfect brand mark',
         child: const ExcludeSemantics(child: _BrandAsset()),
       ),
     );

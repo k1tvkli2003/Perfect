@@ -1,10 +1,18 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-13T13:28:40+03:30
+- Last updated: 2026-08-14
 - Owner: Codex
 
 ## Current State
+
+Stage 11 is locally verified from clean trusted `main` lineage.
+`today-pulse-dayline-v2` is the sole implementation authority; production Orbit
+source/assets are deleted, the adaptive Pulse and daily projection are implemented,
+all 449 tests and analysis pass, and nine Android phone/tablet runtime artifacts are
+hash-locked after an in-place build 2063→2064 update. Exact-SHA hosted Windows,
+install-over and immutable three-asset release proof remain open; no Stage 11
+completion is claimed yet.
 
 Canonical 50-stage execution has externally closed Stages 01–10 through exact-SHA
 hosted runs and immutable three-asset releases. Stage 10 source checkpoint

@@ -1,0 +1,174 @@
+{
+  "stage": 11,
+  "concept_id": "today-pulse-dayline-v2",
+  "semantic_component_id": "td-pulse",
+  "status": "preview-approved-autonomously",
+  "generated_at": "2026-08-14",
+  "decisions": {
+    "circular_model": "removed",
+    "pulse_model": "one composed instrument with a slim semantic Dayline",
+    "stream_ownership": "task and habit titles, mutation and row detail remain in the stream",
+    "pulse_content": [
+      "minute-aligned local time",
+      "Gregorian date",
+      "Jalali date",
+      "complete and remaining measure",
+      "next temporal boundary",
+      "Plan action"
+    ],
+    "forbidden": [
+      "ring progress",
+      "clock-face labels",
+      "heartbeat orbit",
+      "duplicated next task title",
+      "metric card grid",
+      "decorative substitute for Orbit"
+    ]
+  },
+  "geometry": {
+    "phone": {
+      "outer_gutter": 20,
+      "pulse_min_height": 218,
+      "pulse_max_height_at_200_percent": 250,
+      "plan_target": 48,
+      "stream_gap": 28
+    },
+    "short_landscape": {
+      "rows": 2,
+      "horizontal_gutter": 34,
+      "pulse_height": 238
+    },
+    "tablet": {
+      "rail": 84,
+      "content_gutter": 38,
+      "pulse_height": 184,
+      "columns": 3
+    },
+    "windows": {
+      "rail_expanded": 176,
+      "content_gutter": 38,
+      "pulse_height": 184,
+      "max_content_width": 1320
+    },
+    "semantic_fixed_tokens": [
+      "48dp minimum target",
+      "2dp focus boundary",
+      "icon stroke",
+      "corner rhythm"
+    ],
+    "adaptive_tokens": [
+      "intrinsic copy width",
+      "bounded pane fractions",
+      "content-driven reflow",
+      "safe-area/footer clearance"
+    ]
+  },
+  "state_matrix": [
+    "empty",
+    "all-complete",
+    "missed-only",
+    "habits-only",
+    "unscheduled-only",
+    "syncing",
+    "offline",
+    "retry-error"
+  ],
+  "rendered_boards": [
+    {
+      "id": "candidate-comparison",
+      "viewport": "2400x1120",
+      "svg": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/candidate-comparison.svg",
+        "sha256": "ac08c5e2ecf3d5d548ca55f3e0f2cd16d29dad509f901925bf550ead6d1f2a5e"
+      },
+      "png": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/candidate-comparison.png",
+        "sha256": "3a7258817ca1724f1f1c24a19e7bda8154ac8f87be555988be36297eaed156e4"
+      }
+    },
+    {
+      "id": "component-state-matrix",
+      "viewport": "2400x1260",
+      "svg": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/component-state-matrix.svg",
+        "sha256": "9b8f4550230e96b327703746031017fbaf2bfac806f25a0b6be362c968e4f22e"
+      },
+      "png": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/component-state-matrix.png",
+        "sha256": "e74de8705c0ff6f91982f617c762f46c9de734610e8c8f67ab5ac6e5291efe02"
+      }
+    },
+    {
+      "id": "phone-density-matrix",
+      "viewport": "2400x1360",
+      "svg": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/phone-density-matrix.svg",
+        "sha256": "627ee8a2e6b8b2867efff6b347ce0ea92bdf24ad2b421b4f379ca58fcc0a8ad6"
+      },
+      "png": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/phone-density-matrix.png",
+        "sha256": "a0eba61056331cf276a6f3efa5b316bddb23b6e1ee77435452dcc4deece7b6d9"
+      }
+    },
+    {
+      "id": "stress-responsive-matrix",
+      "viewport": "2400x1240",
+      "svg": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/stress-responsive-matrix.svg",
+        "sha256": "c753573731014fff3180fb52bbbbf97f2cc7e6b2a797fab8e7e2bf37c6738499"
+      },
+      "png": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/stress-responsive-matrix.png",
+        "sha256": "06a42281db093541559e49c42813d77d1b217f3fdc3ae1ec92e0f0f629a6b284"
+      }
+    },
+    {
+      "id": "adaptive-matrix",
+      "viewport": "2400x1520",
+      "svg": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/adaptive-matrix.svg",
+        "sha256": "94144177a3d55a5c8c8e9006148b2b7b7ca60cf513ed1a1888862f9466173096"
+      },
+      "png": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/adaptive-matrix.png",
+        "sha256": "3c0ce46e6994b7fc4b81106787ab33d0b081c1814f7cd48686d70b6775b885a0"
+      }
+    },
+    {
+      "id": "theme-system-matrix",
+      "viewport": "2400x1160",
+      "svg": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/theme-system-matrix.svg",
+        "sha256": "90994f7fbb79a296c6d1a45dae89101fd37b526c67a3f0f1d9513506139fb025"
+      },
+      "png": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/theme-system-matrix.png",
+        "sha256": "1e669098615bb66cdf996002e1fd4d6bec55cd22defcdb608eb719bc335d1d7d"
+      }
+    },
+    {
+      "id": "motion-storyboard",
+      "viewport": "2400x1080",
+      "svg": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/motion-storyboard.svg",
+        "sha256": "84920092d1e159b900b2c67587ca7c6d5194cbe7d4c4f9fbb754c6d3fbfe2615"
+      },
+      "png": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/motion-storyboard.png",
+        "sha256": "31dbf5a1422d5d6dd7a6854aa5d7bace98a3083a6db9bad6a3109d50c9c9e858"
+      }
+    },
+    {
+      "id": "geometry-axis-board",
+      "viewport": "2400x1120",
+      "svg": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/geometry-axis-board.svg",
+        "sha256": "64bf40c0acca42df81d330707df02ac86383fe58a42eb3d4b65621d918682146"
+      },
+      "png": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage11-today-pulse/geometry-axis-board.png",
+        "sha256": "542e94b25f3b735ab2c3f11e01faf70dce2d8e74aab4719ec1a01af23aeaa1d5"
+      }
+    }
+  ]
+}

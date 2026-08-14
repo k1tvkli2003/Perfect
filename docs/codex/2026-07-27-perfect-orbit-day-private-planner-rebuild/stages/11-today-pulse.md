@@ -1,6 +1,6 @@
 # Stage 11 — Remove Orbit and build Today Pulse
 
-Status: pending  
+Status: locally verified; exact-SHA hosted closure pending
 Depends on: Stages 05, 08–10  
 Primary surfaces: Today phone/tablet/Windows; widget orientation summary
 
@@ -11,6 +11,14 @@ compact, information-dense but calm Today Pulse that orients the owner immediate
 and leaves most of the viewport for actionable work.
 
 ## Mandatory preview and Copy entry gate
+
+Gate result (2026-08-14): **passed after two adversarial correction rounds**.
+The authoritative `today-pulse-dayline-v2` corpus is under
+`design/05-runtime-comparisons/stage11-today-pulse/`. Eight deterministic boards
+cover concept rejection, semantic states, phone density, 200%/short-height stress,
+tablet/Windows composition, authored themes, motion choreography and measured axes.
+The generator and independent verifier are `tool/generate_stage11_today_pulse.cjs`
+and `tool/verify_stage11_today_pulse.cjs`.
 
 - Bind implementation to `td-pulse`, `sh-dual-date-clock`, `sh-sync-cloud` and
   `pg-today-empty/sparse/normal/dense` canonical compositions.
@@ -89,6 +97,36 @@ and leaves most of the viewport for actionable work.
 - Orbit is hidden only on phone but remains on tablet/Windows.
 - Pulse repeats the same task already shown immediately below.
 - Reclaimed space becomes empty padding or a generic metric-card collection.
+
+## Local implementation checkpoint — 2026-08-14
+
+- Deleted the production Orbit widget, its five authored ring files, generator and
+  accessibility test. A source/asset contract test prevents a compatibility shell
+  or hidden Orbit semantic from returning.
+- Added one immutable daily `TodayPulseSnapshot` backed by projected task
+  occurrences and habit-day summaries. Recurring lifecycle completion can never be
+  misreported as today's completion; missed, partial, resolving, all-complete,
+  habits-only, unscheduled-only and empty outcomes remain distinct.
+- The compact phone composition owns live time, Gregorian/Jalali date, outcome,
+  next boundary, Dayline and Plan only. Tablet/Windows recompose into three bounded
+  columns; task titles and every mutation stay in the stream.
+- The minute-aligned tick is injected and isolated to the Pulse. Today suppresses
+  the header clock, removes the duplicate Plan/next-up/habit summary, preserves
+  stream keys/scroll and keeps sparse content intrinsic instead of stretching a
+  false empty panel.
+- Short Inspector panes pin Edit while pairing Duplicate/Focus and render metadata
+  as atomic label/value rows, so actions remain reachable without orphaning facts.
+- All 14 refreshed workspace goldens were inspected after the final marker and
+  Inspector corrections. `flutter analyze --no-pub` is clean and the full suite
+  passes 449/449; the Stage 10 runtime and Stage 11 artifact verifiers pass.
+- Preview build `1.1.0-preview+2064` installed over 2063 with
+  `firstInstallTime=2026-08-02 19:20:44` preserved. Fresh phone, tablet portrait,
+  tablet landscape and scrolled-last-item captures have zero app/Flutter fatal
+  matches and are hash-locked in `runtime/android/runtime-manifest.json`.
+- Local Windows compilation reaches the native notification plugin and stops only
+  at the host's missing optional ATL header `atlbase.h`. Signed Windows build,
+  install-over/LocalState continuity and the three-asset release remain mandatory
+  exact-SHA hosted gates; no Stage 11 completion is claimed before them.
 
 ## Handoff
 

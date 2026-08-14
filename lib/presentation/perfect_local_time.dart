@@ -6,7 +6,7 @@ typedef PerfectNow = DateTime Function();
 typedef PerfectMinuteSchedule =
     VoidCallback Function(Duration delay, VoidCallback callback);
 
-VoidCallback _scheduleMinuteTick(Duration delay, VoidCallback callback) {
+VoidCallback schedulePerfectMinuteTick(Duration delay, VoidCallback callback) {
   final timer = Timer(delay, callback);
   return timer.cancel;
 }
@@ -231,7 +231,7 @@ class PerfectMinuteClockBuilder extends StatefulWidget {
     super.key,
     required this.builder,
     this.now = DateTime.now,
-    this.schedule = _scheduleMinuteTick,
+    this.schedule = schedulePerfectMinuteTick,
   });
 
   final Widget Function(BuildContext context, DateTime now) builder;

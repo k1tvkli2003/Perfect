@@ -16,7 +16,6 @@ import 'package:perfect/planner/domain/planner_recovery_engine.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
 import 'package:perfect/planner/sync/planner_sync_repository.dart';
 import 'package:perfect/presentation/focus_session_sheet.dart';
-import 'package:perfect/presentation/orbit_stage.dart';
 import 'package:perfect/presentation/perfect_brand.dart';
 import 'package:perfect/presentation/perfect_local_time.dart';
 import 'package:perfect/presentation/perfect_motion.dart';
@@ -31,6 +30,7 @@ import 'package:perfect/presentation/planner_habit_log_sheet.dart';
 import 'package:perfect/presentation/planner_insights_sheet.dart';
 import 'package:perfect/presentation/planner_reminder_settings_sheet.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
+import 'package:perfect/presentation/today_pulse.dart';
 
 /// Typed navigation bridge for native surfaces such as the Android Today
 /// widget. Requests are retained until a mounted workspace consumes them, so
@@ -77,7 +77,6 @@ class PerfectWorkspacePage extends StatefulWidget {
     this.aiClient,
     this.aiVoiceRecorder,
     this.feedbackController,
-    this.orbitMotionEnabled = true,
   });
 
   final PlannerWorkspaceController controller;
@@ -92,7 +91,6 @@ class PerfectWorkspacePage extends StatefulWidget {
   final PerfectAiClient? aiClient;
   final PerfectVoiceRecorder? aiVoiceRecorder;
   final ReadyFeedbackController? feedbackController;
-  final bool orbitMotionEnabled;
 
   @override
   State<PerfectWorkspacePage> createState() => _PerfectWorkspacePageState();
@@ -149,6 +147,8 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       const <String, PlannerTodayEligibility>{};
   Map<String, PlannerHabitDaySummary> _habitDaySummaryById =
       const <String, PlannerHabitDaySummary>{};
+  Map<String, PlannerTaskProgress> _todayTaskProgressById =
+      const <String, PlannerTaskProgress>{};
   double? _inspectorWidthOverride;
 
   @override
@@ -177,6 +177,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       _projectedTodayItems = const <PlannerEntity>[];
       _todayEligibilityById = const <String, PlannerTodayEligibility>{};
       _habitDaySummaryById = const <String, PlannerHabitDaySummary>{};
+      _todayTaskProgressById = const <String, PlannerTaskProgress>{};
     }
     if (oldWidget.navigationController == widget.navigationController) return;
     oldWidget.navigationController?.removeListener(_handleNavigationRequest);
@@ -397,6 +398,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
             destinationLabel: _destination.label,
             supportText: _headerSupportText(_destination),
             now: widget.now,
+            showClock: _destination != _PerfectDestination.today,
             status: widget.controller.syncStatus,
             onSync: widget.controller.refresh,
           ),
@@ -460,6 +462,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
                       destinationLabel: _destination.label,
                       supportText: _headerSupportText(_destination),
                       now: widget.now,
+                      showClock: _destination != _PerfectDestination.today,
                       status: widget.controller.syncStatus,
                       onSync: widget.controller.refresh,
                     ),
@@ -513,6 +516,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
                         destinationLabel: _destination.label,
                         supportText: _headerSupportText(_destination),
                         now: widget.now,
+                        showClock: _destination != _PerfectDestination.today,
                         status: widget.controller.syncStatus,
                         onSync: widget.controller.refresh,
                       ),
@@ -660,17 +664,17 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     return switch (tier) {
       _WorkspaceLayoutTier.compact => _TodayPage(
         controller: widget.controller,
-        includeOrbit: true,
-        now: now,
         nowProvider: widget.now,
         ownerDisplayName: widget.ownerDisplayName,
         items: _todayItems,
         eligibilityById: _displayTodayEligibility,
         habitSummaryById: _displayHabitSummaries,
-        orbitMotionEnabled: widget.orbitMotionEnabled,
+        taskProgressById: _displayTaskProgress,
+        projectionResolved: _isTodayProjectionResolved,
         onInspect: _inspect,
         onAdd: _openEditor,
         onOpenPlan: () => _selectDestination(_PerfectDestination.plan.index),
+        shortLandscape: shortLandscape,
       ),
       _WorkspaceLayoutTier.medium => _MediumTodayDeck(
         controller: widget.controller,
@@ -678,7 +682,9 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         items: _todayItems,
         eligibilityById: _displayTodayEligibility,
         habitSummaryById: _displayHabitSummaries,
-        orbitMotionEnabled: widget.orbitMotionEnabled,
+        taskProgressById: _displayTaskProgress,
+        projectionResolved: _isTodayProjectionResolved,
+        nowProvider: widget.now,
         onInspect: _inspect,
         onAdd: _openEditor,
         onOpenPlan: () => _selectDestination(_PerfectDestination.plan.index),
@@ -690,7 +696,9 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         items: _todayItems,
         eligibilityById: _displayTodayEligibility,
         habitSummaryById: _displayHabitSummaries,
-        orbitMotionEnabled: widget.orbitMotionEnabled,
+        taskProgressById: _displayTaskProgress,
+        projectionResolved: _isTodayProjectionResolved,
+        nowProvider: widget.now,
         inspected: _destination == _PerfectDestination.today
             ? _inspected
             : null,
@@ -782,6 +790,19 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     return const <String, PlannerHabitDaySummary>{};
   }
 
+  Map<String, PlannerTaskProgress> get _displayTaskProgress {
+    final now = widget.now().toLocal();
+    if (_resolvedTodayProjection == _todayProjectionSignature(now)) {
+      return _todayTaskProgressById;
+    }
+    return const <String, PlannerTaskProgress>{};
+  }
+
+  bool get _isTodayProjectionResolved {
+    final now = widget.now().toLocal();
+    return _resolvedTodayProjection == _todayProjectionSignature(now);
+  }
+
   String _todayProjectionSignature(DateTime now) {
     final day = '${now.year}-${now.month}-${now.day}';
     final entities = <PlannerEntity>[
@@ -829,6 +850,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
             localDay: day,
           );
           PlannerHabitDaySummary? summary;
+          PlannerTaskProgress? taskProgress;
           if (entity.kind == PlannerEntityKind.habit) {
             try {
               summary = await widget.controller.habitDaySummary(
@@ -839,17 +861,31 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
               // Eligibility remains useful if one optional habit summary
               // cannot be read; the log sheet offers an explicit retry.
             }
+          } else if (entity.kind == PlannerEntityKind.oneOffTask ||
+              entity.kind == PlannerEntityKind.recurringTask) {
+            try {
+              taskProgress = await widget.controller.taskProgressForDay(entity);
+            } on Object {
+              // Preserve the visible Today projection when the optional daily
+              // occurrence read is unavailable. The entity value is a safe
+              // one-off fallback and pending for unresolved recurrence.
+              taskProgress = entity.kind == PlannerEntityKind.recurringTask
+                  ? const PlannerTaskProgress.pending()
+                  : PlannerTaskProgress.fromEntity(entity);
+            }
           }
-          return (entity, eligibility, summary);
+          return (entity, eligibility, summary, taskProgress);
         }),
       );
       if (!mounted || _requestedTodayProjection != signature) return;
       final eligible = <PlannerEntity>[];
       final byId = <String, PlannerTodayEligibility>{};
       final habitSummaries = <String, PlannerHabitDaySummary>{};
-      for (final (entity, result, summary) in results) {
+      final taskProgress = <String, PlannerTaskProgress>{};
+      for (final (entity, result, summary, progress) in results) {
         byId[entity.id] = result;
         if (summary != null) habitSummaries[entity.id] = summary;
+        if (progress != null) taskProgress[entity.id] = progress;
         if (result.isEligible) eligible.add(entity);
       }
       _sortAgenda(eligible);
@@ -858,6 +894,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         _projectedTodayItems = eligible;
         _todayEligibilityById = byId;
         _habitDaySummaryById = habitSummaries;
+        _todayTaskProgressById = taskProgress;
       });
     } on Object {
       if (!mounted || _requestedTodayProjection != signature) return;
@@ -867,6 +904,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         _projectedTodayItems = fallback;
         _todayEligibilityById = const <String, PlannerTodayEligibility>{};
         _habitDaySummaryById = const <String, PlannerHabitDaySummary>{};
+        _todayTaskProgressById = const <String, PlannerTaskProgress>{};
       });
     }
   }
@@ -2895,10 +2933,9 @@ class _CaptureActionDisc extends StatelessWidget {
   );
 }
 
-/// The expanded Windows surface is a single working instrument rather than a
-/// row of fixed sidebars. The Compass and Stream keep a continuous visual axis;
-/// item detail joins that instrument only when requested and only as a third
-/// pane when the live constraints can sustain it.
+/// The expanded Windows surface keeps one bounded orientation instrument above
+/// a dominant, continuously actionable stream. Item detail joins only when the
+/// live constraints can sustain it.
 class _ExpandedTodayDeck extends StatelessWidget {
   const _ExpandedTodayDeck({
     required this.controller,
@@ -2906,7 +2943,9 @@ class _ExpandedTodayDeck extends StatelessWidget {
     required this.items,
     required this.eligibilityById,
     required this.habitSummaryById,
-    required this.orbitMotionEnabled,
+    required this.taskProgressById,
+    required this.projectionResolved,
+    required this.nowProvider,
     required this.inspected,
     required this.onInspect,
     required this.onAdd,
@@ -2920,7 +2959,9 @@ class _ExpandedTodayDeck extends StatelessWidget {
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
-  final bool orbitMotionEnabled;
+  final Map<String, PlannerTaskProgress> taskProgressById;
+  final bool projectionResolved;
+  final PerfectNow nowProvider;
   final PlannerEntity? inspected;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
@@ -2939,19 +2980,24 @@ class _ExpandedTodayDeck extends StatelessWidget {
         0,
         constraints.maxWidth - horizontalPadding * 2,
       );
-      final sideBySide = contentWidth >= 820 && textScale < 1.5;
       final inlineInspector =
           inspected != null && contentWidth >= 1320 && textScale < 1.35;
       final lowHeight = constraints.maxHeight < 650;
-      final stageHeight = lowHeight
-          // Preserve the Compass as a real instrument in short windows. The
-          // enclosing day scroll owns the overflow instead of shrinking the
-          // orbit into an undersized decorative summary.
-          ? 500.0
-          : (constraints.maxHeight - 96).clamp(500.0, 820.0).toDouble();
-      final compassWidth = inlineInspector
+      final visibleRows = math.min(items.length, 5);
+      final rowHeight = textScale >= 1.45 ? 108.0 : 88.0;
+      final streamHeight = (128 + visibleRows * rowHeight)
+          .clamp(300.0, 620.0)
+          .toDouble();
+      final inspectorHeight = inspected == null
           ? 0.0
-          : (contentWidth * .4).clamp(340.0, 520.0).toDouble();
+          : constraints.maxHeight >= 850
+          ? 600.0
+          : 420.0;
+      final desiredStageHeight = math.max(streamHeight, inspectorHeight);
+      final stageBudget = (constraints.maxHeight - 250)
+          .clamp(lowHeight ? 300.0 : 340.0, 700.0)
+          .toDouble();
+      final stageHeight = math.min(desiredStageHeight, stageBudget);
       final floatingInspectorWidth = (contentWidth * .3)
           .clamp(320.0, 380.0)
           .toDouble();
@@ -2982,132 +3028,80 @@ class _ExpandedTodayDeck extends StatelessWidget {
                 key: const ValueKey<String>('expanded-day-deck'),
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _DayDeckHeading(
-                    now: now,
-                    items: items,
-                    habitSummaryById: habitSummaryById,
+                  _DayDeckHeading(now: now),
+                  const SizedBox(height: PerfectSpace.md),
+                  PerfectStagedEntrance(
+                    order: 1,
+                    child: TodayPulse(
+                      snapshot: TodayPulseSnapshot.fromPlanner(
+                        items: items,
+                        taskProgressById: taskProgressById,
+                        habitSummaryById: habitSummaryById,
+                        projectionResolved: projectionResolved,
+                      ),
+                      now: nowProvider,
+                      onOpenPlan: onOpenPlan,
+                    ),
                   ),
                   const SizedBox(height: PerfectSpace.lg),
-                  if (sideBySide)
-                    SizedBox(
-                      key: const ValueKey<String>('expanded-day-deck-stage'),
-                      height: stageHeight,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              if (inlineInspector)
-                                Expanded(
-                                  flex: 10,
-                                  child: _DayCompassPanel(
-                                    items: items,
-                                    now: now,
-                                    onOpenPlan: onOpenPlan,
-                                    motionEnabled: orbitMotionEnabled,
-                                  ),
-                                )
-                              else
-                                SizedBox(
-                                  width: compassWidth,
-                                  child: _DayCompassPanel(
-                                    items: items,
-                                    now: now,
-                                    onOpenPlan: onOpenPlan,
-                                    motionEnabled: orbitMotionEnabled,
-                                  ),
-                                ),
-                              const SizedBox(width: PerfectSpace.lg),
-                              Expanded(
-                                flex: inlineInspector ? 12 : 1,
-                                child: _DayStreamPanel(
-                                  controller: controller,
-                                  items: items,
-                                  eligibilityById: eligibilityById,
-                                  habitSummaryById: habitSummaryById,
-                                  onInspect: onInspect,
-                                  onAdd: onAdd,
-                                  constrained: true,
-                                  dense: lowHeight,
-                                ),
-                              ),
-                              if (inlineInspector) ...[
-                                const SizedBox(width: PerfectSpace.lg),
-                                Expanded(flex: 8, child: inspectorPanel()),
-                              ],
-                            ],
-                          ),
-                          if (inspected != null && !inlineInspector) ...[
-                            Positioned.fill(
-                              child: BlockSemantics(
-                                child: Semantics(
-                                  button: true,
-                                  label: 'Close inspector and return to Today',
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: onClearInspection,
-                                    child: ColoredBox(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.scrim.withValues(alpha: .1),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            PositionedDirectional(
-                              key: const ValueKey<String>(
-                                'expanded-focus-panel',
-                              ),
-                              top: 0,
-                              end: 0,
-                              bottom: 0,
-                              width: floatingInspectorWidth,
-                              child: inspectorPanel(),
-                            ),
-                          ],
-                        ],
-                      ),
-                    )
-                  else
-                    Column(
-                      key: const ValueKey<String>('expanded-day-deck-stacked'),
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                  SizedBox(
+                    key: const ValueKey<String>('expanded-day-deck-stage'),
+                    height: stageHeight,
+                    child: Stack(
+                      clipBehavior: Clip.none,
                       children: [
-                        SizedBox(
-                          height: (contentWidth * .52)
-                              .clamp(460.0, 640.0)
-                              .toDouble(),
-                          child: _DayCompassPanel(
-                            items: items,
-                            now: now,
-                            onOpenPlan: onOpenPlan,
-                            motionEnabled: orbitMotionEnabled,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              flex: inlineInspector ? 12 : 1,
+                              child: _DayStreamPanel(
+                                controller: controller,
+                                items: items,
+                                eligibilityById: eligibilityById,
+                                habitSummaryById: habitSummaryById,
+                                onInspect: onInspect,
+                                onAdd: onAdd,
+                                constrained: true,
+                                dense: lowHeight,
+                              ),
+                            ),
+                            if (inlineInspector) ...[
+                              const SizedBox(width: PerfectSpace.lg),
+                              Expanded(flex: 8, child: inspectorPanel()),
+                            ],
+                          ],
+                        ),
+                        if (inspected != null && !inlineInspector) ...[
+                          Positioned.fill(
+                            child: BlockSemantics(
+                              child: Semantics(
+                                button: true,
+                                label: 'Close inspector and return to Today',
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: onClearInspection,
+                                  child: ColoredBox(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.scrim.withValues(alpha: .1),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: PerfectSpace.lg),
-                        _DayStreamPanel(
-                          controller: controller,
-                          items: items,
-                          eligibilityById: eligibilityById,
-                          habitSummaryById: habitSummaryById,
-                          onInspect: onInspect,
-                          onAdd: onAdd,
-                          constrained: false,
-                          dense: false,
-                        ),
-                        if (inspected != null) ...[
-                          const SizedBox(height: PerfectSpace.lg),
-                          SizedBox(
-                            height: (constraints.maxHeight * .76)
-                                .clamp(480.0, 640.0)
-                                .toDouble(),
+                          PositionedDirectional(
+                            key: const ValueKey<String>('expanded-focus-panel'),
+                            top: 0,
+                            end: 0,
+                            bottom: 0,
+                            width: floatingInspectorWidth,
                             child: inspectorPanel(),
                           ),
                         ],
                       ],
                     ),
+                  ),
                 ],
               ),
             ),
@@ -3121,10 +3115,8 @@ class _ExpandedTodayDeck extends StatelessWidget {
 /// The medium-width Today composition is intentionally its own surface.
 ///
 /// A tablet is not a stretched phone and it is not a desktop with two narrow
-/// fragments pinned to opposite corners. This deck uses the live viewport to
-/// create one coherent stage: a meaningful Day Compass and an operational Day
-/// Stream. At constrained widths or large text scales the same content reflows
-/// into one reading column without changing its state or interaction model.
+/// fragments pinned to opposite corners. The bounded Today Pulse and operational
+/// stream share one content axis and reflow without changing state.
 class _MediumTodayDeck extends StatelessWidget {
   const _MediumTodayDeck({
     required this.controller,
@@ -3132,7 +3124,9 @@ class _MediumTodayDeck extends StatelessWidget {
     required this.items,
     required this.eligibilityById,
     required this.habitSummaryById,
-    required this.orbitMotionEnabled,
+    required this.taskProgressById,
+    required this.projectionResolved,
+    required this.nowProvider,
     required this.onInspect,
     required this.onAdd,
     required this.onOpenPlan,
@@ -3144,7 +3138,9 @@ class _MediumTodayDeck extends StatelessWidget {
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
-  final bool orbitMotionEnabled;
+  final Map<String, PlannerTaskProgress> taskProgressById;
+  final bool projectionResolved;
+  final PerfectNow nowProvider;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
   final VoidCallback onOpenPlan;
@@ -3162,29 +3158,21 @@ class _MediumTodayDeck extends StatelessWidget {
           0,
           constraints.maxWidth - horizontalPadding * 2,
         );
-        // The content itself decides when two panes remain genuinely useful.
-        // A 768dp tablet gets one generous reading column; at 900dp the
-        // compact and expanded rail states can both sustain the two-pane
-        // instrument + stream relationship.
-        final sideBySide =
-            constraints.maxWidth >= 760 &&
-            contentWidth >= 700 &&
-            textScale < 1.45;
         final lowHeight = constraints.maxHeight < 720;
-        final stageHeight = shortLandscape
-            ? (constraints.maxHeight * .94).clamp(300.0, 430.0)
-            : lowHeight
-            ? (constraints.maxHeight - 112).clamp(420.0, 620.0)
-            : math.min(
-                (constraints.maxHeight - 72).clamp(560.0, 850.0),
-                (contentWidth * .98).clamp(560.0, 780.0),
-              );
-        final compassWidth = sideBySide
-            ? (contentWidth * .45).clamp(292.0, 410.0).toDouble()
-            : contentWidth.toDouble();
-        final compassPanelHeight = math.min(
-          stageHeight,
-          (compassWidth + 140).clamp(512.0, 560.0),
+        final visibleRows = math.min(items.length, 5);
+        final rowHeight = textScale >= 1.45 ? 112.0 : 92.0;
+        final desiredStageHeight = (128 + visibleRows * rowHeight)
+            .clamp(270.0, 620.0)
+            .toDouble();
+        final verticalBudget = shortLandscape
+            ? (constraints.maxHeight * .68).clamp(270.0, 420.0).toDouble()
+            : (constraints.maxHeight - (lowHeight ? 280 : 320))
+                  .clamp(290.0, 650.0)
+                  .toDouble();
+        final widthBudget = (contentWidth * .78).clamp(290.0, 650.0).toDouble();
+        final stageHeight = math.min(
+          desiredStageHeight,
+          math.min(verticalBudget, widthBudget),
         );
 
         return CustomScrollView(
@@ -3202,77 +3190,37 @@ class _MediumTodayDeck extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _DayDeckHeading(
-                      now: now,
-                      items: items,
-                      habitSummaryById: habitSummaryById,
+                    _DayDeckHeading(now: now),
+                    const SizedBox(height: PerfectSpace.md),
+                    PerfectStagedEntrance(
+                      order: 1,
+                      child: TodayPulse(
+                        snapshot: TodayPulseSnapshot.fromPlanner(
+                          items: items,
+                          taskProgressById: taskProgressById,
+                          habitSummaryById: habitSummaryById,
+                          projectionResolved: projectionResolved,
+                        ),
+                        now: nowProvider,
+                        onOpenPlan: onOpenPlan,
+                        shortLandscape: shortLandscape,
+                      ),
                     ),
                     const SizedBox(height: PerfectSpace.lg),
-                    if (sideBySide)
-                      SizedBox(
-                        key: const ValueKey<String>('medium-day-deck'),
-                        height: stageHeight,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: compassWidth,
-                              height: compassPanelHeight,
-                              child: _DayCompassPanel(
-                                items: items,
-                                now: now,
-                                onOpenPlan: onOpenPlan,
-                                motionEnabled: orbitMotionEnabled,
-                              ),
-                            ),
-                            const SizedBox(width: PerfectSpace.lg),
-                            Expanded(
-                              child: SizedBox(
-                                height: stageHeight,
-                                child: _DayStreamPanel(
-                                  controller: controller,
-                                  items: items,
-                                  eligibilityById: eligibilityById,
-                                  habitSummaryById: habitSummaryById,
-                                  onInspect: onInspect,
-                                  onAdd: onAdd,
-                                  constrained: true,
-                                  dense: lowHeight,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    else
-                      Column(
-                        key: const ValueKey<String>('medium-day-deck'),
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          SizedBox(
-                            height: shortLandscape
-                                ? stageHeight
-                                : (contentWidth * .72).clamp(390.0, 530.0),
-                            child: _DayCompassPanel(
-                              items: items,
-                              now: now,
-                              onOpenPlan: onOpenPlan,
-                              motionEnabled: orbitMotionEnabled,
-                            ),
-                          ),
-                          const SizedBox(height: PerfectSpace.lg),
-                          _DayStreamPanel(
-                            controller: controller,
-                            items: items,
-                            eligibilityById: eligibilityById,
-                            habitSummaryById: habitSummaryById,
-                            onInspect: onInspect,
-                            onAdd: onAdd,
-                            constrained: false,
-                            dense: shortLandscape || lowHeight,
-                          ),
-                        ],
+                    SizedBox(
+                      key: const ValueKey<String>('medium-day-deck'),
+                      height: stageHeight,
+                      child: _DayStreamPanel(
+                        controller: controller,
+                        items: items,
+                        eligibilityById: eligibilityById,
+                        habitSummaryById: habitSummaryById,
+                        onInspect: onInspect,
+                        onAdd: onAdd,
+                        constrained: true,
+                        dense: shortLandscape || lowHeight,
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -3285,197 +3233,38 @@ class _MediumTodayDeck extends StatelessWidget {
 }
 
 class _DayDeckHeading extends StatelessWidget {
-  const _DayDeckHeading({
-    required this.now,
-    required this.items,
-    required this.habitSummaryById,
-  });
+  const _DayDeckHeading({required this.now});
 
   final DateTime now;
-  final List<PlannerEntity> items;
-  final Map<String, PlannerHabitDaySummary> habitSummaryById;
 
   @override
-  Widget build(BuildContext context) {
-    final completed = items.where((item) {
-      if (item.kind == PlannerEntityKind.oneOffTask) {
-        return PlannerTaskProgress.fromEntity(item).isComplete;
-      }
-      return habitSummaryById[item.id]?.state == PlannerHabitDayState.completed;
-    }).length;
-    final loggedHabits = habitSummaryById.values
-        .where((summary) => summary.hasLog)
-        .length;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
-        final stacked = constraints.maxWidth < 610 || textScale >= 1.45;
-        final title = Column(
-          key: const ValueKey<String>('day-deck-heading'),
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _greeting(now),
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.w800,
-                letterSpacing: -.7,
-              ),
-            ),
-          ],
-        );
-        final metrics = Wrap(
-          spacing: PerfectSpace.xs,
-          runSpacing: PerfectSpace.xs,
-          alignment: WrapAlignment.end,
-          children: [
-            _DeckMetric(
-              icon: Icons.route_rounded,
-              value: '${items.length}',
-              label: 'planned',
-              color: PerfectSemanticTheme.of(context).primary,
-              background: PerfectSemanticTheme.of(context).primaryContainer,
-            ),
-            _DeckMetric(
-              icon: Icons.done_all_rounded,
-              value: '$completed',
-              label: 'complete',
-              color: PerfectSemanticTheme.of(context).secondary,
-              background: PerfectSemanticTheme.of(context).secondaryContainer,
-            ),
-            _DeckMetric(
-              icon: Icons.spa_outlined,
-              value: '$loggedHabits',
-              label: 'habits',
-              color: PerfectSemanticTheme.of(context).tertiary,
-              background: PerfectSemanticTheme.of(context).tertiaryContainer,
-            ),
-          ],
-        );
-        if (stacked) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              title,
-              const SizedBox(height: PerfectSpace.md),
-              metrics,
-            ],
-          );
-        }
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(child: title),
-            const SizedBox(width: PerfectSpace.lg),
-            Flexible(child: metrics),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _DeckMetric extends StatelessWidget {
-  const _DeckMetric({
-    required this.icon,
-    required this.value,
-    required this.label,
-    required this.color,
-    required this.background,
-  });
-
-  final IconData icon;
-  final String value;
-  final String label;
-  final Color color;
-  final Color background;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    label: '$value $label',
-    child: ExcludeSemantics(
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: PerfectSpace.sm,
-          vertical: PerfectSpace.xs,
-        ),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 17, color: color),
-            const SizedBox(width: 6),
-            Text(
-              value,
-              style: Theme.of(
-                context,
-              ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-class _DayCompassPanel extends StatelessWidget {
-  const _DayCompassPanel({
-    required this.items,
-    required this.now,
-    required this.onOpenPlan,
-    required this.motionEnabled,
-  });
-
-  final List<PlannerEntity> items;
-  final DateTime now;
-  final VoidCallback onOpenPlan;
-  final bool motionEnabled;
-
-  @override
-  Widget build(BuildContext context) => DecoratedBox(
-    key: const ValueKey<String>('day-compass-panel'),
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(30),
-      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(PerfectSpace.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _DayZoneHeading(
-            eyebrow: 'DAY COMPASS',
-            title: 'Your rhythm, at a glance',
-            icon: Icons.explore_outlined,
-            color: PerfectSemanticTheme.of(context).primary,
-            action: IconButton(
-              tooltip: 'Open day plan',
-              onPressed: onOpenPlan,
-              icon: const Icon(Icons.arrow_outward_rounded),
-            ),
+  Widget build(BuildContext context) => PerfectStagedEntrance(
+    order: 0,
+    duration: PerfectMotion.standard,
+    rise: PerfectMotion.titleRise,
+    child: Column(
+      key: const ValueKey<String>('day-deck-heading'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'TODAY',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: PerfectSemanticTheme.of(context).muted,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.7,
           ),
-          const SizedBox(height: PerfectSpace.sm),
-          Expanded(
-            child: OrbitStage(
-              items: items,
-              compact: true,
-              now: now,
-              onTap: onOpenPlan,
-              motionEnabled: motionEnabled,
-            ),
+        ),
+        const SizedBox(height: PerfectSpace.xxs),
+        Text(
+          _greeting(now),
+          maxLines: 2,
+          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -.7,
+            height: 1.08,
           ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }
@@ -3509,11 +3298,6 @@ class _DayStreamPanel extends StatelessWidget {
         title: 'Today’s flow',
         icon: Icons.view_timeline_outlined,
         color: PerfectSemanticTheme.of(context).secondary,
-        action: FilledButton.tonalIcon(
-          onPressed: onAdd,
-          icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('Plan'),
-        ),
       ),
       SizedBox(height: dense ? PerfectSpace.xs : PerfectSpace.md),
       if (items.isEmpty)
@@ -3526,17 +3310,6 @@ class _DayStreamPanel extends StatelessWidget {
           habitSummaryById: habitSummaryById,
           onInspect: onInspect,
         ),
-      SizedBox(height: dense ? PerfectSpace.xs : PerfectSpace.md),
-      _DayStreamZone(
-        key: const ValueKey<String>('day-stream-habit-zone'),
-        color: PerfectSemanticTheme.of(context).secondaryContainer,
-        icon: Icons.spa_outlined,
-        title: 'Habit pulse',
-        dense: dense,
-        child: _HabitPulse(controller: controller, summaries: habitSummaryById),
-      ),
-      SizedBox(height: dense ? PerfectSpace.xs : PerfectSpace.sm),
-      _NextUpZone(items: items, dense: dense),
     ];
     return DecoratedBox(
       key: const ValueKey<String>('day-stream-panel'),
@@ -3555,50 +3328,17 @@ class _DayStreamPanel extends StatelessWidget {
                       key: const PageStorageKey<String>('day-stream-scroll'),
                       slivers: [
                         SliverList.list(children: body),
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                top: dense ? PerfectSpace.xs : PerfectSpace.sm,
-                                bottom: dense
-                                    ? PerfectSpace.sm
-                                    : PerfectSpace.xxs,
-                              ),
-                              child: _DayCompletionZone(
-                                items: items,
-                                habitSummaryById: habitSummaryById,
-                                dense: dense,
-                                fill: !dense,
-                              ),
-                            ),
-                          ),
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: PerfectSpace.sm),
                         ),
                       ],
                     ),
                   ),
-                  if (dense) ...[
-                    const SizedBox(height: PerfectSpace.xxs),
-                    const Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: IgnorePointer(child: _StreamContinuationCue()),
-                    ),
-                  ],
                 ],
               )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ...body,
-                  SizedBox(height: dense ? PerfectSpace.xs : PerfectSpace.sm),
-                  _DayCompletionZone(
-                    items: items,
-                    habitSummaryById: habitSummaryById,
-                    dense: dense,
-                    fill: false,
-                  ),
-                ],
+                children: body,
               ),
       ),
     );
@@ -3611,14 +3351,12 @@ class _DayZoneHeading extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.color,
-    this.action,
   });
 
   final String eyebrow;
   final String title;
   final IconData icon;
   final Color color;
-  final Widget? action;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -3660,46 +3398,7 @@ class _DayZoneHeading extends StatelessWidget {
           ],
         ),
       ),
-      if (action != null) ...[const SizedBox(width: PerfectSpace.xs), action!],
     ],
-  );
-}
-
-class _StreamContinuationCue extends StatelessWidget {
-  const _StreamContinuationCue();
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    label: 'More day details below',
-    child: ExcludeSemantics(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(99),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).colorScheme.shadow.withValues(alpha: .1),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('More'),
-              SizedBox(width: 3),
-              Icon(Icons.keyboard_arrow_down_rounded, size: 17),
-            ],
-          ),
-        ),
-      ),
-    ),
   );
 }
 
@@ -3792,256 +3491,6 @@ class _DayStreamTimeline extends StatelessWidget {
   );
 }
 
-class _DayStreamZone extends StatelessWidget {
-  const _DayStreamZone({
-    super.key,
-    required this.color,
-    required this.icon,
-    required this.title,
-    required this.child,
-    this.dense = false,
-  });
-
-  final Color color;
-  final IconData icon;
-  final String title;
-  final Widget child;
-  final bool dense;
-
-  @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      color: color,
-      borderRadius: BorderRadius.circular(dense ? 18 : 22),
-    ),
-    child: Padding(
-      padding: EdgeInsets.all(dense ? PerfectSpace.sm : PerfectSpace.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 18, color: PerfectSemanticTheme.of(context).ink),
-              const SizedBox(width: PerfectSpace.xs),
-              Text(
-                title,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
-              ),
-            ],
-          ),
-          SizedBox(height: dense ? PerfectSpace.xs : PerfectSpace.sm),
-          child,
-        ],
-      ),
-    ),
-  );
-}
-
-class _NextUpZone extends StatelessWidget {
-  const _NextUpZone({required this.items, required this.dense});
-
-  final List<PlannerEntity> items;
-  final bool dense;
-
-  @override
-  Widget build(BuildContext context) {
-    final next = items.isEmpty ? null : items.first;
-    return _DayStreamZone(
-      key: const ValueKey<String>('day-stream-next-zone'),
-      color: PerfectSemanticTheme.of(context).tertiaryContainer,
-      icon: Icons.bolt_rounded,
-      title: 'Next up',
-      dense: dense,
-      child: next == null
-          ? Text(
-              'The runway is clear. Add a moment when you need one.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            )
-          : Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        next.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w800),
-                      ),
-                      const SizedBox(height: PerfectSpace.xxs),
-                      Text(
-                        next.scheduledAt == null
-                            ? 'Ready whenever you are'
-                            : 'Starts ${_shortTime(next.scheduledAt!.toLocal())}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (!dense) ...[
-                  const SizedBox(width: PerfectSpace.sm),
-                  const Icon(Icons.arrow_forward_rounded),
-                ],
-              ],
-            ),
-    );
-  }
-}
-
-class _DayCompletionZone extends StatelessWidget {
-  const _DayCompletionZone({
-    required this.items,
-    required this.habitSummaryById,
-    required this.dense,
-    required this.fill,
-  });
-
-  final List<PlannerEntity> items;
-  final Map<String, PlannerHabitDaySummary> habitSummaryById;
-  final bool dense;
-  final bool fill;
-
-  @override
-  Widget build(BuildContext context) {
-    final completed = items.where((item) {
-      if (item.kind == PlannerEntityKind.oneOffTask) {
-        return PlannerTaskProgress.fromEntity(item).isComplete;
-      }
-      return habitSummaryById[item.id]?.state == PlannerHabitDayState.completed;
-    }).length;
-    final progress = items.isEmpty ? 0.0 : completed / items.length;
-    final remaining = math.max(0, items.length - completed);
-    return DecoratedBox(
-      key: const ValueKey<String>('day-stream-signal-zone'),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(dense ? 18 : 22),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(dense ? PerfectSpace.sm : PerfectSpace.md),
-        child: Column(
-          mainAxisSize: fill ? MainAxisSize.max : MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.radar_rounded, size: 18),
-                const SizedBox(width: PerfectSpace.xs),
-                Expanded(
-                  child: Text(
-                    'Day signal',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-                Text(
-                  items.isEmpty ? 'Clear' : '${(progress * 100).round()}%',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900),
-                ),
-              ],
-            ),
-            SizedBox(height: dense ? PerfectSpace.xs : PerfectSpace.sm),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(99),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 8,
-                color: PerfectSemanticTheme.of(context).secondary,
-                backgroundColor: Theme.of(context).colorScheme.outlineVariant,
-              ),
-            ),
-            if (!dense) ...[
-              if (fill) ...[
-                const Spacer(),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _SignalMeasure(
-                        value: '$remaining',
-                        label: 'open',
-                        color: PerfectSemanticTheme.of(context).primary,
-                      ),
-                    ),
-                    const SizedBox(width: PerfectSpace.sm),
-                    Expanded(
-                      child: _SignalMeasure(
-                        value: '$completed',
-                        label: 'complete',
-                        color: PerfectSemanticTheme.of(context).secondary,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-              ] else
-                const SizedBox(height: PerfectSpace.xs),
-              Text(
-                items.isEmpty
-                    ? 'Nothing is asking for your attention right now.'
-                    : remaining == 0
-                    ? 'The day is complete. Leave some room to land.'
-                    : '$remaining ${remaining == 1 ? 'moment' : 'moments'} still open.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SignalMeasure extends StatelessWidget {
-  const _SignalMeasure({
-    required this.value,
-    required this.label,
-    required this.color,
-  });
-
-  final String value;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surface,
-      borderRadius: BorderRadius.circular(18),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(PerfectSpace.sm),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
 class _DayStreamEmpty extends StatelessWidget {
   const _DayStreamEmpty({required this.onAdd});
 
@@ -4064,7 +3513,7 @@ class _DayStreamEmpty extends StatelessWidget {
           ),
           const SizedBox(height: PerfectSpace.xs),
           Text(
-            'A quiet orbit.',
+            'Your day has room.',
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -4085,130 +3534,97 @@ class _DayStreamEmpty extends StatelessWidget {
 class _TodayPage extends StatelessWidget {
   const _TodayPage({
     required this.controller,
-    required this.includeOrbit,
-    required this.now,
     required this.nowProvider,
     required this.ownerDisplayName,
     required this.items,
     required this.eligibilityById,
     required this.habitSummaryById,
-    required this.orbitMotionEnabled,
+    required this.taskProgressById,
+    required this.projectionResolved,
     required this.onInspect,
     required this.onAdd,
     required this.onOpenPlan,
+    required this.shortLandscape,
   });
 
   final PlannerWorkspaceController controller;
-  final bool includeOrbit;
-  final DateTime now;
   final PerfectNow nowProvider;
   final String? ownerDisplayName;
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
-  final bool orbitMotionEnabled;
+  final Map<String, PlannerTaskProgress> taskProgressById;
+  final bool projectionResolved;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
   final VoidCallback onOpenPlan;
+  final bool shortLandscape;
 
   @override
-  Widget build(BuildContext context) {
-    final bodySize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
-    final textScale =
-        MediaQuery.textScalerOf(context).scale(bodySize) / bodySize;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // The dial is the primary orienting surface on Today. It earns a real
-        // circular budget on a phone, then explicitly becomes a compact linear
-        // summary once live constraints or enlarged type can no longer carry it.
-        final availableOrbitWidth = math.max(
-          0.0,
-          constraints.maxWidth - PerfectSpace.lg * 2,
-        );
-        // The dial is deliberately allowed to reach the viewport edges while
-        // the cards retain their readable inset. That reproduces the visual
-        // instrument of the approved reference without hard-coding a phone
-        // width, and still lets the layout fall back for enlarged text.
-        final viewportOrbitWidth = availableOrbitWidth + PerfectSpace.lg * 2;
-        final canCarryDial = viewportOrbitWidth >= 300 && textScale < 1.42;
-        final orbitHeight = canCarryDial
-            ? math
-                  .min(viewportOrbitWidth * .91, constraints.maxHeight * .56)
-                  .clamp(300.0, 440.0)
-                  .toDouble()
-            : math
-                  .max(
-                    constraints.maxHeight * .22,
-                    170 + math.max(0, textScale - 1) * 80,
-                  )
-                  .clamp(170.0, 280.0)
-                  .toDouble();
-        return ListView(
-          key: const ValueKey<String>('perfect-today-scroll'),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: EdgeInsets.fromLTRB(
-            PerfectSpace.lg,
-            0,
-            PerfectSpace.lg,
-            math.max(144, MediaQuery.paddingOf(context).bottom + 128),
+  Widget build(BuildContext context) => ListView(
+    key: const PageStorageKey<String>('perfect-today-scroll'),
+    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+    padding: EdgeInsets.fromLTRB(
+      PerfectSpace.lg,
+      0,
+      PerfectSpace.lg,
+      math.max(152, MediaQuery.paddingOf(context).bottom + 136),
+    ),
+    children: [
+      PerfectStagedEntrance(
+        order: 0,
+        duration: PerfectMotion.standard,
+        rise: PerfectMotion.titleRise,
+        child: _CompactTodayIntro(
+          now: nowProvider,
+          ownerDisplayName: ownerDisplayName,
+        ),
+      ),
+      const SizedBox(height: PerfectSpace.md),
+      PerfectStagedEntrance(
+        order: 1,
+        child: TodayPulse(
+          snapshot: TodayPulseSnapshot.fromPlanner(
+            items: items,
+            taskProgressById: taskProgressById,
+            habitSummaryById: habitSummaryById,
+            projectionResolved: projectionResolved,
           ),
-          children: [
-            PerfectStagedEntrance(
-              duration: PerfectMotion.standard,
-              rise: PerfectMotion.titleRise,
-              child: _CompactTodayIntro(
-                now: nowProvider,
-                ownerDisplayName: ownerDisplayName,
-              ),
-            ),
-            if (includeOrbit) ...[
-              SizedBox(
-                height: orbitHeight,
-                child: OverflowBox(
-                  alignment: Alignment.topCenter,
-                  minWidth: viewportOrbitWidth,
-                  maxWidth: viewportOrbitWidth,
-                  child: SizedBox(
-                    width: viewportOrbitWidth,
-                    height: orbitHeight,
-                    child: OrbitStage(
-                      items: items,
-                      compact: true,
-                      now: now,
-                      onTap: onOpenPlan,
-                      motionEnabled: orbitMotionEnabled,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: PerfectSpace.sm),
-            _TodayNextUpCard(now: now, items: items, onInspect: onInspect),
-            const SizedBox(height: 0),
-            if (items.isEmpty)
-              _EmptyState(
-                icon: Icons.wb_sunny_outlined,
-                title: 'A quiet orbit.',
-                body: 'Capture the first thing you want to make space for.',
-                actionLabel: 'Add a task',
-                onAction: onAdd,
-              )
-            else
-              ...items.indexed.map(
-                (entry) => _AgendaRow(
-                  entity: entry.$2,
-                  controller: controller,
-                  onInspect: onInspect,
-                  todayEligibility: eligibilityById[entry.$2.id],
-                  habitSummary: habitSummaryById[entry.$2.id],
-                  referenceStyle: true,
-                ),
-              ),
-          ],
-        );
-      },
-    );
-  }
+          now: nowProvider,
+          onOpenPlan: onOpenPlan,
+          shortLandscape: shortLandscape,
+        ),
+      ),
+      const SizedBox(height: PerfectSpace.lg),
+      PerfectStagedEntrance(
+        order: 2,
+        child: Text(
+          'YOUR DAY',
+          key: const ValueKey<String>('compact-day-stream-heading'),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: PerfectSemanticTheme.of(context).muted,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.7,
+          ),
+        ),
+      ),
+      const SizedBox(height: PerfectSpace.xs),
+      if (items.isEmpty)
+        _DayStreamEmpty(onAdd: onAdd)
+      else
+        ...items.map(
+          (entity) => _AgendaRow(
+            key: ValueKey<String>('compact-day-row-${entity.id}'),
+            entity: entity,
+            controller: controller,
+            onInspect: onInspect,
+            todayEligibility: eligibilityById[entity.id],
+            habitSummary: habitSummaryById[entity.id],
+            referenceStyle: true,
+          ),
+        ),
+    ],
+  );
 }
 
 class _CompactTodayIntro extends StatelessWidget {
@@ -4229,6 +3645,15 @@ class _CompactTodayIntro extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
+            'TODAY',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: PerfectSemanticTheme.of(context).muted,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.7,
+            ),
+          ),
+          const SizedBox(height: PerfectSpace.xxs),
+          Text(
             _greeting(current, ownerDisplayName: ownerDisplayName),
             maxLines: 2,
             style: theme.textTheme.headlineMedium?.copyWith(
@@ -4240,198 +3665,7 @@ class _CompactTodayIntro extends StatelessWidget {
               height: 1.1,
             ),
           ),
-          const SizedBox(height: PerfectSpace.xxs),
-          PerfectDualDateClock.value(value: current),
         ],
-      ),
-    );
-  }
-}
-
-/// The hand-off from the time dial to the actionable list. It intentionally
-/// repeats only the single next commitment, so the page reads dial → next move
-/// → complete day without introducing a generic card grid.
-class _TodayNextUpCard extends StatelessWidget {
-  const _TodayNextUpCard({
-    required this.now,
-    required this.items,
-    required this.onInspect,
-  });
-
-  final DateTime now;
-  final List<PlannerEntity> items;
-  final ValueChanged<PlannerEntity> onInspect;
-
-  PlannerEntity? get _next {
-    final open =
-        items
-            .where((item) => item.status != PlannerEntityStatus.completed)
-            .toList(growable: false)
-          ..sort((a, b) {
-            final first = a.scheduledAt?.toLocal();
-            final second = b.scheduledAt?.toLocal();
-            if (first == null && second == null) return 0;
-            if (first == null) return 1;
-            if (second == null) return -1;
-            return first.compareTo(second);
-          });
-    for (final item in open) {
-      final scheduled = item.scheduledAt?.toLocal();
-      if (scheduled != null && !scheduled.isBefore(now)) return item;
-    }
-    return open.isEmpty ? null : open.first;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final entity = _next;
-    final scheme = Theme.of(context).colorScheme;
-    final time = entity?.scheduledAt?.toLocal();
-    final label = entity == null ? 'SPACE OPEN' : 'NEXT UP';
-    final title = entity?.title ?? 'Create room for what matters';
-    final detail = entity == null
-        ? 'Your day is clear'
-        : time == null
-        ? 'When you are ready'
-        : _shortTime(time);
-    final baseSize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
-    final textScale =
-        MediaQuery.textScalerOf(context).scale(baseSize) / baseSize;
-    final reflow = textScale >= 1.45;
-    Widget leadingIcon() => Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(
-        color: PerfectSemanticTheme.of(context).tertiary,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        Icons.track_changes_rounded,
-        color: PerfectSemanticTheme.of(context).onTertiary,
-        size: 21,
-      ),
-    );
-    Widget detailLine({bool includeChevron = false}) => Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          Icons.schedule_outlined,
-          size: 17,
-          color: PerfectSemanticTheme.of(context).tertiary,
-        ),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(
-            detail,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: PerfectSemanticTheme.of(context).tertiary,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        if (includeChevron) ...[
-          const SizedBox(width: PerfectSpace.xxs),
-          Icon(
-            Icons.chevron_right_rounded,
-            size: 24,
-            color: scheme.onSurfaceVariant,
-          ),
-        ],
-      ],
-    );
-    Widget titleBlock({required bool includeDetail}) => Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          maxLines: 1,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: PerfectSemanticTheme.of(context).tertiary,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            letterSpacing: .9,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          title,
-          maxLines: includeDetail ? 3 : 1,
-          overflow: TextOverflow.ellipsis,
-          textDirection: _textDirection(title),
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontSize: 15,
-            height: 1.1,
-            letterSpacing: -.35,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        if (includeDetail) ...[const SizedBox(height: 6), detailLine()],
-      ],
-    );
-    return Semantics(
-      button: entity != null,
-      label: '$label. $title. $detail',
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(30),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: entity == null ? null : () => onInspect(entity),
-          borderRadius: BorderRadius.circular(30),
-          child: Ink(
-            // This is a hand-off, not a dashboard card. At ordinary type it
-            // stays compact; enlarged type earns intrinsic height and a
-            // vertical information flow instead of clipping primary copy.
-            height: reflow ? null : 60,
-            decoration: BoxDecoration(
-              color: scheme.surface.withValues(alpha: .76),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: scheme.outlineVariant),
-              boxShadow: <BoxShadow>[
-                BoxShadow(
-                  color: scheme.shadow.withValues(alpha: .035),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            padding: EdgeInsetsDirectional.fromSTEB(
-              PerfectSpace.sm,
-              reflow ? PerfectSpace.sm : 6,
-              PerfectSpace.xs,
-              reflow ? PerfectSpace.sm : 6,
-            ),
-            child: reflow
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      leadingIcon(),
-                      const SizedBox(width: PerfectSpace.sm),
-                      Expanded(child: titleBlock(includeDetail: true)),
-                      const SizedBox(width: PerfectSpace.xxs),
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        size: 28,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ],
-                  )
-                : Row(
-                    children: [
-                      leadingIcon(),
-                      const SizedBox(width: PerfectSpace.xs),
-                      Expanded(child: titleBlock(includeDetail: false)),
-                      const SizedBox(width: PerfectSpace.xs),
-                      Flexible(child: detailLine(includeChevron: true)),
-                    ],
-                  ),
-          ),
-        ),
       ),
     );
   }
@@ -5944,6 +5178,7 @@ class _PageTitle extends StatelessWidget {
 
 class _AgendaRow extends StatelessWidget {
   const _AgendaRow({
+    super.key,
     required this.entity,
     required this.controller,
     required this.onInspect,
@@ -7494,43 +6729,6 @@ Future<void> _cycleTaskProgressWithFeedback(
   }
 }
 
-class _HabitPulse extends StatelessWidget {
-  const _HabitPulse({required this.controller, required this.summaries});
-
-  final PlannerWorkspaceController controller;
-  final Map<String, PlannerHabitDaySummary> summaries;
-
-  @override
-  Widget build(BuildContext context) {
-    final habits = controller.habits;
-    if (habits.isEmpty) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(PerfectSpace.md),
-          child: Text(
-            'Habits live here when you are ready—rest days and recovery rules included.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ),
-      );
-    }
-    return Wrap(
-      spacing: PerfectSpace.sm,
-      runSpacing: PerfectSpace.sm,
-      children: habits
-          .take(4)
-          .map(
-            (habit) => _HabitChip(
-              habit: habit,
-              controller: controller,
-              summary: summaries[habit.id],
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
 class _HabitCard extends StatelessWidget {
   const _HabitCard({
     required this.habit,
@@ -7836,30 +7034,6 @@ Color _habitSummaryColor(PlannerHabitDayState? state, BuildContext context) =>
       _ => Theme.of(context).colorScheme.onSurfaceVariant,
     };
 
-String _habitSummaryCompact(
-  PlannerHabitDaySummary? summary,
-  PlannerEntity habit,
-) {
-  if (summary == null || summary.isPending && !summary.hasLog) return 'Pending';
-  if (summary.method == 'count' || summary.method == 'duration') {
-    final unit = safeNullableJsonString(habit.tracking['unit']);
-    return '${_compactNumber(summary.amount)}${unit == null ? '' : ' $unit'}'
-        ' · ${summary.progressPercent}%';
-  }
-  if (summary.method == 'checklist') {
-    final total = _habitChecklistItems(habit).length;
-    final checked = _habitCheckedChecklistCount(summary, habit);
-    return '$checked/$total'
-        ' · ${summary.progressPercent}%';
-  }
-  return switch (summary.state) {
-    PlannerHabitDayState.completed => 'Done',
-    PlannerHabitDayState.missed => 'Not done',
-    PlannerHabitDayState.partial => '${summary.progressPercent}%',
-    PlannerHabitDayState.pending => 'Pending',
-  };
-}
-
 String _habitSummaryDetail(
   PlannerHabitDaySummary summary,
   PlannerEntity habit,
@@ -8105,36 +7279,6 @@ DateTime _dateOnly(DateTime value) =>
 String _compactNumber(double value) =>
     value == value.roundToDouble() ? value.toInt().toString() : '$value';
 
-class _HabitChip extends StatelessWidget {
-  const _HabitChip({
-    required this.habit,
-    required this.controller,
-    required this.summary,
-  });
-
-  final PlannerEntity habit;
-  final PlannerWorkspaceController controller;
-  final PlannerHabitDaySummary? summary;
-
-  @override
-  Widget build(BuildContext context) => ActionChip(
-    avatar: Icon(
-      _habitSummaryIcon(summary?.state),
-      size: 17,
-      color: _habitSummaryColor(summary?.state, context),
-    ),
-    label: Text(
-      '${habit.title} · ${_habitSummaryCompact(summary, habit)}',
-      overflow: TextOverflow.ellipsis,
-    ),
-    onPressed: () => PlannerHabitLogSheet.show(
-      context,
-      habit: habit,
-      controller: controller,
-    ),
-  );
-}
-
 class _EmptyState extends StatelessWidget {
   const _EmptyState({
     required this.icon,
@@ -8215,47 +7359,118 @@ class _Inspector extends StatelessWidget {
         builder: (context, constraints) {
           final showFocusPrompt =
               embedded && constraints.maxHeight >= 700 && entity != null;
-          return entity == null
-              ? const _InspectorEmpty()
-              : CustomScrollView(
+          final current = entity;
+          if (current == null) return const _InspectorEmpty();
+          final compactActions =
+              !showFocusPrompt && constraints.maxHeight < 520;
+
+          Widget duplicateButton() => OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: PerfectSpace.xs),
+            ),
+            onPressed: () => _duplicateAndReveal(
+              context,
+              entity: current,
+              controller: controller,
+              onReveal: onReveal,
+            ),
+            icon: const Icon(Icons.content_copy_rounded),
+            label: const Text('Duplicate', maxLines: 1),
+          );
+
+          Widget focusButton() => OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: PerfectSpace.xs),
+            ),
+            onPressed: () => FocusSessionSheet.show(
+              context,
+              controller: controller,
+              entity: current,
+            ),
+            icon: const Icon(Icons.timer_outlined),
+            label: const Text('Focus', maxLines: 1),
+          );
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Inspector',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Close inspector',
+                    onPressed: onClear,
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: PerfectSpace.sm),
+              Expanded(
+                child: CustomScrollView(
+                  key: const PageStorageKey<String>(
+                    'perfect-inspector-detail-scroll',
+                  ),
                   slivers: [
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Inspector',
-                                  style: Theme.of(context).textTheme.titleLarge,
-                                ),
-                              ),
-                              IconButton(
-                                tooltip: 'Close inspector',
-                                onPressed: onClear,
-                                icon: const Icon(Icons.close_rounded),
-                              ),
-                            ],
+                    SliverList.list(
+                      children: [
+                        Text(
+                          current.title,
+                          textDirection: _textDirection(current.title),
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: PerfectSpace.sm),
+                        Text(current.note ?? 'No note yet.'),
+                        SizedBox(
+                          height: compactActions
+                              ? PerfectSpace.sm
+                              : PerfectSpace.lg,
+                        ),
+                        if (compactActions) ...[
+                          _CompactInspectorFact(
+                            label: 'Kind',
+                            value: _kindLabel(current.kind),
                           ),
-                          const SizedBox(height: PerfectSpace.xl),
-                          Text(
-                            entity!.title,
-                            textDirection: _textDirection(entity!.title),
-                            style: Theme.of(context).textTheme.headlineSmall,
+                          _CompactInspectorFact(
+                            label: 'Recovery',
+                            value: safeJsonString(
+                              current.recovery['on_miss'],
+                              fallback: 'default',
+                            ),
                           ),
-                          const SizedBox(height: PerfectSpace.sm),
-                          Text(entity!.note ?? 'No note yet.'),
-                          const SizedBox(height: PerfectSpace.lg),
+                          _CompactInspectorFact(
+                            label: 'Sync',
+                            value: controller.syncStatus.phase.name,
+                          ),
+                          if (current.dueAt != null)
+                            _CompactInspectorFact(
+                              label: 'Deadline',
+                              value: _inspectorDateTime(current.dueAt!),
+                            ),
+                          if (safeNullableJsonString(
+                                current.payload['category'],
+                              ) !=
+                              null)
+                            _CompactInspectorFact(
+                              label: 'Category',
+                              value: safeJsonString(
+                                current.payload['category'],
+                                fallback: '',
+                              ),
+                            ),
+                        ] else ...[
                           _InspectorFact(
                             label: 'Kind',
-                            value: _kindLabel(entity!.kind),
+                            value: _kindLabel(current.kind),
                           ),
                           _InspectorFact(
                             label: 'Recovery',
                             value: safeJsonString(
-                              entity!.recovery['on_miss'],
+                              current.recovery['on_miss'],
                               fallback: 'default',
                             ),
                           ),
@@ -8263,79 +7478,64 @@ class _Inspector extends StatelessWidget {
                             label: 'Sync',
                             value: controller.syncStatus.phase.name,
                           ),
-                          if (entity!.dueAt != null)
+                          if (current.dueAt != null)
                             _InspectorFact(
                               label: 'Deadline',
-                              value: _inspectorDateTime(entity!.dueAt!),
+                              value: _inspectorDateTime(current.dueAt!),
                             ),
                           if (safeNullableJsonString(
-                                entity!.payload['category'],
+                                current.payload['category'],
                               ) !=
                               null)
                             _InspectorFact(
                               label: 'Category',
                               value: safeJsonString(
-                                entity!.payload['category'],
+                                current.payload['category'],
                                 fallback: '',
                               ),
                             ),
-                          if (entity!.customProperties.isNotEmpty)
-                            _CustomPropertyFacts(
-                              properties: entity!.customProperties,
-                            ),
-                          if (showFocusPrompt)
-                            Expanded(
-                              child: Center(
-                                child: _InspectorFocusPrompt(
-                                  entity: entity!,
-                                  controller: controller,
-                                ),
-                              ),
-                            )
-                          else
-                            const Spacer(),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton.icon(
-                              onPressed: onEdit,
-                              icon: const Icon(Icons.edit_outlined),
-                              label: const Text('Edit'),
-                            ),
-                          ),
-                          const SizedBox(height: PerfectSpace.xs),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () => _duplicateAndReveal(
-                                context,
-                                entity: entity!,
-                                controller: controller,
-                                onReveal: onReveal,
-                              ),
-                              icon: const Icon(Icons.content_copy_rounded),
-                              label: const Text('Duplicate'),
-                            ),
-                          ),
-                          if (!showFocusPrompt) ...[
-                            const SizedBox(height: PerfectSpace.xs),
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton.icon(
-                                onPressed: () => FocusSessionSheet.show(
-                                  context,
-                                  controller: controller,
-                                  entity: entity,
-                                ),
-                                icon: const Icon(Icons.timer_outlined),
-                                label: const Text('Focus'),
-                              ),
-                            ),
-                          ],
                         ],
-                      ),
+                        if (current.customProperties.isNotEmpty)
+                          _CustomPropertyFacts(
+                            properties: current.customProperties,
+                          ),
+                        if (showFocusPrompt) ...[
+                          const SizedBox(height: PerfectSpace.md),
+                          _InspectorFocusPrompt(
+                            entity: current,
+                            controller: controller,
+                          ),
+                        ],
+                        const SizedBox(height: PerfectSpace.sm),
+                      ],
                     ),
                   ],
-                );
+                ),
+              ),
+              const SizedBox(height: PerfectSpace.xs),
+              FilledButton.icon(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Edit'),
+              ),
+              const SizedBox(height: PerfectSpace.xs),
+              if (compactActions)
+                Row(
+                  children: [
+                    Expanded(child: duplicateButton()),
+                    const SizedBox(width: PerfectSpace.xs),
+                    Expanded(child: focusButton()),
+                  ],
+                )
+              else ...[
+                duplicateButton(),
+                if (!showFocusPrompt) ...[
+                  const SizedBox(height: PerfectSpace.xs),
+                  focusButton(),
+                ],
+              ],
+            ],
+          );
         },
       ),
     ),
@@ -8442,6 +7642,33 @@ class _InspectorFact extends StatelessWidget {
         Text(label, style: Theme.of(context).textTheme.labelMedium),
         const SizedBox(height: 2),
         Text(value, style: Theme.of(context).textTheme.bodyMedium),
+      ],
+    ),
+  );
+}
+
+class _CompactInspectorFact extends StatelessWidget {
+  const _CompactInspectorFact({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: PerfectSpace.xs),
+    child: Row(
+      children: [
+        Text(label, style: Theme.of(context).textTheme.labelMedium),
+        const SizedBox(width: PerfectSpace.sm),
+        Expanded(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
       ],
     ),
   );

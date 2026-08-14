@@ -94,10 +94,10 @@ void main() {
   });
 
   testWidgets(
-    'compact Orbit Day keeps navigation and quick capture reachable',
+    'compact Today Pulse keeps navigation and quick capture reachable',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
-      await _pump(tester, freezeOrbitMotion: true);
+      await _pump(tester);
 
       expect(find.text('Good morning'), findsOneWidget);
       expect(find.byType(NavigationBar), findsOneWidget);
@@ -144,7 +144,9 @@ void main() {
       final workspaceBefore = tester.state(find.byType(PerfectWorkspacePage));
       final todayScrollable = find
           .descendant(
-            of: find.byKey(const ValueKey<String>('perfect-today-scroll')),
+            of: find.byKey(
+              const PageStorageKey<String>('perfect-today-scroll'),
+            ),
             matching: find.byType(Scrollable),
           )
           .first;
@@ -312,11 +314,7 @@ void main() {
     'compact AI toggle lives inside quick capture and opens above it',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
-      await _pump(
-        tester,
-        aiClient: _WorkspaceAiClient(),
-        freezeOrbitMotion: true,
-      );
+      await _pump(tester, aiClient: _WorkspaceAiClient());
 
       await tester.tap(
         find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
@@ -440,7 +438,7 @@ void main() {
     'compact footer replaces the stock oval with one prismatic tile',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
-      await _pump(tester, freezeOrbitMotion: true);
+      await _pump(tester);
 
       final navigationTheme = tester.widget<NavigationBarTheme>(
         find.byKey(const ValueKey<String>('perfect-compact-navigation-theme')),
@@ -502,9 +500,9 @@ void main() {
       expect(wordmark.height, greaterThan(18));
       expect(wordmark.width, greaterThan(100));
       expect(heading.top, greaterThanOrEqualTo(glassHeader.bottom));
-      expect(heading.top - glassHeader.bottom, lessThan(24));
+      expect(heading.top - glassHeader.bottom, lessThanOrEqualTo(32));
       expect(
-        find.byKey(const ValueKey<String>('perfect-live-clock')),
+        find.byKey(const ValueKey<String>('today-pulse-time')),
         findsOneWidget,
       );
       expect(find.text('9:00 AM'), findsWidgets);
@@ -572,17 +570,11 @@ void main() {
         find.descendant(of: railLayout, matching: find.byType(BackdropFilter)),
         findsOneWidget,
       );
-      final compass = tester.getRect(
-        find.byKey(const ValueKey<String>('day-compass-panel')),
+      final pulse = tester.getRect(
+        find.byKey(const ValueKey<String>('today-pulse')),
       );
       final stream = tester.getRect(
         find.byKey(const ValueKey<String>('day-stream-panel')),
-      );
-      final orbit = tester.getRect(
-        find.byKey(const ValueKey<String>('orbit-circular-stage')),
-      );
-      final signal = tester.getRect(
-        find.byKey(const ValueKey<String>('day-stream-signal-zone')),
       );
       final capture = tester.getRect(
         find.byKey(const ValueKey<String>('perfect-quick-capture-surface')),
@@ -590,23 +582,13 @@ void main() {
       final aiToggle = tester.getRect(
         find.byKey(const ValueKey<String>('perfect-ai-toggle')),
       );
-      expect(compass.top, closeTo(stream.top, 1));
-      expect(compass.bottom, lessThan(stream.bottom));
-      expect(compass.right, lessThan(stream.left));
-      expect(compass.height, greaterThan(500));
-      expect(compass.height, lessThanOrEqualTo(compass.width + 170));
-      expect(compass.contains(orbit.center), isTrue);
-      expect(orbit.width, greaterThan(300));
-      expect(orbit.height, greaterThan(300));
-      expect(
-        (orbit.center.dx - compass.center.dx).abs(),
-        lessThanOrEqualTo(24),
-      );
-      expect(stream.bottom - signal.bottom, lessThanOrEqualTo(20));
-      expect(signal.height, greaterThan(180));
+      expect(pulse.bottom, lessThan(stream.top));
+      expect(pulse.left, closeTo(stream.left, 1));
+      expect(pulse.right, closeTo(stream.right, 1));
+      expect(pulse.height, inInclusiveRange(160, 320));
       expect(capture.contains(aiToggle.center), isTrue);
-      expect(compass.bottom, lessThanOrEqualTo(capture.top));
-      await _pump(tester, aiClient: aiClient, freezeOrbitMotion: true);
+      expect(stream.bottom, lessThanOrEqualTo(capture.top));
+      await _pump(tester, aiClient: aiClient);
       await expectLater(
         find.byType(PerfectWorkspacePage),
         matchesGoldenFile('../goldens/perfect_tablet_rail_compact.png'),
@@ -632,19 +614,18 @@ void main() {
       );
       expect(find.byKey(const ValueKey<String>('rail-mark')), findsNothing);
       expect(find.byType(PerfectWordmark), findsOneWidget);
-      final expandedCompass = tester.getRect(
-        find.byKey(const ValueKey<String>('day-compass-panel')),
+      final expandedPulse = tester.getRect(
+        find.byKey(const ValueKey<String>('today-pulse')),
       );
       final expandedStream = tester.getRect(
         find.byKey(const ValueKey<String>('day-stream-panel')),
       );
-      expect(expandedCompass.bottom, lessThanOrEqualTo(expandedStream.top));
-      expect(expandedCompass.left, closeTo(expandedStream.left, 1));
-      expect(expandedCompass.right, closeTo(expandedStream.right, 1));
-      expect(expandedCompass.width, greaterThan(500));
-      expect(expandedCompass.height, greaterThan(expandedCompass.width * 0.68));
+      expect(expandedPulse.bottom, lessThan(expandedStream.top));
+      expect(expandedPulse.left, closeTo(expandedStream.left, 1));
+      expect(expandedPulse.right, closeTo(expandedStream.right, 1));
+      expect(expandedPulse.width, greaterThan(500));
       expect(tester.takeException(), isNull);
-      await _pump(tester, aiClient: aiClient, freezeOrbitMotion: true);
+      await _pump(tester, aiClient: aiClient);
       await expectLater(
         find.byType(PerfectWorkspacePage),
         matchesGoldenFile('../goldens/perfect_tablet_rail_expanded.png'),
@@ -654,16 +635,14 @@ void main() {
   );
 
   testWidgets(
-    'medium Day Deck uses content-driven reflow at 768 800 900 and 1024dp',
+    'medium Today Pulse reflows at 768 800 900 and 1024dp without splitting the day',
     (tester) async {
       Future<(Rect, Rect)> layoutAt(double width) async {
         await tester.binding.setSurfaceSize(Size(width, 1200));
         await _pump(tester);
         expect(tester.takeException(), isNull);
         return (
-          tester.getRect(
-            find.byKey(const ValueKey<String>('day-compass-panel')),
-          ),
+          tester.getRect(find.byKey(const ValueKey<String>('today-pulse'))),
           tester.getRect(
             find.byKey(const ValueKey<String>('day-stream-panel')),
           ),
@@ -672,17 +651,24 @@ void main() {
 
       final narrow = await layoutAt(768);
       expect(narrow.$1.bottom, lessThan(narrow.$2.top));
+      expect(
+        find.byKey(const ValueKey<String>('today-pulse-compact')),
+        findsOneWidget,
+      );
 
       final portraitTablet = await layoutAt(800);
       expect(portraitTablet.$1.bottom, lessThan(portraitTablet.$2.top));
-      expect(portraitTablet.$1.height, lessThan(560));
+      expect(portraitTablet.$1.height, lessThan(320));
 
       final standard = await layoutAt(900);
-      expect(standard.$1.right, lessThan(standard.$2.left));
-      expect(standard.$1.height, greaterThan(500));
+      expect(standard.$1.bottom, lessThan(standard.$2.top));
+      expect(
+        find.byKey(const ValueKey<String>('today-pulse-wide')),
+        findsOneWidget,
+      );
 
       final roomy = await layoutAt(1024);
-      expect(roomy.$1.right, lessThan(roomy.$2.left));
+      expect(roomy.$1.bottom, lessThan(roomy.$2.top));
       expect(roomy.$1.width, greaterThan(standard.$1.width));
     },
   );
@@ -769,22 +755,18 @@ void main() {
   );
 
   testWidgets(
-    'Android tablet landscape keeps the Day Deck and shell continuously usable',
+    'Android tablet landscape keeps Today Pulse and stream continuously usable',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 800));
-      await _pump(
-        tester,
-        aiClient: _WorkspaceAiClient(),
-        freezeOrbitMotion: true,
-      );
+      await _pump(tester, aiClient: _WorkspaceAiClient());
 
       await tester.tap(
         find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
       );
       await tester.pumpAndSettle();
 
-      final compass = tester.getRect(
-        find.byKey(const ValueKey<String>('day-compass-panel')),
+      final pulse = tester.getRect(
+        find.byKey(const ValueKey<String>('today-pulse')),
       );
       final stream = tester.getRect(
         find.byKey(const ValueKey<String>('day-stream-panel')),
@@ -796,11 +778,11 @@ void main() {
         find.byKey(const ValueKey<String>('perfect-ai-toggle')),
       );
 
-      expect(compass.right, lessThan(stream.left));
-      expect(compass.top, closeTo(stream.top, 1));
-      expect(compass.bottom, closeTo(stream.bottom, 1));
-      expect(compass.height, greaterThan(450));
-      expect(compass.bottom, lessThanOrEqualTo(capture.top));
+      expect(pulse.bottom, lessThan(stream.top));
+      expect(pulse.left, closeTo(stream.left, 1));
+      expect(pulse.right, closeTo(stream.right, 1));
+      expect(pulse.height, lessThan(260));
+      expect(stream.bottom, lessThanOrEqualTo(capture.top));
       expect(capture.contains(aiToggle.center), isTrue);
       expect(capture.bottom, lessThanOrEqualTo(800));
       expect(tester.takeException(), isNull);
@@ -813,18 +795,22 @@ void main() {
   );
 
   testWidgets(
-    'tablet Day Deck at 200 percent text becomes one readable column',
+    'tablet Today Pulse at 200 percent text remains one readable column',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(900, 1200));
       await _pump(tester, textScaler: const TextScaler.linear(2));
 
-      final compass = tester.getRect(
-        find.byKey(const ValueKey<String>('day-compass-panel')),
+      final pulse = tester.getRect(
+        find.byKey(const ValueKey<String>('today-pulse')),
       );
       final stream = tester.getRect(
         find.byKey(const ValueKey<String>('day-stream-panel')),
       );
-      expect(compass.bottom, lessThan(stream.top));
+      expect(pulse.bottom, lessThan(stream.top));
+      expect(
+        find.byKey(const ValueKey<String>('today-pulse-compact')),
+        findsOneWidget,
+      );
       expect(find.byKey(const ValueKey<String>('rail-mark')), findsOneWidget);
       expect(find.byType(PerfectWordmark), findsNothing);
       expect(tester.takeException(), isNull);
@@ -1096,7 +1082,7 @@ void main() {
         find.text(finalTitle),
         280,
         scrollable: find.descendant(
-          of: find.byKey(const ValueKey<String>('perfect-today-scroll')),
+          of: find.byKey(const PageStorageKey<String>('perfect-today-scroll')),
           matching: find.byType(Scrollable),
         ),
       );
@@ -1123,7 +1109,7 @@ void main() {
         find.text(finalTitle),
         280,
         scrollable: find.descendant(
-          of: find.byKey(const ValueKey<String>('perfect-today-scroll')),
+          of: find.byKey(const PageStorageKey<String>('perfect-today-scroll')),
           matching: find.byType(Scrollable),
         ),
       );
@@ -1147,7 +1133,7 @@ void main() {
       const ValueKey<String>('perfect-agenda-progress-safe-core'),
     );
     final todayScroll = find.descendant(
-      of: find.byKey(const ValueKey<String>('perfect-today-scroll')),
+      of: find.byKey(const PageStorageKey<String>('perfect-today-scroll')),
       matching: find.byType(Scrollable),
     );
     for (var attempt = 0; attempt < 8 && cores.evaluate().isEmpty; attempt++) {
@@ -1195,27 +1181,23 @@ void main() {
   });
 
   testWidgets(
-    'expanded Windows Day Deck keeps the compass and stream adjacent',
+    'expanded Windows keeps Today Pulse above one dominant day stream',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1366, 768));
-      await _pump(
-        tester,
-        freezeOrbitMotion: true,
-        platform: TargetPlatform.windows,
-      );
+      await _pump(tester, platform: TargetPlatform.windows);
 
       expect(find.byType(NavigationRail), findsOneWidget);
       expect(find.text('Inspector'), findsNothing);
-      final compass = tester.getRect(
-        find.byKey(const ValueKey<String>('day-compass-panel')),
+      final pulse = tester.getRect(
+        find.byKey(const ValueKey<String>('today-pulse')),
       );
       final stream = tester.getRect(
         find.byKey(const ValueKey<String>('day-stream-panel')),
       );
-      expect(compass.right, lessThan(stream.left));
-      expect(compass.top, closeTo(stream.top, 1));
-      expect(compass.bottom, closeTo(stream.bottom, 1));
-      expect(compass.height, greaterThanOrEqualTo(420));
+      expect(pulse.bottom, lessThan(stream.top));
+      expect(pulse.left, closeTo(stream.left, 1));
+      expect(pulse.right, closeTo(stream.right, 1));
+      expect(pulse.height, lessThan(260));
       expect(find.text('Focus Deep Work'), findsWidgets);
       final source = _controller.tasks.singleWhere(
         (item) => item.title == 'Focus Deep Work',
@@ -1254,11 +1236,7 @@ void main() {
     'wide Windows Day Deck promotes selected detail to a true third pane',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1920, 1080));
-      await _pump(
-        tester,
-        freezeOrbitMotion: true,
-        platform: TargetPlatform.windows,
-      );
+      await _pump(tester, platform: TargetPlatform.windows);
       final source = _controller.tasks.singleWhere(
         (item) => item.title == 'Focus Deep Work',
       );
@@ -1268,8 +1246,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final compass = tester.getRect(
-        find.byKey(const ValueKey<String>('day-compass-panel')),
+      final pulse = tester.getRect(
+        find.byKey(const ValueKey<String>('today-pulse')),
       );
       final stream = tester.getRect(
         find.byKey(const ValueKey<String>('day-stream-panel')),
@@ -1281,11 +1259,10 @@ void main() {
         find.byKey(const ValueKey<String>('expanded-focus-panel')),
         findsNothing,
       );
-      expect(compass.right, lessThan(stream.left));
       expect(stream.right, lessThan(inspector.left));
-      expect(compass.top, closeTo(stream.top, 1));
       expect(stream.top, closeTo(inspector.top, 1));
-      expect(compass.bottom, closeTo(inspector.bottom, 1));
+      expect(stream.bottom, closeTo(inspector.bottom, 1));
+      expect(pulse.bottom, lessThan(stream.top));
       expect(tester.takeException(), isNull);
       await expectLater(
         find.byType(PerfectWorkspacePage),
@@ -1299,21 +1276,16 @@ void main() {
     'short Windows landscape keeps a full-scale deck in a scrollable stage',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1366, 600));
-      await _pump(
-        tester,
-        freezeOrbitMotion: true,
-        platform: TargetPlatform.windows,
-      );
+      await _pump(tester, platform: TargetPlatform.windows);
 
-      final compass = tester.getRect(
-        find.byKey(const ValueKey<String>('day-compass-panel')),
+      final pulse = tester.getRect(
+        find.byKey(const ValueKey<String>('today-pulse')),
       );
       final stream = tester.getRect(
         find.byKey(const ValueKey<String>('day-stream-panel')),
       );
-      expect(compass.right, lessThan(stream.left));
-      expect(compass.height, greaterThanOrEqualTo(420));
-      expect(compass.bottom, greaterThan(500));
+      expect(pulse.bottom, lessThan(stream.top));
+      expect(pulse.height, lessThan(240));
       expect(
         find.byKey(
           const PageStorageKey<String>('perfect-expanded-today-scroll'),
@@ -1330,22 +1302,22 @@ void main() {
   );
 
   testWidgets(
-    'expanded Windows at 200 percent text becomes one readable column',
+    'expanded Windows at 200 percent text keeps Pulse and stream readable',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1366, 900));
       await _pump(tester, textScaler: const TextScaler.linear(2));
 
-      final compass = tester.getRect(
-        find.byKey(const ValueKey<String>('day-compass-panel')),
+      final pulse = tester.getRect(
+        find.byKey(const ValueKey<String>('today-pulse')),
       );
       final stream = tester.getRect(
         find.byKey(const ValueKey<String>('day-stream-panel')),
       );
+      expect(pulse.bottom, lessThan(stream.top));
       expect(
-        find.byKey(const ValueKey<String>('expanded-day-deck-stacked')),
+        find.byKey(const ValueKey<String>('today-pulse-compact')),
         findsOneWidget,
       );
-      expect(compass.bottom, lessThan(stream.top));
       expect(tester.takeException(), isNull);
     },
   );
@@ -1357,8 +1329,8 @@ void main() {
         await tester.binding.setSurfaceSize(Size(width, 820));
         await _pump(tester);
 
-        final compass = tester.getRect(
-          find.byKey(const ValueKey<String>('day-compass-panel')),
+        final pulse = tester.getRect(
+          find.byKey(const ValueKey<String>('today-pulse')),
         );
         final stream = tester.getRect(
           find.byKey(const ValueKey<String>('day-stream-panel')),
@@ -1366,10 +1338,10 @@ void main() {
         final deck = tester.getRect(
           find.byKey(const ValueKey<String>('expanded-day-deck-stage')),
         );
-        expect(compass.right, lessThan(stream.left), reason: 'width $width');
+        expect(pulse.bottom, lessThan(stream.top), reason: 'width $width');
         expect(
-          compass.width / deck.width,
-          inInclusiveRange(.36, .47),
+          pulse.width / deck.width,
+          closeTo(1, .02),
           reason: 'width $width',
         );
         expect(stream.width, greaterThan(500), reason: 'width $width');
@@ -1721,26 +1693,30 @@ void main() {
     expect(find.byType(Dialog), findsNothing);
   });
 
-  testWidgets('short landscape keeps Orbit, navigation, and capture usable', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(600, 360));
-    await _pump(tester);
+  testWidgets(
+    'short landscape keeps Today Pulse, navigation, and capture usable',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(600, 360));
+      await _pump(tester);
 
-    expect(find.byType(NavigationRail), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
-    expect(find.text('Good morning'), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
-      findsOneWidget,
-    );
-    await tester.tap(
-      find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Capture a task, before it disappears…'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.byType(NavigationRail), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.text('Good morning'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Capture a task, before it disappears…'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'native widget navigation returns an already-running workspace to Today',
@@ -3348,7 +3324,6 @@ Future<void> _pump(
   TextScaler? textScaler,
   TextDirection textDirection = TextDirection.ltr,
   bool disableAnimations = false,
-  bool freezeOrbitMotion = false,
   TargetPlatform? platform,
 }) async {
   await tester.pumpWidget(
@@ -3379,7 +3354,6 @@ Future<void> _pump(
         navigationController: navigationController,
         aiClient: aiClient,
         feedbackController: feedbackController,
-        orbitMotionEnabled: !freezeOrbitMotion,
         aiVoiceRecorder: aiClient == null ? null : _WorkspaceVoiceRecorder(),
       ),
     ),
@@ -3438,7 +3412,6 @@ class _ThemeContrastHarnessState extends State<_ThemeContrastHarness> {
         onContrastModeChanged: setContrast,
         onSignOut: () async {},
         now: () => _previewNow,
-        orbitMotionEnabled: false,
       ),
     );
   }
@@ -3508,7 +3481,7 @@ Future<void> _keepTodayTargetClear(
   Finder target, {
   double clearance = 16,
 }) async {
-  final list = find.byKey(const ValueKey<String>('perfect-today-scroll'));
+  final list = find.byKey(const PageStorageKey<String>('perfect-today-scroll'));
   if (list.evaluate().isNotEmpty) {
     final scrollable = find
         .descendant(of: list, matching: find.byType(Scrollable))
@@ -3534,7 +3507,7 @@ Future<void> _scrollTodayToText(WidgetTester tester, String text) async {
     220,
     scrollable: find
         .descendant(
-          of: find.byKey(const ValueKey<String>('perfect-today-scroll')),
+          of: find.byKey(const PageStorageKey<String>('perfect-today-scroll')),
           matching: find.byType(Scrollable),
         )
         .first,

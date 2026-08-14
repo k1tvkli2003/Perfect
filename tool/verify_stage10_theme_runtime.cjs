@@ -159,21 +159,15 @@ function verifyDartThemeRuntime() {
   );
   assert.ok(!rawColorPattern.test(motion), 'Dialog motion has a raw color');
 
-  const orbit = read('lib/presentation/orbit_stage.dart');
+  const pulse = read('lib/presentation/today_pulse.dart');
   for (const fragment of [
-    "'theme-hc-light-clarity'",
-    "'theme-hc-dark-clarity'",
-    'assets/brand/orbit_period_ring_hc_light.svg',
-    'assets/brand/orbit_period_ring_hc_dark.svg',
     'PerfectSemanticTheme.of(context)',
-    'final morningInk = useFilledActionInk',
-    'semantic.onSecondaryContainer',
-    'final afternoonInk = useFilledActionInk',
-    'semantic.onPrimaryContainer',
-    'final eveningInk = useFilledActionInk',
-    'semantic.onTertiaryContainer',
+    'semantic.highContrast',
+    'TodayPulseState.resolving',
+    "ValueKey<String>('today-pulse-compact')",
+    "ValueKey<String>('today-pulse-wide')",
   ]) {
-    assertContains(orbit, fragment, 'Orbit appearance wiring');
+    assertContains(pulse, fragment, 'Today Pulse appearance wiring');
   }
 
   const continuityTest = read(
@@ -348,26 +342,7 @@ function verifyAuthoredAssets() {
     }
   }
 
-  const orbit = readJson('assets/brand/orbit-period-ring-manifest.json');
-  assert.equal(orbit.outputs.length, 2);
-  assert.equal(orbit.high_contrast_contract.blur_filters, false);
-  assert.equal(
-    orbit.high_contrast_contract.live_arc_copy_remains_semantic_flutter_text,
-    true,
-  );
-  for (const output of orbit.outputs) {
-    exists(output.path);
-    exists(output.source);
-    assert.equal(sha256(output.path), output.sha256, output.path + ' drift');
-    assert.equal(
-      sha256(output.source),
-      output.source_sha256,
-      output.source + ' drift',
-    );
-    assert.ok(output.mapped_colours > 0, output.path + ' has no mapped colours');
-    assert.ok(!read(output.path).includes('<filter'), output.path + ' uses blur');
-  }
-  return { declaredOutputs, orbitVariants: orbit.outputs.length };
+  return { declaredOutputs };
 }
 
 function verifyAndroidRuntimeEvidence() {
@@ -428,7 +403,7 @@ function main() {
     'widgetSurfaces=' + android.surfaces,
     'windowsChannel=' + windows.channel,
     'assetOutputs=' + assets.declaredOutputs,
-    'orbitVariants=' + assets.orbitVariants,
+    'todayPulseLayouts=2',
     'androidRuntimeArtifacts=' + runtime.artifacts,
     'installedPreviewBuild=' + runtime.installedBuild,
   ].join(' ');

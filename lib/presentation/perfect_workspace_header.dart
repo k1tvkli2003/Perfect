@@ -21,6 +21,7 @@ class PerfectWorkspaceHeader extends StatelessWidget {
     this.compact = false,
     this.showWordmark = true,
     this.showContext = true,
+    this.showClock = true,
   });
 
   final String destinationKey;
@@ -32,6 +33,7 @@ class PerfectWorkspaceHeader extends StatelessWidget {
   final bool compact;
   final bool showWordmark;
   final bool showContext;
+  final bool showClock;
 
   bool get _phoneComposition => compact && showWordmark;
 
@@ -69,6 +71,7 @@ class PerfectWorkspaceHeader extends StatelessWidget {
                 compact: compact,
                 showWordmark: showWordmark,
                 showContext: showContext,
+                showClock: showClock,
               ),
       ),
     ),
@@ -126,6 +129,7 @@ class _ContextHeaderRow extends StatelessWidget {
     required this.compact,
     required this.showWordmark,
     required this.showContext,
+    required this.showClock,
   });
 
   final BoxConstraints constraints;
@@ -138,6 +142,7 @@ class _ContextHeaderRow extends StatelessWidget {
   final bool compact;
   final bool showWordmark;
   final bool showContext;
+  final bool showClock;
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +156,9 @@ class _ContextHeaderRow extends StatelessWidget {
       showContext: showContext,
       compact: compact,
     );
-    final clock = PerfectDualDateClock(now: now, compact: compact || stacked);
+    final clock = showClock
+        ? PerfectDualDateClock(now: now, compact: compact || stacked)
+        : null;
     final sync = PerfectSyncIndicator(
       status: status,
       onRetry: onSync,
@@ -170,8 +177,10 @@ class _ContextHeaderRow extends StatelessWidget {
               sync,
             ],
           ),
-          const SizedBox(height: PerfectSpace.xs),
-          clock,
+          if (clock != null) ...[
+            const SizedBox(height: PerfectSpace.xs),
+            clock,
+          ],
         ],
       );
     }
@@ -179,9 +188,11 @@ class _ContextHeaderRow extends StatelessWidget {
       key: const ValueKey<String>('perfect-header-context-row'),
       children: [
         Expanded(flex: 5, child: contextCluster),
-        const SizedBox(width: PerfectSpace.lg),
-        Flexible(flex: 4, child: clock),
-        const SizedBox(width: PerfectSpace.lg),
+        if (clock != null) ...[
+          const SizedBox(width: PerfectSpace.lg),
+          Flexible(flex: 4, child: clock),
+          const SizedBox(width: PerfectSpace.lg),
+        ],
         sync,
       ],
     );

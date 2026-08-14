@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "stage": 11,
+  "captured_at": "2026-08-14T06:12:03+03:30",
+  "source_base_sha": "39336337f93912e6a89d98fcc3bd80c19155face",
+  "application": {
+    "package_id": "com.k1tvkli2003.perfect.preview",
+    "component": "com.k1tvkli2003.perfect.preview/com.k1tvkli2003.perfect.MainActivity",
+    "version_name": "1.1.0-preview",
+    "version_code": 2064,
+    "first_install_time": "2026-08-02 19:20:44",
+    "last_update_time": "2026-08-14 06:08:25",
+    "foreground_after_capture": true
+  },
+  "apk": {
+    "build_target": "lib/dev/perfect_live_preview.dart",
+    "build_mode": "debug",
+    "bytes": 174212930,
+    "sha256": "68feeedb8e1cf5aa96980e7d0e42293bb3a5df5f730a8aad5917809cf752f13d"
+  },
+  "upgrade_proof": {
+    "method": "adb install -r -t",
+    "previous_version_code": 2063,
+    "installed_version_code": 2064,
+    "first_install_time_preserved": true
+  },
+  "device": {
+    "serial": "emulator-5554",
+    "physical_size": "1080x2400",
+    "physical_density": 420,
+    "final_override_size": null,
+    "final_override_density": null
+  },
+  "evidence": [
+    {
+      "scenario": "phone-portrait-final",
+      "file": "phone-runtime.png",
+      "bytes": 456346,
+      "sha256": "3508b4b50308d58eb52b8fd88a3621aac5129a4790159da9dae37e04e9bc384e"
+    },
+    {
+      "scenario": "phone-portrait-semantics",
+      "file": "phone-runtime.xml",
+      "bytes": 13266,
+      "sha256": "c8c254d0506efa8154a613a9a2f68e9d46750a2c61dae04f6fc99e3a3ebc4956"
+    },
+    {
+      "scenario": "phone-clean-launch-log",
+      "file": "phone-runtime-log.txt",
+      "bytes": 190398,
+      "sha256": "6ebab014ef1b1caf28ada19ae4216dfd5feeee4707dee0710d34aa7c5e5ffaf4"
+    },
+    {
+      "scenario": "tablet-portrait",
+      "file": "tablet-portrait-runtime.png",
+      "bytes": 364286,
+      "sha256": "54e01b09a271cfdaa7f52072821d1b91a369cffac699dceed8cf3252c8b045e9"
+    },
+    {
+      "scenario": "tablet-portrait-semantics",
+      "file": "tablet-portrait-runtime.xml",
+      "bytes": 15725,
+      "sha256": "53a1cd7e9cfe338801579a792e4eb9fdf7154c9f11d60571191a5570242413e4"
+    },
+    {
+      "scenario": "tablet-landscape-top",
+      "file": "tablet-landscape-runtime.png",
+      "bytes": 321421,
+      "sha256": "e109ee9d4dbe32fb239596e67a97980e3b348e2413bec08b08e7df2eaea2578b"
+    },
+    {
+      "scenario": "tablet-landscape-top-semantics",
+      "file": "tablet-landscape-runtime.xml",
+      "bytes": 15724,
+      "sha256": "90b8adb05c8765e0c4647b2d7d4aaf17a6e200bc3753cfd041f60405d238f60c"
+    },
+    {
+      "scenario": "tablet-landscape-final-item-reachable",
+      "file": "tablet-landscape-runtime-scrolled.png",
+      "bytes": 312278,
+      "sha256": "fe885810455ae2aad3c44d2776238a2dd925257a7221d0a179a79ccf5d8e49ba"
+    },
+    {
+      "scenario": "tablet-landscape-final-item-semantics",
+      "file": "tablet-landscape-runtime-scrolled.xml",
+      "bytes": 15719,
+      "sha256": "d2f96ef9eea94a724ed23b7d18dca99fa8a51c154a77f5c78578458d1097a185"
+    }
+  ],
+  "assertions": {
+    "fresh_phone_semantics": true,
+    "phone_today_pulse_occurrences": 1,
+    "phone_orbit_occurrences": 0,
+    "fatal_flutter_or_app_matches": 0,
+    "tablet_landscape_last_item_bounds": "[440,1166][2480,1318]",
+    "tablet_landscape_capture_bounds": "[1308,1396][1436,1524]",
+    "last_item_clears_capture": true
+  },
+  "evidence_boundary": [
+    "The preview package uses deterministic development-only fixture data and does not seed the owner's production account.",
+    "Emulator screenshots prove composition and interaction reachability, not physical-device frame pacing.",
+    "Windows runtime and install-over remain an exact-SHA hosted release gate."
+  ]
+}
