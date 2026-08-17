@@ -494,3 +494,22 @@ recorded in `09-stage-verification.md`.
 
 Full local/hosted evidence and the explicit signed/session boundary are recorded in
 `10-stage-verification.md`.
+
+## Stage 11 — Today Pulse closure
+
+| Check | Method | Result | Evidence / honest boundary |
+| --- | --- | --- | --- |
+| Orbit retirement | source/asset/semantics contract | passed | production Orbit source, ring assets, generator and dedicated test removed; regression contract prevents hidden return |
+| Static analysis | `flutter analyze --no-pub` | passed | no issues across the complete project |
+| Full Flutter suite | `flutter test --concurrency=1` | passed, 449/449 | projection, recurrence truth, Pulse, workspace, themes, native contracts and goldens |
+| Stage 11 artifact gate | `node tool/verify_stage11_today_pulse.cjs` | passed | 8 boards, 21 files, 8 semantic states and 9 runtime artifacts |
+| Android in-place preview | build 2064 + `adb install -r -t` | passed | advanced from 2063 with original `firstInstallTime` unchanged |
+| Android visual/runtime | phone/tablet portrait/landscape/scrolled capture | passed | nine hash-locked PNG/XML/log artifacts; zero relevant fatal, Flutter, overflow or ANR matches |
+| Local Windows compile | `flutter build windows --debug` | host-blocked | optional ATL `atlbase.h` absent before project runner linking; hosted runner is authoritative |
+| Branch exact-SHA gate | run `#59` / `31766137998` | passed | exact Stage 11 SHA `59db6e479f34f25ecf66e4224b2d8c90c7f53941` |
+| Trusted main build/release | run `#60` / `31767013849` | passed | all four jobs succeeded on the same SHA; signed Android and Windows package paths passed |
+| Windows update continuity | hosted MSIX + Setup proof | passed | `1.1.0.58 → 1.1.0.60`; package family/`LocalState` preserved; Setup clean/rerun did not mutate Root |
+| Immutable release | GitHub release inspection | passed | `v1.1.0-build.2060` targets the exact SHA and contains exactly APK, Portable ZIP and Setup EXE with recorded SHA-256 digests |
+
+Full Stage 11 local, runtime, hosted and artifact evidence plus explicit limits are
+recorded in `11-stage-verification.md`.

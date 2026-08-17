@@ -1,6 +1,6 @@
 # Stage 11 — Remove Orbit and build Today Pulse
 
-Status: locally verified; exact-SHA hosted closure pending
+Status: complete — local Android runtime and exact-SHA hosted release verified
 Depends on: Stages 05, 08–10  
 Primary surfaces: Today phone/tablet/Windows; widget orientation summary
 
@@ -124,11 +124,33 @@ and `tool/verify_stage11_today_pulse.cjs`.
   tablet landscape and scrolled-last-item captures have zero app/Flutter fatal
   matches and are hash-locked in `runtime/android/runtime-manifest.json`.
 - Local Windows compilation reaches the native notification plugin and stops only
-  at the host's missing optional ATL header `atlbase.h`. Signed Windows build,
-  install-over/LocalState continuity and the three-asset release remain mandatory
-  exact-SHA hosted gates; no Stage 11 completion is claimed before them.
+  at the host's missing optional ATL header `atlbase.h`. The product-level desktop
+  gate is closed by trusted run
+  [`#60` / `31767013849`](https://github.com/k1tvkli2003/Perfect/actions/runs/31767013849)
+  on exact source SHA `59db6e479f34f25ecf66e4224b2d8c90c7f53941`: native
+  Windows build, portable packaging, signed MSIX, install-over
+  `1.1.0.58 → 1.1.0.60`, Setup clean/idempotent rerun and LocalState continuity
+  all passed.
+
+## Hosted source closure — 2026-08-14
+
+- Exact-SHA branch run
+  [`#59` / `31766137998`](https://github.com/k1tvkli2003/Perfect/actions/runs/31766137998)
+  passed the quality, Android and Windows compile/package gates for the source
+  checkpoint. Signing, install-over and release publication were correctly skipped
+  on that untrusted branch run.
+- The same SHA was fast-forwarded to trusted `main`; run
+  [`#60` / `31767013849`](https://github.com/k1tvkli2003/Perfect/actions/runs/31767013849)
+  passed all four jobs, including Android signing, Windows signing/package,
+  install-over/LocalState, Setup clean/rerun and atomic release publication.
+- Immutable release
+  [`v1.1.0-build.2060`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2060)
+  is non-draft/non-prerelease, targets the exact Stage 11 SHA and contains exactly
+  the Android APK, Windows Portable ZIP and Windows Setup EXE.
 
 ## Handoff
 
-Stage 12 receives the Pulse height/content axis and projection outputs. Commit the
-removal/replacement, run full affected tests/goldens, push/release and clean Git.
+Stage 12 receives the closed Pulse height/content axis and projection outputs.
+Commit the documentation-only closure, verify that exact checkpoint on trusted
+`main`, then remove the isolated Stage 11 branch/worktree before implementation
+of Stage 12 begins.

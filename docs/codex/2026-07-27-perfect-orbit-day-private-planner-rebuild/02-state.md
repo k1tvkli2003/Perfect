@@ -6,15 +6,20 @@
 
 ## Current State
 
-Stage 11 is locally verified from clean trusted `main` lineage.
-`today-pulse-dayline-v2` is the sole implementation authority; production Orbit
-source/assets are deleted, the adaptive Pulse and daily projection are implemented,
-all 449 tests and analysis pass, and nine Android phone/tablet runtime artifacts are
-hash-locked after an in-place build 2063→2064 update. Exact-SHA hosted Windows,
-install-over and immutable three-asset release proof remain open; no Stage 11
-completion is claimed yet.
+Stage 11 source checkpoint `59db6e479f34f25ecf66e4224b2d8c90c7f53941`
+is merged to `main` and externally closed. `today-pulse-dayline-v2` is the sole
+implementation authority; production Orbit source/assets are deleted, all 449 tests
+and analysis pass, and nine Android phone/tablet runtime artifacts are hash-locked
+after an in-place build 2063→2064 update. Exact-SHA branch run
+[`#59` / `31766137998`](https://github.com/k1tvkli2003/Perfect/actions/runs/31766137998)
+and trusted main run
+[`#60` / `31767013849`](https://github.com/k1tvkli2003/Perfect/actions/runs/31767013849)
+passed; Windows install-over `1.1.0.58 → 1.1.0.60` preserved package
+family/`LocalState`, Setup clean/rerun passed and immutable release
+[`v1.1.0-build.2060`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2060)
+contains exactly APK, Portable ZIP and Setup EXE.
 
-Canonical 50-stage execution has externally closed Stages 01–10 through exact-SHA
+Canonical 50-stage execution has externally closed Stages 01–11 through exact-SHA
 hosted runs and immutable three-asset releases. Stage 10 source checkpoint
 `8742a676533d3337ed5d69919cd8d612e08c6024` is merged to `main` and closed by
 trusted run [`#57` / `31687276749`](https://github.com/k1tvkli2003/Perfect/actions/runs/31687276749)
