@@ -360,6 +360,50 @@ void main() {
     );
   });
 
+  test('temporary Actions transport is bounded and safely rotated', () {
+    expect(
+      RegExp(
+        r'^          retention-days: 1$',
+        multiLine: true,
+      ).allMatches(workflow),
+      hasLength(2),
+    );
+    expect(
+      RegExp(
+        r'^          retention-days: 14$',
+        multiLine: true,
+      ).allMatches(workflow),
+      hasLength(1),
+    );
+    expect(workflow, contains('Rotate temporary Actions transport'));
+    expect(
+      RegExp(r'^      actions: write$', multiLine: true).allMatches(workflow),
+      hasLength(1),
+    );
+    expect(workflow, contains("github.ref == 'refs/heads/main'"));
+    expect(
+      workflow,
+      contains(r'PERFECT_PUBLISH_RESULT: ${{ needs.publish.result }}'),
+    );
+    expect(
+      workflow,
+      contains('Expected exactly one current signed Windows upgrade baseline'),
+    );
+    expect(workflow, contains(r'actions/artifacts/$artifact_id'));
+    expect(workflow, isNot(contains('gh api +')));
+    expect(workflow, isNot(contains("awk -F '\\t' +")));
+    expect(workflow, contains('status=in_progress&per_page=100'));
+    expect(workflow, contains('status=queued&per_page=100'));
+    expect(
+      workflow,
+      contains('Preserved exactly one current signed Windows baseline'),
+    );
+    expect(
+      workflow,
+      contains('Deleted current-run transport after unsuccessful publication'),
+    );
+  });
+
   test('trusted Windows builds prove install-over without trusting Root', () {
     expect(workflow, contains('actions: read'));
     expect(workflow, contains('Prove MSIX install-over preserves LocalState'));

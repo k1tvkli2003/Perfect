@@ -311,7 +311,7 @@ jobs:
           name: perfect-${{ needs.prepare.outputs.artifact_version }}-android-${{ steps.android-signing.outputs.mode }}-${{ steps.android-build.outputs.mode }}
           path: ${{ steps.android-package.outputs.artifact_dir }}
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 1
       - name: Remove restored Android signing files
         if: always()
         shell: bash
@@ -1101,7 +1101,7 @@ jobs:
           name: perfect-${{ needs.prepare.outputs.artifact_version }}-windows-x64-portable-${{ steps.windows-build.outputs.mode }}
           path: build/windows/x64/portable/Perfect-*-Windows-Portable.zip
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 1
       - name: Preserve signed private Windows installer
         if: steps.windows-msix.outputs.mode == 'signed-private'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -2049,3 +2049,137 @@ jobs:
           fi
           verify_immutable_release "$tag"
           echo "::notice::Published $tag with exactly three verified install-ready assets."
+
+  artifact-hygiene:
+    name: Rotate temporary Actions transport
+    needs: [prepare, quality-and-android, windows, publish]
+    if: >-
+      always() &&
+      needs.prepare.outputs.trusted_build == 'true' &&
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Keep one upgrade baseline and remove superseded transport
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PERFECT_ARTIFACT_VERSION: ${{ needs.prepare.outputs.artifact_version }}
+          PERFECT_PUBLISH_RESULT: ${{ needs.publish.result }}
+        run: |
+          set -euo pipefail
+
+          current_run_id="$GITHUB_RUN_ID"
+          keep_name="perfect-$PERFECT_ARTIFACT_VERSION-windows-x64-msix-configured-private"
+
+          list_artifacts() {
+            gh api --paginate \
+              "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
+              --jq '.artifacts[] | [.id, .name, (.workflow_run.id // 0)] | @tsv'
+          }
+
+          delete_artifact() {
+            local artifact_id="$1"
+            local attempt
+            for attempt in 1 2 3 4; do
+              if gh api \
+                --method DELETE \
+                "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id" \
+                >/dev/null 2>&1; then
+                return 0
+              fi
+              sleep $((attempt * 2))
+            done
+            echo "::error::Could not delete Actions artifact $artifact_id after four attempts."
+            return 1
+          }
+
+          mapfile -t artifacts < <(list_artifacts)
+          mapfile -t active_run_ids < <(
+            gh api --paginate \
+              "repos/$GITHUB_REPOSITORY/actions/runs?status=in_progress&per_page=100" \
+              --jq '.workflow_runs[].id'
+            gh api --paginate \
+              "repos/$GITHUB_REPOSITORY/actions/runs?status=queued&per_page=100" \
+              --jq '.workflow_runs[].id'
+          )
+
+          is_other_active_run() {
+            local candidate_run_id="$1"
+            if [[ "$candidate_run_id" == "$current_run_id" ]]; then
+              return 1
+            fi
+            printf '%s\n' "${active_run_ids[@]}" |
+              grep -Fxq "$candidate_run_id"
+          }
+
+          keep_id=''
+          if [[ "$PERFECT_PUBLISH_RESULT" == 'success' ]]; then
+            mapfile -t keep_matches < <(
+              printf '%s\n' "${artifacts[@]}" |
+                awk -F '\t' \
+                  -v expected_name="$keep_name" \
+                  -v expected_run="$current_run_id" \
+                  '$2 == expected_name && $3 == expected_run { print $1 }'
+            )
+            if (( ${#keep_matches[@]} != 1 )); then
+              echo "::error::Expected exactly one current signed Windows upgrade baseline, found ${#keep_matches[@]}."
+              exit 1
+            fi
+            keep_id="${keep_matches[0]}"
+          fi
+
+          deleted=0
+          active_skipped=0
+          for record in "${artifacts[@]}"; do
+            IFS=$'\t' read -r artifact_id artifact_name artifact_run_id <<<"$record"
+            if [[ "$PERFECT_PUBLISH_RESULT" == 'success' ]]; then
+              if [[ "$artifact_id" == "$keep_id" ]]; then
+                continue
+              fi
+              if is_other_active_run "$artifact_run_id"; then
+                active_skipped=$((active_skipped + 1))
+                continue
+              fi
+            elif [[ "$artifact_run_id" != "$current_run_id" ]]; then
+              continue
+            fi
+
+            delete_artifact "$artifact_id"
+            deleted=$((deleted + 1))
+          done
+
+          verified=false
+          for verify_attempt in 1 2 3 4 5 6; do
+            mapfile -t current_remaining < <(
+              list_artifacts |
+                awk -F '\t' \
+                  -v expected_run="$current_run_id" \
+                  '$3 == expected_run { print }'
+            )
+            if [[ "$PERFECT_PUBLISH_RESULT" == 'success' ]]; then
+              if (( ${#current_remaining[@]} == 1 )) &&
+                [[ "${current_remaining[0]}" == "$keep_id"$'\t'"$keep_name"$'\t'"$current_run_id" ]]; then
+                verified=true
+                break
+              fi
+            elif (( ${#current_remaining[@]} == 0 )); then
+              verified=true
+              break
+            fi
+            sleep $((verify_attempt * 2))
+          done
+
+          if [[ "$verified" != 'true' ]]; then
+            echo "::error::Actions artifact rotation did not reach its exact postcondition."
+            exit 1
+          fi
+
+          if [[ "$PERFECT_PUBLISH_RESULT" == 'success' ]]; then
+            echo "::notice::Preserved exactly one current signed Windows baseline and deleted $deleted superseded transport artifacts; skipped $active_skipped artifacts from other active runs."
+          else
+            echo "::notice::Deleted current-run transport after unsuccessful publication; the previous signed Windows baseline remains available."
+          fi
