@@ -57,6 +57,20 @@ class PlannerSyncStatus {
     nextRetryAt: clearNextRetryAt ? null : nextRetryAt ?? this.nextRetryAt,
     retryAttempt: retryAttempt ?? this.retryAttempt,
   );
+
+  @override
+  String toString() {
+    final parts = <String>[phase.name];
+    if (message != null) parts.add("'$message'");
+    if (retryAttempt > 0) parts.add('retry=$retryAttempt');
+    if (lastSuccessfulSyncAt != null) {
+      parts.add('last=${lastSuccessfulSyncAt!.toUtc().toIso8601String()}');
+    }
+    if (nextRetryAt != null) {
+      parts.add('next=${nextRetryAt!.toUtc().toIso8601String()}');
+    }
+    return 'PlannerSyncStatus(${parts.join(', ')})';
+  }
 }
 
 /// An installation-specific UUID, deliberately independent of the private

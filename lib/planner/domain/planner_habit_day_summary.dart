@@ -71,6 +71,18 @@ class PlannerHabitDaySummary {
     PlannerHabitDayState.completed => 'completed',
     PlannerHabitDayState.missed => 'missed',
   };
+
+  @override
+  String toString() {
+    final parts = <String>[
+      '${state.name}($method)',
+      '$amount/$target',
+      '${progressPercent}%',
+    ];
+    if (hasLog) parts.add('logged');
+    if (note != null) parts.add("note='$note'");
+    return 'PlannerHabitDaySummary(${parts.join(', ')})';
+  }
 }
 
 abstract final class PlannerHabitDayEngine {

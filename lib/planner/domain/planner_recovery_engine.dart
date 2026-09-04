@@ -25,6 +25,16 @@ class PlannerRecoveryOutcome {
   final DateTime? nextEligibleAt;
   final int carryCount;
   final String? reason;
+
+  @override
+  String toString() {
+    final parts = <String>['${disposition.wireValue}', 'carry=$carryCount'];
+    if (nextEligibleAt != null) {
+      parts.add('next=${nextEligibleAt!.toUtc().toIso8601String()}');
+    }
+    if (reason != null) parts.add("'$reason'");
+    return 'PlannerRecoveryOutcome(${parts.join(', ')})';
+  }
 }
 
 enum PlannerTodayEligibilityReason {
@@ -59,6 +69,13 @@ class PlannerTodayEligibility {
 
   bool get requiresDecision =>
       recovery?.disposition == PlannerRecoveryDisposition.ask;
+
+  @override
+  String toString() {
+    final state = isEligible ? 'eligible' : 'ineligible';
+    if (recovery == null) return 'PlannerTodayEligibility($state, ${reason.name})';
+    return 'PlannerTodayEligibility($state, ${reason.name}, recovery=$recovery)';
+  }
 }
 
 /// Pure lifecycle rules shared by the interaction layer, notification planner,
