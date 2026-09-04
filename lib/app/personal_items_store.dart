@@ -3,6 +3,14 @@ import 'dart:convert';
 import 'package:perfect/app/personal_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Persistent JSON store for the legacy [PersonalItem] records.
+///
+/// The modern planner uses a Drift-backed [PlannerLocalStore]; this class
+/// exists solely to read the original SharedPreferences payload so a one-time
+/// v2 projection can surface historical items without clearing them.
+///
+/// Callers must never remove or rewrite the underlying key: it remains the
+/// recovery source for the original application contract.
 class PersonalItemsStore {
   static const _keyPrefix = 'perfect.personal_items.v1.';
 

@@ -1,2 +1,22 @@
+# Perfect! test runner configuration.
+#
+# The Linux CI job excludes the windows-golden tag because Skia font
+# rasterization differs by host OS; exact pixel comparisons are owned by
+# the Windows job that froze the baselines.
+
 tags:
   windows-golden:
+    # Pixel-level golden comparisons require the Windows host that originally
+    # rendered the reference images. They run only on the matching CI job.
+    description: "Pixel-accurate golden tests frozen on Windows."
+
+# A generous default timeout keeps widget and planner integration tests stable
+# on cold CI runners without hiding genuinely hanging futures behind a silent
+# default. Individual tests may override with @Timeout when needed.
+timeout: 3x
+
+reporter: expanded
+
+# Run tests concurrently on available cores by default. CI runners set their
+# own concurrency through the flutter test invocation.
+concurrency: 4

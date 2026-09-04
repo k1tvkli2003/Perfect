@@ -1,5 +1,8 @@
 name: perfect
 description: "A private, cross-device personal workspace."
+homepage: https://github.com/k1tvkli2003/Perfect
+repository: https://github.com/k1tvkli2003/Perfect
+issue_tracker: https://github.com/k1tvkli2003/Perfect/issues
 publish_to: 'none'
 version: 1.1.0+2000
 

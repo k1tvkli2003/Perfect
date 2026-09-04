@@ -1,3 +1,12 @@
+/// The original, intentionally minimal personal-item record.
+///
+/// Perfect's planner has since grown into a rich, owner-scoped entity model
+/// (Task, Habit, Project, Area, Recurring Task) backed by [PlannerEntity].
+/// [PersonalItem] predates that system and survives only as the legacy
+/// application contract: one-time migration, durable local JSON, and the
+/// recovery path that the new planner must never break.
+///
+/// New planner capabilities belong in `lib/planner/domain/`.
 class PersonalItem {
   const PersonalItem({
     required this.id,
@@ -58,4 +67,18 @@ class PersonalItem {
         : DateTime.parse(json['deleted_at'] as String).toUtc(),
     dirty: json['dirty'] as bool? ?? false,
   );
+
+  @override
+  bool operator ==(Object other) =>
+      other is PersonalItem &&
+      other.id == id &&
+      other.title == title &&
+      other.isDone == isDone &&
+      other.createdAt == createdAt &&
+      other.updatedAt == updatedAt &&
+      other.deletedAt == deletedAt &&
+      other.dirty == dirty;
+
+  @override
+  int get hashCode => Object.hash(id, title, isDone, createdAt, updatedAt, deletedAt, dirty);
 }
