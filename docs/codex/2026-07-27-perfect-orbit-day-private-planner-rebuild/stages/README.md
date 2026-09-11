@@ -9,6 +9,9 @@ The mandatory [whole-product coverage and propagation ledger](coverage-ledger.md
 binds every stage to all affected app consumers. A stage cannot be accepted by
 polishing only the surface named in its title.
 
+The [50-stage plan completion index](00-plan-completion.md) is the one-page map
+proving that all 50 execution files exist with explicit outcomes and hard gates.
+
 Stages 03–05 are additionally governed by the mandatory
 [preview-before-production gate](preview-production-gate.md): every reusable
 component is previewed in isolation, every page is composed from that library, and

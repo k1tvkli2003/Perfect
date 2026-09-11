@@ -14,6 +14,7 @@ import 'package:perfect/planner/domain/planner_formula.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
+import 'package:perfect/planner/domain/planner_today_stream.dart';
 import 'package:perfect/planner/sync/planner_sync_repository.dart';
 import 'package:perfect/presentation/focus_session_sheet.dart';
 import 'package:perfect/presentation/perfect_brand.dart';
@@ -891,10 +892,18 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         if (progress != null) taskProgress[entity.id] = progress;
         if (result.isEligible) eligible.add(entity);
       }
-      _sortAgenda(eligible);
+      final stream = PlannerTodayStream.project(
+        entities: eligible,
+        day: day,
+        eligibilityById: byId,
+        taskProgressById: taskProgress,
+        habitSummaryById: habitSummaries,
+      );
       setState(() {
         _resolvedTodayProjection = signature;
-        _projectedTodayItems = eligible;
+        _projectedTodayItems = stream.entries
+            .map((entry) => entry.entity)
+            .toList(growable: false);
         _todayEligibilityById = byId;
         _habitDaySummaryById = habitSummaries;
         _todayTaskProgressById = taskProgress;
@@ -3063,6 +3072,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
                                 items: items,
                                 eligibilityById: eligibilityById,
                                 habitSummaryById: habitSummaryById,
+                                taskProgressById: taskProgressById,
                                 onInspect: onInspect,
                                 onAdd: onAdd,
                                 constrained: true,
@@ -3218,6 +3228,7 @@ class _MediumTodayDeck extends StatelessWidget {
                         items: items,
                         eligibilityById: eligibilityById,
                         habitSummaryById: habitSummaryById,
+                        taskProgressById: taskProgressById,
                         onInspect: onInspect,
                         onAdd: onAdd,
                         constrained: true,
@@ -3278,6 +3289,7 @@ class _DayStreamPanel extends StatelessWidget {
     required this.items,
     required this.eligibilityById,
     required this.habitSummaryById,
+    required this.taskProgressById,
     required this.onInspect,
     required this.onAdd,
     required this.constrained,
@@ -3288,6 +3300,7 @@ class _DayStreamPanel extends StatelessWidget {
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
+  final Map<String, PlannerTaskProgress> taskProgressById;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
   final bool constrained;
@@ -3311,6 +3324,7 @@ class _DayStreamPanel extends StatelessWidget {
           items: items,
           eligibilityById: eligibilityById,
           habitSummaryById: habitSummaryById,
+          taskProgressById: taskProgressById,
           onInspect: onInspect,
         ),
     ];
@@ -3411,6 +3425,7 @@ class _DayStreamTimeline extends StatelessWidget {
     required this.items,
     required this.eligibilityById,
     required this.habitSummaryById,
+    required this.taskProgressById,
     required this.onInspect,
   });
 
@@ -3418,6 +3433,7 @@ class _DayStreamTimeline extends StatelessWidget {
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
+  final Map<String, PlannerTaskProgress> taskProgressById;
   final ValueChanged<PlannerEntity> onInspect;
 
   @override
@@ -3483,6 +3499,7 @@ class _DayStreamTimeline extends StatelessWidget {
                       onInspect: onInspect,
                       todayEligibility: eligibilityById[entity.id],
                       habitSummary: habitSummaryById[entity.id],
+                      taskProgress: taskProgressById[entity.id],
                     ),
                   ),
                 ],
@@ -3623,6 +3640,7 @@ class _TodayPage extends StatelessWidget {
             onInspect: onInspect,
             todayEligibility: eligibilityById[entity.id],
             habitSummary: habitSummaryById[entity.id],
+            taskProgress: taskProgressById[entity.id],
             referenceStyle: true,
           ),
         ),
@@ -5188,12 +5206,14 @@ class _AgendaRow extends StatelessWidget {
     this.showKind = false,
     this.todayEligibility,
     this.habitSummary,
+    this.taskProgress,
     this.referenceStyle = false,
   });
 
   final PlannerEntity entity;
   final PlannerWorkspaceController controller;
   final ValueChanged<PlannerEntity> onInspect;
+  final PlannerTaskProgress? taskProgress;
   final bool showKind;
   final PlannerTodayEligibility? todayEligibility;
   final PlannerHabitDaySummary? habitSummary;
@@ -5206,10 +5226,12 @@ class _AgendaRow extends StatelessWidget {
         : null;
     final completed =
         oneOffProgress?.isComplete ??
+        taskProgress?.isComplete ??
         (habitSummary?.state == PlannerHabitDayState.completed ||
             entity.status == PlannerEntityStatus.completed);
     final missed =
         oneOffProgress?.isMissed ??
+        taskProgress?.isMissed ??
         (habitSummary?.state == PlannerHabitDayState.missed);
     final requiresRecoveryDecision =
         todayEligibility?.requiresDecision ?? false;
@@ -5231,6 +5253,7 @@ class _AgendaRow extends StatelessWidget {
           entity: entity,
           controller: controller,
           onInspect: onInspect,
+          taskProgress: taskProgress,
           todayEligibility: todayEligibility,
           habitSummary: habitSummary,
           completed: completed,
@@ -5254,6 +5277,7 @@ class _AgendaRow extends StatelessWidget {
               _AgendaCompletionButton(
                 entity: entity,
                 controller: controller,
+                taskProgress: taskProgress,
                 habitSummary: habitSummary,
               ),
               Container(
@@ -5497,6 +5521,7 @@ class _ReferenceAgendaRow extends StatelessWidget {
     required this.entity,
     required this.controller,
     required this.onInspect,
+    this.taskProgress,
     required this.todayEligibility,
     required this.habitSummary,
     required this.completed,
@@ -5507,6 +5532,7 @@ class _ReferenceAgendaRow extends StatelessWidget {
   final PlannerEntity entity;
   final PlannerWorkspaceController controller;
   final ValueChanged<PlannerEntity> onInspect;
+  final PlannerTaskProgress? taskProgress;
   final PlannerTodayEligibility? todayEligibility;
   final PlannerHabitDaySummary? habitSummary;
   final bool completed;
@@ -5521,7 +5547,7 @@ class _ReferenceAgendaRow extends StatelessWidget {
         _kindLabel(entity.kind);
     final progress = entity.kind == PlannerEntityKind.oneOffTask
         ? PlannerTaskProgress.fromEntity(entity).percent
-        : habitSummary?.progressPercent ?? 0;
+        : taskProgress?.percent ?? habitSummary?.progressPercent ?? 0;
     final requiresRecoveryDecision =
         todayEligibility?.requiresDecision ?? false;
     final scheme = Theme.of(context).colorScheme;
@@ -5607,18 +5633,11 @@ class _ReferenceAgendaRow extends StatelessWidget {
           ],
         );
         final trailing = entity.kind == PlannerEntityKind.recurringTask
-            ? FutureBuilder<PlannerTaskProgress>(
-                future: controller.taskProgressForDay(entity),
-                builder: (context, snapshot) {
-                  final recurringProgress =
-                      snapshot.data ?? const PlannerTaskProgress.pending();
-                  return _ReferenceAgendaStatus(
-                    progress: recurringProgress.percent,
-                    completed: recurringProgress.isComplete,
-                    missed: recurringProgress.isMissed,
-                    color: color,
-                  );
-                },
+            ? _ReferenceAgendaStatus(
+                progress: taskProgress?.percent ?? 0,
+                completed: taskProgress?.isComplete ?? false,
+                missed: taskProgress?.isMissed ?? false,
+                color: color,
               )
             : _ReferenceAgendaStatus(
                 progress: progress,
@@ -5640,6 +5659,7 @@ class _ReferenceAgendaRow extends StatelessWidget {
                       _AgendaCompletionButton(
                         entity: entity,
                         controller: controller,
+                        taskProgress: taskProgress,
                         habitSummary: habitSummary,
                         referenceStyle: true,
                       ),
@@ -6616,12 +6636,14 @@ class _AgendaCompletionButton extends StatelessWidget {
   const _AgendaCompletionButton({
     required this.entity,
     required this.controller,
+    this.taskProgress,
     this.habitSummary,
     this.referenceStyle = false,
   });
 
   final PlannerEntity entity;
   final PlannerWorkspaceController controller;
+  final PlannerTaskProgress? taskProgress;
   final PlannerHabitDaySummary? habitSummary;
   final bool referenceStyle;
 
@@ -6645,22 +6667,17 @@ class _AgendaCompletionButton extends StatelessWidget {
       );
     }
     if (entity.kind == PlannerEntityKind.recurringTask) {
-      return FutureBuilder<PlannerTaskProgress>(
-        future: controller.taskProgressForDay(entity),
-        builder: (context, snapshot) {
-          final progress = snapshot.data ?? const PlannerTaskProgress.pending();
-          return IconButton(
-            tooltip: _taskProgressTooltip(progress),
-            onPressed: () =>
-                _cycleTaskProgressWithFeedback(context, controller, entity),
-            icon: _animatedTaskProgressVisual(
-              context,
-              progress,
-              fallback: _colorFor(context, entity),
-              referenceStyle: referenceStyle,
-            ),
-          );
-        },
+      final progress = taskProgress ?? const PlannerTaskProgress.pending();
+      return IconButton(
+        tooltip: _taskProgressTooltip(progress),
+        onPressed: () =>
+            _cycleTaskProgressWithFeedback(context, controller, entity),
+        icon: _animatedTaskProgressVisual(
+          context,
+          progress,
+          fallback: _colorFor(context, entity),
+          referenceStyle: referenceStyle,
+        ),
       );
     }
     final progress = PlannerTaskProgress.fromEntity(entity);

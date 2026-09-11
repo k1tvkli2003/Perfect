@@ -1,5 +1,15 @@
 # Verification
 
+## Current checkpoint — 2026-09-12
+
+Historical results below remain scoped to their dated source. Stage 12 remains
+active and visual acceptance is still open.
+
+| Check | Command/Method | Result | Evidence / limit |
+|---|---|---|---|
+| Today UI integration | `flutter analyze --no-pub` + `flutter test --no-pub --concurrency=1` | passed | Analyzer clean; full sequential suite 479/479. `PlannerTodayStream` and daily task outcomes now drive compact/medium/expanded Today rows instead of row-local recurring reads. |
+| Android runtime capture | cold start `lib/dev/perfect_live_preview.dart` on `Codex_API35` / `emulator-5554`; `adb exec-out screencap -p` | captured | `screenshots/perfect-stage12-preview-runtime-2026-09-12.png`. Runtime evidence only; not a side-by-side preview gate acceptance or whole-product proof. |
+
 ## Current checkpoint — 2026-09-11
 
 Historical results below are scoped to their dated source, not current HEAD.

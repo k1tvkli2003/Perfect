@@ -1,7 +1,7 @@
 # Stage 12 continuation and recovery ledger
 
 Status: active  
-Updated: 2026-09-11  
+Updated: 2026-09-12
 Objective: review the whole scope and finish the existing 50-stage product plan.
 
 ## Current evidence, not inherited completion
@@ -57,6 +57,22 @@ Objective: review the whole scope and finish the existing 50-stage product plan.
 - The user clarified emulator use for app viewing is allowed; earlier RAM
   caution is not a standing prohibition.
 
+## 2026-09-12 Stage 12 UI integration packet
+
+- `_resolveTodayProjection` now builds `PlannerTodayStream` and publishes the
+  ordered entity projection instead of falling back to `_sortAgenda`.
+- Phone Today and medium/expanded Day Stream panels now receive
+  `taskProgressById` and pass each row's daily task outcome into
+  `_AgendaRow`, `_ReferenceAgendaRow` and `_AgendaCompletionButton`.
+- Removed two row-local recurring-task `FutureBuilder`s that re-read the
+  selected day independently; visible status/percent now come from the same
+  durable projection as ordering and Pulse.
+- Analyzer is clean and the full sequential Flutter suite passed 479/479.
+- Cold-started the live preview on `Codex_API35` / `emulator-5554` and captured
+  `screenshots/perfect-stage12-preview-runtime-2026-09-12.png`. This is
+  runtime evidence, not yet a side-by-side preview gate acceptance or a claim
+  that Stage 12 UI is complete.
+
 ## Ownership and dependency graph
 
 | Owner | Outcome | Exclusive writes | Dependency / proof |
@@ -67,8 +83,8 @@ Objective: review the whole scope and finish the existing 50-stage product plan.
 | root | integration, Git preservation, final evidence | index and explicit owned commits | inspect all worker diffs; sequential Flutter tests; exact-SHA hosted proof separate |
 
 Native worker model/effort inherited from root; no unsupported tier override.
-Two coherent independent builders; root owns architecture and final acceptance.
-No emulator, local device deployment, parallel Flutter suites or computer-use.
+Historical worker rows are retained below only as evidence for already-completed
+work. Current work is solo, with root owning architecture and final acceptance.
 
 ## Stage 12 contract
 
@@ -84,7 +100,9 @@ Next-row emphasis references one real row ID; no duplicated Next Up card.
 
 ## Acceptance still open
 
-The projection is a staged domain work packet, **not wired into UI yet**.
+The projection and daily-outcome contract are now wired into the current
+Today surfaces, but the visual/composition gate remains open. Stage 12 is not
+accepted yet.
 Before visible ordering changes: freeze three sparse/dense stream arrangements,
 choose and compare against `td-zone-heading`, `td-stream-timeline`,
 `td-next-emphasis`, `td-continuation-cue` and `pg-today-*` manifests.

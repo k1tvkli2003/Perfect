@@ -723,3 +723,14 @@ install-over/LocalState, Setup and three-asset publication proof.
 - Commit this seven-file closure packet, push the exact documentation SHA through
   trusted `main`, inspect its release, then clean branch/worktree while preserving
   the owner's dirty `main` files and existing stash byte-for-byte.
+
+## 2026-09-12 — Stage 12 UI integration packet
+
+- Wired `PlannerTodayStream` ordering and per-day task outcomes into compact,
+  medium and expanded Today surfaces.
+- Removed row-local recurring-task futures so status, percent and ordering now
+  share one durable projection.
+- Analyzer and the full sequential Flutter suite passed.
+- Cold-started the live preview on `Codex_API35` and captured
+  `screenshots/perfect-stage12-preview-runtime-2026-09-12.png`. Visual/composition
+  acceptance remains open.

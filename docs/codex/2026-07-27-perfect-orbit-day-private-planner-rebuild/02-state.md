@@ -8,6 +8,15 @@
 
 ### Current correction — 2026-09-11
 
+### Current correction — 2026-09-12
+
+Stage 12's `PlannerTodayStream` and per-day task outcomes are now wired into the
+existing compact, medium and expanded Today surfaces. The UI no longer reruns
+row-local recurring reads in separate futures. Analyzer is clean, the full
+sequential suite passes 479/479, and a live preview cold start was captured on
+`Codex_API35`. This is implementation/runtime progress, not Stage 12 visual
+acceptance.
+
 Stage 12 is active, not complete. The older closure text below applies only to
 the Stage 11 feature SHA, not the later CI repair. Live trusted-main run
 `32791367184` at `d0a62b9` failed both artifact uploads (quota); install-over,
