@@ -150,6 +150,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       const <String, PlannerHabitDaySummary>{};
   Map<String, PlannerTaskProgress> _todayTaskProgressById =
       const <String, PlannerTaskProgress>{};
+  Map<String, DateTime?> _todayScheduledAtById = const <String, DateTime?>{};
   double? _inspectorWidthOverride;
 
   @override
@@ -179,6 +180,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       _todayEligibilityById = const <String, PlannerTodayEligibility>{};
       _habitDaySummaryById = const <String, PlannerHabitDaySummary>{};
       _todayTaskProgressById = const <String, PlannerTaskProgress>{};
+      _todayScheduledAtById = const <String, DateTime?>{};
     }
     if (oldWidget.navigationController == widget.navigationController) return;
     oldWidget.navigationController?.removeListener(_handleNavigationRequest);
@@ -671,6 +673,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         eligibilityById: _displayTodayEligibility,
         habitSummaryById: _displayHabitSummaries,
         taskProgressById: _displayTaskProgress,
+        scheduledAtById: _displayTodayScheduledAt,
         projectionResolved: _isTodayProjectionResolved,
         onInspect: _inspect,
         onAdd: _openEditor,
@@ -684,6 +687,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         eligibilityById: _displayTodayEligibility,
         habitSummaryById: _displayHabitSummaries,
         taskProgressById: _displayTaskProgress,
+        scheduledAtById: _displayTodayScheduledAt,
         projectionResolved: _isTodayProjectionResolved,
         nowProvider: widget.now,
         onInspect: _inspect,
@@ -698,6 +702,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         eligibilityById: _displayTodayEligibility,
         habitSummaryById: _displayHabitSummaries,
         taskProgressById: _displayTaskProgress,
+        scheduledAtById: _displayTodayScheduledAt,
         projectionResolved: _isTodayProjectionResolved,
         nowProvider: widget.now,
         inspected: _destination == _PerfectDestination.today
@@ -799,6 +804,14 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     return const <String, PlannerTaskProgress>{};
   }
 
+  Map<String, DateTime?> get _displayTodayScheduledAt {
+    final now = widget.now().toLocal();
+    if (_resolvedTodayProjection == _todayProjectionSignature(now)) {
+      return _todayScheduledAtById;
+    }
+    return const <String, DateTime?>{};
+  }
+
   bool get _isTodayProjectionResolved {
     final now = widget.now().toLocal();
     return _resolvedTodayProjection == _todayProjectionSignature(now);
@@ -886,6 +899,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       final byId = <String, PlannerTodayEligibility>{};
       final habitSummaries = <String, PlannerHabitDaySummary>{};
       final taskProgress = <String, PlannerTaskProgress>{};
+      final scheduledAt = <String, DateTime?>{};
       for (final (entity, result, summary, progress) in results) {
         byId[entity.id] = result;
         if (summary != null) habitSummaries[entity.id] = summary;
@@ -899,6 +913,9 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         taskProgressById: taskProgress,
         habitSummaryById: habitSummaries,
       );
+      for (final entry in stream.entries) {
+        scheduledAt[entry.entity.id] = entry.scheduledAt;
+      }
       setState(() {
         _resolvedTodayProjection = signature;
         _projectedTodayItems = stream.entries
@@ -907,6 +924,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         _todayEligibilityById = byId;
         _habitDaySummaryById = habitSummaries;
         _todayTaskProgressById = taskProgress;
+        _todayScheduledAtById = scheduledAt;
       });
     } on Object {
       if (!mounted || _requestedTodayProjection != signature) return;
@@ -917,6 +935,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         _todayEligibilityById = const <String, PlannerTodayEligibility>{};
         _habitDaySummaryById = const <String, PlannerHabitDaySummary>{};
         _todayTaskProgressById = const <String, PlannerTaskProgress>{};
+        _todayScheduledAtById = const <String, DateTime?>{};
       });
     }
   }
@@ -2956,6 +2975,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
     required this.eligibilityById,
     required this.habitSummaryById,
     required this.taskProgressById,
+    required this.scheduledAtById,
     required this.projectionResolved,
     required this.nowProvider,
     required this.inspected,
@@ -2972,6 +2992,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
   final Map<String, PlannerTaskProgress> taskProgressById;
+  final Map<String, DateTime?> scheduledAtById;
   final bool projectionResolved;
   final PerfectNow nowProvider;
   final PlannerEntity? inspected;
@@ -3073,6 +3094,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
                                 eligibilityById: eligibilityById,
                                 habitSummaryById: habitSummaryById,
                                 taskProgressById: taskProgressById,
+                                scheduledAtById: scheduledAtById,
                                 onInspect: onInspect,
                                 onAdd: onAdd,
                                 constrained: true,
@@ -3138,6 +3160,7 @@ class _MediumTodayDeck extends StatelessWidget {
     required this.eligibilityById,
     required this.habitSummaryById,
     required this.taskProgressById,
+    required this.scheduledAtById,
     required this.projectionResolved,
     required this.nowProvider,
     required this.onInspect,
@@ -3152,6 +3175,7 @@ class _MediumTodayDeck extends StatelessWidget {
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
   final Map<String, PlannerTaskProgress> taskProgressById;
+  final Map<String, DateTime?> scheduledAtById;
   final bool projectionResolved;
   final PerfectNow nowProvider;
   final ValueChanged<PlannerEntity> onInspect;
@@ -3229,6 +3253,7 @@ class _MediumTodayDeck extends StatelessWidget {
                         eligibilityById: eligibilityById,
                         habitSummaryById: habitSummaryById,
                         taskProgressById: taskProgressById,
+                        scheduledAtById: scheduledAtById,
                         onInspect: onInspect,
                         onAdd: onAdd,
                         constrained: true,
@@ -3290,6 +3315,7 @@ class _DayStreamPanel extends StatelessWidget {
     required this.eligibilityById,
     required this.habitSummaryById,
     required this.taskProgressById,
+    required this.scheduledAtById,
     required this.onInspect,
     required this.onAdd,
     required this.constrained,
@@ -3301,6 +3327,7 @@ class _DayStreamPanel extends StatelessWidget {
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
   final Map<String, PlannerTaskProgress> taskProgressById;
+  final Map<String, DateTime?> scheduledAtById;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
   final bool constrained;
@@ -3325,6 +3352,7 @@ class _DayStreamPanel extends StatelessWidget {
           eligibilityById: eligibilityById,
           habitSummaryById: habitSummaryById,
           taskProgressById: taskProgressById,
+          scheduledAtById: scheduledAtById,
           onInspect: onInspect,
         ),
     ];
@@ -3426,6 +3454,7 @@ class _DayStreamTimeline extends StatelessWidget {
     required this.eligibilityById,
     required this.habitSummaryById,
     required this.taskProgressById,
+    required this.scheduledAtById,
     required this.onInspect,
   });
 
@@ -3434,6 +3463,7 @@ class _DayStreamTimeline extends StatelessWidget {
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
   final Map<String, PlannerTaskProgress> taskProgressById;
+  final Map<String, DateTime?> scheduledAtById;
   final ValueChanged<PlannerEntity> onInspect;
 
   @override
@@ -3500,6 +3530,7 @@ class _DayStreamTimeline extends StatelessWidget {
                       todayEligibility: eligibilityById[entity.id],
                       habitSummary: habitSummaryById[entity.id],
                       taskProgress: taskProgressById[entity.id],
+                      occurrenceAt: scheduledAtById[entity.id],
                     ),
                   ),
                 ],
@@ -3560,6 +3591,7 @@ class _TodayPage extends StatelessWidget {
     required this.eligibilityById,
     required this.habitSummaryById,
     required this.taskProgressById,
+    required this.scheduledAtById,
     required this.projectionResolved,
     required this.onInspect,
     required this.onAdd,
@@ -3574,6 +3606,7 @@ class _TodayPage extends StatelessWidget {
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
   final Map<String, PlannerTaskProgress> taskProgressById;
+  final Map<String, DateTime?> scheduledAtById;
   final bool projectionResolved;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
@@ -3641,6 +3674,7 @@ class _TodayPage extends StatelessWidget {
             todayEligibility: eligibilityById[entity.id],
             habitSummary: habitSummaryById[entity.id],
             taskProgress: taskProgressById[entity.id],
+            occurrenceAt: scheduledAtById[entity.id],
             referenceStyle: true,
           ),
         ),
@@ -5207,6 +5241,7 @@ class _AgendaRow extends StatelessWidget {
     this.todayEligibility,
     this.habitSummary,
     this.taskProgress,
+    this.occurrenceAt,
     this.referenceStyle = false,
   });
 
@@ -5214,6 +5249,7 @@ class _AgendaRow extends StatelessWidget {
   final PlannerWorkspaceController controller;
   final ValueChanged<PlannerEntity> onInspect;
   final PlannerTaskProgress? taskProgress;
+  final DateTime? occurrenceAt;
   final bool showKind;
   final PlannerTodayEligibility? todayEligibility;
   final PlannerHabitDaySummary? habitSummary;
@@ -5255,6 +5291,7 @@ class _AgendaRow extends StatelessWidget {
           onInspect: onInspect,
           taskProgress: taskProgress,
           todayEligibility: todayEligibility,
+          occurrenceAt: occurrenceAt,
           habitSummary: habitSummary,
           completed: completed,
           missed: missed,
@@ -5522,6 +5559,7 @@ class _ReferenceAgendaRow extends StatelessWidget {
     required this.controller,
     required this.onInspect,
     this.taskProgress,
+    this.occurrenceAt,
     required this.todayEligibility,
     required this.habitSummary,
     required this.completed,
@@ -5533,6 +5571,7 @@ class _ReferenceAgendaRow extends StatelessWidget {
   final PlannerWorkspaceController controller;
   final ValueChanged<PlannerEntity> onInspect;
   final PlannerTaskProgress? taskProgress;
+  final DateTime? occurrenceAt;
   final PlannerTodayEligibility? todayEligibility;
   final PlannerHabitDaySummary? habitSummary;
   final bool completed;
@@ -5541,7 +5580,7 @@ class _ReferenceAgendaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheduled = entity.scheduledAt?.toLocal();
+    final scheduled = occurrenceAt ?? entity.scheduledAt?.toLocal();
     final category =
         safeNullableJsonString(entity.payload['category']) ??
         _kindLabel(entity.kind);
