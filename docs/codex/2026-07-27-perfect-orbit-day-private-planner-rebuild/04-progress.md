@@ -732,7 +732,7 @@ install-over/LocalState, Setup and three-asset publication proof.
   share one durable projection.
 - Analyzer and the full sequential Flutter suite passed.
 - Cold-started the live preview on `Codex_API35` and captured
-  `screenshots/perfect-stage12-preview-runtime-2026-09-12.png`. Visual/composition
+  `assets/perfect-stage12-preview-runtime-2026-09-12.png`. Visual/composition
   acceptance remains open.
 - Trusted main run `34653499443` passed and published
   `v1.1.0-build.2067` with exactly three install-ready assets; Windows

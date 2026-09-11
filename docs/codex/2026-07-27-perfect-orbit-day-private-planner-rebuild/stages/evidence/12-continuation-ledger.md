@@ -69,7 +69,7 @@ Objective: review the whole scope and finish the existing 50-stage product plan.
   durable projection as ordering and Pulse.
 - Analyzer is clean and the full sequential Flutter suite passed 479/479.
 - Cold-started the live preview on `Codex_API35` / `emulator-5554` and captured
-  `screenshots/perfect-stage12-preview-runtime-2026-09-12.png`. This is
+  `../../assets/perfect-stage12-preview-runtime-2026-09-12.png`. This is
   runtime evidence, not yet a side-by-side preview gate acceptance or a claim
   that Stage 12 UI is complete.
 
