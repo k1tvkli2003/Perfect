@@ -9,6 +9,9 @@ active and visual acceptance is still open.
 |---|---|---|---|
 | Today UI integration | `flutter analyze --no-pub` + `flutter test --no-pub --concurrency=1` | passed | Analyzer clean; full sequential suite 479/479. `PlannerTodayStream` and daily task outcomes now drive compact/medium/expanded Today rows instead of row-local recurring reads. |
 | Android runtime capture | cold start `lib/dev/perfect_live_preview.dart` on `Codex_API35` / `emulator-5554`; `adb exec-out screencap -p` | captured | `screenshots/perfect-stage12-preview-runtime-2026-09-12.png`. Runtime evidence only; not a side-by-side preview gate acceptance or whole-product proof. |
+| Trusted main CI | [`run 34653499443`](https://github.com/k1tvkli2003/Perfect/actions/runs/34653499443) at `dbf8752` | passed | All quality, Android, Windows, publish and rotation jobs passed. |
+| Private release | Release API `v1.1.0-build.2067` | passed | Exactly `Perfect-1.1.0-build.2067-Android.apk`, `Perfect-1.1.0-build.2067-Windows-Portable.zip`, and `Perfect-1.1.0-build.2067-Windows-Setup.exe`; draft false and prerelease false. |
+| Windows Setup/install continuity | trusted runner job `Windows desktop build` | passed | Clean install then idempotent rerun of `1.1.0.67`; package family and `LocalState` preserved; Trusted Root unchanged. |
 
 ## Current checkpoint — 2026-09-11
 

@@ -46,6 +46,14 @@ package family and `LocalState`, and did not mutate Root. No older MSIX
 transport existed for this new baseline, so cross-version MSIX upgrade proof
 begins at build 2066. The user has clarified emulator use is allowed.
 
+After the Stage 12 UI integration packet, trusted main run
+[`34653499443`](https://github.com/k1tvkli2003/Perfect/actions/runs/34653499443)
+at `dbf8752` passed every job and published immutable release
+[`v1.1.0-build.2067`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2067)
+with exactly three install-ready assets. The hosted Windows job also proved
+MSIX install-over `1.1.0.66 → 1.1.0.67`, preserving package family and
+`LocalState`.
+
 ### Historical Stage 11 feature checkpoint
 
 Stage 11 source checkpoint `59db6e479f34f25ecf66e4224b2d8c90c7f53941`
