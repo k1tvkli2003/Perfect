@@ -387,21 +387,15 @@ void main() {
     );
     expect(
       workflow,
-      contains('Expected exactly one current signed Windows upgrade baseline'),
+      contains('python3 .github/scripts/rotate_artifact_transport.py --apply'),
     );
-    expect(workflow, contains(r'actions/artifacts/$artifact_id'));
+    expect(
+      workflow,
+      contains('python3 .github/scripts/test_artifact_rotation.py'),
+    );
     expect(workflow, isNot(contains('gh api +')));
     expect(workflow, isNot(contains("awk -F '\\t' +")));
-    expect(workflow, contains('status=in_progress&per_page=100'));
-    expect(workflow, contains('status=queued&per_page=100'));
-    expect(
-      workflow,
-      contains('Preserved exactly one current signed Windows baseline'),
-    );
-    expect(
-      workflow,
-      contains('Deleted current-run transport after unsuccessful publication'),
-    );
+    expect(workflow, isNot(contains('mapfile -t artifact_ids')));
   });
 
   test('trusted Windows builds prove install-over without trusting Root', () {
