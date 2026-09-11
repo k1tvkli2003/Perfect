@@ -13,6 +13,8 @@ Stage 12 remains active; no visual or whole-product closure is claimed.
 | Artifact transport guard | `python .github/scripts/test_artifact_rotation.py` | passed | 20/20 offline fake-API cases; no live artifact deletion or API call was made. |
 | Static analysis | `flutter analyze` | passed | `No issues found!` |
 | Full Flutter suite | `flutter test --no-pub --concurrency=1` | passed | 479/479 sequential tests after the pinned-day projection fix. |
+| CI-only feedback export flake | trusted main run `34549428281`, failed Test step | reproduced from log | `TimeoutException after 0:00:00.025000` escaped while the test waited for Windows staging; root cause was matcher attachment timing, not cleanup semantics. |
+| Feedback exporter regression | `flutter test --no-pub --concurrency=1 test/feedback/feedback_exporter_test.dart` | passed | 13/13 after attaching both stalled-delivery `expectLater` futures before stage/commit waits. |
 | Current CI repair | trusted main run `32791367184` at `d0a62b9`, inspected 2026-09-09 | failed | Both artifact uploads hit storage quota; install-over, Setup and publish skipped. Failure-path artifact hygiene passed, not success rotation. |
 | Existing upgrade transport | artifact `9206952095`, inspected 2026-09-09 | expired | Expired 2026-08-28; older release is not an available Actions baseline. |
 | Emulator / Android install / motion | deliberately not run | deferred | Explicit RAM constraint; unit/widget tests do not prove device behavior, screenshots or upgrade continuity. |

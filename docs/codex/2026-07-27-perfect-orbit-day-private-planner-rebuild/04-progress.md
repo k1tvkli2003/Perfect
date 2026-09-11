@@ -18,6 +18,11 @@
 - Verified artifact rotation in 20 offline tests, Flutter analysis clean, and
   the full sequential Flutter suite at 479/479. No live artifact deletion,
   release, emulator/device run, or visual/runtime completion was claimed.
+- Inspected trusted main run `34549428281`: Android quality failed because
+  `stalled Windows staging makes Clear fail until managed cleanup settles`
+  could produce its expected `TimeoutException` before the test attached its
+  matcher. Attached both stalled-delivery expectations immediately; focused
+  exporter suite passes 13/13.
 
 ## 2026-09-09 — resume from authoritative state
 

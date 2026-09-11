@@ -612,11 +612,14 @@ void main() {
         commitTimeout: const Duration(milliseconds: 25),
       );
 
-      final exportFuture = exporter.export();
+      final exportOutcome = expectLater(
+        exporter.export(),
+        throwsA(isA<TimeoutException>()),
+      );
       await delivery.commitEntered.future;
       final competingRead = competingRepository.readEntries();
 
-      await expectLater(exportFuture, throwsA(isA<TimeoutException>()));
+      await exportOutcome;
       await expectLater(
         competingRead.timeout(const Duration(seconds: 1)),
         completes,
@@ -711,13 +714,16 @@ void main() {
       addTearDown(clearingController.dispose);
       await clearingController.initialize();
 
-      final exportFuture = exporter.export();
+      final exportOutcome = expectLater(
+        exporter.export(),
+        throwsA(isA<TimeoutException>()),
+      );
       final stagingPath = await saverEntered.future;
       expect(
         stagingPath,
         contains(ReadyFeedbackPlatformDelivery.managedDirectoryName),
       );
-      await expectLater(exportFuture, throwsA(isA<TimeoutException>()));
+      await exportOutcome;
 
       await expectLater(
         clearingController.clearAll(),

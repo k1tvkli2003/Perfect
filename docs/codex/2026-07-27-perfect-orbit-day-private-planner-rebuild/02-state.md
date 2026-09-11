@@ -23,9 +23,12 @@ cover persisted quota, midnight rollover, owner isolation, measured-habit undo,
 stored exceptions, resolved recovery and no mutation-on-read behavior. Editor
 date-bound repairs pass 17 tests, and the fail-closed artifact rotation guard
 passes 20 offline tests. Flutter analyzer and the full sequential suite pass
-479 tests. UI composition and visible ordering still wait for the Stage 12
-preview gate. No emulator/device tests: explicit user RAM constraint.
-Stages 12–50 remain open.
+479 tests. Trusted main run `34549428281` exposed one CI-only feedback export
+flake: a 25 ms commit deadline could reject `export()` before the test attached
+its expectation. Both stalled delivery tests now attach `expectLater` before
+the staged-save wait, and 13/13 focused tests pass. UI composition and visible
+ordering still wait for the Stage 12 preview gate. No emulator/device tests:
+explicit user RAM constraint. Stages 12–50 remain open.
 
 ### Historical Stage 11 feature checkpoint
 
