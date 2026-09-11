@@ -1,5 +1,23 @@
 # Verification
 
+## Current checkpoint — 2026-09-11
+
+Historical results below are scoped to their dated source, not current HEAD.
+Stage 12 remains active; no visual or whole-product closure is claimed.
+
+| Check | Command/Method | Result | Evidence / limit |
+|---|---|---|---|
+| Today semantic projection | `flutter test --no-pub --concurrency=1 test/planner/planner_today_stream_test.dart` | passed | 12/12; recurrence occurrence-time ordering, stable ties, quota override, inactive filtering, daily outcomes, rollover and immutable output. Not yet wired into Today UI. |
+| Today storage-backed projection | `flutter test --no-pub --concurrency=1 test/planner/planner_today_stream_storage_test.dart` | passed | 6/6 with real in-memory Drift and production controller reads: quota exclusion, pinned-day rollover, owner isolation, habit amount/undo, exceptions/recovery and no seed/mutation on read. |
+| Editor date bounds and clock | `flutter test --no-pub --concurrency=1 test/presentation/planner_editor_test.dart` | passed by owning worker | 17/17, including 11 added regressions. Old/distant schedule, deadline, recurrence-end and block-end picker assertions reproduced before repair; calendar cancellation preserves stored timestamp. |
+| Artifact transport guard | `python .github/scripts/test_artifact_rotation.py` | passed | 20/20 offline fake-API cases; no live artifact deletion or API call was made. |
+| Static analysis | `flutter analyze` | passed | `No issues found!` |
+| Full Flutter suite | `flutter test --no-pub --concurrency=1` | passed | 479/479 sequential tests after the pinned-day projection fix. |
+| Current CI repair | trusted main run `32791367184` at `d0a62b9`, inspected 2026-09-09 | failed | Both artifact uploads hit storage quota; install-over, Setup and publish skipped. Failure-path artifact hygiene passed, not success rotation. |
+| Existing upgrade transport | artifact `9206952095`, inspected 2026-09-09 | expired | Expired 2026-08-28; older release is not an available Actions baseline. |
+| Emulator / Android install / motion | deliberately not run | deferred | Explicit RAM constraint; unit/widget tests do not prove device behavior, screenshots or upgrade continuity. |
+| Artifact guard repair / store-backed Today proof | current unfinished work | pending | Require fake-API destructive-manifest tests and real in-memory daily-state fixtures before acceptance. No live deletion authorized by these tests. |
+
 ## 2026-08-05 Critics baseline
 
 | Check | Command/Method | Result | Evidence / limit |

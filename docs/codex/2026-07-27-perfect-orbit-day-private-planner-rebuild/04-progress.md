@@ -1,5 +1,36 @@
 # Progress
 
+## 2026-09-11 — solo integration checkpoint
+
+- Completed the staged storage proof with real Drift and the production
+  controller: six Today stream tests cover persisted quota, midnight rollover,
+  owner isolation, measured-habit undo, stored exceptions/recovery and
+  read-only projection behavior.
+- Fixed `_resolveTodayProjection` so recurring task progress always uses the
+  selected local day instead of the controller's current day. This is the
+  rolled-over-day invariant proven in
+  `test/planner/planner_today_stream_storage_test.dart`.
+- Kept the continuation solo after the user's explicit multi-agent stop; no new
+  workers were spawned and both earlier builders were interrupted.
+- Completed the protected-file forward correction in `962fb25`; local
+  `.vscode/settings.json` and `lib/presentation/perfect_date_format.dart`
+  remain on disk and untracked.
+- Verified artifact rotation in 20 offline tests, Flutter analysis clean, and
+  the full sequential Flutter suite at 479/479. No live artifact deletion,
+  release, emulator/device run, or visual/runtime completion was claimed.
+
+## 2026-09-09 — resume from authoritative state
+
+- Verified current branch `codex/critics-cycle1`, main `d0a62b9`, failed trusted
+  run `32791367184`, upload quota errors, skipped Windows install/Setup and
+  publication, successful failure-path cleanup, and expired MSIX `9206952095`.
+- Preserved local content while removing mistakenly tracked editor settings and
+  unused date helper from the index. `NUL`, stash and remote arena branch intact.
+- Reopened Stage 12 explicitly. Root owns daily projection; independent builders
+  own picker regressions and artifact-hygiene failure guards. No emulator.
+- Evidence and exact remaining scope:
+  [continuation ledger](stages/evidence/12-continuation-ledger.md).
+
 ## 2026-08-14 — Stage 11 Today Pulse preview gate
 
 ### Before

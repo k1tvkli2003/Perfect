@@ -1,8 +1,13 @@
 # Stage 12 — Today information architecture and day stream
 
-Status: pending  
+Status: active  
 Depends on: Stage 11  
 Primary surfaces: Today stream, grouping, scroll and next-action emphasis
+
+Current work and evidence:
+[2026-09-09 continuation ledger](evidence/12-continuation-ledger.md).
+Domain projection is the first packet; visual integration and runtime gates are
+not complete. Emulator tests are explicitly deferred for host RAM.
 
 ## Mission
 

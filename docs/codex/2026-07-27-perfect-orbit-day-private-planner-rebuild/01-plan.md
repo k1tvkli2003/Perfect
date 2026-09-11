@@ -1,5 +1,18 @@
 # Plan
 
+## Current execution checkpoint — 2026-09-11
+
+Canonical scope is the [50-stage master plan](11-master-50-stage-plan.md).
+Stage 12 is active; Stages 13–50 remain open. Earlier requirement-ledger
+"complete" entries below describe historical subsystem checks, not completion
+of the later whole-product rebuild.
+
+Current wave: finish deterministic Today projection and real-store proof;
+integrate verified editor date-bound repair; finish fail-closed release transport
+guard; preserve user-local files through a forward tracking correction. Then
+complete Stage 12's three sparse/dense composition previews before visible UI
+wiring. No emulator tests while RAM restriction remains.
+
 ## Approach
 بازسازی به شکل expand/migrate/verify انجام می‌شود: ابتدا مبنای فعلی و قراردادهای کاربر حفظ می‌شوند، سپس مدل داده و لایهٔ sync به‌صورت سازگار توسعه می‌یابد، بعد shell و صفحات Orbit Day با دادهٔ واقعی جایگزین UI ساده می‌شوند. هر تغییر داده‌ای migration افزایشی، idempotent و قابل rollback دارد. UI تا جای ممکن از اجزای live semantic ساخته می‌شود؛ تصاویر تولیدی فقط برای هدف‌گذاری بصری هستند.
 

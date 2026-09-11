@@ -864,7 +864,10 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
           } else if (entity.kind == PlannerEntityKind.oneOffTask ||
               entity.kind == PlannerEntityKind.recurringTask) {
             try {
-              taskProgress = await widget.controller.taskProgressForDay(entity);
+              taskProgress = await widget.controller.taskProgressForDay(
+                entity,
+                localDay: day,
+              );
             } on Object {
               // Preserve the visible Today projection when the optional daily
               // occurrence read is unavailable. The entity value is a safe

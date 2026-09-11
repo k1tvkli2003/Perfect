@@ -1,5 +1,16 @@
 # Handoff
 
+## Active continuation — 2026-09-11
+
+Follow [the current continuation ledger](stages/evidence/12-continuation-ledger.md),
+not historical closure wording below. Current main CI repair has failed upload
+proof and an expired MSIX baseline. Stage 12 now has deterministic and
+storage-backed daily projection proof, editor picker repairs and fail-closed
+offline artifact hygiene. Current work is solo because the user explicitly
+stopped multi-agent use. Stage 12 visual composition, visible stream grouping,
+scroll-anchor implementation and Stages 13–50 remain open. Preserve local-only
+files and stash; emulator/device verification stays deferred for RAM.
+
 ## Canonical numbered execution — 2026-08-14
 
 Stages 01–11 are externally closed. Stage 11 source checkpoint

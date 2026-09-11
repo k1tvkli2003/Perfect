@@ -1,10 +1,33 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-08-14
+- Last updated: 2026-09-11
 - Owner: Codex
 
 ## Current State
+
+### Current correction — 2026-09-11
+
+Stage 12 is active, not complete. The older closure text below applies only to
+the Stage 11 feature SHA, not the later CI repair. Live trusted-main run
+`32791367184` at `d0a62b9` failed both artifact uploads (quota); install-over,
+Setup and publication were skipped. Its failure-path hygiene job passed.
+The retained signed MSIX `9206952095` has expired; availability and fresh upgrade
+proof must not be inferred from the older successful release.
+
+Current ownership, preservation, evidence corrections and next gates live in
+[Stage 12 continuation ledger](stages/evidence/12-continuation-ledger.md).
+The 2026-09-11 solo continuation closed the store-backed Today proof and fixed
+the one-day read bug in the existing UI projection. Drift-backed assertions now
+cover persisted quota, midnight rollover, owner isolation, measured-habit undo,
+stored exceptions, resolved recovery and no mutation-on-read behavior. Editor
+date-bound repairs pass 17 tests, and the fail-closed artifact rotation guard
+passes 20 offline tests. Flutter analyzer and the full sequential suite pass
+479 tests. UI composition and visible ordering still wait for the Stage 12
+preview gate. No emulator/device tests: explicit user RAM constraint.
+Stages 12–50 remain open.
+
+### Historical Stage 11 feature checkpoint
 
 Stage 11 source checkpoint `59db6e479f34f25ecf66e4224b2d8c90c7f53941`
 is merged to `main` and externally closed. `today-pulse-dayline-v2` is the sole
