@@ -27,8 +27,15 @@ passes 20 offline tests. Flutter analyzer and the full sequential suite pass
 flake: a 25 ms commit deadline could reject `export()` before the test attached
 its expectation. Both stalled delivery tests now attach `expectLater` before
 the staged-save wait, and 13/13 focused tests pass. UI composition and visible
-ordering still wait for the Stage 12 preview gate. No emulator/device tests:
-explicit user RAM constraint. Stages 12–50 remain open.
+ordering still wait for the Stage 12 preview gate. Stages 12–50 remain open.
+A follow-up trusted main run [`34550905297`](https://github.com/k1tvkli2003/Perfect/actions/runs/34550905297)
+at `959b34d` passed every job and published immutable release
+[`v1.1.0-build.2065`](https://github.com/k1tvkli2003/Perfect/releases/tag/v1.1.0-build.2065)
+with exactly the Android APK, Windows portable ZIP and Windows Setup EXE. The
+hosted runner proved clean/idempotent Setup install `1.1.0.65`, preserved
+package family and `LocalState`, and did not mutate Root. No older MSIX
+transport existed for this new baseline, so cross-version MSIX upgrade proof
+begins at build 2066. The user has clarified emulator use is allowed.
 
 ### Historical Stage 11 feature checkpoint
 

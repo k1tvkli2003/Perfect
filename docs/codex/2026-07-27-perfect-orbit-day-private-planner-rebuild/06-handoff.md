@@ -9,7 +9,9 @@ storage-backed daily projection proof, editor picker repairs and fail-closed
 offline artifact hygiene. Current work is solo because the user explicitly
 stopped multi-agent use. Stage 12 visual composition, visible stream grouping,
 scroll-anchor implementation and Stages 13–50 remain open. Preserve local-only
-files and stash; emulator/device verification stays deferred for RAM.
+files and stash. Trusted release `v1.1.0-build.2065` is now the current private
+baseline; emulator use for app viewing is allowed after the Stage 12 preview
+freeze.
 
 ## Canonical numbered execution — 2026-08-14
 

@@ -23,6 +23,16 @@
   could produce its expected `TimeoutException` before the test attached its
   matcher. Attached both stalled-delivery expectations immediately; focused
   exporter suite passes 13/13.
+- Trusted main run [`34550905297`](https://github.com/k1tvkli2003/Perfect/actions/runs/34550905297)
+  passed at exact SHA `959b34d`, published `v1.1.0-build.2065`, and verified
+  exactly three install-ready assets. Windows Setup proof passed clean and
+  idempotent reruns while preserving package family and `LocalState`. The
+  rotation job passed and retained one Windows upgrade transport. Because this
+  was the first newly retained MSIX transport, cross-version MSIX upgrade
+  proof remains for build 2066.
+- The user clarified that emulator use for app viewing is allowed; earlier RAM
+  caution is no longer a prohibition. The next Stage 12 step remains preview,
+  then live phone/tablet/Windows composition verification.
 
 ## 2026-09-09 — resume from authoritative state
 

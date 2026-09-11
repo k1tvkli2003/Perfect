@@ -48,6 +48,14 @@ Objective: review the whole scope and finish the existing 50-stage product plan.
 - Stage 12 remains blocked at its visual preview gate: generate three
   structurally distinct sparse/dense arrangements, freeze the chosen equations,
   then implement grouping/time labels/next emphasis/scroll continuity in UI.
+- Trusted main run `34550905297` passed and published release
+  `v1.1.0-build.2065` with exactly three assets. Windows Setup proof passed
+  clean/idempotent reruns, preserving package family and `LocalState`; no
+  older MSIX transport existed, so the next build must prove cross-version
+  MSIX install-over. This is release infrastructure proof, not Stage 12 UI
+  completion.
+- The user clarified emulator use for app viewing is allowed; earlier RAM
+  caution is not a standing prohibition.
 
 ## Ownership and dependency graph
 
