@@ -501,7 +501,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
         _kind == PlannerEntityKind.recurringTask &&
         _recurrence == 'none') {
       _recurrence = 'weekly';
-      _weekdays.add(DateTime.now().weekday);
+      _weekdays.add(widget.controller.localNow.weekday);
     }
   }
 
@@ -1342,7 +1342,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
       } else if (kind == PlannerEntityKind.recurringTask &&
           _recurrence == 'none') {
         _recurrence = 'weekly';
-        _weekdays.add(DateTime.now().weekday);
+        _weekdays.add(widget.controller.localNow.weekday);
       } else if (kind == PlannerEntityKind.oneOffTask) {
         _recurrence = 'none';
       }
@@ -3364,8 +3364,28 @@ class _PlannerEditorState extends State<PlannerEditor> {
     );
   }
 
+  Future<DateTime?> _showEditorDatePicker({
+    required DateTime now,
+    required DateTime initial,
+    required DateTime first,
+    required DateTime last,
+    String? helpText,
+  }) {
+    final initialDay = DateUtils.dateOnly(initial);
+    // Editing an old or distant plan must not discard its stored date merely
+    // because it falls outside the default creation window.
+    return showDatePicker(
+      context: context,
+      currentDate: now,
+      initialDate: initialDay,
+      firstDate: initialDay.isBefore(first) ? initialDay : first,
+      lastDate: initialDay.isAfter(last) ? initialDay : last,
+      helpText: helpText,
+    );
+  }
+
   Future<void> _pickDateTime() async {
-    final now = DateTime.now();
+    final now = widget.controller.localNow;
     final initial = _scheduledAt?.toLocal() ?? now;
     final previousDuration =
         _scheduledAt != null &&
@@ -3373,11 +3393,11 @@ class _PlannerEditorState extends State<PlannerEditor> {
             _timeBlockEndAt!.isAfter(_scheduledAt!)
         ? _timeBlockEndAt!.difference(_scheduledAt!)
         : null;
-    final date = await showDatePicker(
-      context: context,
-      firstDate: DateTime(now.year - 2),
-      lastDate: DateTime(now.year + 20),
-      initialDate: initial,
+    final date = await _showEditorDatePicker(
+      now: now,
+      first: DateTime(now.year - 2),
+      last: DateTime(now.year + 20),
+      initial: initial,
     );
     if (date == null || !mounted) return;
     final time = await showTimePicker(
@@ -3407,12 +3427,12 @@ class _PlannerEditorState extends State<PlannerEditor> {
     final initial =
         _timeBlockEndAt?.toLocal() ??
         start.add(Duration(minutes: estimate?.clamp(1, 10080).toInt() ?? 60));
-    final date = await showDatePicker(
-      context: context,
+    final date = await _showEditorDatePicker(
+      now: widget.controller.localNow,
       helpText: 'Time-block end date',
-      firstDate: DateTime(start.year, start.month, start.day),
-      lastDate: DateTime(start.year + 20),
-      initialDate: initial.isBefore(start) ? start : initial,
+      first: DateTime(start.year, start.month, start.day),
+      last: DateTime(start.year + 20),
+      initial: initial.isBefore(start) ? start : initial,
     );
     if (date == null || !mounted) return;
     final time = await showTimePicker(
@@ -3443,14 +3463,14 @@ class _PlannerEditorState extends State<PlannerEditor> {
   }
 
   Future<void> _pickDueDateTime() async {
-    final now = DateTime.now();
+    final now = widget.controller.localNow;
     final initial =
         _dueAt?.toLocal() ?? DateTime(now.year, now.month, now.day, 23, 59);
-    final date = await showDatePicker(
-      context: context,
-      firstDate: DateTime(now.year - 2),
-      lastDate: DateTime(now.year + 30),
-      initialDate: initial,
+    final date = await _showEditorDatePicker(
+      now: now,
+      first: DateTime(now.year - 2),
+      last: DateTime(now.year + 30),
+      initial: initial,
     );
     if (date == null || !mounted) return;
     final time = await showTimePicker(
@@ -3471,24 +3491,24 @@ class _PlannerEditorState extends State<PlannerEditor> {
   }
 
   Future<void> _pickRecurrenceEnd() async {
-    final now = DateTime.now();
-    final selected = await showDatePicker(
-      context: context,
-      firstDate: now,
-      lastDate: DateTime(now.year + 30),
-      initialDate: _recurrenceEndAt?.toLocal() ?? now,
+    final now = widget.controller.localNow;
+    final selected = await _showEditorDatePicker(
+      now: now,
+      first: DateUtils.dateOnly(now),
+      last: DateTime(now.year + 30),
+      initial: _recurrenceEndAt?.toLocal() ?? now,
     );
     if (selected == null || !mounted) return;
     setState(() => _recurrenceEndAt = _dateOnly(selected).toUtc());
   }
 
   Future<void> _addExceptionDate() async {
-    final now = DateTime.now();
-    final selected = await showDatePicker(
-      context: context,
-      firstDate: DateTime(now.year - 2),
-      lastDate: DateTime(now.year + 30),
-      initialDate: now,
+    final now = widget.controller.localNow;
+    final selected = await _showEditorDatePicker(
+      now: now,
+      first: DateTime(now.year - 2),
+      last: DateTime(now.year + 30),
+      initial: now,
     );
     if (selected == null || !mounted) return;
     setState(() => _exceptionDates.add(_dateOnly(selected).toUtc()));
@@ -3505,6 +3525,7 @@ class _PlannerEditorState extends State<PlannerEditor> {
     final initialDate = _annualPickerDate(preferred, now.year);
     final selected = await showDatePicker(
       context: context,
+      currentDate: now,
       helpText: 'Choose a yearly date',
       firstDate: DateTime(2000),
       lastDate: DateTime(2100, 12, 31),

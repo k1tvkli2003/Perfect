@@ -12,6 +12,170 @@ import 'package:perfect/presentation/planner_workspace_controller.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  for (final year in <int>[2020, 2070]) {
+    for (final picker in <({String field, IconData icon})>[
+      (field: 'scheduled_at', icon: Icons.calendar_today_outlined),
+      (field: 'due_at', icon: Icons.flag_outlined),
+      (field: 'end_at', icon: Icons.event_busy_outlined),
+      (
+        field: PlannerTaskMetadataKeys.timeBlockEndAt,
+        icon: Icons.timelapse_rounded,
+      ),
+    ]) {
+      testWidgets(
+        '${picker.icon == Icons.timelapse_rounded ? 'block end' : picker.field} picker preserves existing date outside default range $year',
+        (tester) async {
+          await tester.binding.setSurfaceSize(const Size(1000, 900));
+          addTearDown(() => tester.binding.setSurfaceSize(null));
+          final now = DateTime(2030, 6, 12, 11, 25);
+          final selected = DateTime(year, 3, 15, 9);
+          final controller = _RecordingPlannerController(now: () => now);
+          addTearDown(controller.disposeAsync);
+          final isRecurrence = picker.icon == Icons.event_busy_outlined;
+          final existing = PlannerEntity(
+            id: '11111111-2222-4333-8444-555555555555',
+            ownerId: 'editor-owner',
+            kind: PlannerEntityKind.habit,
+            payload: <String, dynamic>{
+              ...defaultPlannerPayload(title: 'Preserved date'),
+              PlannerPayloadKeys.timing: <String, dynamic>{
+                if (!isRecurrence)
+                  picker.field: selected.toUtc().toIso8601String(),
+                if (picker.icon == Icons.timelapse_rounded)
+                  'scheduled_at': DateTime(
+                    year - 25,
+                    3,
+                    15,
+                    8,
+                  ).toUtc().toIso8601String(),
+              },
+              PlannerPayloadKeys.recurrence: <String, dynamic>{
+                'rule': 'daily',
+                if (isRecurrence) 'end_at': selected.toUtc().toIso8601String(),
+              },
+            },
+            createdAt: now.toUtc(),
+            updatedAt: now.toUtc(),
+          );
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: PerfectTheme.light(),
+              home: Scaffold(
+                body: PlannerEditor(controller: controller, existing: existing),
+              ),
+            ),
+          );
+          await _tapStep(tester, isRecurrence ? 'frequency' : 'plan');
+          final action = find.ancestor(
+            of: find.byIcon(picker.icon),
+            matching: find.byType(OutlinedButton),
+          );
+          await tester.ensureVisible(action);
+          await tester.tap(action);
+          await tester.pumpAndSettle();
+
+          expect(tester.takeException(), isNull);
+          final dialog = tester.widget<DatePickerDialog>(
+            find.byType(DatePickerDialog),
+          );
+          expect(dialog.initialDate, DateUtils.dateOnly(selected));
+          expect(dialog.firstDate.isAfter(dialog.initialDate!), isFalse);
+          expect(dialog.lastDate.isBefore(dialog.initialDate!), isFalse);
+          expect(dialog.currentDate, DateUtils.dateOnly(now));
+
+          await tester.tap(find.text('Cancel'));
+          await tester.pumpAndSettle();
+          await tester.tap(
+            find.byKey(const ValueKey<String>('planner-editor-quick-save')),
+          );
+          await tester.pumpAndSettle();
+          final saved = safeJsonMap(
+            controller.savedPayload![isRecurrence
+                ? PlannerPayloadKeys.recurrence
+                : PlannerPayloadKeys.timing],
+          );
+          expect(saved[picker.field], selected.toUtc().toIso8601String());
+        },
+      );
+    }
+  }
+
+  for (final selectKindInEditor in <bool>[false, true]) {
+    testWidgets(
+      'weekly default follows controller local day when kind selected in editor: $selectKindInEditor',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(1000, 900));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final controller = _RecordingPlannerController(
+          now: () => DateTime(2030, 6, 12, 23, 59),
+        );
+        addTearDown(controller.disposeAsync);
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: PerfectTheme.light(),
+            home: Scaffold(
+              body: PlannerEditor(
+                controller: controller,
+                initialKind: selectKindInEditor
+                    ? PlannerEntityKind.oneOffTask
+                    : PlannerEntityKind.recurringTask,
+              ),
+            ),
+          ),
+        );
+        if (selectKindInEditor) {
+          await tester.tap(find.text('Recurring task'));
+          await tester.pumpAndSettle();
+        }
+        await _tapStep(tester, 'frequency');
+        final selectedWeekdays = tester
+            .widgetList<FilterChip>(find.byType(FilterChip))
+            .where((chip) => chip.selected)
+            .map((chip) => (chip.label as Text).data)
+            .toList();
+        expect(selectedWeekdays, <String>['Wed']);
+      },
+    );
+  }
+
+  testWidgets('new date pickers use controller local today', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1000, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final now = DateTime(2030, 6, 12, 23, 59);
+    final controller = _RecordingPlannerController(now: () => now);
+    addTearDown(controller.disposeAsync);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: PerfectTheme.light(),
+        home: Scaffold(
+          body: PlannerEditor(
+            controller: controller,
+            initialKind: PlannerEntityKind.habit,
+          ),
+        ),
+      ),
+    );
+    for (final entry in <({String step, String label})>[
+      (step: 'plan', label: 'Choose date & time'),
+      (step: 'plan', label: 'Add a deadline (optional)'),
+      (step: 'frequency', label: 'No end date'),
+      (step: 'frequency', label: 'Add exception date'),
+    ]) {
+      await _tapStep(tester, entry.step);
+      await tester.ensureVisible(find.text(entry.label));
+      await tester.tap(find.text(entry.label));
+      await tester.pumpAndSettle();
+      final dialog = tester.widget<DatePickerDialog>(
+        find.byType(DatePickerDialog),
+      );
+      expect(dialog.initialDate, DateUtils.dateOnly(now));
+      expect(dialog.currentDate, DateUtils.dateOnly(now));
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'creation is a full-screen multi-step wizard with a quick task path',
     (tester) async {
@@ -525,7 +689,7 @@ Future<void> _tapStep(WidgetTester tester, String id) async {
 }
 
 class _RecordingPlannerController extends PlannerWorkspaceController {
-  factory _RecordingPlannerController() {
+  factory _RecordingPlannerController({DateTime Function()? now}) {
     final local = PlannerLocalStore(PlannerDatabase(NativeDatabase.memory()));
     return _RecordingPlannerController._(
       local,
@@ -535,10 +699,11 @@ class _RecordingPlannerController extends PlannerWorkspaceController {
         ownerId: 'editor-owner',
         deviceId: '11111111-1111-4111-8111-111111111111',
       ),
+      now: now,
     );
   }
 
-  _RecordingPlannerController._(super.local, super.sync)
+  _RecordingPlannerController._(super.local, super.sync, {super.now})
     : super(ownerId: 'editor-owner');
 
   Map<String, dynamic>? savedPayload;
