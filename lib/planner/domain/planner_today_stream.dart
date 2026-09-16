@@ -13,11 +13,18 @@ class PlannerTodayStreamEntry {
     required this.section,
     required this.eligibility,
     required this.scheduledAt,
+    this.taskProgress,
+    this.habitSummary,
   });
 
   final PlannerEntity entity;
   final PlannerTodaySection section;
   final PlannerTodayEligibility eligibility;
+
+  /// The exact daily outcome used to classify this entry. Renderers must not
+  /// resolve it again from the entity's lifetime state.
+  final PlannerTaskProgress? taskProgress;
+  final PlannerHabitDaySummary? habitSummary;
 
   /// Today's local occurrence time for recurrence, original time for a one-off.
   /// Null means flexible; callers must not invent a time-rail label.
@@ -32,7 +39,7 @@ class PlannerTodayStreamEntry {
 /// This does not query storage, mutate outcomes, resolve recovery decisions or
 /// infer today's recurring outcome from the source entity's lifecycle status.
 class PlannerTodayStream {
-  PlannerTodayStream._(List<PlannerTodayStreamEntry> entries)
+  PlannerTodayStream._(this.day, List<PlannerTodayStreamEntry> entries)
     : entries = List.unmodifiable(entries);
 
   factory PlannerTodayStream.project({
@@ -42,7 +49,8 @@ class PlannerTodayStream {
     Map<String, PlannerTaskProgress> taskProgressById = const {},
     Map<String, PlannerHabitDaySummary> habitSummaryById = const {},
   }) {
-    final localDay = day.toLocal();
+    final local = day.toLocal();
+    final localDay = DateTime(local.year, local.month, local.day);
     final entries = <PlannerTodayStreamEntry>[];
     final seen = <String>{};
     for (final entity in entities) {
@@ -76,18 +84,21 @@ class PlannerTodayStream {
               scheduled.microsecond,
             );
       final bool settled;
+      PlannerTaskProgress? taskProgress;
+      PlannerHabitDaySummary? habitSummary;
       if (entity.kind == PlannerEntityKind.habit) {
-        final state = habitSummaryById[entity.id]?.state;
+        habitSummary = habitSummaryById[entity.id];
+        final state = habitSummary?.state;
         settled =
             state == PlannerHabitDayState.completed ||
             state == PlannerHabitDayState.missed;
       } else {
-        final progress =
+        taskProgress =
             taskProgressById[entity.id] ??
             (entity.kind == PlannerEntityKind.recurringTask
                 ? const PlannerTaskProgress.pending()
                 : PlannerTaskProgress.fromEntity(entity));
-        settled = progress.isComplete || progress.isMissed;
+        settled = taskProgress.isComplete || taskProgress.isMissed;
       }
       final section = settled
           ? PlannerTodaySection.settled
@@ -104,13 +115,17 @@ class PlannerTodayStream {
           section: section,
           eligibility: eligibility,
           scheduledAt: occurrenceTime,
+          taskProgress: taskProgress,
+          habitSummary: habitSummary,
         ),
       );
     }
     entries.sort(_compare);
-    return PlannerTodayStream._(entries);
+    return PlannerTodayStream._(localDay, entries);
   }
 
+  /// Local calendar date shared by ordering, status and occurrence labels.
+  final DateTime day;
   final List<PlannerTodayStreamEntry> entries;
 
   /// Contextual emphasis on the actual row, never a duplicate entity/card.

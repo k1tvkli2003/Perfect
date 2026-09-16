@@ -22,6 +22,7 @@ import 'package:perfect/presentation/perfect_brand.dart';
 import 'package:perfect/presentation/perfect_workspace_page.dart';
 import 'package:perfect/presentation/planner_editor.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
+import 'package:perfect/presentation/today_pulse.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 late PlannerWorkspaceController _controller;
@@ -61,7 +62,7 @@ void main() {
       ownerId: 'preview-owner',
       deviceId: '11111111-1111-4111-8111-111111111111',
     );
-    _controller = PlannerWorkspaceController(
+    _controller = _ProjectionFailureController(
       local,
       sync,
       ownerId: 'preview-owner',
@@ -1548,6 +1549,63 @@ void main() {
       expect(find.text('Paused daily'), findsNothing);
       expect(find.text('Except today'), findsNothing);
       expect(find.text('Limit exhausted'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'Today preserves daily outcomes after a projection read failure',
+    (tester) async {
+      await _setTestViewSize(tester, const Size(390, 844));
+      final task = _controller.tasks.single;
+      await _runControllerMutation(
+        tester,
+        () => _controller.setTaskProgress(
+          task,
+          progress: const PlannerTaskProgress(
+            state: PlannerTaskProgressState.partial,
+            percent: 40,
+          ),
+          localDay: _previewNow,
+        ),
+      );
+      await _pump(tester);
+      TodayPulseSnapshot snapshot() =>
+          tester.widget<TodayPulse>(find.byType(TodayPulse)).snapshot;
+      expect(snapshot().partial, 1);
+      final controller = _controller as _ProjectionFailureController;
+      controller.failTaskReads = true;
+      controller.invalidateProjection();
+      await tester.pumpAndSettle();
+      expect(controller.failedReads, greaterThan(0));
+      expect(snapshot().state, TodayPulseState.resolving);
+      expect(snapshot().partial, 1);
+      // Even when canonical data changes, a failed read must not publish an
+      // invented snapshot. Recovery must then publish the new stored outcome.
+      await _runControllerMutation(
+        tester,
+        () => _controller.setTaskProgress(
+          _controller.tasks.single,
+          progress: const PlannerTaskProgress(
+            state: PlannerTaskProgressState.completed,
+            percent: 100,
+          ),
+          localDay: _previewNow,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(snapshot().state, TodayPulseState.resolving);
+      expect(snapshot().partial, 1);
+      expect(snapshot().completed, 0);
+      final failedReads = controller.failedReads;
+      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(controller.failedReads, failedReads);
+      controller.failTaskReads = false;
+      controller.invalidateProjection();
+      await tester.pumpAndSettle();
+      expect(snapshot().state, isNot(TodayPulseState.resolving));
+      expect(snapshot().partial, 0);
+      expect(snapshot().completed, 1);
     },
   );
 
@@ -3750,6 +3808,40 @@ Future<void> _pumpUntil(
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
   }
   fail('Timed out waiting for the local UI mutation to settle.');
+}
+
+class _ProjectionFailureController extends PlannerWorkspaceController {
+  _ProjectionFailureController(
+    super.localStore,
+    super.syncRepository, {
+    required super.ownerId,
+    super.now,
+  });
+
+  bool failTaskReads = false;
+  int failedReads = 0;
+  int _invalidations = 0;
+
+  @override
+  int get todayProjectionRevision =>
+      super.todayProjectionRevision + _invalidations;
+
+  void invalidateProjection() {
+    _invalidations++;
+    notifyListeners();
+  }
+
+  @override
+  Future<PlannerTaskProgress> taskProgressForDay(
+    PlannerEntity entity, {
+    DateTime? localDay,
+  }) async {
+    if (failTaskReads) {
+      failedReads++;
+      throw StateError('injected private read failure');
+    }
+    return super.taskProgressForDay(entity, localDay: localDay);
+  }
 }
 
 class _PreviewGateway implements PlannerRemoteGateway {

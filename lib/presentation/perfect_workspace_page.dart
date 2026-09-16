@@ -143,14 +143,8 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
   int _handledNavigationRequestSerial = 0;
   String? _requestedTodayProjection;
   String? _resolvedTodayProjection;
-  List<PlannerEntity> _projectedTodayItems = const <PlannerEntity>[];
-  Map<String, PlannerTodayEligibility> _todayEligibilityById =
-      const <String, PlannerTodayEligibility>{};
-  Map<String, PlannerHabitDaySummary> _habitDaySummaryById =
-      const <String, PlannerHabitDaySummary>{};
-  Map<String, PlannerTaskProgress> _todayTaskProgressById =
-      const <String, PlannerTaskProgress>{};
-  Map<String, DateTime?> _todayScheduledAtById = const <String, DateTime?>{};
+  String? _failedTodayProjection;
+  PlannerTodayStream? _todayStream;
   double? _inspectorWidthOverride;
 
   @override
@@ -176,11 +170,8 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     if (oldWidget.controller != widget.controller) {
       _requestedTodayProjection = null;
       _resolvedTodayProjection = null;
-      _projectedTodayItems = const <PlannerEntity>[];
-      _todayEligibilityById = const <String, PlannerTodayEligibility>{};
-      _habitDaySummaryById = const <String, PlannerHabitDaySummary>{};
-      _todayTaskProgressById = const <String, PlannerTaskProgress>{};
-      _todayScheduledAtById = const <String, DateTime?>{};
+      _failedTodayProjection = null;
+      _todayStream = null;
     }
     if (oldWidget.navigationController == widget.navigationController) return;
     oldWidget.navigationController?.removeListener(_handleNavigationRequest);
@@ -772,42 +763,61 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     );
   }
 
+  bool get _canDisplayTodaySnapshot {
+    if (_todayStream == null) return false;
+    final now = widget.now().toLocal();
+    final signature = _todayProjectionSignature(now);
+    if (_resolvedTodayProjection == signature) return true;
+    return _failedTodayProjection == signature &&
+        _todayStream?.day == DateTime(now.year, now.month, now.day);
+  }
+
   List<PlannerEntity> get _todayItems {
     final now = widget.now().toLocal();
-    if (_resolvedTodayProjection == _todayProjectionSignature(now)) {
-      return _projectedTodayItems;
+    if (_canDisplayTodaySnapshot) {
+      return _todayStream!.entries
+          .map((entry) => entry.entity)
+          .toList(growable: false);
     }
     return _todayItemsFor(widget.controller, now: now);
   }
 
   Map<String, PlannerTodayEligibility> get _displayTodayEligibility {
-    final now = widget.now().toLocal();
-    if (_resolvedTodayProjection == _todayProjectionSignature(now)) {
-      return _todayEligibilityById;
+    if (_canDisplayTodaySnapshot) {
+      return {
+        for (final entry in _todayStream!.entries)
+          entry.entity.id: entry.eligibility,
+      };
     }
     return const <String, PlannerTodayEligibility>{};
   }
 
   Map<String, PlannerHabitDaySummary> get _displayHabitSummaries {
-    final now = widget.now().toLocal();
-    if (_resolvedTodayProjection == _todayProjectionSignature(now)) {
-      return _habitDaySummaryById;
+    if (_canDisplayTodaySnapshot) {
+      return {
+        for (final entry in _todayStream!.entries)
+          if (entry.habitSummary != null) entry.entity.id: entry.habitSummary!,
+      };
     }
     return const <String, PlannerHabitDaySummary>{};
   }
 
   Map<String, PlannerTaskProgress> get _displayTaskProgress {
-    final now = widget.now().toLocal();
-    if (_resolvedTodayProjection == _todayProjectionSignature(now)) {
-      return _todayTaskProgressById;
+    if (_canDisplayTodaySnapshot) {
+      return {
+        for (final entry in _todayStream!.entries)
+          if (entry.taskProgress != null) entry.entity.id: entry.taskProgress!,
+      };
     }
     return const <String, PlannerTaskProgress>{};
   }
 
   Map<String, DateTime?> get _displayTodayScheduledAt {
-    final now = widget.now().toLocal();
-    if (_resolvedTodayProjection == _todayProjectionSignature(now)) {
-      return _todayScheduledAtById;
+    if (_canDisplayTodaySnapshot) {
+      return {
+        for (final entry in _todayStream!.entries)
+          entry.entity.id: entry.scheduledAt,
+      };
     }
     return const <String, DateTime?>{};
   }
@@ -866,30 +876,16 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
           PlannerHabitDaySummary? summary;
           PlannerTaskProgress? taskProgress;
           if (entity.kind == PlannerEntityKind.habit) {
-            try {
-              summary = await widget.controller.habitDaySummary(
-                entity,
-                localDay: day,
-              );
-            } on Object {
-              // Eligibility remains useful if one optional habit summary
-              // cannot be read; the log sheet offers an explicit retry.
-            }
+            summary = await widget.controller.habitDaySummary(
+              entity,
+              localDay: day,
+            );
           } else if (entity.kind == PlannerEntityKind.oneOffTask ||
               entity.kind == PlannerEntityKind.recurringTask) {
-            try {
-              taskProgress = await widget.controller.taskProgressForDay(
-                entity,
-                localDay: day,
-              );
-            } on Object {
-              // Preserve the visible Today projection when the optional daily
-              // occurrence read is unavailable. The entity value is a safe
-              // one-off fallback and pending for unresolved recurrence.
-              taskProgress = entity.kind == PlannerEntityKind.recurringTask
-                  ? const PlannerTaskProgress.pending()
-                  : PlannerTaskProgress.fromEntity(entity);
-            }
+            taskProgress = await widget.controller.taskProgressForDay(
+              entity,
+              localDay: day,
+            );
           }
           return (entity, eligibility, summary, taskProgress);
         }),
@@ -899,7 +895,6 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       final byId = <String, PlannerTodayEligibility>{};
       final habitSummaries = <String, PlannerHabitDaySummary>{};
       final taskProgress = <String, PlannerTaskProgress>{};
-      final scheduledAt = <String, DateTime?>{};
       for (final (entity, result, summary, progress) in results) {
         byId[entity.id] = result;
         if (summary != null) habitSummaries[entity.id] = summary;
@@ -913,29 +908,20 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         taskProgressById: taskProgress,
         habitSummaryById: habitSummaries,
       );
-      for (final entry in stream.entries) {
-        scheduledAt[entry.entity.id] = entry.scheduledAt;
-      }
       setState(() {
         _resolvedTodayProjection = signature;
-        _projectedTodayItems = stream.entries
-            .map((entry) => entry.entity)
-            .toList(growable: false);
-        _todayEligibilityById = byId;
-        _habitDaySummaryById = habitSummaries;
-        _todayTaskProgressById = taskProgress;
-        _todayScheduledAtById = scheduledAt;
+        _failedTodayProjection = null;
+        _todayStream = stream;
       });
     } on Object {
       if (!mounted || _requestedTodayProjection != signature) return;
-      final fallback = _todayItemsFor(widget.controller, now: day);
+      // Keep the last same-day snapshot, without certifying it as fresh.
+      // The request signature suppresses rebuild-driven retry loops. A local
+      // revision/resume invalidation permits another read through the normal path.
+      // Never log raw storage errors, which may contain private planner values.
+      debugPrint('TODAY_PROJECTION_READ_FAILED');
       setState(() {
-        _resolvedTodayProjection = signature;
-        _projectedTodayItems = fallback;
-        _todayEligibilityById = const <String, PlannerTodayEligibility>{};
-        _habitDaySummaryById = const <String, PlannerHabitDaySummary>{};
-        _todayTaskProgressById = const <String, PlannerTaskProgress>{};
-        _todayScheduledAtById = const <String, DateTime?>{};
+        _failedTodayProjection = signature;
       });
     }
   }

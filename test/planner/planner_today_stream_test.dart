@@ -37,6 +37,63 @@ void main() {
   List<String> ids(PlannerTodayStream stream) =>
       stream.entries.map((entry) => entry.entity.id).toList();
 
+  test('snapshot retains selected local day and resolved row outcomes', () {
+    const partial = PlannerTaskProgress(
+      state: PlannerTaskProgressState.partial,
+      percent: 40,
+    );
+    const habit = PlannerHabitDaySummary.pending();
+    final outcomes = <String, PlannerTaskProgress>{'task': partial};
+    final stream = PlannerTodayStream.project(
+      day: day,
+      entities: [
+        item('task'),
+        item('habit', kind: PlannerEntityKind.habit),
+      ],
+      taskProgressById: outcomes,
+      habitSummaryById: const {'habit': habit},
+    );
+    outcomes.clear();
+    expect(stream.day, DateTime(2026, 9, 9));
+    final taskEntry = stream.entries.singleWhere((e) => e.entity.id == 'task');
+    final habitEntry = stream.entries.singleWhere(
+      (e) => e.entity.id == 'habit',
+    );
+    expect(taskEntry.taskProgress, same(partial));
+    expect(taskEntry.habitSummary, isNull);
+    expect(habitEntry.taskProgress, isNull);
+    expect(habitEntry.habitSummary, same(habit));
+    expect(() => stream.entries.clear(), throwsUnsupportedError);
+  });
+
+  test(
+    'snapshot resolves recurring pending independently of source lifecycle',
+    () {
+      final stream = PlannerTodayStream.project(
+        day: day,
+        entities: [
+          item(
+            'repeat',
+            kind: PlannerEntityKind.recurringTask,
+            status: PlannerEntityStatus.completed,
+            scheduled: day,
+          ),
+        ],
+        // Storage-backed eligibility, as used by the workspace, overrides the
+        // fallback engine's legacy completed-lifecycle exclusion.
+        eligibilityById: const {
+          'repeat': PlannerTodayEligibility(
+            isEligible: true,
+            reason: PlannerTodayEligibilityReason.recurringOccurrence,
+          ),
+        },
+      );
+      expect(stream.entries.single.taskProgress!.isComplete, isFalse);
+      expect(stream.entries.single.taskProgress!.percent, 0);
+      expect(stream.nextEntryId, 'repeat');
+    },
+  );
+
   test('orders decision, scheduled, habits, flexible and settled once', () {
     final stream = PlannerTodayStream.project(
       day: day,

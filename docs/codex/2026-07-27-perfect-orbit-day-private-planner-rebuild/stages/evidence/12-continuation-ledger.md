@@ -16,7 +16,62 @@ Objective: review the whole scope and finish the existing 50-stage product plan.
   not current blockers. Existing `Codex_API35` is allowed; no new AVD is authorized.
 - No fresh full-suite, visual, release or install-over success is claimed here.
 
+### Verified restart packet — 2026-09-17
+
+- Scope correction committed locally as `659241c`; no push/release performed.
+- Flutter 3.44.0 / Dart 3.12.0 rejects `--chain-stack-traces` before loading tests.
+  The supported `flutter test --no-pub --concurrency=1 --reporter expanded`
+  completed with 480 passed, exit 0, before the new regressions/implementation.
+  This does not explain the older silent exit 1. Baseline analyzer passed.
+- Added `Today exposes scheduled and habit groups around real rows` to the
+  workspace widget tests. Both stored rows are found, then `Scheduled` is absent:
+  a real presentation assertion fails, exit 1. Test remains enabled and red;
+  do not weaken it, update goldens, or claim a green current full suite.
+- `PlannerTodayStream` now retains its normalized local day and resolved task/
+  habit outcomes per entry. Workspace success projection retains this typed
+  snapshot and adapts it to existing renderers instead of discarding it into
+  parallel state maps. Section/next ID are retained, not yet rendered.
+- Two snapshot tests were added. Initial missing getters caused a compile failure.
+  The recurring-lifecycle fixture also initially omitted authoritative storage
+  eligibility; aligned it with the existing recurring-lifecycle test contract.
+  Domain plus real Drift storage tests now pass 20/20. The exact lifecycle test
+  and recurring occurrence-time workspace regression also pass individually.
+- Existing three design candidates explicitly remain `mock-preview-not-approved`.
+  Attempted image inspection returned `view_image is not allowed because you do
+  not support image inputs`. No visual acceptance was fabricated and no visible
+  grouping/layout change was made. Next visual gate needs image-capable inspection
+  and completion of the candidate shell/state comparisons, not another green
+  projection-test rerun.
+- Next implementation: accepted section/next rendering across all layout tiers,
+  anchor retention and final-row clearance; separately close swallowed projection
+  failures and stale/day-rollover state. Stage 12 and whole delivery remain open.
+- Final checks for this snapshot packet: `flutter analyze --no-pub` passed with
+  no issues; `dart format --output=none --set-exit-if-changed lib test` passed
+  across 181 files with zero changes; `git diff --check` passed. These do not
+  supersede the enabled red grouping regression or certify visual completion.
+
 ## Current evidence, not inherited completion
+
+### Projection failure preservation checkpoint — 2026-09-17
+
+- Reproduced a stored-outcome read failure in the real workspace: Pulse reported
+  `active` instead of unresolved after the injected exception. The prior catch
+  replaced missing reads with invented pending/entity outcomes and certified success.
+- Removed per-row exception substitution. Only a complete successful read publishes
+  a new snapshot. Failure preserves the last same-day snapshot, leaves freshness
+  unresolved and emits only `TODAY_PROJECTION_READ_FAILED`, not raw private errors.
+  Controller changes clear the snapshot; day matching prevents yesterday's reuse.
+- Removed obsolete parallel projection state maps. Existing renderers adapt the one
+  retained typed stream. Signature deduplication prevents rebuild-driven retries;
+  local revision/resume invalidation enables a fresh read. Explicit error/retry UI
+  and automatic retry policy are still open, not certified by this packet.
+- The new failure regression verifies preserved partial outcome even after stored
+  data changes to completed, no repeat reads on rebuild, then successful recovery
+  showing completed. Focused test passed; workspace suite excluding only the known
+  red grouping regression passed 64/64. `flutter analyze --no-pub` passed.
+- User requested PWA instead of native Apple targets. No web/platform/CI mutation
+  was made: whether Android/Windows remain selected is awaiting clarification.
+  Existing Apple folders and all other protected work remain unchanged.
 
 - Stage 11 **feature** SHA `59db6e479f34f25ecf66e4224b2d8c90c7f53941`
   has successful trusted run `31767013849`. This is not current source HEAD.
