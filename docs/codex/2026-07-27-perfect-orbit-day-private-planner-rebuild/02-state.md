@@ -6,6 +6,37 @@
 
 ## Current State
 
+### Execution authority correction — 2026-09-17
+
+The owner confirmed the full 50-stage delivery scope, including Stage 45 encrypted
+backup/export/import, Focus, gamification, text/voice AI and the Android widget.
+The earlier v1 exclusion of backup/export/import is superseded, not a remaining
+scope limit. Design selection is autonomous and documented before implementation;
+three materially different candidates and runtime comparison remain required.
+Work remains solo. Existing dirty files, retained stash and protected branches
+must not be deleted merely to produce a clean tree.
+
+Stage 12 remains active at source baseline
+`6e56766f8894e09f2752767b489747c6656f9ab6`. Today Pulse replaces Orbit; references
+to Orbit below are historical. The existing `Codex_API35` may be used for viewing
+and verification; older blanket emulator/RAM deferrals are superseded. No new AVD
+is authorized. Latest inherited release evidence is build 2069; it must be
+revalidated before claiming current release or installed-session continuity.
+
+Before accepting Stage 25, implement the minimum Stage 31 view-first route:
+owner + stable ID hydration, missing/deleted state, explicit Edit and correct back
+restoration. This does not close Stage 31 history/analytics/inspector work. Data,
+command and sync prerequisites belong with each feature; Stages 41–44 cannot be
+used to defer durability. Live migrations, secrets and destructive actions retain
+their separate authorization gates.
+
+The current execution packet is full sequential test/analyze/format baseline,
+then Stage 12 section/next-row integration, scroll anchoring, final-row reachability
+and projection-failure behavior. A historical silent exit 1 remains unexplained;
+do not attribute it to a product assertion or shell quoting without evidence.
+Full delivery requires Stage 49–50 runtime, two-device convergence, real AI/widget,
+backup round-trip and two-version session/data preservation, not CI alone.
+
 ### Current correction — 2026-09-11
 
 ### Current correction — 2026-09-12

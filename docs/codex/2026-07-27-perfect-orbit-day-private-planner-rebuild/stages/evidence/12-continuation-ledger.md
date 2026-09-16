@@ -4,6 +4,18 @@ Status: active
 Updated: 2026-09-12
 Objective: review the whole scope and finish the existing 50-stage product plan.
 
+## 2026-09-17 execution restart
+
+- The owner approved full 50-stage scope and autonomous, recorded design selection.
+  See the dated authority correction in `../../02-state.md`.
+- Stage 12 is still open. UI consumes the stream's ordered entities and occurrence
+  times, but does not yet carry section and next-entry identity into all renderers.
+- Next packet: record full sequential tests with expanded stack traces, analyzer
+  and no-write format results; then reproduce section/next-row gaps before repair.
+- Earlier release/quota and emulator restrictions below are historical snapshots,
+  not current blockers. Existing `Codex_API35` is allowed; no new AVD is authorized.
+- No fresh full-suite, visual, release or install-over success is claimed here.
+
 ## Current evidence, not inherited completion
 
 - Stage 11 **feature** SHA `59db6e479f34f25ecf66e4224b2d8c90c7f53941`
