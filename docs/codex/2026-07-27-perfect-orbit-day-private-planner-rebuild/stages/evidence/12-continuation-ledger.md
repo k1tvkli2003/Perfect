@@ -1,7 +1,7 @@
 # Stage 12 continuation and recovery ledger
 
 Status: active  
-Updated: 2026-09-12
+Updated: 2026-09-17
 Objective: review the whole scope and finish the existing 50-stage product plan.
 
 ## 2026-09-17 execution restart
@@ -52,6 +52,45 @@ Objective: review the whole scope and finish the existing 50-stage product plan.
 
 ## Current evidence, not inherited completion
 
+### Platform amendment and unfiltered workspace verification — 2026-09-17
+
+- Previous packet made progress: authoritative plan/state now map native Apple
+  delivery to PWA while retaining Android/Windows. All 50 stage owners remain.
+- Ran `flutter test --no-pub --concurrency=1 --reporter expanded
+  test/presentation/perfect_workspace_page_test.dart` without a name exclusion:
+  64 passed, 1 failed, exit 1. The sole failure is `Today exposes scheduled and
+  habit groups around real rows`, at line 1662: zero `Scheduled` headings inside
+  `perfect-today-scroll`. Both persisted fixture rows were present. Recurring-time
+  and failure-preservation regressions passed. No assertion was weakened.
+- Trace: store-backed eligibility/outcomes reach `PlannerTodayStream.project`;
+  it assigns `section` and `nextEntryId`. `_todaySurface` adapts the snapshot into
+  entity/outcome/time inputs only. `_TodayPage` maps entities directly to rows and
+  `_DayStreamTimeline` does likewise. Neither consumes section/next identity.
+  This is missing presentation wiring, not missing DB fixture data. The timeline
+  also still reads `entity.scheduledAt` in its outer rail; projected occurrence
+  labels must be consistent at that consumer during the repair.
+- Production grouping remains unchanged pending the existing preview gate.
+  Next packet must accept complete same-fixture candidates, pass typed section/
+  next identity through all three tiers, then prove canonical groups, unique next,
+  empty/settled states, anchors and row reachability. A lone added heading does
+  not close this contract.
+- Ran the canonical read-only `audit_flutter_targets.py --project . --targets
+  android windows pwa --skip-doctor --format markdown`, exit 0. Android/Windows
+  required files exist; this run performs no native build/install verification.
+  PWA lacks `web/index.html` and `web/manifest.json` and is NOT PREPARED.
+- Source audit identifies native boundaries in `planner_local_store.dart`
+  (`drift/native.dart`), `perfect_voice_recorder.dart`, feedback repository/exporter
+  and reminder scheduler (`dart:io`). Widget support is explicitly Android-gated.
+  Federated package warnings are review inputs, not unsupported-platform verdicts;
+  several web implementation packages already exist in resolved dependencies.
+- Canonical source version remains `1.1.0+2000`; CI owns release build allocation.
+  Android application ID and Windows identity remain `com.k1tvkli2003.perfect`;
+  Windows publisher remains `CN=K1 Perfect Private`. No identity/version edits,
+  platform generation, dependency replacement, CI mutation or deployment occurred.
+  Owner host/origin/access decision and actual Safari acceptance evidence remain
+  required before PWA release. Native data is not assumed to transfer to browser
+  storage automatically. Protected dirty files, stash and branches stay intact.
+
 ### Projection failure preservation checkpoint — 2026-09-17
 
 - Reproduced a stored-outcome read failure in the real workspace: Pulse reported
@@ -69,8 +108,10 @@ Objective: review the whole scope and finish the existing 50-stage product plan.
   data changes to completed, no repeat reads on rebuild, then successful recovery
   showing completed. Focused test passed; workspace suite excluding only the known
   red grouping regression passed 64/64. `flutter analyze --no-pub` passed.
-- User requested PWA instead of native Apple targets. No web/platform/CI mutation
-  was made: whether Android/Windows remain selected is awaiting clarification.
+- User requested PWA instead of native Apple targets. The current narrow scope
+  interpretation retains Android/Windows and maps Apple delivery to PWA; this is
+  not an instruction to remove native targets. The canonical plan now includes
+  PWA browser/storage/update/hosting gates. No web/platform/CI mutation was made.
   Existing Apple folders and all other protected work remain unchanged.
 
 - Stage 11 **feature** SHA `59db6e479f34f25ecf66e4224b2d8c90c7f53941`

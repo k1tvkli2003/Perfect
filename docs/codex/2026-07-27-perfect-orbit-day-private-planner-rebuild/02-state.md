@@ -1,10 +1,25 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-09-11
+- Last updated: 2026-09-17
 - Owner: Codex
 
 ## Current State
+
+### Platform and source checkpoint — 2026-09-17
+
+PWA replaces native Apple delivery; Android and Windows remain under the existing
+contract. This narrow replacement interpretation does not authorize deleting any
+platform. Earlier web exclusion is superseded. The canonical platform amendment
+in `11-master-50-stage-plan.md` owns browser acceptance and private delivery gates.
+PWA is NOT PREPARED; host/origin/access policy and browser evidence remain open.
+No platform code, CI or deployment changed in this documentation checkpoint.
+
+Current source checkpoint is `ee87890`, not the restart baseline below. Stage 12
+retains typed same-day outcomes on projection read failure; full error/retry UX
+is still open. Two workspace test blocks remain unstaged; only the grouping
+regression is known red. Prior 64/64 result excluded that test and is not a green
+full suite. Stages 01–11 remain historically closed, Stage 12 active, 13–50 open.
 
 ### Execution authority correction — 2026-09-17
 

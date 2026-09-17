@@ -1,7 +1,7 @@
 # Perfect! — 50-stage product perfection plan
 
 Status: active canonical execution plan  
-Platforms: Android phone, Android tablet, Windows desktop  
+Platforms: Android phone, Android tablet, Windows desktop, PWA
 Distribution: private only  
 Owner model: one private owner, local-first, Supabase-synced  
 Current direction: remove Orbit; rebuild the product around a compact Today
@@ -9,6 +9,33 @@ Pulse, a fast day stream, first-class details, effortless habit logging, and a
 single morphing Capture/Plan/AI/Voice instrument.
 
 ## Scope model: 50 owners, one whole product
+
+### Platform correction — 2026-09-17
+
+PWA is the delivery route for iOS/iPadOS and macOS users; no native Apple
+product, IPA, DMG, signing or notarization work is selected. Android and Windows
+remain selected under the existing product contract. This interprets the owner's
+replacement request narrowly; it does not authorize removing native targets.
+Existing Apple and Linux directories stay untouched. Earlier web exclusions are
+superseded; historical Android/Windows evidence does not verify PWA.
+
+PWA work belongs to these same 50 stage owners, not a parallel plan. Before
+platform implementation, audit dependencies and native boundaries. Storage,
+auth callbacks, file export/import, voice, reminders and background behavior need
+explicit browser-compatible contracts; do not drop capabilities to make a build
+pass. Browser limitations require an approved adaptation or an explicit blocker.
+Stages 41–45 own storage persistence/quota/eviction, owner isolation, offline
+outbox, migration and recovery; stages 46–47 own browser AI/voice parity.
+
+Stage 49 includes Chromium plus actual Safari on iPhone/iPad and macOS: installed
+standalone launch, safe areas, input, permissions, offline reload, storage/session
+persistence and update activation without losing drafts or pending writes.
+Stage 50 retains the three native release files and additionally delivers the
+private hosted PWA with an exact-source deployment record. Choose the owner-owned
+host/origin/base path and access policy before defining permanent manifest ID,
+service-worker scope or auth redirects. No hosting or browser proof exists yet.
+Build success alone cannot close this gate. Unprivileged PWA CI and browser smoke
+checks precede any protected deployment; no native Apple CI is added.
 
 The title of a stage identifies its primary implementation owner; it is not a
 permission to ignore adjacent or downstream surfaces. Every decision must pass
@@ -35,6 +62,8 @@ or behavioral acceptance.
   and expanded rail.
 - Windows: 720x540 compact, 1024x640 intermediate, 1366x768 standard, 1600+
   expanded, plus continuous resize across breakpoints.
+- PWA: mobile/tablet/desktop browser and installed layouts, including actual Safari
+  on Apple devices; offline/update/install/storage evidence is separate from builds.
 - Input: touch, mouse hover/press, keyboard traversal, shortcuts, IME open and
   dismissal, click/tap outside, long press, secondary click.
 - Content: no data, one item, dense day, long user text, mixed Persian/English,
@@ -44,7 +73,8 @@ or behavioral acceptance.
 - Continuity: local draft, focus, selection, scroll and authenticated session
   survive route transitions, resize, background/resume and in-place update.
 - Evidence: focused tests, a real runtime screenshot/recording, side-by-side
-  critique, full analyze/test at release checkpoints, and a clean Git state.
+  critique, full analyze/test at release checkpoints, and accounted-for Git state
+  preserving unrelated dirty work.
 
 ## Execution and release discipline
 
@@ -58,15 +88,16 @@ or behavioral acceptance.
 4. Finish each runtime stage with behavior tests, geometry checks and runtime visual
    evidence for every affected layout class.
 5. Any runtime-changing stage ends in a focused commit, push to `main`, a
-   successful GitHub workflow and three install-ready release artifacts.
+   successful GitHub workflow and three native install-ready release artifacts;
+   affected PWA work additionally requires its applicable browser/deployment gates.
 6. Design/documentation-only stages still end in a focused commit, push, link and
    clean branch state, but do not fabricate a binary release when runtime bytes are
    unchanged.
 7. Preserve the Android/Windows signing line, monotonically increment versions,
    retain the authenticated session and prove upgrade continuity at milestone
    stages 10, 20, 30, 40 and 50.
-8. Keep only `main` locally/remotely after each accepted stage; preserve the
-   explicitly retained pre-rebuild stash until the full plan is complete.
+8. Preserve unrelated local/remote branches, dirty files and the explicitly
+   retained pre-rebuild stash. Branch deletion is not a stage acceptance shortcut.
 9. Update `02-state.md`, `04-progress.md`, `05-verification.md` and this plan at
    every checkpoint. Record honest blockers; never turn a partial check into a
    completion claim.
@@ -77,7 +108,7 @@ or behavioral acceptance.
 
 - Freeze Git, release, schema, signing, local database, auth/session and widget
   contracts before further structural edits.
-- Codify Android/Windows-only scope, `Perfect!` identity, owner isolation,
+- Codify Android/Windows/PWA scope, `Perfect!` identity, owner isolation,
   local-first writes, Supabase sync, no client secrets and no destructive reset.
 - Prove that a normal upgrade cannot clear local records, pending operations,
   settings, AI drafts, auth tokens or widget state.
@@ -598,17 +629,28 @@ or behavioral acceptance.
 
 ### Stage 50 — final release, upgrade proof and clean handoff
 
+- Deliver the private hosted PWA from the verified source state; prove manifest,
+  service-worker scope, HTTPS routes, install, offline reload and N→N+1 update
+  preserve session, local records, pending outbox and drafts. Record rollback and
+  storage recovery limits. Keep the native three-file contract unchanged.
 - Produce monotonically versioned Android APK, Windows portable ZIP and installable
   signed Windows setup with only install-ready contents.
 - Install version N, create data/session/pending operation, update to N+1 with the
   same identities and prove all state survives and new migrations run once.
-- Confirm exact `main` SHA, clean local/remote branches, retained intentional stash,
+- Confirm exact `main` SHA, accounted-for local/remote changes, retained intentional stash,
   release checksums, changelog, architecture/schema/AI/widget/user documentation.
 - Gate: GitHub workflow and release succeed, artifacts install on target devices,
   all required evidence is linked, and no known P0/P1 or dishonest completion claim
   remains. The ongoing Critics→Perfect loop continues for future feedback.
 
 ## Current mapping
+
+Current correction — 2026-09-17: stages 01–11 are historically closed; Stage 12
+remains active, stages 13–50 open. Source checkpoint `ee87890` preserves the typed
+Today snapshot on projection failure. Group rendering, next-row emphasis, scroll
+anchoring, final-row clearance and complete failure/retry UX remain open. Earlier
+mapping entries below are historical checkpoints, not current release status.
+PWA is NOT PREPARED and has no browser/install/deployment proof.
 
 - Stage 01 is closed. After run `#39` exposed the stale pre-rename Windows scan path,
   commit `eaad6b2` corrected it and exact-SHA run `#40` succeeded. Release
