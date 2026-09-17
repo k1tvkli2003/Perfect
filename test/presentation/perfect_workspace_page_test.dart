@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' show PointerDeviceKind;
 
 import 'package:flutter/gestures.dart' show kSecondaryMouseButton;
@@ -15,6 +16,7 @@ import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
+import 'package:perfect/planner/domain/planner_recovery_engine.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
 import 'package:perfect/planner/sync/planner_sync_repository.dart';
 import 'package:perfect/presentation/perfect_theme.dart';
@@ -1552,6 +1554,30 @@ void main() {
     },
   );
 
+  testWidgets('Today orders recurring work by this day’s occurrence time', (
+    tester,
+  ) async {
+    await _saveRecurring(
+      tester: tester,
+      title: 'Late daily',
+      scheduledAt: _previewNow
+          .subtract(const Duration(days: 1))
+          .add(const Duration(hours: 14)),
+      recurrence: const <String, dynamic>{'rule': 'daily'},
+    );
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+
+    final morning = find.text('Focus Deep Work').first;
+    final evening = find.text('Late daily').first;
+    expect(morning, findsOneWidget);
+    expect(evening, findsOneWidget);
+    expect(
+      tester.getTopLeft(morning).dy,
+      lessThan(tester.getTopLeft(evening).dy),
+    );
+  });
+
   testWidgets(
     'Today preserves daily outcomes after a projection read failure',
     (tester) async {
@@ -1608,6 +1634,115 @@ void main() {
       expect(snapshot().completed, 1);
     },
   );
+
+  testWidgets('Today cancels suspended reads when controller owner changes', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    final original = _controller as _ProjectionFailureController;
+    final gate = Completer<void>();
+    original.eligibilityGate = gate.future;
+    await _pump(tester);
+    expect(original.suspendedEligibilityReads, greaterThan(0));
+    final previousState = tester.state(find.byType(PerfectWorkspacePage));
+
+    final replacementDatabase = PlannerDatabase(NativeDatabase.memory());
+    final replacementStore = PlannerLocalStore(replacementDatabase);
+    final replacement = _ProjectionFailureController(
+      replacementStore,
+      PlannerSyncRepository(
+        replacementStore,
+        _PreviewGateway(),
+        ownerId: 'replacement-owner',
+        deviceId: '22222222-2222-4222-8222-222222222222',
+      ),
+      ownerId: 'replacement-owner',
+      now: () => _previewNow,
+    );
+    addTearDown(() async {
+      if (!gate.isCompleted) gate.complete();
+      await original.disposeAsync();
+    });
+    await tester.runAsync(() async {
+      await replacement.start();
+      await replacement.refresh();
+      await Future<void>.delayed(Duration.zero);
+    });
+    expect(replacement.isReady, isTrue);
+    _controller = replacement;
+    await _pump(tester);
+    expect(
+      tester.state(find.byType(PerfectWorkspacePage)),
+      same(previousState),
+    );
+    expect(find.text('Focus Deep Work'), findsNothing);
+    expect(find.text('Water plants'), findsNothing);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(replacement.foreignOutcomeReads, 0);
+    expect(find.text('Focus Deep Work'), findsNothing);
+    expect(find.text('Water plants'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Today stops suspended outcome reads after page disposal', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    final controller = _controller as _ProjectionFailureController;
+    final gate = Completer<void>();
+    addTearDown(() {
+      if (!gate.isCompleted) gate.complete();
+    });
+    controller.eligibilityGate = gate.future;
+    await _pump(tester);
+    expect(controller.suspendedEligibilityReads, greaterThan(0));
+    final readsBeforeDisposal = controller.outcomeReads;
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    gate.complete();
+    await tester.pumpAndSettle();
+
+    expect(controller.outcomeReads, readsBeforeDisposal);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Today exposes scheduled and habit groups around real rows', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+
+    final today = find.byKey(
+      const PageStorageKey<String>('perfect-today-scroll'),
+    );
+    final task = find.descendant(
+      of: today,
+      matching: find.text('Focus Deep Work'),
+    );
+    final habit = find.descendant(
+      of: today,
+      matching: find.text('Water plants'),
+    );
+    // First prove the persisted fixture reached the actual Today renderer.
+    // A missing group is then a presentation-contract failure, not empty data.
+    expect(task, findsOneWidget);
+    expect(habit, findsOneWidget);
+    final scheduled = find.descendant(
+      of: today,
+      matching: find.text('Scheduled'),
+    );
+    final habits = find.descendant(of: today, matching: find.text('Habits'));
+    expect(scheduled, findsOneWidget);
+    expect(habits, findsOneWidget);
+    expect(
+      tester.getTopLeft(scheduled).dy,
+      lessThan(tester.getTopLeft(task).dy),
+    );
+    expect(tester.getTopLeft(task).dy, lessThan(tester.getTopLeft(habits).dy));
+    expect(tester.getTopLeft(habits).dy, lessThan(tester.getTopLeft(habit).dy));
+  });
 
   testWidgets('Today hides a flexible item after its period quota is reached', (
     tester,
@@ -3819,6 +3954,10 @@ class _ProjectionFailureController extends PlannerWorkspaceController {
   });
 
   bool failTaskReads = false;
+  Future<void>? eligibilityGate;
+  int suspendedEligibilityReads = 0;
+  int foreignOutcomeReads = 0;
+  int outcomeReads = 0;
   int failedReads = 0;
   int _invalidations = 0;
 
@@ -3832,10 +3971,39 @@ class _ProjectionFailureController extends PlannerWorkspaceController {
   }
 
   @override
+  Future<PlannerTodayEligibility> todayEligibilityForDay(
+    PlannerEntity entity, {
+    DateTime? localDay,
+  }) async {
+    final result = await super.todayEligibilityForDay(
+      entity,
+      localDay: localDay,
+    );
+    final gate = eligibilityGate;
+    if (gate != null) {
+      suspendedEligibilityReads++;
+      await gate;
+    }
+    return result;
+  }
+
+  @override
+  Future<PlannerHabitDaySummary> habitDaySummary(
+    PlannerEntity habit, {
+    DateTime? localDay,
+  }) {
+    outcomeReads++;
+    if (habit.ownerId != ownerId) foreignOutcomeReads++;
+    return super.habitDaySummary(habit, localDay: localDay);
+  }
+
+  @override
   Future<PlannerTaskProgress> taskProgressForDay(
     PlannerEntity entity, {
     DateTime? localDay,
   }) async {
+    outcomeReads++;
+    if (entity.ownerId != ownerId) foreignOutcomeReads++;
     if (failTaskReads) {
       failedReads++;
       throw StateError('injected private read failure');

@@ -52,6 +52,28 @@ Objective: review the whole scope and finish the existing 50-stage product plan.
 
 ## Current evidence, not inherited completion
 
+### Today request lifetime fix — 2026-09-17
+
+- Root cause confirmed: `_resolveTodayProjection` kept using `widget.controller`
+  after `await`s. If the page was still mounted but its controller was replaced,
+  the request could split reads across old and new owners. An old owner's task/
+  habit entity could then be sent to the replacement controller. This did not
+  change visual grouping and did not gate on the open Stage 12 preview.
+- Added two lifecycle regressions with suspended eligibility reads. Before the
+  fix, a controller replacement caused the new controller to read two entities
+  from the prior owner; expected zero. After retaining each request's original
+  controller and invalidating it after every await, both tests pass:
+  replacement-owner reads are zero and post-disposal outcome reads stay frozen.
+- Focused evidence: the two new lifecycle tests passed 2/2. Full unfiltered
+  workspace suite now has 66 passed and the same known grouping failure at line
+  1737 (`Scheduled` absent inside `perfect-today-scroll`). The recurring-time and
+  failure-preservation regressions passed. Analyzer reported no issues; format
+  check covered 181 files with zero changes. The source-only diff is 16 insertions,
+  9 deletions. No assertions were weakened, skipped or deleted.
+- Visual grouping remains unchanged: `_TodayPage` still lacks section identity;
+  Stage 12 preview gate is still open. PWA remains NOT PREPARED and native
+  three-file delivery remains open. Whole-product completion is not claimed.
+
 ### Platform amendment and unfiltered workspace verification — 2026-09-17
 
 - Previous packet made progress: authoritative plan/state now map native Apple

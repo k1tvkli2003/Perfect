@@ -866,23 +866,28 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     required List<PlannerEntity> entities,
     required DateTime day,
   }) async {
+    final controller = widget.controller;
+    bool isCurrentRequest() =>
+        mounted &&
+        identical(widget.controller, controller) &&
+        _requestedTodayProjection == signature;
     try {
       final results = await Future.wait(
         entities.map((entity) async {
-          final eligibility = await widget.controller.todayEligibilityForDay(
+          final eligibility = await controller.todayEligibilityForDay(
             entity,
             localDay: day,
           );
+          // Owner/controller replacement invalidates this request. Never send
+          // an old owner's entity to the replacement controller after an await.
+          if (!isCurrentRequest()) return null;
           PlannerHabitDaySummary? summary;
           PlannerTaskProgress? taskProgress;
           if (entity.kind == PlannerEntityKind.habit) {
-            summary = await widget.controller.habitDaySummary(
-              entity,
-              localDay: day,
-            );
+            summary = await controller.habitDaySummary(entity, localDay: day);
           } else if (entity.kind == PlannerEntityKind.oneOffTask ||
               entity.kind == PlannerEntityKind.recurringTask) {
-            taskProgress = await widget.controller.taskProgressForDay(
+            taskProgress = await controller.taskProgressForDay(
               entity,
               localDay: day,
             );
@@ -890,12 +895,14 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
           return (entity, eligibility, summary, taskProgress);
         }),
       );
-      if (!mounted || _requestedTodayProjection != signature) return;
+      if (!isCurrentRequest()) return;
       final eligible = <PlannerEntity>[];
       final byId = <String, PlannerTodayEligibility>{};
       final habitSummaries = <String, PlannerHabitDaySummary>{};
       final taskProgress = <String, PlannerTaskProgress>{};
-      for (final (entity, result, summary, progress) in results) {
+      for (final row in results) {
+        if (row == null) continue;
+        final (entity, result, summary, progress) = row;
         byId[entity.id] = result;
         if (summary != null) habitSummaries[entity.id] = summary;
         if (progress != null) taskProgress[entity.id] = progress;
@@ -914,7 +921,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         _todayStream = stream;
       });
     } on Object {
-      if (!mounted || _requestedTodayProjection != signature) return;
+      if (!isCurrentRequest()) return;
       // Keep the last same-day snapshot, without certifying it as fresh.
       // The request signature suppresses rebuild-driven retry loops. A local
       // revision/resume invalidation permits another read through the normal path.
