@@ -5,7 +5,12 @@ global Codex protocol.
 
 ## Product invariants
 
-- Ship only Flutter Android and Windows. Treat Android phone, Android tablet,
+- Ship Flutter Android, Windows and PWA. PWA replaces native iOS/iPadOS/macOS
+  delivery; preserve any existing Apple/Linux folders without modifying them.
+  The 2026-09-17 platform amendment in
+  `docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/11-master-50-stage-plan.md`
+  supersedes the former Android/Windows-only scope and owns browser delivery gates.
+  Treat Android phone, Android tablet,
   portrait/landscape, compact Windows, and expanded Windows as distinct
   first-class compositions.
 - Preserve local-first behavior, owner isolation, Supabase sync, authenticated
@@ -38,7 +43,7 @@ global Codex protocol.
   scroll, and state.
 - A layout is not accepted merely because it has no overflow. Inspect sparse
   and dense screenshots for dead space, primary-workflow scale, visual weight,
-  panel adjacency, and action continuity. Orbit, day stream, AI, capture, and
+  panel adjacency, and action continuity. Today Pulse, day stream, AI, capture, and
   navigation must compose as one instrument; reject tiny floating content and
   unrelated full-width bars appended to the viewport.
 - Treat proportion as a product contract: typography hierarchy, icon/control
@@ -76,3 +81,6 @@ global Codex protocol.
 - Prove upgrade continuity with two consecutively versioned artifacts signed by
   the same identity; verify the second installs over the first while preserving
   session and local data.
+- PWA additionally requires private hosting, manifest/service-worker identity,
+  offline reload, safe update activation, storage/session/outbox preservation and
+  actual Chromium/Safari evidence. A web build does not prove these gates.

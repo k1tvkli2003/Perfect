@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS_CANONICAL_VARIANTS_GENERATED",
+  "model": "cx/gpt-5.5-image",
+  "endpoint": "loopback-9router",
+  "credentialStored": false,
+  "variants": [
+    {
+      "name": "phone-dark-390x844",
+      "model": "cx/gpt-5.5-image",
+      "endpoint": "loopback-9router",
+      "credentialStored": false,
+      "promptSha256": "d4531a3681e24d8b9d3b031b8093a824e399b49cd2064c05c82d2df3457b7993",
+      "path": "C:\\Users\\K1\\Desktop\\Projects\\Perfect\\artifacts\\stage12-modernize\\canonical\\phone-dark-390x844.webp",
+      "bytes": 899822,
+      "sha256": "9b903a85beb9dfc7d5d532caf47800175274cbe47fb27956d7b36405faf5603a",
+      "mime": "image/webp"
+    },
+    {
+      "name": "tablet-light-834x1112",
+      "model": "cx/gpt-5.5-image",
+      "endpoint": "loopback-9router",
+      "credentialStored": false,
+      "promptSha256": "95d86a5b29f944b922f222451b7825a5f93ce131347dfc65524dff9d789610ee",
+      "path": "C:\\Users\\K1\\Desktop\\Projects\\Perfect\\artifacts\\stage12-modernize\\canonical\\tablet-light-834x1112.webp",
+      "bytes": 1246116,
+      "sha256": "680ab29409eb19cba333cf2edbadb1990ef5635d3a2e3171edc9240e427210be",
+      "mime": "image/webp"
+    },
+    {
+      "name": "desktop-light-1536x1024",
+      "model": "cx/gpt-5.5-image",
+      "endpoint": "loopback-9router",
+      "credentialStored": false,
+      "promptSha256": "b47977639db60ef955d90a89c47e51afca2b0cbbdcf809836f0808958ad3011c",
+      "path": "C:\\Users\\K1\\Desktop\\Projects\\Perfect\\artifacts\\stage12-modernize\\canonical\\desktop-light-1536x1024.webp",
+      "bytes": 854048,
+      "sha256": "d7162ba696beb419b2f88bc5ba02d1f0e4da7fccade9389aa8c83e7c79161abf",
+      "mime": "image/webp"
+    }
+  ]
+}

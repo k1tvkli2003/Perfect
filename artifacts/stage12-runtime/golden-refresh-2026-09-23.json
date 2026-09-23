@@ -1,0 +1,22 @@
+{
+  "reason": "Stage12 Guided Command Center intentionally changed shell geometry, semantics, theme and responsive composition; canonical design references untouched.",
+  "command": "flutter test --no-pub --update-goldens test/presentation/perfect_workspace_page_test.dart --tags windows-golden --reporter expanded",
+  "verification": "flutter test --no-pub test/presentation/perfect_workspace_page_test.dart --tags windows-golden --reporter expanded",
+  "result": "8/8 pass",
+  "goldens": [
+    {"path":"test/goldens/perfect_compact.png","old_sha256":"304e86b34c75494667ef960d2a77cfc2465c4b24c7b889647bc85f96f70dd7fe","new_sha256":"c1b5dd66814e96cacfb2ae70aaea2bbb4950c831aceb28f0ea843fb735405694"},
+    {"path":"test/goldens/perfect_compact_ai_closed.png","old_sha256":"afc56a6296ffd5c60a01c35f250121ab2af35b879f96ede96aba7a7a89ef8dc3","new_sha256":"ecaa50ca753798a340f97007536d8646578a7b8bd08e214fb6543de90fe8aaac"},
+    {"path":"test/goldens/perfect_compact_ai_open.png","old_sha256":"6b790a3ee0e740879a043bb933ef94b670671dcd7ced626839c89fee7b8f095f","new_sha256":"eed02254b79351b781c0228c38554cf8a3f249353290df359a34497078169adb"},
+    {"path":"test/goldens/perfect_expanded.png","old_sha256":"ee0bcae85206df997f5023141c4e59ca0d695fc2037c9b0ef9d775fc2b75eb37","new_sha256":"ed5d064ff6d790b7979213c663b6b0ec5758b99dcfcee1e548bdf8c95b7bf281"},
+    {"path":"test/goldens/perfect_stage10_phone_clarity_light.png","old_sha256":"d24d0d057d247608ccb2613c7413fd39f1d12acd6837b172dd3b7b3e37473ee8","new_sha256":"2428b433fcdc95dd48dccdb7e58be2537c6ddc7c029e92c6683101e5c3ab0886"},
+    {"path":"test/goldens/perfect_stage10_phone_dark.png","old_sha256":"269c296338344f2c950300a447e9db4a4b9864a7a8fde3fcc3bb6953f1516cc2","new_sha256":"22b29a231596417c00a085efe6756e826712b8d79ce269adda9b07483beb6b5e"},
+    {"path":"test/goldens/perfect_stage10_tablet_dark.png","old_sha256":"a09c746603fea9d5cd83eaf1334e88a20551d57c84858d2afd1cbea82b4613b2","new_sha256":"15c362c4a3fa6bf7b232d4e1f404cb9ee611015216fb1180e569785d11a8fd2f"},
+    {"path":"test/goldens/perfect_stage10_windows_clarity_dark.png","old_sha256":"169204e6d420cd6327178e8d85c2e8df66f38b028d065d300fb502b960fdab69","new_sha256":"2af8c8950b4a8ea7ba18bc4521a5f6ac1d9cc6cc157e7bcd400145c78db66614"},
+    {"path":"test/goldens/perfect_stage10_windows_dark.png","old_sha256":"a583746e7f4dc8eedc0af1ac4c460c58f17cad0783934058c67744a1075cae30","new_sha256":"8c6696c5f56408c2bd3bb6efd467e024c80fa457edc46b812f3642c0373e1a76"},
+    {"path":"test/goldens/perfect_tablet_landscape.png","old_sha256":"d8cab476a958e2f03c071cda47f684405f196e02b911ab193ee9f0f97c5b01f1","new_sha256":"cf5034a99b61e4e49d34354a82cebaed5c6b4793fe3931ed260208c5d479e71b"},
+    {"path":"test/goldens/perfect_tablet_rail_compact.png","old_sha256":"bc6c82a7b61d4cca518942793b62c74707b87e69e682f2f01e81dcda95525a9a","new_sha256":"21882195fead0b2aaa592f3c0c83280f2d8979ebb8ee4b340f6884dfeeb51f0a"},
+    {"path":"test/goldens/perfect_tablet_rail_expanded.png","old_sha256":"c54d707daf5bd713cfb1cd1ed059bbd29c50886fb777edf3e467186b30f9cc35","new_sha256":"09f0d7f82b4d701df41cac1232d2add6fca65d80f6578aa3d8c9457c6bdb7bad"},
+    {"path":"test/goldens/perfect_windows_short.png","old_sha256":"661aaca3a65c959a967e09af35eeb63ce3a98811c33b2f5417f0b5e0b20cb4d0","new_sha256":"1aa76169f7cb2167d11406aed82f12dedf7386b60d0b2eeda459284331d7869b"},
+    {"path":"test/goldens/perfect_windows_wide_inspector.png","old_sha256":"896f584783637936f2ffa6968a31eda82e396cdfbb39a072d339ecdddeccd86f","new_sha256":"6c998b1b59418ef0933085b4f8da8c2bf159159094820ff4b8f5dc249202f099"}
+  ]
+}

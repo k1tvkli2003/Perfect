@@ -1,0 +1,10 @@
+{
+  "reason": "Perfect semantic theme accessibility fix changed authored sync-state colors; header behavior remained unchanged and canonical UI design references were not modified.",
+  "command": "flutter test --no-pub --update-goldens test/presentation/perfect_workspace_header_test.dart --reporter expanded",
+  "verification": "flutter test --no-pub test/presentation/perfect_workspace_header_test.dart --reporter expanded",
+  "result": "5/5 pass",
+  "goldens": [
+    {"path":"test/goldens/perfect_header_light.png","old_sha256":"c00bbf1204b02020b20835aad5d58f99a535070c117a71613741b97d7d2bdfd0","new_sha256":"9353031f133800bc20b4c8652adb9a2a21e7e3e5c796fafc044e49ffb5b1dd09"},
+    {"path":"test/goldens/perfect_header_dark.png","old_sha256":"d0b2a228a8d662349153e082816633aeb99f73fe555420b45a33ae304e76fd2c","new_sha256":"121d4e1c1ccffa738107ab6447fd508ee53da6b22d35a6ab5d3aa293ac3f268b"}
+  ]
+}

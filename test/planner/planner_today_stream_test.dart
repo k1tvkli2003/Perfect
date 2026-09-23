@@ -166,6 +166,40 @@ void main() {
     expect(ids(after), ids(before));
   });
 
+  test(
+    'timed and untimed habits retain section order in either input order',
+    () {
+      final scheduledTask = item('task', scheduled: DateTime(2026, 9, 9, 18));
+      final timedHabit = item(
+        'timed-habit',
+        kind: PlannerEntityKind.habit,
+        scheduled: DateTime(2026, 1, 1, 8),
+      );
+      final untimedHabit = item('untimed-habit', kind: PlannerEntityKind.habit);
+      final flexibleTask = item('flexible-task');
+      final fixture = [untimedHabit, flexibleTask, timedHabit, scheduledTask];
+      for (final entities in [fixture, fixture.reversed]) {
+        final stream = PlannerTodayStream.project(day: day, entities: entities);
+        expect(ids(stream), [
+          'task',
+          'timed-habit',
+          'untimed-habit',
+          'flexible-task',
+        ]);
+        expect(stream.entries.map((entry) => entry.section), [
+          PlannerTodaySection.scheduled,
+          PlannerTodaySection.habits,
+          PlannerTodaySection.habits,
+          PlannerTodaySection.flexible,
+        ]);
+        expect(stream.entries[1].scheduledAt, DateTime(2026, 9, 9, 8));
+        expect(stream.entries[2].scheduledAt, isNull);
+        expect(stream.entries[3].scheduledAt, isNull);
+        expect(stream.nextEntryId, 'task');
+      }
+    },
+  );
+
   test('authoritative quota/exception eligibility overrides fallback', () {
     final habit = item('quota', kind: PlannerEntityKind.habit);
     expect(
@@ -310,6 +344,49 @@ void main() {
       throwsUnsupportedError,
     );
   });
+
+  test(
+    'next follows completion, correction and removal without duplicates',
+    () {
+      final first = item('first', scheduled: DateTime(2026, 9, 9, 8));
+      final second = item('second', scheduled: DateTime(2026, 9, 9, 9));
+      const completed = PlannerTaskProgress(
+        state: PlannerTaskProgressState.completed,
+        percent: 100,
+      );
+      PlannerTodayStream project({
+        List<PlannerEntity>? entities,
+        Map<String, PlannerTaskProgress> outcomes = const {},
+      }) => PlannerTodayStream.project(
+        day: day,
+        entities: entities ?? [first, second],
+        taskProgressById: outcomes,
+      );
+
+      final initial = project();
+      expect(initial.nextEntryId, first.id);
+      final afterCompletion = project(outcomes: {first.id: completed});
+      expect(afterCompletion.nextEntryId, second.id);
+      expect(afterCompletion.entries.length, 2);
+      expect(afterCompletion.entries.map((e) => e.entity.id).toSet().length, 2);
+      expect(
+        afterCompletion.inSection(PlannerTodaySection.settled).single.entity.id,
+        first.id,
+      );
+      expect(
+        project(
+          outcomes: {first.id: completed, second.id: completed},
+        ).nextEntryId,
+        isNull,
+      );
+      expect(project().nextEntryId, first.id);
+      expect(project(entities: [second]).nextEntryId, second.id);
+      expect(project(entities: []).nextEntryId, isNull);
+      // A later projection must not rewrite a previously displayed snapshot.
+      expect(initial.nextEntryId, first.id);
+      expect(initial.inSection(PlannerTodaySection.settled), isEmpty);
+    },
+  );
 
   test('duplicates fail explicitly instead of duplicating controls', () {
     expect(

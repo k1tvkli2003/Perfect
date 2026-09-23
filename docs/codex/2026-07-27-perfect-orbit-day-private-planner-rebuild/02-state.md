@@ -1,10 +1,98 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-09-17
-- Owner: Codex
+- Last updated: 2026-09-23
+- Owner: Codex / Hermes solo continuation
 
 ## Current State
+
+### Stage 12 integrated checkpoint — 2026-09-23
+
+Guided Command Center is selected and implemented. Compact phone Today, tablet
+portrait/landscape and expanded Flutter render were visually inspected; native
+Android `Codex_API35` installed and launched the current-source preview APK.
+The settled `com.k1tvkli2003.perfect.preview` screenshot/hierarchy confirms the
+Today Pulse, typed groups, one highlighted next row and distinct `NEXT BOUNDARY`
+label. Earlier screenshot showing an unrelated Gauss course list was rejected:
+the shared emulator's top activity had switched to `com.gauss.app.profile`.
+
+After contract-backed golden refresh, full sequential Flutter suite passes
+**505/505**; `flutter analyze --no-pub` reports no issues, 182 Dart files are
+format-clean and `git diff --check` passes. Golden old/new hashes are recorded
+under `artifacts/stage12-runtime/*golden-refresh-2026-09-23.json`; canonical
+preview references were not overwritten. Debug APK SHA-256:
+`90f8e7a9447bad7f87c7d3cd6323f47857cd79b2b78607a06b5d97da8ffcf82a`.
+
+Stage 12 is **not released or closed**: local Windows preview build lacks ATL
+`atlbase.h`; VS repair returned 5007 (elevation required). Exact-source private
+Windows CI, native artifact/install-over and trusted release remain pending.
+Stages 13–50 remain open. PWA remains in the master-plan scope, not prepared;
+old brief Web exclusion is superseded. Historical checkpoints below describe
+past states and must not override this section.
+
+### Direct source correction — 2026-09-18
+
+Earlier zero-reference finding is superseded: compact/wide agenda builders now
+connect `stream.nextEntryId` to `isNextAction` and the row semantic label.
+Three widget-label lifecycle tests pass at 390/800/1366dp; latest behavioral
+workspace run passes 71 tests in 55 seconds (existing Drift warning remains).
+This is semantic metadata coverage, not visible next-row emphasis or an actual
+screen-reader session. Visual presentation requirement remains OPEN.
+The existing golden predates Stage 12; decision.md still records no selected
+candidate. Neither numerical pixel matching nor autonomous decision authority
+constitutes the missing visual acceptance.
+Compact golden numerical diff is exactly 12,857 pixels within the half-open
+rectangle (20,413)-(370,635), at 390x844. Outside this rectangle pixels match.
+The source diff adds section headings before rows; this supports localized stream
+composition drift, not a speculative header/capture padding defect. These are
+numerical/source observations only, not visual acceptance. Autonomous design
+selection authority does not waive AGENTS' screenshot inspection requirement.
+
+### Solo verification checkpoint — 2026-09-18
+
+Latest evidence: [execution receipt](../../../artifacts/stage12-runtime/verification-2026-09-18.md).
+Workspace now passes 68 behavioral tests; unfiltered run is 68 passed / 8 golden
+failures. Analyzer clean; 181 files format-clean. Two new capture submission
+characterizations pass using real controller/Drift; no production capture fix was
+needed. Debug Android sibling APK built and installed; Today/input observed, but
+save proof invalidated by concurrent Gauss use of the emulator. No more device
+input was sent. 36 mock browser scenarios pass geometry only. Same-model image
+inspection unavailable; no alternative model used. Stage 12 design/runtime/release
+acceptance remains open; no golden refresh or Stage 13–50 acceptance.
+
+### Hermes execution wave — 2026-09-17
+
+User authorized full execution of the existing plan with `/orchestrator /multi-agent`.
+Exclusive owners and current proof: [execution ownership](stages/evidence/12-execution-ownership.md).
+Stage12 remains active; no new numbered stage accepted. One builder owns Today
+anchor continuity; one owns shell-context design candidates. Parent owns integration.
+Fresh compact golden differs only inside `(20,413)-(370,635)`; header/Pulse/footer
+pixels are identical. Measured headings each cost 46dp, rows 73dp. No speculative
+header fix or golden update is justified. Native release still 2069 at 6e56766.
+
+
+### Latest typed-row boundary — 2026-09-17
+
+Today compact/medium/expanded now share `_groupTodayRows`; row builders receive
+the original `PlannerTodayStreamEntry` and consume its eligibility, daily outcome
+and occurrence time directly. Existing map fallback remains only when no entry
+exists, preserving unavailable-snapshot behavior and meaningful null values.
+No styling, ordering, next-row emphasis, or golden baseline changed.
+
+After this refactor, unfiltered workspace tests finished **63 passed / 8 failed**
+(71 total, exit 1, 31 seconds). Same eight golden failures; all eight actual PNG
+SHA256 values are byte-identical to pre-refactor output. Analyzer passed, exit 0,
+77.4 seconds. This proves bounded behavior/render preservation, not visual
+acceptance. Earlier full-suite counts below predate this source change.
+`nextEntryId`, anchor, complete retry UX, preview selection and runtime/release
+remain open; Stage 12 is not closed.
+The two compact golden tests now use `_setTestViewSize` and assert both
+MediaQuery and rendered bounds equal 390x844. This fixes the measured 800x600
+MediaQuery inconsistency in those tests. Focused execution reached both golden
+checks and still failed at 12857 and 9530 differing pixels (0 passed / 2 failed,
+exit 1); both actual PNG hashes remain unchanged. The viewport mismatch was not
+the cause of these two golden differences. Other legacy surface-only fixtures
+are not covered by this bounded correction. No golden was regenerated.
 
 ### Platform and source checkpoint — 2026-09-17
 
@@ -15,11 +103,53 @@ in `11-master-50-stage-plan.md` owns browser acceptance and private delivery gat
 PWA is NOT PREPARED; host/origin/access policy and browser evidence remain open.
 No platform code, CI or deployment changed in this documentation checkpoint.
 
-Current source checkpoint is `ee87890`, not the restart baseline below. Stage 12
-retains typed same-day outcomes on projection read failure; full error/retry UX
-is still open. Two workspace test blocks remain unstaged; only the grouping
-regression is known red. Prior 64/64 result excluded that test and is not a green
-full suite. Stages 01–11 remain historically closed, Stage 12 active, 13–50 open.
+Current inspected source checkpoint is `0ef09ce` on `main`, plus an existing
+uncommitted grouping patch in `perfect_workspace_page.dart` (162 added / 64
+removed lines at this checkpoint). It passes the typed stream into all three
+Today layouts and renders section headings. Earlier `486 passed / 1 failed`
+evidence applies to the pre-grouping source, not this patch. Fresh unfiltered
+workspace execution finished **59 passed / 8 failed**, exit 1, 51 seconds.
+All eight failures are golden comparisons; the real-row grouping regression now
+passes. That run contained 67 tests, not 472. Failed golden tests may stop before
+later behavioral assertions, so 59 passes do not certify every interaction.
+The full sequential integration run then finished **479 passed / 8 failed**,
+exit 1, 2 minutes; its failures are the same workspace golden tests.
+`flutter analyze --no-pub` passed (exit 0, 81.2 seconds); formatting passed for
+181 files without changes. Do not repeat these unchanged checks to seek green.
+
+Four additive behavioral tests now cover persisted section lifecycle at
+390/800/1366dp and compact AI open/close with capture-draft retention. Focused
+runs passed 3/3 and 1/1 respectively. The file now has 71 tests; no fresh full
+suite is claimed after these additions. Existing golden assertions are intact.
+The isolated original AI golden still fails (exit 1): exactly 9530 differing
+pixels in x=20..369, y=413..546 of the 390x844 image; pixels outside that rectangle
+are equal. This is numerical localization only, not visual acceptance.
+
+Stage 12 still retains same-day outcomes on projection read failure and cancels
+suspended reads after controller replacement/page disposal (`3872494`). The
+current workspace suite passed those regressions. `nextEntryId` is not consumed
+by the presentation file; full error/retry UX and anchor continuity remain open.
+Stages 01–11 remain historically closed, Stage 12 active, 13–50 open.
+
+The three untracked Stage 12 candidate boards explicitly remain Mock Preview:
+`selected_candidate` is null and `decision.md` says not approved. No visible
+grouping implementation may bypass that gate. Existing patch is an unaccepted
+prototype, not a selected design. Next: complete comparable sparse/dense
+full-shell candidates, record autonomous selection, then reconcile this patch
+with that design and finish single-projection sections/next-ID consumption.
+Scroll anchor, last-row reachability, error/retry UX and runtime comparison remain
+required. Existing untracked files, failure images and user prototypes remain
+untouched.
+
+Visual review was attempted but the image tool rejected image inputs in this
+session. No visual acceptance or golden regeneration occurred. MultiOS static
+audit confirms `web/` is absent; Android/Windows identities remain configured.
+No current platform build/install/browser proof follows from that static audit.
+
+Toolchain observed: Flutter 3.44.0 / Dart 3.12.0. This Flutter rejects
+`--chain-stack-traces` before loading tests. Use expanded reporting without that
+flag; the failing widget test emits its assertion stack itself. This flag error
+does not explain the earlier historical silent exit 1.
 
 ### Execution authority correction — 2026-09-17
 

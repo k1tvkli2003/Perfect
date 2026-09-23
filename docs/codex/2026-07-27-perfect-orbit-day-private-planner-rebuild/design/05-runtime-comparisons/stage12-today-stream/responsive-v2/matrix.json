@@ -1,0 +1,382 @@
+{
+  "status": "accepted-for-implementation",
+  "selection": {
+    "id": "guided-time-stream-v1",
+    "status": "accepted-for-implementation",
+    "selectedCandidate": "a",
+    "rejectedCandidates": [
+      "b",
+      "c"
+    ],
+    "canonicalCases": [
+      "a-phone-sparse",
+      "a-phone-dense",
+      "a-phone-empty",
+      "a-phone-settled",
+      "a-tablet-dense",
+      "a-windows-dense"
+    ]
+  },
+  "cases": [
+    {
+      "id": "a-phone-sparse",
+      "candidate": "a",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "sparse",
+      "file": "a-phone-sparse.html",
+      "sha256": "cfa71d0da5454d13a794760a135e7406579848515fadaaeae47dbf9950feec78"
+    },
+    {
+      "id": "a-phone-dense",
+      "candidate": "a",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "dense",
+      "file": "a-phone-dense.html",
+      "sha256": "a18eb4629e093d84c1b1873efa12901f42d7ae5301697188ec3a130429f309a0"
+    },
+    {
+      "id": "a-phone-empty",
+      "candidate": "a",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "empty",
+      "file": "a-phone-empty.html",
+      "sha256": "ffec7a3951b429863a7be259924304c2196dc773181f2ec9ff1677f20f296c5f"
+    },
+    {
+      "id": "a-phone-settled",
+      "candidate": "a",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "settled",
+      "file": "a-phone-settled.html",
+      "sha256": "9146dbf9266240c35fa5352be8673232379262267b2211e9b185b7faf6883d95"
+    },
+    {
+      "id": "a-tablet-sparse",
+      "candidate": "a",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "sparse",
+      "file": "a-tablet-sparse.html",
+      "sha256": "cfa71d0da5454d13a794760a135e7406579848515fadaaeae47dbf9950feec78"
+    },
+    {
+      "id": "a-tablet-dense",
+      "candidate": "a",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "dense",
+      "file": "a-tablet-dense.html",
+      "sha256": "a18eb4629e093d84c1b1873efa12901f42d7ae5301697188ec3a130429f309a0"
+    },
+    {
+      "id": "a-tablet-empty",
+      "candidate": "a",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "empty",
+      "file": "a-tablet-empty.html",
+      "sha256": "ffec7a3951b429863a7be259924304c2196dc773181f2ec9ff1677f20f296c5f"
+    },
+    {
+      "id": "a-tablet-settled",
+      "candidate": "a",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "settled",
+      "file": "a-tablet-settled.html",
+      "sha256": "9146dbf9266240c35fa5352be8673232379262267b2211e9b185b7faf6883d95"
+    },
+    {
+      "id": "a-windows-sparse",
+      "candidate": "a",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "sparse",
+      "file": "a-windows-sparse.html",
+      "sha256": "cfa71d0da5454d13a794760a135e7406579848515fadaaeae47dbf9950feec78"
+    },
+    {
+      "id": "a-windows-dense",
+      "candidate": "a",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "dense",
+      "file": "a-windows-dense.html",
+      "sha256": "a18eb4629e093d84c1b1873efa12901f42d7ae5301697188ec3a130429f309a0"
+    },
+    {
+      "id": "a-windows-empty",
+      "candidate": "a",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "empty",
+      "file": "a-windows-empty.html",
+      "sha256": "ffec7a3951b429863a7be259924304c2196dc773181f2ec9ff1677f20f296c5f"
+    },
+    {
+      "id": "a-windows-settled",
+      "candidate": "a",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "settled",
+      "file": "a-windows-settled.html",
+      "sha256": "9146dbf9266240c35fa5352be8673232379262267b2211e9b185b7faf6883d95"
+    },
+    {
+      "id": "b-phone-sparse",
+      "candidate": "b",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "sparse",
+      "file": "b-phone-sparse.html",
+      "sha256": "093ff8deca328d4ed31e3dbbf1daff62fe3d4e69b2769870531915118a4208a2"
+    },
+    {
+      "id": "b-phone-dense",
+      "candidate": "b",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "dense",
+      "file": "b-phone-dense.html",
+      "sha256": "f311ee9d50799adb1805db7bf3bd6aa7ea66e1da9cf5a3fbb58841a2842edfea"
+    },
+    {
+      "id": "b-phone-empty",
+      "candidate": "b",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "empty",
+      "file": "b-phone-empty.html",
+      "sha256": "6a1f15786c05b57df9e8412cdf671389f4b5796880bfeb1a9d459871648b554e"
+    },
+    {
+      "id": "b-phone-settled",
+      "candidate": "b",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "settled",
+      "file": "b-phone-settled.html",
+      "sha256": "fd956729959bdbab25ccd0fc1f534bae4156048424aea09a3ae4d970088a0f91"
+    },
+    {
+      "id": "b-tablet-sparse",
+      "candidate": "b",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "sparse",
+      "file": "b-tablet-sparse.html",
+      "sha256": "093ff8deca328d4ed31e3dbbf1daff62fe3d4e69b2769870531915118a4208a2"
+    },
+    {
+      "id": "b-tablet-dense",
+      "candidate": "b",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "dense",
+      "file": "b-tablet-dense.html",
+      "sha256": "f311ee9d50799adb1805db7bf3bd6aa7ea66e1da9cf5a3fbb58841a2842edfea"
+    },
+    {
+      "id": "b-tablet-empty",
+      "candidate": "b",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "empty",
+      "file": "b-tablet-empty.html",
+      "sha256": "6a1f15786c05b57df9e8412cdf671389f4b5796880bfeb1a9d459871648b554e"
+    },
+    {
+      "id": "b-tablet-settled",
+      "candidate": "b",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "settled",
+      "file": "b-tablet-settled.html",
+      "sha256": "fd956729959bdbab25ccd0fc1f534bae4156048424aea09a3ae4d970088a0f91"
+    },
+    {
+      "id": "b-windows-sparse",
+      "candidate": "b",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "sparse",
+      "file": "b-windows-sparse.html",
+      "sha256": "093ff8deca328d4ed31e3dbbf1daff62fe3d4e69b2769870531915118a4208a2"
+    },
+    {
+      "id": "b-windows-dense",
+      "candidate": "b",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "dense",
+      "file": "b-windows-dense.html",
+      "sha256": "f311ee9d50799adb1805db7bf3bd6aa7ea66e1da9cf5a3fbb58841a2842edfea"
+    },
+    {
+      "id": "b-windows-empty",
+      "candidate": "b",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "empty",
+      "file": "b-windows-empty.html",
+      "sha256": "6a1f15786c05b57df9e8412cdf671389f4b5796880bfeb1a9d459871648b554e"
+    },
+    {
+      "id": "b-windows-settled",
+      "candidate": "b",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "settled",
+      "file": "b-windows-settled.html",
+      "sha256": "fd956729959bdbab25ccd0fc1f534bae4156048424aea09a3ae4d970088a0f91"
+    },
+    {
+      "id": "c-phone-sparse",
+      "candidate": "c",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "sparse",
+      "file": "c-phone-sparse.html",
+      "sha256": "fe622b5bfbcadfa8048b5daa59fbe3150d72822e04f41035e03116174e3b5e2e"
+    },
+    {
+      "id": "c-phone-dense",
+      "candidate": "c",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "dense",
+      "file": "c-phone-dense.html",
+      "sha256": "a3efa66a5bcf4595fb90312dee3d0d808ae5337c6710f75cf5bc86090452acec"
+    },
+    {
+      "id": "c-phone-empty",
+      "candidate": "c",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "empty",
+      "file": "c-phone-empty.html",
+      "sha256": "59b36721725e64d157d7aaf7db16aa82df0656f19f6925f2521dc8f7ca7609e9"
+    },
+    {
+      "id": "c-phone-settled",
+      "candidate": "c",
+      "device": "phone",
+      "width": 390,
+      "height": 844,
+      "state": "settled",
+      "file": "c-phone-settled.html",
+      "sha256": "6f07a7f381724cbd8416c5060f646e3807b4415ed10968325e6b3f896e225c7d"
+    },
+    {
+      "id": "c-tablet-sparse",
+      "candidate": "c",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "sparse",
+      "file": "c-tablet-sparse.html",
+      "sha256": "fe622b5bfbcadfa8048b5daa59fbe3150d72822e04f41035e03116174e3b5e2e"
+    },
+    {
+      "id": "c-tablet-dense",
+      "candidate": "c",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "dense",
+      "file": "c-tablet-dense.html",
+      "sha256": "a3efa66a5bcf4595fb90312dee3d0d808ae5337c6710f75cf5bc86090452acec"
+    },
+    {
+      "id": "c-tablet-empty",
+      "candidate": "c",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "empty",
+      "file": "c-tablet-empty.html",
+      "sha256": "59b36721725e64d157d7aaf7db16aa82df0656f19f6925f2521dc8f7ca7609e9"
+    },
+    {
+      "id": "c-tablet-settled",
+      "candidate": "c",
+      "device": "tablet",
+      "width": 834,
+      "height": 1112,
+      "state": "settled",
+      "file": "c-tablet-settled.html",
+      "sha256": "6f07a7f381724cbd8416c5060f646e3807b4415ed10968325e6b3f896e225c7d"
+    },
+    {
+      "id": "c-windows-sparse",
+      "candidate": "c",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "sparse",
+      "file": "c-windows-sparse.html",
+      "sha256": "fe622b5bfbcadfa8048b5daa59fbe3150d72822e04f41035e03116174e3b5e2e"
+    },
+    {
+      "id": "c-windows-dense",
+      "candidate": "c",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "dense",
+      "file": "c-windows-dense.html",
+      "sha256": "a3efa66a5bcf4595fb90312dee3d0d808ae5337c6710f75cf5bc86090452acec"
+    },
+    {
+      "id": "c-windows-empty",
+      "candidate": "c",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "empty",
+      "file": "c-windows-empty.html",
+      "sha256": "59b36721725e64d157d7aaf7db16aa82df0656f19f6925f2521dc8f7ca7609e9"
+    },
+    {
+      "id": "c-windows-settled",
+      "candidate": "c",
+      "device": "windows",
+      "width": 1440,
+      "height": 900,
+      "state": "settled",
+      "file": "c-windows-settled.html",
+      "sha256": "6f07a7f381724cbd8416c5060f646e3807b4415ed10968325e6b3f896e225c7d"
+    }
+  ]
+}

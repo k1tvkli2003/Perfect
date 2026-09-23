@@ -658,6 +658,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     return switch (tier) {
       _WorkspaceLayoutTier.compact => _TodayPage(
         controller: widget.controller,
+        stream: _canDisplayTodaySnapshot ? _todayStream : null,
         nowProvider: widget.now,
         ownerDisplayName: widget.ownerDisplayName,
         items: _todayItems,
@@ -673,6 +674,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       ),
       _WorkspaceLayoutTier.medium => _MediumTodayDeck(
         controller: widget.controller,
+        stream: _canDisplayTodaySnapshot ? _todayStream : null,
         now: now,
         items: _todayItems,
         eligibilityById: _displayTodayEligibility,
@@ -688,6 +690,7 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       ),
       _WorkspaceLayoutTier.expanded => _ExpandedTodayDeck(
         controller: widget.controller,
+        stream: _canDisplayTodaySnapshot ? _todayStream : null,
         now: now,
         items: _todayItems,
         eligibilityById: _displayTodayEligibility,
@@ -768,8 +771,10 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     final now = widget.now().toLocal();
     final signature = _todayProjectionSignature(now);
     if (_resolvedTodayProjection == signature) return true;
-    return _failedTodayProjection == signature &&
-        _todayStream?.day == DateTime(now.year, now.month, now.day);
+    // Keep the last coherent same-day projection while its replacement loads.
+    // Freshness remains separate (_isTodayProjectionResolved); a transient
+    // fallback order must not move rows or destroy their scroll anchors.
+    return _todayStream?.day == DateTime(now.year, now.month, now.day);
   }
 
   List<PlannerEntity> get _todayItems {
@@ -824,6 +829,10 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
 
   bool get _isTodayProjectionResolved {
     final now = widget.now().toLocal();
+    if (_failedTodayProjection == _todayProjectionSignature(now)) {
+      // A failed read is stale by definition; the Pulse must not certify it.
+      return false;
+    }
     return _resolvedTodayProjection == _todayProjectionSignature(now);
   }
 
@@ -2963,6 +2972,7 @@ class _CaptureActionDisc extends StatelessWidget {
 class _ExpandedTodayDeck extends StatelessWidget {
   const _ExpandedTodayDeck({
     required this.controller,
+    required this.stream,
     required this.now,
     required this.items,
     required this.eligibilityById,
@@ -2980,6 +2990,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
   });
 
   final PlannerWorkspaceController controller;
+  final PlannerTodayStream? stream;
   final DateTime now;
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
@@ -3006,24 +3017,28 @@ class _ExpandedTodayDeck extends StatelessWidget {
         0,
         constraints.maxWidth - horizontalPadding * 2,
       );
+      final attachedInspectorWidth = (contentWidth * .3)
+          .clamp(340.0, 380.0)
+          .toDouble();
       final inlineInspector =
-          inspected != null && contentWidth >= 1320 && textScale < 1.35;
+          inspected != null &&
+          contentWidth >= 520 + PerfectSpace.lg + attachedInspectorWidth &&
+          textScale < 1.35;
       final lowHeight = constraints.maxHeight < 650;
       final visibleRows = math.min(items.length, 5);
       final rowHeight = textScale >= 1.45 ? 108.0 : 88.0;
-      final streamHeight = (128 + visibleRows * rowHeight)
+      final streamHeight = (176 + visibleRows * rowHeight)
           .clamp(300.0, 620.0)
           .toDouble();
-      final inspectorHeight = inspected == null
-          ? 0.0
-          : constraints.maxHeight >= 850
-          ? 600.0
-          : 420.0;
-      final desiredStageHeight = math.max(streamHeight, inspectorHeight);
+      // Inspector scrolls independently; its content must not create a
+      // viewport-sized floor for an otherwise sparse agenda.
       final stageBudget = (constraints.maxHeight - 250)
           .clamp(lowHeight ? 300.0 : 340.0, 700.0)
           .toDouble();
-      final stageHeight = math.min(desiredStageHeight, stageBudget);
+      final stageHeight = math.min(
+        streamHeight,
+        math.min(stageBudget, inlineInspector ? 520.0 : 620.0),
+      );
       final floatingInspectorWidth = (contentWidth * .3)
           .clamp(320.0, 380.0)
           .toDouble();
@@ -3083,6 +3098,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
                               flex: inlineInspector ? 12 : 1,
                               child: _DayStreamPanel(
                                 controller: controller,
+                                stream: stream,
                                 items: items,
                                 eligibilityById: eligibilityById,
                                 habitSummaryById: habitSummaryById,
@@ -3096,7 +3112,10 @@ class _ExpandedTodayDeck extends StatelessWidget {
                             ),
                             if (inlineInspector) ...[
                               const SizedBox(width: PerfectSpace.lg),
-                              Expanded(flex: 8, child: inspectorPanel()),
+                              SizedBox(
+                                width: attachedInspectorWidth,
+                                child: inspectorPanel(),
+                              ),
                             ],
                           ],
                         ),
@@ -3148,6 +3167,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
 class _MediumTodayDeck extends StatelessWidget {
   const _MediumTodayDeck({
     required this.controller,
+    required this.stream,
     required this.now,
     required this.items,
     required this.eligibilityById,
@@ -3163,6 +3183,7 @@ class _MediumTodayDeck extends StatelessWidget {
   });
 
   final PlannerWorkspaceController controller;
+  final PlannerTodayStream? stream;
   final DateTime now;
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
@@ -3191,7 +3212,7 @@ class _MediumTodayDeck extends StatelessWidget {
         final lowHeight = constraints.maxHeight < 720;
         final visibleRows = math.min(items.length, 5);
         final rowHeight = textScale >= 1.45 ? 112.0 : 92.0;
-        final desiredStageHeight = (128 + visibleRows * rowHeight)
+        final desiredStageHeight = (176 + visibleRows * rowHeight)
             .clamp(270.0, 620.0)
             .toDouble();
         final verticalBudget = shortLandscape
@@ -3242,6 +3263,7 @@ class _MediumTodayDeck extends StatelessWidget {
                       height: stageHeight,
                       child: _DayStreamPanel(
                         controller: controller,
+                        stream: stream,
                         items: items,
                         eligibilityById: eligibilityById,
                         habitSummaryById: habitSummaryById,
@@ -3304,6 +3326,7 @@ class _DayDeckHeading extends StatelessWidget {
 class _DayStreamPanel extends StatelessWidget {
   const _DayStreamPanel({
     required this.controller,
+    required this.stream,
     required this.items,
     required this.eligibilityById,
     required this.habitSummaryById,
@@ -3316,6 +3339,7 @@ class _DayStreamPanel extends StatelessWidget {
   });
 
   final PlannerWorkspaceController controller;
+  final PlannerTodayStream? stream;
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
@@ -3341,6 +3365,7 @@ class _DayStreamPanel extends StatelessWidget {
       else
         _DayStreamTimeline(
           controller: controller,
+          stream: stream,
           items: items,
           eligibilityById: eligibilityById,
           habitSummaryById: habitSummaryById,
@@ -3440,9 +3465,73 @@ class _DayZoneHeading extends StatelessWidget {
   );
 }
 
+class _DaySectionHeading extends StatelessWidget {
+  const _DaySectionHeading({super.key, required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(
+      top: PerfectSpace.lg,
+      bottom: PerfectSpace.sm,
+    ),
+    child: Semantics(
+      header: true,
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: PerfectSemanticTheme.of(context).muted,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.4,
+        ),
+      ),
+    ),
+  );
+}
+
+String _sectionLabel(PlannerTodaySection section) => switch (section) {
+  PlannerTodaySection.decision => 'Needs a decision',
+  PlannerTodaySection.scheduled => 'Scheduled',
+  PlannerTodaySection.habits => 'Habits',
+  PlannerTodaySection.flexible => 'Anytime',
+  PlannerTodaySection.settled => 'Settled',
+};
+
+List<Widget> _groupTodayRows({
+  required List<PlannerEntity> items,
+  required PlannerTodayStream? stream,
+  required Widget Function(PlannerEntity entity, PlannerTodayStreamEntry? entry)
+  buildRow,
+}) {
+  if (stream == null) {
+    return items
+        .map((entity) => buildRow(entity, null))
+        .toList(growable: false);
+  }
+  final visibleIds = items.map((entity) => entity.id).toSet();
+  final rows = <Widget>[];
+  for (final section in PlannerTodaySection.values) {
+    final sectionEntries = stream
+        .inSection(section)
+        .where((entry) => visibleIds.contains(entry.entity.id))
+        .toList(growable: false);
+    if (sectionEntries.isEmpty) continue;
+    rows.add(
+      _DaySectionHeading(
+        key: ValueKey<String>('day-section-${section.name}'),
+        label: _sectionLabel(section),
+      ),
+    );
+    rows.addAll(sectionEntries.map((entry) => buildRow(entry.entity, entry)));
+  }
+  return rows;
+}
+
 class _DayStreamTimeline extends StatelessWidget {
   const _DayStreamTimeline({
     required this.controller,
+    required this.stream,
     required this.items,
     required this.eligibilityById,
     required this.habitSummaryById,
@@ -3452,6 +3541,7 @@ class _DayStreamTimeline extends StatelessWidget {
   });
 
   final PlannerWorkspaceController controller;
+  final PlannerTodayStream? stream;
   final List<PlannerEntity> items;
   final Map<String, PlannerTodayEligibility> eligibilityById;
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
@@ -3464,72 +3554,85 @@ class _DayStreamTimeline extends StatelessWidget {
     builder: (context, constraints) {
       final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
       final showTimeRail = constraints.maxWidth >= 360 && textScale < 1.45;
-      return Column(
-        children: items
-            .map(
-              (entity) => Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (showTimeRail) ...[
-                    SizedBox(
-                      width: 58,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: PerfectSpace.md),
-                        child: Text(
-                          entity.scheduledAt == null
-                              ? 'Anytime'
-                              : _shortTime(entity.scheduledAt!.toLocal()),
-                          textAlign: TextAlign.end,
-                          maxLines: 2,
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: PerfectSpace.xs),
-                    SizedBox(
-                      width: 14,
-                      child: Column(
-                        children: [
-                          const SizedBox(height: PerfectSpace.lg),
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: _colorFor(context, entity),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          Container(
-                            width: 2,
-                            height: 54,
-                            color: Theme.of(context).colorScheme.outlineVariant,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: PerfectSpace.xs),
-                  ],
-                  Expanded(
-                    child: _AgendaRow(
-                      entity: entity,
-                      controller: controller,
-                      onInspect: onInspect,
-                      todayEligibility: eligibilityById[entity.id],
-                      habitSummary: habitSummaryById[entity.id],
-                      taskProgress: taskProgressById[entity.id],
-                      occurrenceAt: scheduledAtById[entity.id],
+      Widget buildRow(PlannerEntity entity, PlannerTodayStreamEntry? entry) {
+        final scheduledAt = entry == null
+            ? entity.scheduledAt
+            : entry.scheduledAt;
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (showTimeRail) ...[
+              SizedBox(
+                width: 58,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: PerfectSpace.md),
+                  child: Text(
+                    scheduledAt == null
+                        ? 'Anytime'
+                        : _shortTime(scheduledAt.toLocal()),
+                    textAlign: TextAlign.end,
+                    maxLines: 2,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ],
+                ),
               ),
-            )
-            .toList(growable: false),
+              const SizedBox(width: PerfectSpace.xs),
+              SizedBox(
+                width: 14,
+                child: Column(
+                  children: [
+                    const SizedBox(height: PerfectSpace.lg),
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: _colorFor(context, entity),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    Container(
+                      width: 2,
+                      height: 54,
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: PerfectSpace.xs),
+            ],
+            Expanded(
+              child: _AgendaRow(
+                entity: entity,
+                isNextAction: stream?.nextEntryId == entity.id,
+                controller: controller,
+                onInspect: onInspect,
+                todayEligibility: entry == null
+                    ? eligibilityById[entity.id]
+                    : entry.eligibility,
+                habitSummary: entry == null
+                    ? habitSummaryById[entity.id]
+                    : entry.habitSummary,
+                taskProgress: entry == null
+                    ? taskProgressById[entity.id]
+                    : entry.taskProgress,
+                occurrenceAt: entry == null
+                    ? scheduledAtById[entity.id]
+                    : entry.scheduledAt,
+              ),
+            ),
+          ],
+        );
+      }
+
+      return Column(
+        children: _groupTodayRows(
+          items: items,
+          stream: stream,
+          buildRow: buildRow,
+        ),
       );
     },
   );
@@ -3575,9 +3678,143 @@ class _DayStreamEmpty extends StatelessWidget {
   );
 }
 
+/// Preserves a surviving visible row, rather than only the scroll offset,
+/// across projection insertions and reordering. Identity isolates owner/day.
+class _AnchoredTodayList extends StatefulWidget {
+  const _AnchoredTodayList({
+    required this.identity,
+    required this.children,
+    required this.padding,
+    required this.keyboardDismissBehavior,
+  });
+
+  final String identity;
+  final List<Widget> children;
+  final EdgeInsets padding;
+  final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
+
+  @override
+  State<_AnchoredTodayList> createState() => _AnchoredTodayListState();
+}
+
+class _AnchoredTodayListState extends State<_AnchoredTodayList> {
+  final _scroll = ScrollController();
+  final _viewport = GlobalKey();
+  final _rows = <Key, GlobalKey>{};
+  int _generation = 0;
+
+  @override
+  void didUpdateWidget(covariant _AnchoredTodayList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final generation = ++_generation;
+    // Theme and focus rebuilds retain pixel offset. Anchor compensation is
+    // reserved for actual stream membership/order changes.
+    final oldKeys = oldWidget.children.map((child) => child.key).toList();
+    final newKeys = widget.children.map((child) => child.key).toList();
+    if (oldKeys.length == newKeys.length &&
+        Iterable<int>.generate(
+          oldKeys.length,
+        ).every((index) => oldKeys[index] == newKeys[index])) {
+      return;
+    }
+    if (oldWidget.identity != widget.identity ||
+        !_scroll.hasClients ||
+        _scroll.offset <= 0 ||
+        _scroll.position.isScrollingNotifier.value) {
+      return;
+    }
+    final viewport = _viewport.currentContext?.findRenderObject();
+    if (viewport is! RenderBox || !viewport.hasSize) return;
+    final top = viewport.localToGlobal(Offset.zero).dy;
+    final bottom = top + viewport.size.height;
+    final surviving = widget.children.map((child) => child.key).toSet();
+    final anchors = <({GlobalKey key, double y, int displacement})>[];
+    for (final child in oldWidget.children) {
+      final key = _rows[child.key];
+      final box = key?.currentContext?.findRenderObject();
+      if (key == null ||
+          !surviving.contains(child.key) ||
+          box is! RenderBox ||
+          !box.hasSize) {
+        continue;
+      }
+      final y = box.localToGlobal(Offset.zero).dy;
+      if (y < bottom && y + box.size.height > top) {
+        anchors.add((
+          key: key,
+          y: y,
+          displacement:
+              (newKeys.indexOf(child.key) - oldKeys.indexOf(child.key)).abs(),
+        ));
+      }
+    }
+    if (anchors.isEmpty) return;
+    // A row moved to another section is not a stable anchor. Prefer a
+    // surviving neighbor with the smallest order displacement, then its
+    // original viewport order.
+    anchors.sort((a, b) {
+      final movement = a.displacement.compareTo(b.displacement);
+      return movement != 0 ? movement : a.y.compareTo(b.y);
+    });
+    final offset = _scroll.offset;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          generation != _generation ||
+          !_scroll.hasClients ||
+          _scroll.position.isScrollingNotifier.value ||
+          (_scroll.offset - offset).abs() > 1) {
+        return;
+      }
+      for (final anchor in anchors) {
+        final box = anchor.key.currentContext?.findRenderObject();
+        if (box is! RenderBox || !box.hasSize) continue;
+        final delta = box.localToGlobal(Offset.zero).dy - anchor.y;
+        final target = (_scroll.offset + delta).clamp(
+          _scroll.position.minScrollExtent,
+          _scroll.position.maxScrollExtent,
+        );
+        if ((target - _scroll.offset).abs() > .1) _scroll.jumpTo(target);
+        break;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keys = widget.children.map((child) => child.key).toSet();
+    _rows.removeWhere((key, _) => !keys.contains(key));
+    return SizedBox(
+      key: _viewport,
+      child: ListView(
+        key: const PageStorageKey<String>('perfect-today-scroll'),
+        controller: _scroll,
+        keyboardDismissBehavior: widget.keyboardDismissBehavior,
+        padding: widget.padding,
+        children: [
+          for (final child in widget.children)
+            if (child is _AgendaRow && child.key != null)
+              KeyedSubtree(
+                key: _rows.putIfAbsent(child.key!, () => GlobalKey()),
+                child: child,
+              )
+            else
+              child,
+        ],
+      ),
+    );
+  }
+}
+
 class _TodayPage extends StatelessWidget {
   const _TodayPage({
     required this.controller,
+    required this.stream,
     required this.nowProvider,
     required this.ownerDisplayName,
     required this.items,
@@ -3593,6 +3830,7 @@ class _TodayPage extends StatelessWidget {
   });
 
   final PlannerWorkspaceController controller;
+  final PlannerTodayStream? stream;
   final PerfectNow nowProvider;
   final String? ownerDisplayName;
   final List<PlannerEntity> items;
@@ -3607,8 +3845,9 @@ class _TodayPage extends StatelessWidget {
   final bool shortLandscape;
 
   @override
-  Widget build(BuildContext context) => ListView(
-    key: const PageStorageKey<String>('perfect-today-scroll'),
+  Widget build(BuildContext context) => _AnchoredTodayList(
+    identity:
+        '${controller.ownerId}:${DateUtils.dateOnly(nowProvider().toLocal())}',
     keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
     padding: EdgeInsets.fromLTRB(
       PerfectSpace.lg,
@@ -3658,16 +3897,27 @@ class _TodayPage extends StatelessWidget {
       if (items.isEmpty)
         _DayStreamEmpty(onAdd: onAdd)
       else
-        ...items.map(
-          (entity) => _AgendaRow(
+        ..._groupTodayRows(
+          items: items,
+          stream: stream,
+          buildRow: (entity, entry) => _AgendaRow(
             key: ValueKey<String>('compact-day-row-${entity.id}'),
             entity: entity,
+            isNextAction: stream?.nextEntryId == entity.id,
             controller: controller,
             onInspect: onInspect,
-            todayEligibility: eligibilityById[entity.id],
-            habitSummary: habitSummaryById[entity.id],
-            taskProgress: taskProgressById[entity.id],
-            occurrenceAt: scheduledAtById[entity.id],
+            todayEligibility: entry == null
+                ? eligibilityById[entity.id]
+                : entry.eligibility,
+            habitSummary: entry == null
+                ? habitSummaryById[entity.id]
+                : entry.habitSummary,
+            taskProgress: entry == null
+                ? taskProgressById[entity.id]
+                : entry.taskProgress,
+            occurrenceAt: entry == null
+                ? scheduledAtById[entity.id]
+                : entry.scheduledAt,
             referenceStyle: true,
           ),
         ),
@@ -5236,6 +5486,7 @@ class _AgendaRow extends StatelessWidget {
     this.taskProgress,
     this.occurrenceAt,
     this.referenceStyle = false,
+    this.isNextAction = false,
   });
 
   final PlannerEntity entity;
@@ -5247,6 +5498,11 @@ class _AgendaRow extends StatelessWidget {
   final PlannerTodayEligibility? todayEligibility;
   final PlannerHabitDaySummary? habitSummary;
   final bool referenceStyle;
+  final bool isNextAction;
+
+  String get _semanticLabel => isNextAction
+      ? '${entity.title}. Next action. Item actions available.'
+      : '${entity.title}. Item actions available.';
 
   @override
   Widget build(BuildContext context) {
@@ -5266,9 +5522,9 @@ class _AgendaRow extends StatelessWidget {
         todayEligibility?.requiresDecision ?? false;
     final color = _colorFor(context, entity);
     if (referenceStyle) {
-      return _DesktopEntityContextRegion(
+      final referenceRow = _DesktopEntityContextRegion(
         key: ValueKey<String>('entity-context-${entity.id}'),
-        semanticLabel: '${entity.title}. Item actions available.',
+        semanticLabel: _semanticLabel,
         onOpen: (anchorContext, globalPosition) => _showEntityContextMenu(
           anchorContext,
           entity: entity,
@@ -5291,9 +5547,33 @@ class _AgendaRow extends StatelessWidget {
           color: color,
         ),
       );
+      if (!isNextAction) return referenceRow;
+      // The first actionable row carries contextual emphasis inside the
+      // stream; no duplicated "next task" card exists anywhere else.
+      return DecoratedBox(
+        key: ValueKey<String>('day-row-next-emphasis-${entity.id}'),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2,
+          ),
+        ),
+        child: referenceRow,
+      );
     }
+    final scheme = Theme.of(context).colorScheme;
     final row = Card(
+      key: isNextAction
+          ? ValueKey<String>('day-row-next-emphasis-${entity.id}')
+          : null,
       margin: const EdgeInsets.only(bottom: PerfectSpace.sm),
+      shape: isNextAction
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: scheme.primary, width: 2),
+            )
+          : null,
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
         onTap: () => onInspect(entity),
@@ -5527,7 +5807,7 @@ class _AgendaRow extends StatelessWidget {
     );
     return _DesktopEntityContextRegion(
       key: ValueKey<String>('entity-context-${entity.id}'),
-      semanticLabel: '${entity.title}. Item actions available.',
+      semanticLabel: _semanticLabel,
       onOpen: (anchorContext, globalPosition) => _showEntityContextMenu(
         anchorContext,
         entity: entity,
@@ -7409,8 +7689,9 @@ class _Inspector extends StatelessWidget {
       padding: EdgeInsets.all(embedded ? PerfectSpace.md : PerfectSpace.lg),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final showFocusPrompt =
-              embedded && constraints.maxHeight >= 700 && entity != null;
+          // Keep the actionable prompt inside the inspector's independent
+          // scroll, even when a sparse agenda gives this pane a short frame.
+          final showFocusPrompt = embedded && entity != null;
           final current = entity;
           if (current == null) return const _InspectorEmpty();
           final compactActions =

@@ -1,0 +1,77 @@
+{
+  "stage": 12,
+  "concept_id": "today-time-ribbon-v1",
+  "status": "mock-preview-not-approved",
+  "generated_at": "2026-09-11",
+  "selected_candidate": null,
+  "rejected_candidates": [],
+  "decisions": {
+    "one_row_per_entity": true,
+    "time_rail": "persistent semantic time, not duplicated task title",
+    "next_emphasis": "first actionable row only; no separate Next card",
+    "settled_zone": "visually quiet but reviewable; never silently removed",
+    "empty_zone_suppression": true
+  },
+  "geometry": {
+    "row_min_height": 76,
+    "row_preferred_height": 88,
+    "row_gap": 14,
+    "section_gap": 24,
+    "rail_width": 58,
+    "status_ring": {
+      "size": 58,
+      "stroke": 4.5,
+      "inner_text_safe": 38
+    },
+    "semantic_fixed_tokens": [
+      "48dp minimum target",
+      "2dp focus boundary",
+      "icon stroke",
+      "corner rhythm"
+    ],
+    "adaptive_tokens": [
+      "intrinsic copy width",
+      "bounded row height",
+      "content-driven reflow",
+      "safe-area/footer clearance"
+    ]
+  },
+  "rendered_boards": [
+    {
+      "id": "candidate-a-time-ribbon",
+      "viewport": "2400x1160",
+      "svg": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-a-time-ribbon.svg",
+        "sha256": "1a016b2343a7aa022c39e02ef60229a2fdeb84f790853d2bcad760a02594137b"
+      },
+      "png": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-a-time-ribbon.png",
+        "sha256": "37bf9646108b8065bd7eccb7680daf5f7085f577f64a5346bb5c83b835efe134"
+      }
+    },
+    {
+      "id": "candidate-b-attention-gate",
+      "viewport": "2400x1160",
+      "svg": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-b-attention-gate.svg",
+        "sha256": "b3d1f11a4e4690b8d81de1ad6d7afe07ca3e588cc6b1ba00e1feba95c2800d8b"
+      },
+      "png": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-b-attention-gate.png",
+        "sha256": "11e46f7b7bb6c11e9de2f3ea8e3a9ab5e68eabd06b2187dbed18ec4eb1963c00"
+      }
+    },
+    {
+      "id": "candidate-c-day-lanes",
+      "viewport": "2400x1160",
+      "svg": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-c-day-lanes.svg",
+        "sha256": "ee2ee22b331e080fa2bcb91d7995219feb93eff531c61418f0985d0f9bd8fdc1"
+      },
+      "png": {
+        "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-c-day-lanes.png",
+        "sha256": "b7c7532ea7383c275069c5cb4c48ef55912af21fd610ff817870746e00ae2795"
+      }
+    }
+  ]
+}

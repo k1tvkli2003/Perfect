@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "status": "selected-working-spec",
+  "concept": "Guided Command Center",
+  "modernizationMode": "radical-rebuild",
+  "sourceArtifacts": [
+    {
+      "path": "artifacts/stage12-modernize/directions/a-midnight-command-center.webp",
+      "role": "dark wide direction",
+      "shippingClassification": "reference-raster-only"
+    },
+    {
+      "path": "artifacts/stage12-modernize/directions/b-paper-ledger.webp",
+      "role": "light material direction",
+      "shippingClassification": "reference-raster-only"
+    },
+    {
+      "path": "artifacts/stage12-modernize/canonical/phone-dark-390x844.webp",
+      "role": "phone responsive reference",
+      "shippingClassification": "reference-raster-only"
+    },
+    {
+      "path": "artifacts/stage12-modernize/canonical/tablet-light-834x1112.webp",
+      "role": "tablet responsive reference",
+      "shippingClassification": "reference-raster-only"
+    },
+    {
+      "path": "artifacts/stage12-modernize/canonical/desktop-light-1536x1024.webp",
+      "role": "desktop responsive reference",
+      "shippingClassification": "reference-raster-only"
+    }
+  ],
+  "layers": [
+    {
+      "id": "canvas",
+      "classification": "live-semantic-ui",
+      "implementation": "PerfectSemanticTheme canvas/surface roles",
+      "states": ["light", "dark", "high-contrast-light", "high-contrast-dark"]
+    },
+    {
+      "id": "day-command-bar",
+      "classification": "live-semantic-ui",
+      "implementation": "TodayPulse",
+      "liveData": ["local clock", "Gregorian date", "Jalali date", "progress", "next boundary"],
+      "performanceBudget": "minute-only rebuild; no bitmap; no blur"
+    },
+    {
+      "id": "agenda",
+      "classification": "live-semantic-ui",
+      "implementation": "PlannerTodayStream + _DayStreamPanel/_TodayPage",
+      "liveData": ["section membership", "nextEntryId", "scheduledAt", "task progress", "habit summary"],
+      "states": ["resolving", "empty", "sparse", "dense", "offline", "error", "selected"]
+    },
+    {
+      "id": "next-emphasis",
+      "classification": "live-semantic-ui",
+      "implementation": "single row tint/rail derived from PlannerTodayStream.nextEntryId",
+      "semantics": "Next action; color is not sole signal"
+    },
+    {
+      "id": "inspector",
+      "classification": "live-semantic-ui",
+      "implementation": "existing _Inspector; composition refined in Stage 12, full editor rebuild deferred to Stage 35",
+      "states": ["closed", "selected", "compact-height", "wide-attached"]
+    },
+    {
+      "id": "icons",
+      "classification": "vector-code-native",
+      "implementation": "PerfectPictogram / Material symbols already in repository",
+      "shippingRaster": false
+    }
+  ],
+  "geometry": {
+    "phone": {
+      "rangeDp": "320-599",
+      "layout": "one-pane vertical agenda",
+      "gutterDp": 20,
+      "commandBarMaxHeightDp": 160,
+      "minimumTouchDp": 48,
+      "bottomSafePadding": true
+    },
+    "tablet": {
+      "rangeDp": "600-1199",
+      "layout": "agenda primary; attached inspector only when list>=520 and inspector>=360",
+      "listFraction": 0.64,
+      "inspectorFraction": 0.36
+    },
+    "desktop": {
+      "rangeDp": ">=1200",
+      "layout": "navigation + dominant agenda + optional attached inspector",
+      "inspectorWidthDp": "340-380",
+      "agendaMinWidthDp": 520,
+      "stageHeight": "content-led and viewport-clamped"
+    }
+  },
+  "zOrder": ["canvas", "navigation", "agenda", "attached-inspector", "quick-capture"],
+  "symmetry": {
+    "type": "controlled-asymmetry",
+    "axis": "agenda main column",
+    "counterweight": "attached inspector only while width contract holds",
+    "rtl": "logical directions; rail and inspector mirror without changing semantic order"
+  },
+  "verificationViewports": [
+    "390x844 phone",
+    "834x1112 tablet portrait",
+    "1200x800 tablet landscape",
+    "1366x768 desktop",
+    "1440x720 short desktop",
+    "1920x1080 wide desktop",
+    "200% text",
+    "dark/light/high-contrast"
+  ],
+  "generatedTextPolicy": "All text and sample data visible in generated rasters are non-authoritative and must not be copied unless independently present in canonical product data/contracts."
+}

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS_DIRECTIONS_GENERATED",
+  "model": "cx/gpt-5.5-image",
+  "endpoint": "loopback-9router",
+  "credentialStored": false,
+  "directions": [
+    {
+      "name": "a-midnight-command-center",
+      "model": "cx/gpt-5.5-image",
+      "endpoint": "loopback-9router",
+      "credentialStored": false,
+      "promptSha256": "929bb7ac432bd3e5d04f235b3ad18c2dc7beab1fdb077ad2cec4bf2c797d647c",
+      "path": "C:\\Users\\K1\\Desktop\\Projects\\Perfect\\artifacts\\stage12-modernize\\directions\\a-midnight-command-center.webp",
+      "bytes": 882962,
+      "sha256": "590e4ea51f5f923415302f70f73f3b465a8a5d3cced31013825d4358c690372c",
+      "mime": "image/webp"
+    },
+    {
+      "name": "b-paper-ledger",
+      "model": "cx/gpt-5.5-image",
+      "endpoint": "loopback-9router",
+      "credentialStored": false,
+      "promptSha256": "b88c21d50c4e9ade34bdec6a2f2eec7e9e3d516c38ca429725dd1078bf3efff4",
+      "path": "C:\\Users\\K1\\Desktop\\Projects\\Perfect\\artifacts\\stage12-modernize\\directions\\b-paper-ledger.webp",
+      "bytes": 1104712,
+      "sha256": "67032d8c5ed6252cd80ea66cb846f77f22abea3ea6b84d79ba742411edce0f64",
+      "mime": "image/webp"
+    },
+    {
+      "name": "c-orbit-workbench",
+      "model": "cx/gpt-5.5-image",
+      "endpoint": "loopback-9router",
+      "credentialStored": false,
+      "promptSha256": "136919dc419c8b1dc5c2d948e02d5def42f8cb6a03978c686fb621d00a0889d0",
+      "path": "C:\\Users\\K1\\Desktop\\Projects\\Perfect\\artifacts\\stage12-modernize\\directions\\c-orbit-workbench.webp",
+      "bytes": 977662,
+      "sha256": "473ff3cce92156dca5f0f196078e9094eff72afb519bd67aab323be2ea3d3686",
+      "mime": "image/webp"
+    }
+  ]
+}

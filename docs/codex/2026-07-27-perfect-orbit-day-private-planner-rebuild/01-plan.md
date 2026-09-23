@@ -1,17 +1,32 @@
 # Plan
 
-## Current execution checkpoint — 2026-09-11
+## Current execution checkpoint — 2026-09-17
 
 Canonical scope is the [50-stage master plan](11-master-50-stage-plan.md).
 Stage 12 is active; Stages 13–50 remain open. Earlier requirement-ledger
 "complete" entries below describe historical subsystem checks, not completion
 of the later whole-product rebuild.
 
-Current wave: finish deterministic Today projection and real-store proof;
-integrate verified editor date-bound repair; finish fail-closed release transport
-guard; preserve user-local files through a forward tracking correction. Then
-complete Stage 12's three sparse/dense composition previews before visible UI
-wiring. No emulator tests while RAM restriction remains.
+Current wave: close Stage 12's preview selection, then integrate typed sections
+and unique next-row emphasis into compact/medium/expanded Today. The existing
+grouping prototype passes the real-row regression, but the unfiltered workspace
+suite has 8 golden failures and no selected preview. Keep all assertions and
+golden baselines; do not replace UI requirements with domain-only tests or bless
+uninspected renders. Reconcile the prototype with the selected design. Complete stable-ID
+scroll anchoring, measured footer/IME clearance and failure/retry behavior before
+runtime comparison and exact-source release. Earlier projection/store/editor/
+transport work is historical evidence, not work to restart blindly.
+
+The existing Codex_API35 is authorized; no additional AVD is selected. Work stays
+solo. Android and Windows remain, with PWA replacing native Apple delivery under
+the master plan's platform amendment. Full backup/import, Focus, gamification,
+AI text/voice and widget scope remains mandatory. The remaining stage sequence
+and acceptance matrix live in the existing master plan, not a parallel backlog.
+
+On Flutter 3.44.0, use `flutter test --no-pub --concurrency=1 --reporter expanded`;
+`--chain-stack-traces` is rejected by this CLI. Run focused checks until the known
+prototype and visual failures are repaired; run the full baseline/integration gate after shared
+contract changes. Never update goldens solely to turn a known regression green.
 
 ## Approach
 بازسازی به شکل expand/migrate/verify انجام می‌شود: ابتدا مبنای فعلی و قراردادهای کاربر حفظ می‌شوند، سپس مدل داده و لایهٔ sync به‌صورت سازگار توسعه می‌یابد، بعد shell و صفحات Orbit Day با دادهٔ واقعی جایگزین UI ساده می‌شوند. هر تغییر داده‌ای migration افزایشی، idempotent و قابل rollback دارد. UI تا جای ممکن از اجزای live semantic ساخته می‌شود؛ تصاویر تولیدی فقط برای هدف‌گذاری بصری هستند.

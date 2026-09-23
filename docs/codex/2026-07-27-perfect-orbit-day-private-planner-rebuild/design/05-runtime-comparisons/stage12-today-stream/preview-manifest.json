@@ -1,0 +1,54 @@
+{
+  "stage": 12,
+  "generated_at": "2026-09-11",
+  "generator": "tool/generate_stage12_today_stream.cjs",
+  "concept_id": "today-time-ribbon-v1",
+  "board_count": 3,
+  "files": [
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-a-time-ribbon.png",
+      "bytes": 411686,
+      "sha256": "37bf9646108b8065bd7eccb7680daf5f7085f577f64a5346bb5c83b835efe134"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-a-time-ribbon.svg",
+      "bytes": 567480,
+      "sha256": "1a016b2343a7aa022c39e02ef60229a2fdeb84f790853d2bcad760a02594137b"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-b-attention-gate.png",
+      "bytes": 473842,
+      "sha256": "11e46f7b7bb6c11e9de2f3ea8e3a9ab5e68eabd06b2187dbed18ec4eb1963c00"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-b-attention-gate.svg",
+      "bytes": 567408,
+      "sha256": "b3d1f11a4e4690b8d81de1ad6d7afe07ca3e588cc6b1ba00e1feba95c2800d8b"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-c-day-lanes.png",
+      "bytes": 390284,
+      "sha256": "b7c7532ea7383c275069c5cb4c48ef55912af21fd610ff817870746e00ae2795"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/candidate-c-day-lanes.svg",
+      "bytes": 565207,
+      "sha256": "ee2ee22b331e080fa2bcb91d7995219feb93eff531c61418f0985d0f9bd8fdc1"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/decision.md",
+      "bytes": 804,
+      "sha256": "bcb1ee8e9c80d98d671537209e1841843073d702c5e50eac57e60d5ebf7c12d4"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/layout-contract.json",
+      "bytes": 2934,
+      "sha256": "36804b1525b88f907821712505209604e1d1f1bd405a72a47635bb86eb680ba5"
+    },
+    {
+      "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/05-runtime-comparisons/stage12-today-stream/symmetry-ledger.md",
+      "bytes": 645,
+      "sha256": "80e7276c3d9d93d43ffbc81161a5e83b75fd1142c744e4b5bb74417003a67a61"
+    }
+  ]
+}

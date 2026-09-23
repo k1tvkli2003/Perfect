@@ -268,7 +268,7 @@ class _TodayPulseFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = PerfectSemanticTheme.of(context);
-    final radius = BorderRadius.circular(PerfectRadius.panel);
+    final radius = BorderRadius.circular(PerfectRadius.card);
     final content = wide
         ? _WidePulseContent(
             snapshot: snapshot,
@@ -282,60 +282,33 @@ class _TodayPulseFrame extends StatelessWidget {
             largeText: largeText,
           );
     return RepaintBoundary(
-      child: ClipRRect(
-        borderRadius: radius,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: semantic.highContrast
-                ? null
-                : LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: <Color>[
-                      semantic.secondaryContainer.withValues(alpha: .52),
-                      semantic.surfaceLow,
-                      semantic.tertiaryContainer.withValues(alpha: .52),
-                    ],
-                    stops: const <double>[0, .48, 1],
-                  ),
-            color: semantic.highContrast ? semantic.surfaceLowest : null,
-            borderRadius: radius,
-            border: Border.all(
-              color: semantic.highContrast
-                  ? semantic.outline
-                  : semantic.outlineVariant,
-              width: semantic.highContrast ? 2 : 1,
-            ),
-            boxShadow: semantic.highContrast
-                ? null
-                : <BoxShadow>[
-                    BoxShadow(
-                      color: semantic.shadow.withValues(alpha: .11),
-                      blurRadius: 24,
-                      offset: const Offset(0, 12),
-                    ),
-                  ],
+      key: const ValueKey<String>('today-command-bar'),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: semantic.surfaceLowest,
+          borderRadius: radius,
+          border: Border.all(
+            color: semantic.highContrast
+                ? semantic.outline
+                : semantic.outlineVariant,
+            width: semantic.highContrast ? 2 : 1,
           ),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: ExcludeSemantics(
-                  child: CustomPaint(
-                    painter: _TodayPulseFieldPainter(semantic: semantic),
+          boxShadow: semantic.highContrast
+              ? null
+              : <BoxShadow>[
+                  BoxShadow(
+                    color: semantic.shadow.withValues(alpha: .08),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
                   ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  wide ? PerfectSpace.xl : PerfectSpace.lg,
-                  wide ? PerfectSpace.lg : PerfectSpace.md,
-                  wide ? PerfectSpace.xl : PerfectSpace.lg,
-                  PerfectSpace.sm,
-                ),
-                child: content,
-              ),
-            ],
+                ],
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: wide ? PerfectSpace.lg : PerfectSpace.md,
+            vertical: wide ? PerfectSpace.md : PerfectSpace.xs,
           ),
+          child: content,
         ),
       ),
     );
@@ -361,16 +334,16 @@ class _CompactPulseContent extends StatelessWidget {
     final timeBlock = _PulseTimeBlock(
       clock: clock,
       compact: true,
-      separateEyebrow: largeText,
+      separateEyebrow: true,
     );
-    return ExcludeSemantics(
-      excluding: false,
-      child: Column(
-        key: const ValueKey<String>('today-pulse-compact'),
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (largeText) ...[
+    if (largeText) {
+      return ExcludeSemantics(
+        excluding: false,
+        child: Column(
+          key: const ValueKey<String>('today-pulse-compact'),
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -380,26 +353,71 @@ class _CompactPulseContent extends StatelessWidget {
             ),
             const SizedBox(height: PerfectSpace.xs),
             timeBlock,
-          ] else
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: timeBlock),
-                const SizedBox(width: PerfectSpace.sm),
-                _PulsePlanButton(onPressed: onOpenPlan),
-              ],
-            ),
-          const SizedBox(height: PerfectSpace.xxs),
-          _PulseDates(current: current, stack: largeText),
-          SizedBox(height: largeText ? PerfectSpace.lg : PerfectSpace.md),
-          _PulseOutcome(snapshot: snapshot, wide: false),
+            const SizedBox(height: PerfectSpace.xxs),
+            _PulseDates(current: current, stack: true),
+            const SizedBox(height: PerfectSpace.lg),
+            _PulseOutcome(snapshot: snapshot, wide: false),
+            const SizedBox(height: PerfectSpace.xs),
+            _PulseBoundary(snapshot: snapshot, current: current),
+            const SizedBox(height: PerfectSpace.xxs),
+            _PulseDayline(snapshot: snapshot, compact: true),
+          ],
+        ),
+      );
+    }
+
+    return ExcludeSemantics(
+      excluding: false,
+      child: Column(
+        key: const ValueKey<String>('today-pulse-compact'),
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    timeBlock,
+                    const SizedBox(height: 2),
+                    _PulseDates(current: current, stack: false),
+                  ],
+                ),
+              ),
+              const SizedBox(width: PerfectSpace.sm),
+              _PulsePlanButton(onPressed: onOpenPlan),
+            ],
+          ),
           const SizedBox(height: PerfectSpace.xs),
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: _PulseBoundary(snapshot: snapshot, current: current),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(child: _PulseOutcome(snapshot: snapshot, wide: false)),
+              const SizedBox(width: PerfectSpace.sm),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'NEXT BOUNDARY',
+                      maxLines: 1,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: PerfectSemanticTheme.of(context).muted,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    _PulseBoundary(snapshot: snapshot, current: current),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: PerfectSpace.xxs),
-          _PulseDayline(snapshot: snapshot),
+          _PulseDayline(snapshot: snapshot, compact: true),
         ],
       ),
     );
@@ -709,9 +727,10 @@ class _PulsePlanButton extends StatelessWidget {
 }
 
 class _PulseDayline extends StatelessWidget {
-  const _PulseDayline({required this.snapshot});
+  const _PulseDayline({required this.snapshot, this.compact = false});
 
   final TodayPulseSnapshot snapshot;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -723,7 +742,7 @@ class _PulseDayline extends StatelessWidget {
         duration: reduceMotion ? Duration.zero : PerfectMotion.emphasized,
         curve: PerfectMotion.productive,
         builder: (context, value, _) => SizedBox(
-          height: 24,
+          height: compact ? 16 : 20,
           width: double.infinity,
           child: CustomPaint(
             painter: _TodayPulseDaylinePainter(
@@ -736,53 +755,6 @@ class _PulseDayline extends StatelessWidget {
       ),
     );
   }
-}
-
-class _TodayPulseFieldPainter extends CustomPainter {
-  const _TodayPulseFieldPainter({required this.semantic});
-
-  final PerfectSemanticTheme semantic;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (semantic.highContrast) return;
-    final mint = Paint()
-      ..color = semantic.secondaryVivid.withValues(alpha: .12)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = math.max(22, size.shortestSide * .16)
-      ..strokeCap = StrokeCap.round;
-    final lilac = Paint()
-      ..color = semantic.tertiaryVivid.withValues(alpha: .12)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = math.max(28, size.shortestSide * .2)
-      ..strokeCap = StrokeCap.round;
-    final left = Path()
-      ..moveTo(-size.width * .05, size.height * .14)
-      ..cubicTo(
-        size.width * .12,
-        size.height * .26,
-        size.width * .18,
-        size.height * .52,
-        size.width * .4,
-        size.height * .48,
-      );
-    final right = Path()
-      ..moveTo(size.width * .58, -size.height * .04)
-      ..cubicTo(
-        size.width * .7,
-        size.height * .2,
-        size.width * .82,
-        size.height * .22,
-        size.width * 1.05,
-        size.height * .1,
-      );
-    canvas.drawPath(left, mint);
-    canvas.drawPath(right, lilac);
-  }
-
-  @override
-  bool shouldRepaint(covariant _TodayPulseFieldPainter oldDelegate) =>
-      oldDelegate.semantic != semantic;
 }
 
 class _TodayPulseDaylinePainter extends CustomPainter {

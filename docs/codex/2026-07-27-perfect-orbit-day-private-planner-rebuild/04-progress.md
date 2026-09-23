@@ -1,5 +1,122 @@
 # Progress
 
+## 2026-09-17 — compact viewport correction and falsification
+
+- Replaced `setSurfaceSize` with the existing `_setTestViewSize` helper in the
+  compact Today and compact AI golden tests. Added explicit assertions that
+  MediaQuery and workspace render size both equal 390x844; helper restores
+  physical-size/device-pixel-ratio overrides at teardown.
+- Focused two-test execution passed the new size assertions, then failed the
+  original golden comparisons: 12857 and 9530 pixels, 0 passed / 2 failed,
+  exit 1, 4 seconds. Both actual PNG SHA256 values equal their prior captures.
+  This falsifies viewport mismatch as the cause of these two golden differences.
+- No production code, tolerance or golden master changed. Formatter check
+  passed with zero changes. Other surface-only fixtures remain outside this fix.
+- A temporary backup of `perfect_compact.png` exists at
+  `C:/Users/K1/AppData/Local/Temp/perfect-golden-probe-c00a42a1935a405189fafd76d51a76a5/perfect_compact.before.png`.
+  No `--update-goldens` command ran; the announced regeneration was withdrawn
+  because no fresh user request authorized treating it as design acceptance.
+
+## 2026-09-17 — shared typed Today row boundary
+
+- Consolidated compact/timeline section rendering through `_groupTodayRows`.
+  Builders now receive `PlannerTodayStreamEntry`; resolved rows consume its
+  fields directly rather than reconstructing them through parallel maps.
+  Null-entry fallback, ordering, padding, key behavior and golden baselines stay
+  unchanged. No claimed snapshot-mixing bug: prior maps also came from snapshot.
+- Unfiltered workspace: 63 passed / 8 existing golden failures, exit 1, 31s.
+  All eight regenerated actual-image SHA256 values match pre-refactor bytes.
+- Analyzer passed (exit 0, 77.4s), formatting check passed for both affected
+  source/test files (0 changed), `git diff --check` passed.
+- No next-row treatment, visual acceptance, stage closure, full-suite pass,
+  platform build, deployment or release claimed. Image input remains unavailable.
+- Isolated compact font/viewport probe: PlusJakarta/Vazirmatn, scale 1.0,
+  MediaQuery 800x600 but rendered bounds 390x844. Confirmed harness inconsistency;
+  not established as golden root cause. Removed temporary probe, preserved
+  all golden baselines and tolerance. Original golden still exits 1 at 3.91%.
+
+## 2026-09-17 — additive Stage 12 behavior proof
+
+- Added 3 real-store/controller-to-UI tests for section lifecycle at
+  390/800/1366dp: scheduled/habit groups, empty-group suppression, completed row
+  moving to Settled, persisted correction restoring Scheduled, no duplicate
+  rows and stable entity ID. Focused execution passed 3/3, exit 0.
+- Added independent compact AI behavior test: two open/close cycles, dock above
+  capture and within viewport, draft retained, navigation present, no planner
+  entity creation. Focused execution passed 1/1, exit 0. This avoids losing
+  behavioral coverage when an earlier golden assertion stops another test.
+- Existing tests/golden comparisons remain unchanged; new tests do not prove
+  visual quality, installed runtime, IME, user-facing Undo or next-row emphasis.
+- Original compact AI golden was isolated at its original 390x844 viewport:
+  exit 1, 9530 pixels / 2.90% mismatch. System.Drawing pixel comparison localized
+  every differing pixel to x=20..369, y=413..546; all pixels outside equal.
+  No source-of-mismatch visual judgment is made without image inspection.
+- Image inspection again rejected image inputs. No master was regenerated.
+  Source production patch remains unchanged. Test file now has 71 tests;
+  earlier full-suite counts predate these four additive tests.
+- Formatter applied only to the changed test file; final read-only formatting
+  check passed, zero changes. Full suite not repeated for these additive tests.
+- Temporary bounds instrumentation localized the isolated golden mismatch to
+  Scheduled/Habits headings and intervening task row. Each new heading occupies
+  46px (20 top + 14 text + 12 bottom), at y=401..447 and y=520..566. The isolated
+  diagnostic run reproduced 9530 pixels and exit 1. Removed diagnostic prints;
+  no arbitrary spacing fix or golden update made without design acceptance.
+
+## 2026-09-17 — current grouping prototype verification
+
+- Resumed from the objective attachment and existing master plan; preserved solo
+  execution and Android/Windows/PWA scope. No Apple/Linux files changed.
+- Found an existing production grouping diff (162 additions / 64 removals).
+  Earlier pre-grouping baseline no longer describes this worktree.
+- Unfiltered `perfect_workspace_page_test.dart`: 59 passed, 8 golden failures,
+  exit 1, 51 seconds. Grouping and projection lifecycle regressions pass. The
+  file has 67 tests; the inherited claim of 472 tests in that file is incorrect.
+- Golden mismatch range: 2.90% to 18.92% across phone/theme/AI/tablet/Windows.
+  Later assertions in a failed golden test are not automatically covered.
+- `dart format --output=none --set-exit-if-changed lib test`: exit 0,
+  181 files checked, zero changed. Image review tool rejected image inputs;
+  no screenshot interpretation, golden update or design acceptance claimed.
+- MultiOS audit: Android/Windows configured; `web/index.html` and
+  `web/manifest.json` missing. Static audit is not build/runtime evidence.
+- Refreshed current state/plan; existing unaccepted UI patch remains intact.
+  Full suite then completed 479 passed / 8 failed (same goldens), exit 1,
+  2 minutes. Analyzer passed, exit 0, 81.2 seconds. Documentation structure
+  validation and `git diff --check` passed. No production code or tests edited
+  during this verification/documentation checkpoint.
+
+## 2026-09-17 — bounded Stage 12 diagnosis and contract alignment
+
+- Inspected main `0ef09ce`, typed projection owner and all three Today renderers.
+  The model supplies sections/next ID; renderers still receive flattened entities
+  and outcome/time maps. No grouping implementation is present.
+- `test/widgets` passed 18/18 (exit 0). The focused workspace grouping test failed
+  0 passed / 1 failed (exit 1): Task/Habit fixtures reached Today but no Scheduled
+  heading existed. Kept the acceptance assertion unchanged.
+- Flutter 3.44.0 rejects `--chain-stack-traces` before test loading. Retried only
+  the same focused test with supported expanded reporting, which printed a stack.
+  Historical silent exit 1 remains unexplained; no full suite was repeated.
+- Verified existing candidate decision says Mock Preview, not approved, and has
+  no selected candidate. Preview completion precedes visible UI grouping edits.
+- Aligned project AGENTS with the existing PWA amendment and Today Pulse contract;
+  refreshed current plan/state and test evidence without removing history.
+- No production code, golden, platform project, CI, release, signing, deployment,
+  authentication or user data changed in this checkpoint. No stage closed.
+
+## 2026-09-17 — sequential baseline and hypothesis falsification
+
+- Added a bounded domain regression for timed/untimed habits in both input
+  orders. `planner_today_stream_test.dart` passed 15/15 (exit 0).
+- Kept `lib/presentation/perfect_workspace_page.dart` byte-identical to HEAD;
+  `git diff HEAD` for that file stayed empty. A prior unrelated time-rail
+  hypothesis was reverted without claiming a false Stage 12 fix.
+- Ran the current dirty-state full sequential suite: `486` passed, `1` failed,
+  exit 1, about 2m33s. The sole failure was again `Today exposes scheduled and
+  habit groups around real rows`; all other tests, including 18 widget tests,
+  passed. This remains one deterministic UI implementation gap, not a flake.
+- The added domain test did not change the failing UI acceptance. It guards
+  stable input-order behavior only; production-model change remains unauthorized
+  without a demonstrated failing contract.
+
 ## 2026-09-11 — solo integration checkpoint
 
 - Completed the staged storage proof with real Drift and the production

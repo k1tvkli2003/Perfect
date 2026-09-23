@@ -170,6 +170,18 @@ void main() {
           findsOne,
         );
         expect(
+          find.byKey(const ValueKey<String>('today-command-bar')),
+          findsOne,
+        );
+        expect(
+          tester
+              .getSize(find.byKey(const ValueKey<String>('today-command-bar')))
+              .height,
+          lessThanOrEqualTo(160),
+          reason:
+              'Mobile orientation must not push the work list below a hero.',
+        );
+        expect(
           find.byKey(const ValueKey<String>('today-pulse-wide')),
           findsNothing,
         );
@@ -187,6 +199,18 @@ void main() {
         );
         expect(semantics.label, contains('Solar Hijri'));
         expect(semantics.label, contains('3 complete'));
+      },
+    );
+
+    testWidgets(
+      'compact pulse names its future boundary without claiming the next action',
+      (tester) async {
+        await tester.pumpWidget(_host(width: 390, snapshot: _activeSnapshot()));
+
+        expect(find.text('NEXT BOUNDARY'), findsOneWidget);
+        expect(find.text('NEXT'), findsNothing);
+        expect(find.text('8:00 PM'), findsOneWidget);
+        expect(tester.takeException(), isNull);
       },
     );
 

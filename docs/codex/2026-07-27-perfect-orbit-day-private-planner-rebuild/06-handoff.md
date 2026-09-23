@@ -1,5 +1,68 @@
 # Handoff
 
+## Current Stage 12 gate — 2026-09-23
+
+Guided Command Center is implemented and visually reviewed on native Android
+phone/tablet preview; exact current-source APK launched as
+`com.k1tvkli2003.perfect.preview`. Full Flutter suite passes 505/505,
+analyzer and formatter are clean. The 8 workspace golden tests and 5 header
+tests pass after selective, hash-receipted baseline refresh; canonical design
+reference images are unchanged. Shared emulator was briefly commandeered by
+Gauss; the unrelated screenshot was discarded, and top activity/package was
+asserted before the accepted Perfect capture.
+
+Stage 12 remains open until the exact-source Windows CI/launch and native
+release/upgrade proof pass. Local Visual Studio BuildTools lacks ATL;
+installer repair requires elevation (5007). The private hosted Windows runner
+is the next independent gate. Do not infer Windows proof from a stale local
+executable or Android runtime. PWA remains in scope for later numbered stage
+owners under the 2026-09-17 amendment and is not prepared.
+
+## Historical source checkpoint — 2026-09-17
+
+Shared `_groupTodayRows` now forwards `PlannerTodayStreamEntry` to compact and
+timeline builders, removing duplicated grouping and resolved-row map lookups.
+No design change. Workspace 63/71 passed; eight known golden comparisons fail.
+All eight actual PNG hashes equal pre-refactor output; analyzer passes.
+Do not repeat unchanged tests expecting visual acceptance. Resume the Stage 12
+preview selection/runtime gate with image-capable inspection, then finish
+next-row/anchor/retry contracts. Full stage and Android/Windows/PWA delivery
+remain open. Latest details in `05-verification.md`.
+The compact Today/AI tests now use `_setTestViewSize` and assert MediaQuery/render
+size 390x844. Both reach the unchanged golden failures; actual-image hashes remain
+identical. Do not repeat the hypothesis that viewport mismatch caused these two
+diffs: the focused correction falsified it. Other legacy fixtures are unreviewed.
+Keep harness corrections separate from design acceptance; all goldens preserved.
+
+## Latest additive verification — 2026-09-17
+
+Four new behavioral tests pass: section lifecycle at 390/800/1366dp (3/3) and
+AI open/close with retained capture draft (1/1). Existing golden comparisons
+remain intact. Workspace file now has 71 tests; baseline counts below predate
+these additions. Original isolated AI golden still fails at 390x844 with 9530
+unequal pixels bounded to x=20..369, y=413..546. This is numerical evidence only.
+No more unchanged full-suite or isolated golden repetition is needed. Resume
+the preview/design gate with actual image-inspection capability; do not bless
+current goldens blindly. User-facing Undo, next-row, anchor and error/retry
+contracts remain open. No stage closed and no production UI changed here.
+
+## Current continuation — 2026-09-17
+
+Start from `02-state.md` and the existing master plan. Current source is `0ef09ce`;
+Stage 12 remains active. An existing uncommitted grouping prototype now passes
+the real-row grouping test, but the unfiltered workspace suite finishes 59 passed
+and 8 golden failures (exit 1). The file has 67 tests. Do not resume from the old
+claim of one missing-heading failure. Full integration finished 479 passed / 8
+failed; analyzer and formatting passed. Complete the unapproved three-candidate
+preview comparison and reconcile the prototype before acceptance. Visual image
+inspection is unavailable in the current tool session; do not update goldens
+blindly. Finish single typed-stream consumption in all renderers, prove one next
+row, anchor/IME/error/retry behavior, and complete runtime/exact-source release.
+Do not repeat unchanged full tests or remove assertions to hide these failures.
+The former blanket emulator restriction and Android/Windows-only scope are
+superseded: existing Codex_API35 is allowed; Android + Windows + PWA is selected.
+No current platform build, PWA delivery or whole-product completion is claimed.
+
 ## Active continuation — 2026-09-11
 
 Follow [the current continuation ledger](stages/evidence/12-continuation-ledger.md),

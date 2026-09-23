@@ -1,5 +1,140 @@
 # Verification
 
+## Compact viewport checkpoint — 2026-09-17
+
+Changed tests only: compact Today and compact AI now set view metrics through
+`_setTestViewSize` and explicitly check MediaQuery/render sizes both equal
+390x844. Existing golden assertions remain intact.
+
+- Command: `flutter test --no-pub --concurrency=1 --reporter expanded test/presentation/perfect_workspace_page_test.dart --name 'compact Today Pulse keeps navigation|compact AI toggle lives'`.
+- Result: 0 passed / 2 failed, exit 1, 4 seconds. Size checks passed before the
+  golden failures; original mismatches remain 12857 (3.91%) and 9530 (2.90%) pixels.
+- Actual-image hashes unchanged: compact
+  `f50ab9dee95be5a4355f6deffedd81d86e5e954e93578e67a0d3f728c5fbdaa1`,
+  compact AI closed
+  `0ce4a3fe4c033f79f897ce368d1d931b9e4e8bb69cb46217d39b499743e181b0`.
+- Master compact hash unchanged:
+  `304e86b34c75494667ef960d2a77cfc2465c4b24c7b889647bc85f96f70dd7fe`.
+- `dart format --output=none --set-exit-if-changed test/presentation/perfect_workspace_page_test.dart`: exit 0, 0 changes.
+
+Confirmed: viewport inconsistency is fixed for these two tests and was not the
+cause of their golden differences. Not confirmed: other legacy viewport fixtures,
+visual design, current full-suite pass, runtime or stage closure. No golden update.
+
+## Typed-row refactor checkpoint — 2026-09-17
+
+Production workspace SHA256:
+`8d177cc89e3bd8ea821805eacb9b07fb0542bff0f7f64bf9561e4e92862d7a45`.
+
+| Check | Command / method | Result |
+|---|---|---|
+| Workspace gate | `flutter test --no-pub --concurrency=1 --reporter expanded test/presentation/perfect_workspace_page_test.dart` | 63 passed / 8 golden failures, exit 1, 31s |
+| Analysis | `flutter analyze --no-pub` | No issues, exit 0, 77.4s |
+| Format | `dart format --output=none --set-exit-if-changed lib/presentation/perfect_workspace_page.dart test/presentation/perfect_workspace_page_test.dart` | exit 0, zero changes |
+| Patch whitespace | `git diff --check` | exit 0 |
+| Render preservation | SHA256 before/after for all eight regenerated failure actual PNGs | all equal; not acceptance against master goldens |
+
+Before/after identical actual-image hashes:
+
+| Image prefix | SHA256 |
+|---|---|
+| perfect_compact_ai_closed | `0ce4a3fe4c033f79f897ce368d1d931b9e4e8bb69cb46217d39b499743e181b0` |
+| perfect_compact | `f50ab9dee95be5a4355f6deffedd81d86e5e954e93578e67a0d3f728c5fbdaa1` |
+| perfect_expanded | `0532cf534a82102d29f49d822924275c9bf039e84ff6c2cc9202f3ed290179ac` |
+| perfect_stage10_phone_dark | `7b6fd27650cf78864e71e60161edac30eb9c03a15bd470e801e4c8f5744316c1` |
+| perfect_tablet_landscape | `5ec6a8ea9b45433825fc192ddc800a02c5ba5883501c4b0c142a73f5bc1e796f` |
+| perfect_tablet_rail_compact | `28baf3fde2e68c6cfb6166298deae437320d71f4f05830c0742570db4e3b256d` |
+| perfect_windows_short | `519a005194e422ac38cf2f16a896f89ca898f2220d4683dee069c26c1c442e7c` |
+| perfect_windows_wide_inspector | `530fa71993270afff5f860587d5f58638969b0cfa7838ce94122c656cfa11a91` |
+
+Image path convention: `test/presentation/failures/<prefix>_testImage.png`
+relative to repository. These are local test captures, not installed runtime.
+No full-suite run after refactor; no golden regeneration/acceptance or stage closure.
+
+Additional isolated compact probe (temporary instrumentation removed): theme
+font `PlusJakarta`, fallback `[Vazirmatn]`, text scale `1.0`; MediaQuery size
+`800x600` while workspace render bounds are `390x844`. The test uses
+`binding.setSurfaceSize`, unlike `_setTestViewSize` which also sets view metrics.
+This is a confirmed test-environment inconsistency, not proof that it caused the
+golden difference. Original compact golden still failed at 12857 pixels / 3.91%,
+exit 1. Next viewport work must synchronize actual view metrics and constraints,
+then separate harness changes from intended design changes. Do not regenerate
+goldens merely to hide that distinction. No font/tolerance/master change made.
+
+## Additive behavior checkpoint — 2026-09-17
+
+Production UI unchanged from the grouping prototype checkpoint below. Four
+tests added without deleting or altering existing golden comparisons.
+
+| Check | Command / method | Result | Limit |
+|---|---|---|---|
+| Section lifecycle | `flutter test --no-pub --concurrency=1 --reporter expanded test/presentation/perfect_workspace_page_test.dart --plain-name 'Today section lifecycle follows stored outcomes'` | 3/3 passed, exit 0 | 390/800/1366dp; persisted completion/correction, empty groups, order, stable ID; not Undo button proof |
+| AI interaction independent of raster checks | Same command with `--plain-name 'Today AI open close preserves capture draft independently of goldens'` | 1/1 passed, exit 0 | Two open/close cycles; draft, bounds, navigation, no new task; fake AI client, no live provider proof |
+| Original isolated golden | Same command with `--plain-name 'compact AI toggle lives inside quick capture and opens above it'` | 0 passed / 1 failed, exit 1 | 2.90%, 9530 pixels; original viewport 390x844 |
+| Pixel bounds | Read-only System.Drawing comparison of failure master/test images | 9530 unequal pixels, x=20..369 and y=413..546 | 6677 pixels in y=400..499, 2853 in y=500..599; numerical, not visual review |
+| Formatting | `dart format --output=none --set-exit-if-changed test/presentation/perfect_workspace_page_test.dart` after formatter | passed, exit 0; 0 changes | One test file |
+
+The file now defines 71 tests (67 prior + 4 new). No full-suite result for these
+additions is inferred from prior 479/487. Image inspection remains unavailable;
+golden baselines and production code were not changed in this checkpoint.
+
+Temporary bounds instrumentation in the original isolated golden identified
+`Scheduled` text at `(20,421)..(370,435)`, task title at
+`(72,475.5)..(185.3,490.5)`, and `Habits` text at `(20,540)..(370,554)`.
+The section widgets occupy y=401..447 and y=520..566: each adds 46px from
+20px top padding, 14px text and 12px bottom padding. These match the changed
+day-stream region, not the AI dock. The diagnostic run exited 1 with the same
+9530-pixel mismatch. Instrumentation was removed; no assertion or golden changed.
+This narrows the geometry cause but does not select/approve a visual design.
+
+## Grouping prototype checkpoint — 2026-09-17
+
+Source: `0ef09ce` plus existing uncommitted UI grouping patch. Supersedes the
+pre-grouping status below; does not supersede historical evidence for its SHA.
+
+| Check | Command / method | Result | Scope |
+|---|---|---|---|
+| Unfiltered workspace | `flutter test --no-pub --concurrency=1 --reporter expanded test/presentation/perfect_workspace_page_test.dart` | 59 passed / 8 failed, exit 1, 51 seconds | All eight failures at golden comparisons; real-row grouping passed |
+| Full sequential integration | `flutter test --no-pub --concurrency=1 --reporter expanded` | 479 passed / 8 failed, exit 1, 2 minutes | Same eight workspace golden failures; no whole-suite pass |
+| Analyzer | `flutter analyze --no-pub` | exit 0, 81.2 seconds; `No issues found!` | Static analysis only |
+| Formatting | `dart format --output=none --set-exit-if-changed lib test` | exit 0; 181 files, 0 changed | Formatting only |
+| Selected platforms | `python C:/Users/K1/.codex/skills/multi-os/scripts/audit_flutter_targets.py --project C:/Users/K1/Desktop/Projects/Perfect --targets android,windows,pwa` | exit 0 | Android/Windows files configured; PWA NOT PREPARED; no build/install proof |
+| Visual inspection | `view_image` for AI-closed test/master images | unavailable | Tool rejects image inputs; screenshots not inspected or accepted |
+
+Golden mismatches: compact 3.91%, phone dark 3.92%, compact AI closed 2.90%,
+tablet compact rail 11.06%, tablet landscape 18.92%, expanded Windows 15.09%,
+wide inspector 9.67%, short Windows 8.95%. Goldens remain unchanged. A failed
+comparison can prevent later assertions in the same test from executing.
+
+No stage closure, current CI/release, PWA deployment, or install-over claim.
+Production workspace file SHA256 at completion:
+`293f9a24d6a0714fcff092d60c5447ff7c1acd1616022bc852b16c8ab1ee5980`.
+Task documentation structure validator passed; `git diff --check` passed.
+
+## Current focused checkpoint — 2026-09-17
+
+Source: `main` at `0ef09ce`; Flutter 3.44.0, Dart 3.12.0. Production source
+unchanged during these checks. The older full-suite results below do not certify
+current HEAD.
+
+| Check | Command/Method | Result | Evidence / limit |
+|---|---|---|---|
+| Widget protocol/projector/replay | `flutter test --no-pub --concurrency=1 --reporter expanded test/widgets` | passed, exit 0 | 18/18; not the workspace grouping contract |
+| Requested stack flag | Focused workspace command plus `--chain-stack-traces` | CLI rejected, exit 1 | `Could not find an option named "--chain-stack-traces".`; zero tests loaded |
+| Workspace grouping | `flutter test --no-pub --concurrency=1 --reporter expanded test/presentation/perfect_workspace_page_test.dart --plain-name 'Today exposes scheduled and habit groups around real rows'` | failed, exit 1 | 0 passed / 1 failed; line 1737, expected one `Scheduled`, found zero; preceding Task/Habit presence assertions passed |
+| Preview authority | Existing `stage12-today-stream/decision.md` and `layout-contract.json` | unapproved | Mock Preview, selected candidate null; not runtime evidence |
+| Documentation structure | `python C:/Users/K1/.codex/skills/work-docs/scripts/validate_task_docs.py C:/Users/K1/Desktop/Projects/Perfect/docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild --structure-only` | passed, exit 0 | `OK`; structure only, not product acceptance |
+| Patch integrity | `git diff --check`; `git diff --numstat -- lib/presentation/perfect_workspace_page.dart` | passed | No whitespace errors; no final production-source diff |
+| Domain hypothesis | `flutter test --no-pub --concurrency=1 --reporter expanded test/planner/planner_today_stream_test.dart` | passed, exit 0 | 15/15 after a new timed/untimed habit input-order regression |
+| Fresh sequential baseline | `flutter test --no-pub --concurrency=1 --reporter expanded` | failed, exit 1 | 486 passed / 1 failed; sole failure is `Today exposes scheduled and habit groups around real rows` at line 1737; not flake or model failure |
+| Reproduction after baseline | Same focused workspace command | failed, exit 1 | 0 passed / 1 failed; `Scheduled` found 0 despite real rows; line 1737 |
+| Analyzer baseline | `flutter analyze --no-pub` | passed, exit 0 | `No issues found!` |
+| Formatting | `dart format --output=none --set-exit-if-changed test/planner/planner_today_stream_test.dart` | passed, exit 0 | No formatting drift after final formatting |
+
+The full-suite and analyze entries above describe the earlier pre-grouping
+checkpoint only. No Windows build, Android runtime, browser, hosted CI, release
+or install-over proof is claimed for the current dirty grouping prototype.
+
 ## Current checkpoint — 2026-09-12
 
 Historical results below remain scoped to their dated source. Stage 12 remains

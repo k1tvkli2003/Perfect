@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 
 abstract final class PerfectColors {
-  static const ink = Color(0xff1d2030);
-  static const mutedInk = Color(0xff686579);
-  static const cream = Color(0xfffffcf7);
+  static const ink = Color(0xff122033);
+  static const mutedInk = Color(0xff66758a);
+  static const cream = Color(0xfff7f7f5);
   static const creamElevated = Color(0xffffffff);
-  static const creamSurfaceLow = Color(0xfffffaf4);
-  static const creamSurface = Color(0xfffbf6ef);
-  static const creamSurfaceHigh = Color(0xfff7f2eb);
-  static const creamSurfaceHighest = Color(0xfff1ebe4);
-  static const creamStroke = Color(0xffece5dc);
-  static const accessibleOutline = Color(0xff8a8493);
-  static const apricot = Color(0xffffa34d);
-  static const apricotAction = Color(0xffa4510e);
-  static const apricotSoft = Color(0xffffead7);
-  static const mint = Color(0xff7ec99b);
+  static const creamSurfaceLow = Color(0xfff1f4f7);
+  static const creamSurface = Color(0xfffbfbfa);
+  static const creamSurfaceHigh = Color(0xffe9eef4);
+  static const creamSurfaceHighest = Color(0xffdfe7ef);
+  static const creamStroke = Color(0xffd9e1ea);
+  static const accessibleOutline = Color(0xff66758a);
+  static const apricot = Color(0xff2778e8);
+  static const apricotAction = Color(0xff175cd3);
+  static const apricotSoft = Color(0xffe8f2ff);
+  static const mint = Color(0xff2dbf73);
   // A clearer blue-green reserved for live sync. It stays distinguishable
   // from the softer mint used for habits and completion.
   static const sync = Color(0xff2e9b91);
@@ -25,13 +25,13 @@ abstract final class PerfectColors {
   static const danger = Color(0xffc44b56);
   static const dangerSoft = Color(0xffffe3e5);
   static const onDangerSoft = Color(0xff751b28);
-  static const night = Color(0xff171924);
-  static const nightSurfaceLow = Color(0xff1d202c);
-  static const nightSurface = Color(0xff232635);
-  static const nightSurfaceHigh = Color(0xff292c3d);
-  static const nightSurfaceHighest = Color(0xff303446);
-  static const nightStroke = Color(0xff3a3e50);
-  static const accessibleNightOutline = Color(0xff898698);
+  static const night = Color(0xff07111f);
+  static const nightSurfaceLow = Color(0xff0b192a);
+  static const nightSurface = Color(0xff11243a);
+  static const nightSurfaceHigh = Color(0xff172d47);
+  static const nightSurfaceHighest = Color(0xff203a59);
+  static const nightStroke = Color(0xff2b4768);
+  static const accessibleNightOutline = Color(0xff91a8c4);
 }
 
 abstract final class PerfectSpace {
@@ -156,87 +156,87 @@ class PerfectSemanticTheme extends ThemeExtension<PerfectSemanticTheme> {
       (Theme.of(context).brightness == Brightness.dark ? dark : light);
 
   static const light = PerfectSemanticTheme(
-    id: 'theme-light-daylight',
+    id: 'theme-light-paper-ledger',
     brightness: Brightness.light,
     highContrast: false,
-    canvas: Color(0xfffffcf7),
+    canvas: Color(0xfff7f7f5),
     surfaceLowest: Color(0xffffffff),
-    surfaceLow: Color(0xfffffaf4),
-    surface: Color(0xfffbf6ef),
-    surfaceHigh: Color(0xfff4eee7),
-    surfaceHighest: Color(0xffeee7df),
-    ink: Color(0xff1d2030),
-    muted: Color(0xff605d70),
-    primary: Color(0xff9d4c0b),
+    surfaceLow: Color(0xfff1f4f7),
+    surface: Color(0xfffbfbfa),
+    surfaceHigh: Color(0xffe9eef4),
+    surfaceHighest: Color(0xffdfe7ef),
+    ink: Color(0xff122033),
+    muted: Color(0xff53647a),
+    primary: Color(0xff175cd3),
     onPrimary: Color(0xffffffff),
-    primaryVivid: Color(0xffffa34d),
-    primaryContainer: Color(0xffffe6cf),
-    onPrimaryContainer: Color(0xff462000),
-    secondary: Color(0xff2f7650),
+    primaryVivid: Color(0xff2778e8),
+    primaryContainer: Color(0xffe8f2ff),
+    onPrimaryContainer: Color(0xff0c3470),
+    secondary: Color(0xff247a4d),
     onSecondary: Color(0xffffffff),
-    secondaryVivid: Color(0xff7ec99b),
-    secondaryContainer: Color(0xffddf3e5),
-    onSecondaryContainer: Color(0xff123622),
-    tertiary: Color(0xff6652ad),
+    secondaryVivid: Color(0xff2dbf73),
+    secondaryContainer: Color(0xffe3f6eb),
+    onSecondaryContainer: Color(0xff113f29),
+    tertiary: Color(0xff486581),
     onTertiary: Color(0xffffffff),
-    tertiaryVivid: Color(0xffa79add),
-    tertiaryContainer: Color(0xffeeeafd),
-    onTertiaryContainer: Color(0xff2e245f),
+    tertiaryVivid: Color(0xff6d8ca9),
+    tertiaryContainer: Color(0xffe8eef4),
+    onTertiaryContainer: Color(0xff263f57),
     sync: Color(0xff16796f),
     syncContainer: Color(0xffd8f3ef),
     onSyncContainer: Color(0xff073b37),
-    warning: Color(0xff855300),
-    warningContainer: Color(0xfffff0c2),
-    onWarningContainer: Color(0xff3e2600),
-    danger: Color(0xffb53145),
-    dangerContainer: Color(0xffffe1e5),
-    onDangerContainer: Color(0xff650e20),
-    outline: Color(0xff777280),
-    outlineVariant: Color(0xffddd4cb),
-    focus: Color(0xff8e4208),
-    shadow: Color(0xff4b3d32),
+    warning: Color(0xff8a5a00),
+    warningContainer: Color(0xffffefc6),
+    onWarningContainer: Color(0xff422900),
+    danger: Color(0xffc43c4e),
+    dangerContainer: Color(0xffffe5e8),
+    onDangerContainer: Color(0xff711426),
+    outline: Color(0xff68778a),
+    outlineVariant: Color(0xffd9e1ea),
+    focus: Color(0xff175cd3),
+    shadow: Color(0xff203047),
   );
 
   static const dark = PerfectSemanticTheme(
-    id: 'theme-dark-graphite-bloom',
+    id: 'theme-dark-midnight-command',
     brightness: Brightness.dark,
     highContrast: false,
-    canvas: Color(0xff141620),
-    surfaceLowest: Color(0xff11131b),
-    surfaceLow: Color(0xff1a1d28),
-    surface: Color(0xff202331),
-    surfaceHigh: Color(0xff292d3d),
-    surfaceHighest: Color(0xff323648),
-    ink: Color(0xfff9f7ff),
-    muted: Color(0xffc9c5d4),
-    primary: Color(0xffffc184),
-    onPrimary: Color(0xff2a1200),
-    primaryVivid: Color(0xffffb66c),
-    primaryContainer: Color(0xff4c3322),
-    onPrimaryContainer: Color(0xffffe3c4),
-    secondary: Color(0xffa8dfb9),
-    onSecondary: Color(0xff092115),
-    secondaryVivid: Color(0xff8fd8a8),
-    secondaryContainer: Color(0xff233b2d),
-    onSecondaryContainer: Color(0xffd8f5e1),
-    tertiary: Color(0xffd1c6ff),
-    onTertiary: Color(0xff1c143b),
-    tertiaryVivid: Color(0xffbcadf4),
-    tertiaryContainer: Color(0xff36314e),
-    onTertiaryContainer: Color(0xffece7ff),
+    canvas: Color(0xff07111f),
+    surfaceLowest: Color(0xff091624),
+    surfaceLow: Color(0xff0b192a),
+    surface: Color(0xff11243a),
+    surfaceHigh: Color(0xff172d47),
+    surfaceHighest: Color(0xff203a59),
+    ink: Color(0xfff4f7fc),
+    muted: Color(0xffb4c3d7),
+    primary: Color(0xff8ab4ff),
+    onPrimary: Color(0xff06172d),
+    primaryVivid: Color(0xff4e8fff),
+    primaryContainer: Color(0xff173b6e),
+    onPrimaryContainer: Color(0xffdbe8ff),
+    secondary: Color(0xff91e1b5),
+    onSecondary: Color(0xff072317),
+    secondaryVivid: Color(0xff46d68a),
+    secondaryContainer: Color(0xff173e2c),
+    onSecondaryContainer: Color(0xffd8f9e7),
+    tertiary: Color(0xffbdd2ea),
+    onTertiary: Color(0xff102238),
+    tertiaryVivid: Color(0xff8fb0cf),
+    tertiaryContainer: Color(0xff243b55),
+    onTertiaryContainer: Color(0xffe0ecf8),
     sync: Color(0xff74d8cd),
     syncContainer: Color(0xff173d3a),
     onSyncContainer: Color(0xffcbfff8),
-    warning: Color(0xffffd17a),
-    warningContainer: Color(0xff4b360d),
-    onWarningContainer: Color(0xfffff0c7),
-    danger: Color(0xffffb2bb),
-    dangerContainer: Color(0xff512832),
-    onDangerContainer: Color(0xffffe0e4),
-    outline: Color(0xff9b97aa),
-    outlineVariant: Color(0xff5a5f72),
-    focus: Color(0xffffd0a2),
-    shadow: Color(0xff080910),
+    warning: Color(0xffffcf77),
+    warningContainer: Color(0xff4c360c),
+    onWarningContainer: Color(0xfffff0c8),
+    danger: Color(0xffff9da9),
+    dangerContainer: Color(0xff552635),
+    onDangerContainer: Color(0xffffe2e6),
+    outline: Color(0xff91a8c4),
+    outlineVariant: Color(0xff2b4768),
+    focus: Color(0xffa9c7ff),
+    shadow: Color(0xff02060c),
   );
 
   static const highContrastLight = PerfectSemanticTheme(

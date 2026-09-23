@@ -99,8 +99,17 @@ void main() {
   testWidgets(
     'compact Today Pulse keeps navigation and quick capture reachable',
     (tester) async {
-      await tester.binding.setSurfaceSize(const Size(390, 844));
+      await _setTestViewSize(tester, const Size(390, 844));
       await _pump(tester);
+
+      expect(
+        MediaQuery.sizeOf(tester.element(find.text('Good morning'))),
+        const Size(390, 844),
+      );
+      expect(
+        tester.getSize(find.byType(PerfectWorkspacePage)),
+        const Size(390, 844),
+      );
 
       expect(find.text('Good morning'), findsOneWidget);
       expect(find.byType(NavigationBar), findsOneWidget);
@@ -278,7 +287,7 @@ void main() {
         size: const Size(390, 844),
         themeMode: ThemeMode.dark,
         contrastMode: PerfectContrastMode.system,
-        expectedThemeId: 'theme-dark-graphite-bloom',
+        expectedThemeId: 'theme-dark-midnight-command',
         golden: '../goldens/perfect_stage10_phone_dark.png',
       );
       await capture(
@@ -292,14 +301,14 @@ void main() {
         size: const Size(900, 1200),
         themeMode: ThemeMode.dark,
         contrastMode: PerfectContrastMode.system,
-        expectedThemeId: 'theme-dark-graphite-bloom',
+        expectedThemeId: 'theme-dark-midnight-command',
         golden: '../goldens/perfect_stage10_tablet_dark.png',
       );
       await capture(
         size: const Size(1600, 900),
         themeMode: ThemeMode.dark,
         contrastMode: PerfectContrastMode.system,
-        expectedThemeId: 'theme-dark-graphite-bloom',
+        expectedThemeId: 'theme-dark-midnight-command',
         golden: '../goldens/perfect_stage10_windows_dark.png',
       );
       await capture(
@@ -316,8 +325,17 @@ void main() {
   testWidgets(
     'compact AI toggle lives inside quick capture and opens above it',
     (tester) async {
-      await tester.binding.setSurfaceSize(const Size(390, 844));
+      await _setTestViewSize(tester, const Size(390, 844));
       await _pump(tester, aiClient: _WorkspaceAiClient());
+
+      expect(
+        MediaQuery.sizeOf(tester.element(find.text('Good morning'))),
+        const Size(390, 844),
+      );
+      expect(
+        tester.getSize(find.byType(PerfectWorkspacePage)),
+        const Size(390, 844),
+      );
 
       await tester.tap(
         find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
@@ -435,6 +453,50 @@ void main() {
       );
     },
     tags: 'windows-golden',
+  );
+
+  testWidgets(
+    'Today AI open close preserves capture draft independently of goldens',
+    (tester) async {
+      await _setTestViewSize(tester, const Size(390, 844));
+      await _pump(tester, aiClient: _WorkspaceAiClient());
+      await tester.tap(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
+      );
+      await tester.pumpAndSettle();
+
+      final captureInput = find.byKey(
+        const ValueKey<String>('perfect_quick_capture'),
+      );
+      const draft = 'Keep this Today draft';
+      await tester.enterText(captureInput, draft);
+      final ai = find.byKey(const ValueKey<String>('perfect-ai-surface'));
+      final toggle = find.byKey(const ValueKey<String>('perfect-ai-toggle'));
+      expect(ai, findsNothing);
+
+      for (var cycle = 0; cycle < 2; cycle++) {
+        await tester.tap(toggle);
+        await tester.pumpAndSettle();
+        expect(ai, findsOneWidget);
+        final aiRect = tester.getRect(ai);
+        final captureRect = tester.getRect(
+          find.byKey(const ValueKey<String>('perfect-quick-capture-surface')),
+        );
+        expect(aiRect.left, greaterThanOrEqualTo(0));
+        expect(aiRect.right, lessThanOrEqualTo(390));
+        expect(aiRect.bottom, lessThanOrEqualTo(captureRect.top));
+        expect(tester.widget<TextField>(captureInput).controller!.text, draft);
+        expect(find.byType(NavigationBar), findsOneWidget);
+
+        await tester.tap(toggle);
+        await tester.pumpAndSettle();
+        expect(ai, findsNothing);
+        expect(tester.widget<TextField>(captureInput).controller!.text, draft);
+        expect(tester.takeException(), isNull);
+      }
+      expect(_controller.tasks, hasLength(1));
+      expect(_controller.tasks.single.title, 'Focus Deep Work');
+    },
   );
 
   testWidgets(
@@ -588,9 +650,26 @@ void main() {
       expect(pulse.bottom, lessThan(stream.top));
       expect(pulse.left, closeTo(stream.left, 1));
       expect(pulse.right, closeTo(stream.right, 1));
-      expect(pulse.height, inInclusiveRange(160, 320));
+      expect(
+        pulse.height,
+        inInclusiveRange(140, 320),
+        reason: 'Compact command bar stays content-led without clipping.',
+      );
       expect(capture.contains(aiToggle.center), isTrue);
       expect(stream.bottom, lessThanOrEqualTo(capture.top));
+      final habit = _controller.habits.singleWhere(
+        (item) => item.title == 'Water plants',
+      );
+      final habitRow = find.byKey(
+        ValueKey<String>('entity-context-${habit.id}'),
+      );
+      expect(habitRow, findsOneWidget);
+      expect(
+        tester.getBottomRight(habitRow).dy,
+        lessThanOrEqualTo(stream.bottom),
+        reason:
+            'Visible habit card must not be clipped by the stream viewport.',
+      );
       await _pump(tester, aiClient: aiClient);
       await expectLater(
         find.byType(PerfectWorkspacePage),
@@ -787,6 +866,19 @@ void main() {
       expect(pulse.height, lessThan(260));
       expect(stream.bottom, lessThanOrEqualTo(capture.top));
       expect(capture.contains(aiToggle.center), isTrue);
+      final habit = _controller.habits.singleWhere(
+        (item) => item.title == 'Water plants',
+      );
+      final habitRow = find.byKey(
+        ValueKey<String>('entity-context-${habit.id}'),
+      );
+      expect(habitRow, findsOneWidget);
+      expect(
+        tester.getBottomRight(habitRow).dy,
+        lessThanOrEqualTo(stream.bottom),
+        reason:
+            'Visible habit card must not be clipped by the stream viewport.',
+      );
       expect(capture.bottom, lessThanOrEqualTo(800));
       expect(tester.takeException(), isNull);
       await expectLater(
@@ -926,6 +1018,105 @@ void main() {
       );
       await tester.pump();
       expect(capture().textDirection, TextDirection.rtl);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'compact quick capture commits one task then reopens with an empty draft',
+    (tester) async {
+      await _setTestViewSize(tester, const Size(390, 844));
+      await _pump(tester);
+      await tester.tap(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
+      );
+      await tester.pumpAndSettle();
+
+      const captureField = ValueKey<String>('perfect_quick_capture');
+      await tester.enterText(find.byKey(captureField), 'Stage12 runtime echo');
+      await tester.pump();
+
+      final countBefore = _controller.entities.length;
+      expect(
+        tester
+            .getRect(
+              find.byKey(
+                const ValueKey<String>('perfect-quick-capture-surface'),
+              ),
+            )
+            .height,
+        greaterThan(0),
+        reason: 'Expanded composer is on screen before commit.',
+      );
+
+      await tester.runAsync(() async {
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        for (var attempt = 0; attempt < 100; attempt++) {
+          if (_controller.entities.length == countBefore + 1) break;
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+        }
+      });
+
+      await tester.runAsync(() => _controller.refresh());
+      await tester.pumpAndSettle();
+      expect(_controller.entities.length, countBefore + 1);
+      expect(
+        _controller.entities.where((e) => e.title == 'Stage12 runtime echo'),
+        hasLength(1),
+      );
+      expect(find.text('Captured locally. Sync will follow.'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('perfect_quick_capture')),
+        findsNothing,
+        reason: 'Composer collapses after a successful commit.',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(find.byKey(captureField)).controller!.text,
+        isEmpty,
+      );
+      expect(
+        _controller.entities.where((e) => e.title == 'Stage12 runtime echo'),
+        hasLength(1),
+      );
+      expect(
+        find.byKey(const ValueKey<String>('perfect_quick_capture')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'compact quick capture rejects empty and whitespace-only drafts without dialog',
+    (tester) async {
+      await _setTestViewSize(tester, const Size(390, 844));
+      await _pump(tester);
+      await tester.tap(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
+      );
+      await tester.pumpAndSettle();
+
+      const captureField = ValueKey<String>('perfect_quick_capture');
+      final countBefore = _controller.entities.length;
+      for (final draft in <String>['', '   ']) {
+        await tester.enterText(find.byKey(captureField), draft);
+        await tester.pump();
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+        expect(
+          tester.widget<TextField>(find.byKey(captureField)).controller!.text,
+          draft,
+        );
+        expect(_controller.entities.length, countBefore);
+        expect(find.text('Captured locally. Sync will follow.'), findsNothing);
+      }
       expect(tester.takeException(), isNull);
     },
   );
@@ -1202,6 +1393,17 @@ void main() {
       expect(pulse.right, closeTo(stream.right, 1));
       expect(pulse.height, lessThan(260));
       expect(find.text('Focus Deep Work'), findsWidgets);
+      final habit = _controller.habits.singleWhere(
+        (item) => item.title == 'Water plants',
+      );
+      final habitRow = find.byKey(
+        ValueKey<String>('entity-context-${habit.id}'),
+      );
+      expect(
+        tester.getBottomRight(habitRow).dy,
+        lessThanOrEqualTo(stream.bottom),
+        reason: 'Expanded default stream must show the complete final card.',
+      );
       final source = _controller.tasks.singleWhere(
         (item) => item.title == 'Focus Deep Work',
       );
@@ -1213,27 +1415,83 @@ void main() {
       final stage = tester.getRect(
         find.byKey(const ValueKey<String>('expanded-day-deck-stage')),
       );
-      final focusPanel = tester.getRect(
+      expect(
         find.byKey(const ValueKey<String>('expanded-focus-panel')),
+        findsNothing,
+        reason: 'Desktop has enough width for an attached inspector.',
       );
-      expect(focusPanel.top, closeTo(stage.top, 1));
-      expect(focusPanel.bottom, closeTo(stage.bottom, 1));
-      expect(focusPanel.right, closeTo(stage.right, 1));
+      final inspector = tester.getRect(
+        find.byKey(ValueKey<String>('expanded-inspector-${source.id}')),
+      );
+      final streamAfterSelection = tester.getRect(
+        find.byKey(const ValueKey<String>('day-stream-panel')),
+      );
+      expect(streamAfterSelection.right, lessThan(inspector.left));
+      expect(inspector.top, closeTo(stage.top, 1));
+      expect(inspector.bottom, closeTo(stage.bottom, 1));
+      expect(inspector.right, closeTo(stage.right, 1));
       expect(
         find.bySemanticsLabel('Close inspector and return to Today'),
-        findsOneWidget,
+        findsNothing,
       );
       expect(tester.takeException(), isNull);
       await expectLater(
         find.byType(PerfectWorkspacePage),
         matchesGoldenFile('../goldens/perfect_expanded.png'),
       );
-      await tester.tapAt(Offset(stage.left + 12, stage.center.dy));
+      await tester.tap(find.byTooltip('Close inspector'));
       await tester.pumpAndSettle();
       expect(find.text('Inspector'), findsNothing);
     },
     tags: 'windows-golden',
   );
+
+  testWidgets('sparse wide Today keeps the selected inspector content-led', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1920, 1080));
+    await _pump(tester, platform: TargetPlatform.windows);
+    final source = _controller.tasks.singleWhere(
+      (item) => item.title == 'Focus Deep Work',
+    );
+    await tester.tap(
+      find.byKey(ValueKey<String>('entity-context-${source.id}')),
+    );
+    await tester.pumpAndSettle();
+
+    final stage = tester.getRect(
+      find.byKey(const ValueKey<String>('expanded-day-deck-stage')),
+    );
+    final stream = tester.getRect(
+      find.byKey(const ValueKey<String>('day-stream-panel')),
+    );
+    final inspector = tester.getRect(
+      find.byKey(ValueKey<String>('expanded-inspector-${source.id}')),
+    );
+    expect(
+      stage.height,
+      lessThan(420),
+      reason: 'Sparse agenda, not a 600dp inspector floor, owns stage height.',
+    );
+    expect(stage.height, greaterThanOrEqualTo(300));
+    expect(inspector.height, closeTo(stage.height, 1));
+    expect(stream.height, closeTo(stage.height, 1));
+    final focusPrompt = find.text('Shape the next block');
+    await tester.scrollUntilVisible(
+      focusPrompt,
+      100,
+      scrollable: find.descendant(
+        of: find.byKey(
+          const PageStorageKey<String>('perfect-inspector-detail-scroll'),
+        ),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(focusPrompt, findsOneWidget);
+    expect(inspector.contains(tester.getCenter(focusPrompt)), isTrue);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'wide Windows Day Deck promotes selected detail to a true third pane',
@@ -1266,6 +1524,33 @@ void main() {
       expect(stream.top, closeTo(inspector.top, 1));
       expect(stream.bottom, closeTo(inspector.bottom, 1));
       expect(pulse.bottom, lessThan(stream.top));
+      final focusPrompt = find.text('Shape the next block');
+      await tester.scrollUntilVisible(
+        focusPrompt,
+        100,
+        scrollable: find.descendant(
+          of: find.byKey(
+            const PageStorageKey<String>('perfect-inspector-detail-scroll'),
+          ),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        focusPrompt,
+        findsOneWidget,
+        reason: 'Wide inspector must keep actionable context reachable.',
+      );
+      expect(inspector.contains(tester.getCenter(focusPrompt)), isTrue);
+      final stage = tester.getRect(
+        find.byKey(const ValueKey<String>('expanded-day-deck-stage')),
+      );
+      expect(
+        stage.height,
+        lessThanOrEqualTo(520),
+        reason:
+            'Persistent detail must follow agenda content instead of inflating the workbench.',
+      );
       expect(tester.takeException(), isNull);
       await expectLater(
         find.byType(PerfectWorkspacePage),
@@ -1294,6 +1579,15 @@ void main() {
           const PageStorageKey<String>('perfect-expanded-today-scroll'),
         ),
         findsOneWidget,
+      );
+      final capture = tester.getRect(
+        find.byKey(const ValueKey<String>('perfect-quick-capture-surface')),
+      );
+      expect(capture.top, greaterThanOrEqualTo(0));
+      expect(
+        capture.bottom,
+        lessThanOrEqualTo(600),
+        reason: 'Short Windows must keep the full capture control in view.',
       );
       expect(tester.takeException(), isNull);
       await expectLater(
@@ -1708,6 +2002,120 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'Today keeps visible row anchored when earlier task is inserted',
+    (tester) async {
+      await _setTestViewSize(tester, const Size(390, 844));
+      await _runControllerMutation(tester, () async {
+        for (var i = 0; i < 18; i++) {
+          await _controller.saveEntity(
+            kind: PlannerEntityKind.oneOffTask,
+            payload: <String, dynamic>{
+              ...defaultPlannerPayload(title: 'Anchor task $i'),
+              PlannerPayloadKeys.timing: <String, dynamic>{
+                'scheduled_at': _previewNow
+                    .add(Duration(minutes: i + 1))
+                    .toUtc()
+                    .toIso8601String(),
+              },
+            },
+          );
+        }
+      });
+      await _pump(tester);
+      final today = find.byKey(
+        const PageStorageKey<String>('perfect-today-scroll'),
+      );
+      final anchor = find.text('Anchor task 8');
+      await tester.scrollUntilVisible(
+        anchor,
+        180,
+        scrollable: find
+            .descendant(of: today, matching: find.byType(Scrollable))
+            .first,
+      );
+      await tester.pumpAndSettle();
+      final before = tester.getTopLeft(anchor).dy;
+      expect(before, greaterThanOrEqualTo(tester.getTopLeft(today).dy));
+      await _runControllerMutation(
+        tester,
+        () => _controller.saveEntity(
+          kind: PlannerEntityKind.oneOffTask,
+          payload: <String, dynamic>{
+            ...defaultPlannerPayload(title: 'Inserted before visible anchor'),
+            PlannerPayloadKeys.timing: <String, dynamic>{
+              'scheduled_at': _previewNow
+                  .subtract(const Duration(minutes: 1))
+                  .toUtc()
+                  .toIso8601String(),
+            },
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(anchor).dy, closeTo(before, 1));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  for (final complete in [false, true]) {
+    testWidgets(
+      'Today preserves neighbor when visible anchor is ${complete ? 'completed' : 'removed'}',
+      (tester) async {
+        await _setTestViewSize(tester, const Size(390, 844));
+        await _runControllerMutation(tester, () async {
+          for (var i = 0; i < 18; i++) {
+            await _controller.saveEntity(
+              kind: PlannerEntityKind.oneOffTask,
+              payload: <String, dynamic>{
+                ...defaultPlannerPayload(title: 'Neighbor task $i'),
+                PlannerPayloadKeys.timing: <String, dynamic>{
+                  'scheduled_at': _previewNow
+                      .add(Duration(minutes: i + 1))
+                      .toUtc()
+                      .toIso8601String(),
+                },
+              },
+            );
+          }
+        });
+        await _pump(tester);
+        final today = find.byKey(
+          const PageStorageKey<String>('perfect-today-scroll'),
+        );
+        await tester.scrollUntilVisible(
+          find.text('Neighbor task 8'),
+          180,
+          scrollable: find
+              .descendant(of: today, matching: find.byType(Scrollable))
+              .first,
+        );
+        await tester.pumpAndSettle();
+        final neighbor = find.text('Neighbor task 9');
+        final before = tester.getTopLeft(neighbor).dy;
+        final entity = _controller.tasks.singleWhere(
+          (task) => task.title == 'Neighbor task 8',
+        );
+        await _runControllerMutation(
+          tester,
+          () => complete
+              ? _controller.setTaskProgress(
+                  entity,
+                  progress: const PlannerTaskProgress(
+                    state: PlannerTaskProgressState.completed,
+                    percent: 100,
+                  ),
+                  localDay: _previewNow,
+                )
+              : _controller.deleteEntity(entity),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.getTopLeft(neighbor).dy, closeTo(before, 1));
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('Today exposes scheduled and habit groups around real rows', (
     tester,
   ) async {
@@ -1743,6 +2151,173 @@ void main() {
     expect(tester.getTopLeft(task).dy, lessThan(tester.getTopLeft(habits).dy));
     expect(tester.getTopLeft(habits).dy, lessThan(tester.getTopLeft(habit).dy));
   });
+
+  for (final viewport in <Size>[
+    const Size(390, 844),
+    const Size(800, 1000),
+    const Size(1366, 768),
+  ]) {
+    testWidgets(
+      'Today section lifecycle follows stored outcomes at ${viewport.width.toInt()}dp',
+      (tester) async {
+        await _setTestViewSize(tester, viewport);
+        await _pump(tester);
+
+        Finder stream() => viewport.width < 600
+            ? find.byKey(const PageStorageKey<String>('perfect-today-scroll'))
+            : find.byKey(const ValueKey<String>('day-stream-panel'));
+        Finder heading(String section) => find.descendant(
+          of: stream(),
+          matching: find.byKey(ValueKey<String>('day-section-$section')),
+        );
+        Finder title(String text) =>
+            find.descendant(of: stream(), matching: find.text(text));
+
+        expect(stream(), findsOneWidget);
+        expect(heading('scheduled'), findsOneWidget);
+        expect(heading('habits'), findsOneWidget);
+        for (final section in <String>['decision', 'flexible', 'settled']) {
+          expect(heading(section), findsNothing);
+        }
+        expect(title('Focus Deep Work'), findsOneWidget);
+        expect(title('Water plants'), findsOneWidget);
+
+        final taskId = _controller.tasks.single.id;
+        await _runControllerMutation(
+          tester,
+          () => _controller.setTaskProgress(
+            _controller.tasks.singleWhere((task) => task.id == taskId),
+            progress: const PlannerTaskProgress(
+              state: PlannerTaskProgressState.completed,
+              percent: 100,
+            ),
+            localDay: _previewNow,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(heading('scheduled'), findsNothing);
+        expect(heading('settled'), findsOneWidget);
+        expect(title('Focus Deep Work'), findsOneWidget);
+        expect(title('Water plants'), findsOneWidget);
+        expect(
+          tester.getTopLeft(title('Water plants')).dy,
+          lessThan(tester.getTopLeft(heading('settled')).dy),
+        );
+        expect(
+          tester.getTopLeft(heading('settled')).dy,
+          lessThan(tester.getTopLeft(title('Focus Deep Work')).dy),
+        );
+
+        // Exercise persisted correction, not a UI-only optimistic reset.
+        // This is not proof of the separate user-facing Undo affordance.
+        await _runControllerMutation(
+          tester,
+          () => _controller.setTaskProgress(
+            _controller.tasks.singleWhere((task) => task.id == taskId),
+            progress: const PlannerTaskProgress.pending(),
+            localDay: _previewNow,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(heading('settled'), findsNothing);
+        expect(heading('scheduled'), findsOneWidget);
+        expect(title('Focus Deep Work'), findsOneWidget);
+        expect(
+          tester.getTopLeft(heading('scheduled')).dy,
+          lessThan(tester.getTopLeft(title('Focus Deep Work')).dy),
+        );
+        expect(
+          tester.getTopLeft(title('Focus Deep Work')).dy,
+          lessThan(tester.getTopLeft(heading('habits')).dy),
+        );
+        expect(_controller.tasks.single.id, taskId);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  for (final width in <double>[390, 800, 1366]) {
+    testWidgets(
+      'Today next semantics follows stored completion at ${width.toInt()}dp',
+      (tester) async {
+        await _setTestViewSize(tester, Size(width, 1000));
+        await _pump(tester);
+        Finder nextLabel(String title) => find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.label ==
+                  '$title. Next action. Item actions available.' &&
+              widget.properties.header != true,
+        );
+        expect(
+          find.descendant(
+            of: find.byWidgetPredicate(
+              (widget) =>
+                  widget is Semantics &&
+                  widget.properties.label != null &&
+                  widget.properties.label!.endsWith(
+                    '. Next action. Item actions available.',
+                  ),
+            ),
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is Semantics && widget.properties.header == true,
+            ),
+          ),
+          findsNothing,
+        );
+        Finder emphasis(String title) => find.byWidgetPredicate(
+          (widget) =>
+              widget.key is ValueKey<String> &&
+              (widget.key! as ValueKey<String>).value.startsWith(
+                'day-row-next-emphasis-',
+              ) &&
+              find
+                  .descendant(
+                    of: find.byWidget(widget),
+                    matching: find.text(title),
+                  )
+                  .evaluate()
+                  .isNotEmpty,
+        );
+        expect(nextLabel('Focus Deep Work'), findsOneWidget);
+        expect(nextLabel('Water plants'), findsNothing);
+        expect(emphasis('Focus Deep Work'), findsOneWidget);
+        expect(emphasis('Water plants'), findsNothing);
+        final task = _controller.tasks.single;
+        await _runControllerMutation(
+          tester,
+          () => _controller.setTaskProgress(
+            task,
+            progress: const PlannerTaskProgress(
+              state: PlannerTaskProgressState.completed,
+              percent: 100,
+            ),
+            localDay: _previewNow,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(nextLabel('Focus Deep Work'), findsNothing);
+        expect(nextLabel('Water plants'), findsOneWidget);
+        expect(emphasis('Focus Deep Work'), findsNothing);
+        expect(emphasis('Water plants'), findsOneWidget);
+        await _runControllerMutation(
+          tester,
+          () => _controller.setTaskProgress(
+            _controller.tasks.single,
+            progress: const PlannerTaskProgress.pending(),
+            localDay: _previewNow,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(nextLabel('Focus Deep Work'), findsOneWidget);
+        expect(nextLabel('Water plants'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets('Today hides a flexible item after its period quota is reached', (
     tester,
