@@ -310,8 +310,8 @@ if (@($isccCandidates).Count -gt 0) {
       $machine = $reader.ReadUInt16()
       Assert-True ($peSignature -eq 0x00004550) `
         "Compiled Setup must be a valid PE image."
-      Assert-True ($machine -eq 0x8664) `
-        "Compiled Setup must be a native x64 executable."
+      Assert-True ($machine -eq 0x014c) `
+        "Inno Setup's bootstrap launcher must retain its x86 PE format; x64 host and installation restrictions are enforced by ArchitecturesAllowed and ArchitecturesInstallIn64BitMode."
     } finally {
       $reader.Dispose()
       $stream.Dispose()
