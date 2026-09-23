@@ -3,7 +3,6 @@ name: Perfect private CI
 run-name: "Private CI · ${{ github.event_name }} · ${{ github.ref_name }} · #${{ github.run_number }}"
 
 on:
-  pull_request:
   push:
     branches: [main]
   workflow_dispatch:
@@ -25,6 +24,9 @@ jobs:
     name: Allocate private build identity
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: write
     outputs:
       semantic_version: ${{ steps.version.outputs.semantic_version }}
       android_version_code: ${{ steps.version.outputs.android_version_code }}
@@ -104,12 +106,55 @@ jobs:
             echo "release_tag=v$artifact_version"
             echo "trusted_build=${PERFECT_TRUSTED_BUILD,,}"
           } >> "$GITHUB_OUTPUT"
+      - name: Create exact-commit draft release transport
+        if: steps.version.outputs.trusted_build == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PERFECT_ARTIFACT_VERSION: ${{ steps.version.outputs.artifact_version }}
+          PERFECT_RELEASE_TAG: ${{ steps.version.outputs.release_tag }}
+        run: |
+          set -euo pipefail
+          tag="$PERFECT_RELEASE_TAG"
+          title="Perfect! $PERFECT_ARTIFACT_VERSION"
+          if ! gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f "ref=refs/tags/$tag" \
+            -f "sha=$GITHUB_SHA" >/dev/null; then
+            : # A rerun may already own this exact immutable tag.
+          fi
+          resolved="$(gh api "repos/$GITHUB_REPOSITORY/commits/$tag" --jq '.sha')"
+          if [[ "$resolved" != "$GITHUB_SHA" ]]; then
+            echo "::error::Release tag $tag resolves to $resolved, not $GITHUB_SHA."
+            exit 1
+          fi
+          if release_json="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft,assets,targetCommitish 2>/dev/null)"; then
+            if [[ "$(jq -r '.isDraft' <<<"$release_json")" != "true" ]] ||
+              [[ "$(jq -r '.targetCommitish' <<<"$release_json")" != "$GITHUB_SHA" ]]; then
+              echo "::error::Release $tag is published or targets a different commit."
+              exit 1
+            fi
+            while IFS= read -r asset_name; do
+              [[ -z "$asset_name" ]] || gh release delete-asset "$tag" "$asset_name" \
+                --repo "$GITHUB_REPOSITORY" --yes
+            done < <(jq -r '.assets[].name' <<<"$release_json")
+          else
+            gh release create "$tag" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "$title" \
+              --notes "Draft transport for exact commit $GITHUB_SHA." \
+              --verify-tag \
+              --draft
+          fi
 
   quality-and-android:
     name: Quality and Android
     needs: prepare
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    permissions:
+      actions: read
+      contents: write
     steps:
       - name: Check out source
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -305,13 +350,22 @@ jobs:
             sha256sum --check SHA256SUMS.txt
           )
           echo "artifact_dir=$package_dir" >> "$GITHUB_OUTPUT"
-      - name: Preserve private Android build
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: perfect-${{ needs.prepare.outputs.artifact_version }}-android-${{ steps.android-signing.outputs.mode }}-${{ steps.android-build.outputs.mode }}
-          path: ${{ steps.android-package.outputs.artifact_dir }}
-          if-no-files-found: error
-          retention-days: 1
+      - name: Upload private Android build to draft release
+        if: needs.prepare.outputs.trusted_build == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PERFECT_ARTIFACT_VERSION: ${{ needs.prepare.outputs.artifact_version }}
+          PERFECT_RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
+        run: |
+          set -euo pipefail
+          apk="build/private-artifacts/android/perfect-$PERFECT_ARTIFACT_VERSION-android-universal.apk"
+          test -s "$apk"
+          release_apk="build/private-artifacts/android/Perfect-$PERFECT_ARTIFACT_VERSION-Android.apk"
+          cp "$apk" "$release_apk"
+          gh release upload "$PERFECT_RELEASE_TAG" "$release_apk" \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber
       - name: Remove restored Android signing files
         if: always()
         shell: bash
@@ -325,6 +379,9 @@ jobs:
     needs: prepare
     runs-on: windows-2025
     timeout-minutes: 25
+    permissions:
+      actions: read
+      contents: write
     steps:
       - name: Check out source
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -1095,25 +1152,32 @@ jobs:
             }
             Remove-Item -LiteralPath $pfxPath,$cerPath -Force -ErrorAction SilentlyContinue
           }
-      - name: Preserve private Windows build
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: perfect-${{ needs.prepare.outputs.artifact_version }}-windows-x64-portable-${{ steps.windows-build.outputs.mode }}
-          path: build/windows/x64/portable/Perfect-*-Windows-Portable.zip
-          if-no-files-found: error
-          retention-days: 1
-      - name: Preserve signed private Windows installer
-        if: steps.windows-msix.outputs.mode == 'signed-private'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: perfect-${{ needs.prepare.outputs.artifact_version }}-windows-x64-msix-${{ steps.windows-build.outputs.mode }}
-          path: |
-            build/windows/x64/msix/Perfect-*-windows-x64.msix
-            build/windows/x64/msix/Perfect-private.cer
-            build/windows/x64/msix/SHA256SUMS.txt
-            build/windows/x64/setup/Perfect-*-Windows-Setup.exe
-          if-no-files-found: error
-          retention-days: 14
+      - name: Upload private Windows assets to draft release
+        if: needs.prepare.outputs.trusted_build == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PERFECT_ARTIFACT_VERSION: ${{ needs.prepare.outputs.artifact_version }}
+          PERFECT_RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $portable = @(
+            Get-ChildItem -LiteralPath 'build/windows/x64/portable' -Filter 'Perfect-*-Windows-Portable.zip' -File
+          )
+          $setup = @(
+            Get-ChildItem -LiteralPath 'build/windows/x64/setup' -Filter 'Perfect-*-Windows-Setup.exe' -File
+          )
+          if ($portable.Count -ne 1 -or $setup.Count -ne 1) {
+            throw "Expected one portable ZIP and one Setup executable."
+          }
+          gh release upload $env:PERFECT_RELEASE_TAG `
+            $portable[0].FullName `
+            $setup[0].FullName `
+            --repo $env:GITHUB_REPOSITORY `
+            --clobber
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Draft Windows asset transport failed.'
+          }
       - name: Prove MSIX install-over preserves LocalState
         if: steps.windows-msix.outputs.mode == 'signed-private'
         shell: pwsh
@@ -1680,11 +1744,17 @@ jobs:
       attestations: read
       contents: write
     steps:
-      - name: Download current-run build transport
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: perfect-${{ needs.prepare.outputs.artifact_version }}-*
-          path: build/release-inputs
+      - name: Download draft release transport
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PERFECT_RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/build/release-inputs"
+          gh release download "$PERFECT_RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir "$GITHUB_WORKSPACE/build/release-inputs"
       - name: Assemble exactly three release assets
         id: release-assets
         shell: bash
@@ -1701,37 +1771,29 @@ jobs:
           notes="$GITHUB_WORKSPACE/build/release-notes.md"
           mkdir -p "$assets"
 
-          mapfile -t android_matches < <(
-            find "$inputs" -type f \
-              -name "perfect-$PERFECT_ARTIFACT_VERSION-android-universal.apk"
-          )
-          mapfile -t setup_matches < <(
-            find "$inputs" -type f \
-              -name "Perfect-$PERFECT_ARTIFACT_VERSION-Windows-Setup.exe"
-          )
-          mapfile -t portable_matches < <(
-            find "$inputs" -type f \
-              -name "Perfect-$PERFECT_ARTIFACT_VERSION-Windows-Portable.zip"
-          )
-          if (( ${#android_matches[@]} != 1 )); then
-            echo "::error::Expected exactly one Android APK transport, found ${#android_matches[@]}."
-            exit 1
-          fi
-          if (( ${#setup_matches[@]} != 1 )); then
-            echo "::error::Expected exactly one Windows Setup transport, found ${#setup_matches[@]}."
-            exit 1
-          fi
-          if (( ${#portable_matches[@]} != 1 )); then
-            echo "::error::Expected exactly one Windows portable transport, found ${#portable_matches[@]}."
-            exit 1
-          fi
-
           android_name="Perfect-$PERFECT_ARTIFACT_VERSION-Android.apk"
           setup_name="Perfect-$PERFECT_ARTIFACT_VERSION-Windows-Setup.exe"
           portable_name="Perfect-$PERFECT_ARTIFACT_VERSION-Windows-Portable.zip"
-          cp "${android_matches[0]}" "$assets/$android_name"
-          cp "${setup_matches[0]}" "$assets/$setup_name"
-          cp "${portable_matches[0]}" "$assets/$portable_name"
+          mapfile -t final_assets < <(
+            find "$inputs" -mindepth 1 -maxdepth 1 -type f -printf '%f\n' |
+              sort
+          )
+          expected_assets=("$android_name" "$portable_name" "$setup_name")
+          mapfile -t expected_assets < <(printf '%s\n' "${expected_assets[@]}" | sort)
+          if (( ${#final_assets[@]} != 3 )) ||
+            ! diff -u \
+              <(printf '%s\n' "${expected_assets[@]}") \
+              <(printf '%s\n' "${final_assets[@]}"); then
+            echo "::error::The draft release must contain exactly the three approved install-ready assets."
+            exit 1
+          fi
+          for asset in "${final_assets[@]}"; do
+            if [[ ! -s "$inputs/$asset" ]]; then
+              echo "::error::Release asset is empty: $asset"
+              exit 1
+            fi
+            cp "$inputs/$asset" "$assets/$asset"
+          done
 
           mapfile -t final_assets < <(
             find "$assets" -mindepth 1 -maxdepth 1 -type f -printf '%f\n' |
@@ -2051,28 +2113,29 @@ jobs:
           echo "::notice::Published $tag with exactly three verified install-ready assets."
 
   artifact-hygiene:
-    name: Rotate temporary Actions transport
+    name: Verify release-only transport policy
     needs: [prepare, quality-and-android, windows, publish]
     if: >-
       always() &&
       needs.prepare.outputs.trusted_build == 'true' &&
       github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 5
     permissions:
-      actions: write
       contents: read
     steps:
-      - name: Check out trusted rotation implementation
+      - name: Check out trusted transport policy
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-      - name: Test transport rotation without live API access
-        run: python3 .github/scripts/test_artifact_rotation.py
-      - name: Keep one upgrade baseline and remove superseded transport
+      - name: Reject Actions artifact transport
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PERFECT_ARTIFACT_VERSION: ${{ needs.prepare.outputs.artifact_version }}
-          PERFECT_PUBLISH_RESULT: ${{ needs.publish.result }}
-        run: python3 .github/scripts/rotate_artifact_transport.py --apply
+        run: |
+          set -euo pipefail
+          for action in upload-artifact download-artifact; do
+            if grep -R -n --fixed-strings "actions/$action" .github/workflows; then
+              echo "::error::Release workflow still depends on Actions artifact action: $action"
+              exit 1
+            fi
+          done
+          echo 'Release-only transport policy verified; no Actions artifact mutation performed.'

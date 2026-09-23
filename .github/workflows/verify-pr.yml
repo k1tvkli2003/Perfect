@@ -1,0 +1,72 @@
+name: Perfect unprivileged PR verification
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: PR quality and Android compilation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Set up Java 17
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: 3.44.0
+          channel: stable
+          cache: true
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Verify deterministic Perfect brand assets
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check -r tool/requirements.txt
+          python3 tool/verify_perfect_brand_assets.py
+          python3 tool/generate_day_compass_assets.py
+          python3 tool/generate_perfect_wordmark.py
+          dart run flutter_launcher_icons
+          python3 tool/verify_perfect_brand_assets.py
+          git diff --exit-code -- \
+            ':(glob)assets/brand/*.svg' \
+            ':(glob)assets/brand/*-manifest.json' \
+            ':(glob)android/app/src/main/res/**/*.xml'
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+      - name: Analyze
+        run: flutter analyze
+      - name: Test
+        run: flutter test --exclude-tags windows-golden
+      - name: Compile Android without private signing
+        run: flutter build apk --debug
+  windows:
+    name: PR Windows exact-source compilation
+    runs-on: windows-2025
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: 3.44.0
+          channel: stable
+          cache: true
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Verify Windows installer source contract
+        shell: pwsh
+        run: ./tool/tests/test_windows_installer_contract.ps1
+      - name: Verify Windows golden baselines
+        run: flutter test --tags windows-golden
+      - name: Compile Windows without private signing
+        run: flutter build windows --release
