@@ -95,10 +95,15 @@ void main() {
     final bootstrap = File(
       'tool/windows/PerfectBootstrap.iss',
     ).readAsStringSync();
-    final packageStep = workflow.substring(
-      workflow.indexOf('- name: Package signed private MSIX'),
-      workflow.indexOf('- name: Preserve signed private Windows installer'),
+    final packageStart = workflow.indexOf(
+      '- name: Package signed private MSIX',
     );
+    final packageEnd = workflow.indexOf(
+      '- name: Upload private Windows assets to draft release',
+    );
+    expect(packageStart, isNonNegative);
+    expect(packageEnd, greaterThan(packageStart));
+    final packageStep = workflow.substring(packageStart, packageEnd);
     final installOverStep = workflow.substring(
       workflow.indexOf('- name: Prove MSIX install-over preserves LocalState'),
     );
@@ -124,8 +129,11 @@ void main() {
     );
     expect(
       packageStep.indexOf('verify_artifact_secret_absence.py'),
-      lessThan(packageStep.indexOf('Preserve private Windows build')),
-      reason: 'The final portable/MSIX/Setup scan must finish before upload.',
+      lessThan(
+        workflow.indexOf('Upload private Windows assets to draft release'),
+      ),
+      reason:
+          'The final portable/MSIX/Setup scan must finish before release upload.',
     );
     expect(
       packageStep,
@@ -168,7 +176,10 @@ void main() {
     expect(workflow, contains('SHA256SUMS.txt'));
     expect(workflow, contains('Portable release ZIP contains a CI-only'));
     expect(workflow, contains('Perfect-*-Windows-Portable.zip'));
-    expect(workflow, contains('-windows-x64-portable-'));
+    expect(
+      workflow,
+      contains('Upload private Windows assets to draft release'),
+    );
     expect(
       workflow,
       contains("if: needs.prepare.outputs.trusted_build == 'true'"),
@@ -212,7 +223,7 @@ void main() {
     expect(workflow, contains('Signed Windows checksum coverage'));
     expect(
       workflow,
-      contains('043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1'),
+      contains('08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0'),
     );
     expect(
       workflow,

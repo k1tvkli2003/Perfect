@@ -272,7 +272,9 @@ void main() {
     expect(workflow, contains('AppxSignature.p7x'));
     expect(workflow, contains('signtool.exe'));
     expect(workflow, contains('Signed Windows checksum coverage'));
-    expect(workflow, contains('build/windows/x64/msix/SHA256SUMS.txt'));
+    expect(workflow, contains('gh release upload'));
+    expect(workflow, contains('Draft release byte mismatch'));
+    expect(workflow, isNot(contains('actions/upload-artifact@')));
     expect(
       RegExp(
         r'SignTool Error:\\s\+A certificate chain processed,\\s\+',
@@ -360,43 +362,25 @@ void main() {
     );
   });
 
-  test('temporary Actions transport is bounded and safely rotated', () {
-    expect(
-      RegExp(
-        r'^          retention-days: 1$',
-        multiLine: true,
-      ).allMatches(workflow),
-      hasLength(2),
-    );
-    expect(
-      RegExp(
-        r'^          retention-days: 14$',
-        multiLine: true,
-      ).allMatches(workflow),
-      hasLength(1),
-    );
-    expect(workflow, contains('Rotate temporary Actions transport'));
-    expect(
-      RegExp(r'^      actions: write$', multiLine: true).allMatches(workflow),
-      hasLength(1),
-    );
-    expect(workflow, contains("github.ref == 'refs/heads/main'"));
-    expect(
-      workflow,
-      contains(r'PERFECT_PUBLISH_RESULT: ${{ needs.publish.result }}'),
-    );
-    expect(
-      workflow,
-      contains('python3 .github/scripts/rotate_artifact_transport.py --apply'),
-    );
-    expect(
-      workflow,
-      contains('python3 .github/scripts/test_artifact_rotation.py'),
-    );
-    expect(workflow, isNot(contains('gh api +')));
-    expect(workflow, isNot(contains("awk -F '\\t' +")));
-    expect(workflow, isNot(contains('mapfile -t artifact_ids')));
-  });
+  test(
+    'trusted transport uses draft release assets without artifact quota',
+    () {
+      expect(
+        workflow,
+        contains('Upload private Android build to draft release'),
+      );
+      expect(
+        workflow,
+        contains('Upload private Windows assets to draft release'),
+      );
+      expect(workflow, contains('Download draft release transport'));
+      expect(workflow, contains('Verify release-only transport policy'));
+      expect(workflow, isNot(contains('actions/upload-artifact@')));
+      expect(workflow, isNot(contains('actions/download-artifact@')));
+      expect(workflow, isNot(contains('rotate_artifact_transport.py --apply')));
+      expect(workflow, contains("github.ref == 'refs/heads/main'"));
+    },
+  );
 
   test('trusted Windows builds prove install-over without trusting Root', () {
     expect(workflow, contains('actions: read'));

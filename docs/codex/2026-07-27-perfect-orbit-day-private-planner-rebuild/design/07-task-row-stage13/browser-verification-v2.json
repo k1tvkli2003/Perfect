@@ -1,0 +1,86 @@
+{
+  "kind": "static-design-geometry-not-Flutter-runtime",
+  "preview_sha256": "ad860939039048e108265485fd3b6aafd6f5badde99184b72461c34781ca2912",
+  "cases": [
+    {
+      "id": "320x700-scale1",
+      "passed": true,
+      "geometry": {
+        "plates": 9,
+        "rows": 13,
+        "controls": 38,
+        "overdue": true,
+        "recurring": true,
+        "rtl": true,
+        "horizontalOverflow": false,
+        "small": [],
+        "overlaps": [],
+        "clipped": []
+      }
+    },
+    {
+      "id": "390x844-scale1",
+      "passed": true,
+      "geometry": {
+        "plates": 9,
+        "rows": 13,
+        "controls": 38,
+        "overdue": true,
+        "recurring": true,
+        "rtl": true,
+        "horizontalOverflow": false,
+        "small": [],
+        "overlaps": [],
+        "clipped": []
+      }
+    },
+    {
+      "id": "800x900-scale1",
+      "passed": true,
+      "geometry": {
+        "plates": 9,
+        "rows": 13,
+        "controls": 38,
+        "overdue": true,
+        "recurring": true,
+        "rtl": true,
+        "horizontalOverflow": false,
+        "small": [],
+        "overlaps": [],
+        "clipped": []
+      }
+    },
+    {
+      "id": "1366x900-scale1",
+      "passed": true,
+      "geometry": {
+        "plates": 9,
+        "rows": 13,
+        "controls": 38,
+        "overdue": true,
+        "recurring": true,
+        "rtl": true,
+        "horizontalOverflow": false,
+        "small": [],
+        "overlaps": [],
+        "clipped": []
+      }
+    },
+    {
+      "id": "390x844-scale2",
+      "passed": true,
+      "geometry": {
+        "plates": 9,
+        "rows": 13,
+        "controls": 38,
+        "overdue": true,
+        "recurring": true,
+        "rtl": true,
+        "horizontalOverflow": false,
+        "small": [],
+        "overlaps": [],
+        "clipped": []
+      }
+    }
+  ]
+}

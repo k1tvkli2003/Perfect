@@ -66,7 +66,6 @@ SetupIconFile={#SetupIcon}
 Uninstallable=no
 CreateUninstallRegKey=no
 PrivilegesRequired=admin
-SetupArchitecture=x64
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763

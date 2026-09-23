@@ -110,8 +110,12 @@ Assert-Contains $iss "CreateUninstallRegKey=no" `
   "Bootstrapper must not create a competing uninstall entry."
 Assert-Contains $iss "PrivilegesRequired=admin" `
   "Machine TrustedPeople import must require UAC elevation."
-Assert-Contains $iss "SetupArchitecture=x64" `
-  "The Windows x64 release must use Inno 7's native x64 Setup loader/runtime."
+Assert-DoesNotMatch $iss '(?m)^SetupArchitecture=' `
+  "The pinned CI compiler rejects the unsupported SetupArchitecture directive."
+Assert-Contains $iss "ArchitecturesAllowed=x64compatible" `
+  "The bootstrapper must reject unsupported host architectures."
+Assert-Contains $iss "ArchitecturesInstallIn64BitMode=x64compatible" `
+  "The bootstrapper must install only in the supported 64-bit mode."
 Assert-Contains $iss "SetupIconFile={#SetupIcon}" `
   "Installer must use the project-owned Perfect icon."
 Assert-Contains $iss "Compression=lzma2/ultra64" `
@@ -306,8 +310,8 @@ if (@($isccCandidates).Count -gt 0) {
       $machine = $reader.ReadUInt16()
       Assert-True ($peSignature -eq 0x00004550) `
         "Compiled Setup must be a valid PE image."
-      Assert-True ($machine -eq 0x8664) `
-        "Compiled Setup must be a native x64 executable."
+      Assert-True ($machine -eq 0x014c) `
+        "Inno Setup's bootstrap launcher must retain its x86 PE format; x64 host and installation restrictions are enforced by ArchitecturesAllowed and ArchitecturesInstallIn64BitMode."
     } finally {
       $reader.Dispose()
       $stream.Dispose()

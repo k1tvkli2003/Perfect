@@ -1,10 +1,38 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-09-23
+- Last updated: 2026-09-24
 - Owner: Codex / Hermes solo continuation
 
 ## Current State
+
+### Stage 12 release / Stage 13 design checkpoint — 2026-09-24
+
+Trusted-main run `35910111235` at `846662ed365e12cdf34aec34502b5f8811559b23`
+was rerun as attempt 2. Windows exact-source build/package/signature, Android
+build/checksum, quality, and upgrade/setup proofs passed. Both private build
+transport uploads failed with the exact GitHub error `Artifact storage quota has
+been hit`; publication was skipped. The last private Windows MSIX artifact
+`10286253394` remains unexpired and was not deleted.
+
+The guarded retry is exhausted for this run; no third retry is authorized. Account
+inventory showed Perfect has one active 46,897,512-byte artifact, while unrelated
+retained account artifacts consume the shared quota. Deleting Perfect's protected
+upgrade baseline would not be a safe or sufficient fix. A release-only transport
+patch is prepared on branch `feat/stage13-status-prep`: trusted jobs upload the
+three final assets to an exact-commit draft GitHub Release, publish verifies those
+bytes, and a separate PR workflow keeps pull requests unprivileged. Local YAML,
+Bash, PowerShell parse, and diff checks pass. The patch is not yet on `main`; Stage
+12 release/upgrade acceptance remains open until a fresh main run publishes and
+verifies the immutable release.
+
+Stage 13 independent design preparation is frozen in
+`design/07-task-row-stage13/decision.md`: 9 plates, 13 fixture rows,
+38 controls and 5 browser viewport/text-scale checks. Overdue, recurring,
+RTL/mixed-script, long-copy and 200% cases were corrected and visually rechecked. This is static
+design evidence only; Flutter implementation and Stage 13 acceptance remain
+pending the Stage 12 exact-source release gate. No production Dart changed in
+this preparation.
 
 ### Stage 12 integrated checkpoint — 2026-09-23
 
