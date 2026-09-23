@@ -110,8 +110,12 @@ Assert-Contains $iss "CreateUninstallRegKey=no" `
   "Bootstrapper must not create a competing uninstall entry."
 Assert-Contains $iss "PrivilegesRequired=admin" `
   "Machine TrustedPeople import must require UAC elevation."
-Assert-Contains $iss "SetupArchitecture=x64" `
-  "The Windows x64 release must use Inno 7's native x64 Setup loader/runtime."
+Assert-DoesNotMatch $iss '(?m)^SetupArchitecture=' `
+  "The pinned CI compiler rejects the unsupported SetupArchitecture directive."
+Assert-Contains $iss "ArchitecturesAllowed=x64compatible" `
+  "The bootstrapper must reject unsupported host architectures."
+Assert-Contains $iss "ArchitecturesInstallIn64BitMode=x64compatible" `
+  "The bootstrapper must install only in the supported 64-bit mode."
 Assert-Contains $iss "SetupIconFile={#SetupIcon}" `
   "Installer must use the project-owned Perfect icon."
 Assert-Contains $iss "Compression=lzma2/ultra64" `
