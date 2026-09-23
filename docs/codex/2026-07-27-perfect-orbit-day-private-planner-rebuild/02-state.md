@@ -1,10 +1,30 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-09-23
+- Last updated: 2026-09-24
 - Owner: Codex / Hermes solo continuation
 
 ## Current State
+
+### Stage 12 release / Stage 13 design checkpoint — 2026-09-24
+
+Trusted-main run `35910111235` at `846662ed365e12cdf34aec34502b5f8811559b23`
+is complete with conclusion `failure`: both Windows and Android jobs failed while
+preserving temporary private artifacts after their build/test steps; the rotation
+job succeeded on its failure path and publication was skipped. The last private
+Windows MSIX artifact `10286253394` remains unexpired and was not deleted.
+Stage 12 release/upgrade acceptance remains open. One-shot guarded quota retry
+is scheduled for 2026-09-24 06:32 Asia/Tehran against the same SHA; the guard
+checks both exact quota error lines before requesting a rerun. No unconditional
+rerun, artifact deletion or trusted release bypass is authorized.
+
+Stage 13 independent design preparation is frozen in
+`design/07-task-row-stage13/decision.md`: 9 plates, 13 fixture rows,
+38 controls and 5 browser viewport/text-scale checks. Overdue, recurring,
+RTL/mixed-script, long-copy and 200% cases were corrected and visually rechecked. This is static
+design evidence only; Flutter implementation and Stage 13 acceptance remain
+pending the Stage 12 exact-source release gate. No production Dart changed in
+this preparation.
 
 ### Stage 12 integrated checkpoint — 2026-09-23
 

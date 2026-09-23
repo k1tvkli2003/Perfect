@@ -1,7 +1,7 @@
 # Stage 13 — Task row and unified status control
 
-Status: pending  
-Depends on: Stages 04, 05, 12  
+Status: preview frozen; implementation pending Stage 12 exact-source release gate
+Depends on: Stages 04, 05, 12
 Primary consumers: Today, Tasks, Plan, Detail, widget and accessibility
 
 ## Mission
