@@ -115,6 +115,7 @@ void main() {
       expect(compactItem, isNot(contains('widget_item_state')));
       expect(compactItem, contains('android:textDirection="locale"'));
       expect(regularItem, contains('android:layout_width="64dp"'));
+      expect(compactItem, contains('android:layout_width="48dp"'));
       expect(
         RegExp('android:maxLines="2"').allMatches(regularItem),
         hasLength(greaterThanOrEqualTo(2)),

@@ -93,14 +93,30 @@ void main() {
     },
   );
 
-  testWidgets('status activation calls only its own callback', (tester) async {
+  testWidgets('status activation never bubbles into an ancestor action', (
+    tester,
+  ) async {
     var taps = 0;
-    await show(
-      tester,
-      const PlannerTaskProgress.pending(),
-      onPressed: () => taps++,
+    var secondary = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: GestureDetector(
+              onTap: () => secondary++,
+              child: TaskStatusControl(
+                progress: const PlannerTaskProgress.pending(),
+                color: Colors.teal,
+                onPressed: () => taps++,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
     await tester.tap(find.byKey(const ValueKey('task-status-hit')));
+    await tester.pump();
     expect(taps, 1);
+    expect(secondary, 0);
   });
 }
