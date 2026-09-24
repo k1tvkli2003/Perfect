@@ -1,20 +1,22 @@
 # Handoff
 
-## Current Stage 12 gate — 2026-09-23
+## Current Stage 13 gate — 2026-09-24
 
-Guided Command Center is implemented and visually reviewed on native Android
-phone/tablet preview; exact current-source APK launched as
-`com.k1tvkli2003.perfect.preview`. Full Flutter suite passes 505/505,
-analyzer and formatter are clean. The 8 workspace golden tests and 5 header
-tests pass after selective, hash-receipted baseline refresh; canonical design
-reference images are unchanged. Shared emulator was briefly commandeered by
-Gauss; the unrelated screenshot was discarded, and top activity/package was
+Stage 12 closed in main CI: run `35932986938` passed exact-source Windows
+build/package/signature, Android build/checksum, quality, release upload and
+upgrade/setup proofs. Immutable release `v1.1.0-build.2071` contains three
+digest-verified assets. PR #2 now carries Stage 13's Today vertical slice:
+shared 48dp/30dp status control, exact progress semantics, status/detail
+separation, workspace goldens 80/80, primitive tests 3/3, full non-golden
+regression 498/498, native Android screenshot/hierarchy, and controlled golden
+refresh. Merge only after hosted PR Windows/Android checks pass. Canonical
+design reference images are unchanged. Shared emulator was briefly commandeered
+by Gauss; the unrelated screenshot was discarded, and top activity/package was
 asserted before the accepted Perfect capture.
 
-Stage 12 remains open until the exact-source Windows CI/launch and native
-release/upgrade proof pass. Local Visual Studio BuildTools lacks ATL;
-installer repair requires elevation (5007). The private hosted Windows runner
-is the next independent gate. Do not infer Windows proof from a stale local
+Stage 13 remains open for Tasks/Plan/Detail/widget parity, rollback/Undo and
+broader row composition. Local Visual Studio BuildTools lacks ATL; installer
+repair requires elevation (5007). Do not infer Windows proof from a stale local
 executable or Android runtime. PWA remains in scope for later numbered stage
 owners under the 2026-09-17 amendment and is not prepared.
 
