@@ -1,0 +1,89 @@
+{
+  "reason": "Stage 13 shared status control intentionally changed Today composition: fixed 48dp hit, 30dp glyph, arc-only partial, status/detail separation; diffs visually confined to status controls.",
+  "command": "flutter test --no-pub --update-goldens --reporter compact test/presentation/perfect_workspace_page_test.dart",
+  "verification": "flutter test --no-pub --reporter compact test/presentation/perfect_workspace_page_test.dart test/presentation/task_status_control_test.dart",
+  "result": "workspace page 80/80 pass; status control 3/3 pass",
+  "goldens": [
+    {
+      "path": "test/goldens/perfect_compact.png",
+      "sha256": "ec8c67031629837cfa3d7293fc2737718266389edd052d9b5e144518e27845bb",
+      "bytes": 62473
+    },
+    {
+      "path": "test/goldens/perfect_compact_ai_closed.png",
+      "sha256": "ccedf0fc9b7585e0192ab5a6c9e0b7f0033295981835eedb3cd968728126c5ac",
+      "bytes": 103291
+    },
+    {
+      "path": "test/goldens/perfect_compact_ai_open.png",
+      "sha256": "eed02254b79351b781c0228c38554cf8a3f249353290df359a34497078169adb",
+      "bytes": 109393
+    },
+    {
+      "path": "test/goldens/perfect_expanded.png",
+      "sha256": "65b4da9253895af41c9aeb4e313b8626329f3002ef022701ffe469995a948b98",
+      "bytes": 94671
+    },
+    {
+      "path": "test/goldens/perfect_header_dark.png",
+      "sha256": "121d4e1c1ccffa738107ab6447fd508ee53da6b22d35a6ab5d3aa293ac3f268b",
+      "bytes": 51499
+    },
+    {
+      "path": "test/goldens/perfect_header_light.png",
+      "sha256": "9353031f133800bc20b4c8652adb9a2a21e7e3e5c796fafc044e49ffb5b1dd09",
+      "bytes": 50019
+    },
+    {
+      "path": "test/goldens/perfect_stage10_phone_clarity_light.png",
+      "sha256": "7e1a92a3243c9d7ded1f25be152ebd44b0ecc102c3177b88a990e10ca1ab4e3e",
+      "bytes": 62000
+    },
+    {
+      "path": "test/goldens/perfect_stage10_phone_dark.png",
+      "sha256": "8c18a3bdb53e19a6736d819c5514f860b63458ff56e71c4a0daf4b79332c2b72",
+      "bytes": 67431
+    },
+    {
+      "path": "test/goldens/perfect_stage10_tablet_dark.png",
+      "sha256": "d41050087f61b0eef93f3746ed86616f3ae6e3bd88eb19f0e5ec6e5eef36a441",
+      "bytes": 73175
+    },
+    {
+      "path": "test/goldens/perfect_stage10_windows_clarity_dark.png",
+      "sha256": "9b52b8fcff7ffa1a839fd45068d927cbfe98025df2b8c84ecb3ff9967548235e",
+      "bytes": 79394
+    },
+    {
+      "path": "test/goldens/perfect_stage10_windows_dark.png",
+      "sha256": "716df8868e69b824016304fd0261dddb95e86048f2450d120923e1b8bab09ce3",
+      "bytes": 78836
+    },
+    {
+      "path": "test/goldens/perfect_tablet_landscape.png",
+      "sha256": "99abfd7455f33bb035779059090fe6b4489d8e9ce53faa34f4e2279756a85f6f",
+      "bytes": 111027
+    },
+    {
+      "path": "test/goldens/perfect_tablet_rail_compact.png",
+      "sha256": "aba4bd20de4679139004f9d0b671e30c94b7d827d9701a31ebcaf075946cd528",
+      "bytes": 106480
+    },
+    {
+      "path": "test/goldens/perfect_tablet_rail_expanded.png",
+      "sha256": "f3c55a5abf27f580192ca729b6c2818efa8101111dd97ce9d618908e1d71f9cb",
+      "bytes": 78398
+    },
+    {
+      "path": "test/goldens/perfect_windows_short.png",
+      "sha256": "54a3175aaa52ddace6e9269f2ea6332747024fa15f4c84fb582a23b895f821fc",
+      "bytes": 68325
+    },
+    {
+      "path": "test/goldens/perfect_windows_wide_inspector.png",
+      "sha256": "a9e3126efa850a77db2b89fc2b275d5da0e72a3b07712acdd523efcbb18e9c22",
+      "bytes": 102937
+    }
+  ],
+  "generated_at": "2026-09-24T00:58:08.839383+00:00"
+}

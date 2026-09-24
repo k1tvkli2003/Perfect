@@ -32,6 +32,7 @@ import 'package:perfect/presentation/planner_insights_sheet.dart';
 import 'package:perfect/presentation/planner_reminder_settings_sheet.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
 import 'package:perfect/presentation/today_pulse.dart';
+import 'package:perfect/presentation/task_status_control.dart';
 
 /// Typed navigation bridge for native surfaces such as the Android Today
 /// widget. Requests are retained until a mounted workspace consumes them, so
@@ -6978,60 +6979,17 @@ class _AgendaCompletionButton extends StatelessWidget {
         ),
       );
     }
-    if (entity.kind == PlannerEntityKind.recurringTask) {
-      final progress = taskProgress ?? const PlannerTaskProgress.pending();
-      return IconButton(
-        tooltip: _taskProgressTooltip(progress),
-        onPressed: () =>
-            _cycleTaskProgressWithFeedback(context, controller, entity),
-        icon: _animatedTaskProgressVisual(
-          context,
-          progress,
-          fallback: _colorFor(context, entity),
-          referenceStyle: referenceStyle,
-        ),
-      );
-    }
-    final progress = PlannerTaskProgress.fromEntity(entity);
-    return IconButton(
-      tooltip: _taskProgressTooltip(progress),
+    final progress = entity.kind == PlannerEntityKind.recurringTask
+        ? taskProgress ?? const PlannerTaskProgress.pending()
+        : PlannerTaskProgress.fromEntity(entity);
+    return TaskStatusControl(
+      progress: progress,
+      color: _colorFor(context, entity),
       onPressed: () =>
           _cycleTaskProgressWithFeedback(context, controller, entity),
-      icon: _animatedTaskProgressVisual(
-        context,
-        progress,
-        fallback: _colorFor(context, entity),
-        referenceStyle: referenceStyle,
-      ),
     );
   }
 }
-
-Widget _animatedTaskProgressVisual(
-  BuildContext context,
-  PlannerTaskProgress progress, {
-  required Color fallback,
-  bool referenceStyle = false,
-}) => AnimatedSwitcher(
-  duration: PerfectMotion.responsive(context, PerfectMotion.quick),
-  switchInCurve: PerfectMotion.productive,
-  transitionBuilder: (child, animation) => FadeTransition(
-    opacity: animation,
-    child: ScaleTransition(
-      scale: Tween<double>(begin: .92, end: 1).animate(animation),
-      child: child,
-    ),
-  ),
-  child: KeyedSubtree(
-    key: ValueKey<String>('${progress.state.name}-${progress.percent}'),
-    child: _taskProgressVisual(
-      context,
-      progress,
-      fallback: fallback,
-      referenceStyle: referenceStyle,
-    ),
-  ),
-);
 
 Future<void> _cycleTaskProgressWithFeedback(
   BuildContext context,
@@ -7043,12 +7001,12 @@ Future<void> _cycleTaskProgressWithFeedback(
   try {
     final progress = await controller.cycleTaskProgress(entity);
     if (!context.mounted) return;
-    await HapticFeedback.selectionClick();
-    await SemanticsService.sendAnnouncement(
+    HapticFeedback.selectionClick().ignore();
+    SemanticsService.sendAnnouncement(
       view,
       _taskProgressTooltip(progress),
       textDirection,
-    );
+    ).ignore();
   } on Object {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -8142,64 +8100,6 @@ String _kindLabel(PlannerEntityKind kind) => switch (kind) {
   PlannerEntityKind.habit => 'Habit',
   PlannerEntityKind.project => 'Project',
   PlannerEntityKind.area => 'Area',
-};
-
-IconData _taskProgressIcon(PlannerTaskProgress progress) =>
-    switch (progress.state) {
-      PlannerTaskProgressState.pending => Icons.radio_button_unchecked_rounded,
-      PlannerTaskProgressState.completed => Icons.check_circle_rounded,
-      PlannerTaskProgressState.missed => Icons.cancel_outlined,
-      PlannerTaskProgressState.partial => Icons.percent_rounded,
-    };
-
-Widget _taskProgressVisual(
-  BuildContext context,
-  PlannerTaskProgress progress, {
-  required Color fallback,
-  bool referenceStyle = false,
-}) {
-  final color = _taskProgressColor(context, progress, fallback: fallback);
-  if (referenceStyle && progress.isPartial) {
-    return SizedBox.square(
-      dimension: 30,
-      child: CircularProgressIndicator(
-        value: progress.percent / 100,
-        strokeWidth: 2.8,
-        strokeCap: StrokeCap.round,
-        color: color,
-        backgroundColor: color.withValues(alpha: .15),
-      ),
-    );
-  }
-  if (!progress.isPartial) {
-    return Icon(_taskProgressIcon(progress), color: color);
-  }
-  return SizedBox(
-    width: 30,
-    child: FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Text(
-        '${progress.percent}%',
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-    ),
-  );
-}
-
-Color _taskProgressColor(
-  BuildContext context,
-  PlannerTaskProgress progress, {
-  required Color fallback,
-}) => switch (progress.state) {
-  PlannerTaskProgressState.pending => fallback,
-  PlannerTaskProgressState.completed => PerfectSemanticTheme.of(
-    context,
-  ).secondary,
-  PlannerTaskProgressState.missed => PerfectSemanticTheme.of(context).danger,
-  PlannerTaskProgressState.partial => fallback,
 };
 
 String _taskProgressTooltip(

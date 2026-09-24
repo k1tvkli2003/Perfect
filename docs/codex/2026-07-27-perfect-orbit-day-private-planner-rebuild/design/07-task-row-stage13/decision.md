@@ -1,6 +1,6 @@
 # Stage 13 design gate — unified task row and status control
 
-Status: **preview frozen v2; implementation pending Stage 12 release gate**
+Status: **vertical slice implemented; Today runtime gate passed; Tasks/Plan/detail/widget parity remains open**
 Decision date: 2026-09-24
 Owner: solo coordinator
 
@@ -40,9 +40,21 @@ Owner: solo coordinator
 - Static visual review found no material overlap or clipping. Overdue emphasis was corrected after critique. Recurring copy was changed from ambiguous `Repeats daily · Today 60%` to explicit `Daily occurrence · 60% today`; final phone and 200% reviews confirmed full wrapped rendering. RTL/mixed-script review confirmed intact Persian title, readable `API` acronym, expected control order and no bidi clipping. Small metadata and border contrast remain bounded by the preview's intentionally quiet secondary hierarchy and must receive product-theme/runtime verification.
 - Static preview is not Flutter, Android, Windows or widget runtime acceptance.
 
-## Implementation gate
+## Runtime implementation
 
-Do not edit shared status widgets until Stage 12 exact-source Windows CI/release gate passes. Then implement one vertical slice with RED/GREEN tests for:
+Stage 12 shipped the release-only transport change on `main`, then closed in
+CI: main run `35932986938` passed exact-source Windows and Android gates;
+immutable release `v1.1.0-build.2071` contains three digest-verified assets.
+
+Today vertical slice now consumes shared `TaskStatusControl`. Workspace page
+80/80 goldens, primitive 3/3 tests, full non-golden regression 498/498,
+analyze/format/diff checks, and native Android screenshot/hierarchy passed.
+Pending and partial controls retain exact semantic percentage while painting no
+percentage inside the ring. Status target is separate from detail navigation.
+
+Remaining Stage 13 work stays explicit: optimistic rollback/Undo, error receipt,
+Tasks/Plan/Detail/widget consumer parity, real status taps on device, and broad
+row composition/200% runtime parity.
 
 1. status cycle and optimistic persistence/rollback;
 2. exact percent semantics with no percentage painted inside the small ring;
