@@ -6999,14 +6999,28 @@ Future<void> _cycleTaskProgressWithFeedback(
   final view = View.of(context);
   final textDirection = Directionality.of(context);
   try {
-    final progress = await controller.cycleTaskProgress(entity);
+    final change = await controller.cycleTaskProgressWithReceipt(entity);
     if (!context.mounted) return;
     HapticFeedback.selectionClick().ignore();
     SemanticsService.sendAnnouncement(
       view,
-      _taskProgressTooltip(progress),
+      _taskProgressTooltip(change.current),
       textDirection,
     ).ignore();
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(_taskProgressTooltip(change.current)),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () => unawaited(
+              _undoTaskProgressWithFeedback(context, controller, change),
+            ),
+          ),
+        ),
+      );
   } on Object {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -7014,6 +7028,33 @@ Future<void> _cycleTaskProgressWithFeedback(
         content: Text(
           'Today’s status did not change. Your previous value is still safe.',
         ),
+      ),
+    );
+  }
+}
+
+Future<void> _undoTaskProgressWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerTaskProgressChange change,
+) async {
+  try {
+    final restored = await controller.undoTaskProgress(change);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          restored
+              ? 'Previous task status restored.'
+              : 'Undo expired. A newer status is already active.',
+        ),
+      ),
+    );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not undo status. The stored value is unchanged.'),
       ),
     );
   }

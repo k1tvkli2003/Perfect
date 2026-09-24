@@ -2238,6 +2238,37 @@ void main() {
     );
   }
 
+  testWidgets('status tap offers Undo that restores stored task outcome', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+    final taskId = _controller.tasks.single.id;
+    final status = find.byKey(const ValueKey<String>('task-status-hit')).first;
+    await tester.tap(status);
+    await _pumpUntil(
+      tester,
+      () =>
+          _controller.tasks.singleWhere((task) => task.id == taskId).status ==
+          PlannerEntityStatus.completed,
+    );
+    expect(find.text('Undo'), findsOneWidget);
+    await tester.tap(find.text('Undo'));
+    await _pumpUntil(
+      tester,
+      () =>
+          _controller.tasks.singleWhere((task) => task.id == taskId).status ==
+          PlannerEntityStatus.active,
+    );
+    expect(
+      PlannerTaskProgress.fromEntity(
+        _controller.tasks.singleWhere((task) => task.id == taskId),
+      ).state,
+      PlannerTaskProgressState.pending,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   for (final width in <double>[390, 800, 1366]) {
     testWidgets(
       'Today next semantics follows stored completion at ${width.toInt()}dp',

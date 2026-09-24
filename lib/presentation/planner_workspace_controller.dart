@@ -49,6 +49,7 @@ class PlannerWorkspaceController extends ChangeNotifier {
   bool _shutdownRequested = false;
   int _todayProjectionRevision = 0;
   Future<void> _taskProgressSerial = Future<void>.value();
+  final Map<String, String> _latestTaskProgressMutation = <String, String>{};
   Future<void> _habitLogSerial = Future<void>.value();
   Future<void> _focusSerial = Future<void>.value();
   PerfectTodayWidgetSettings _todayWidgetSettings =
@@ -249,11 +250,64 @@ class PlannerWorkspaceController extends ChangeNotifier {
   /// The task check control is intentionally richer than a boolean checkbox:
   /// empty → done → not done → partial → empty. Calls are serialized so rapid
   /// taps cannot read the same stale state and collapse part of the cycle.
-  Future<PlannerTaskProgress> cycleTaskProgress(PlannerEntity entity) =>
+  /// Each mutation returns the prior/current outcome so the host can undo one
+  /// exact step without guessing which tap finished last.
+  Future<PlannerTaskProgress> cycleTaskProgress(PlannerEntity entity) async =>
+      (await cycleTaskProgressWithReceipt(entity)).current;
+
+  Future<PlannerTaskProgressChange> cycleTaskProgressWithReceipt(
+    PlannerEntity entity,
+  ) => _serializeTaskProgress(() async {
+    final mutationId = _uuid.v4();
+    final localDay = _dateOnly(_now().toLocal());
+    final previous = await _taskProgressService.readEntityProgress(
+      entityId: entity.id,
+      localDay: localDay,
+    );
+    if (previous == null) {
+      throw StateError('Task is no longer available locally.');
+    }
+    final current = await _taskProgressService.cycle(
+      entity,
+      mutationId: mutationId,
+      localDay: localDay,
+      source: 'app',
+    );
+    await _finalizeTaskProgressMutation();
+    _latestTaskProgressMutation[entity.id] = mutationId;
+    return PlannerTaskProgressChange(
+      entityId: entity.id,
+      mutationId: mutationId,
+      previous: previous,
+      current: current,
+      localDay: localDay,
+    );
+  });
+
+  /// Restores the exact prior outcome only when [change] is still the latest
+  /// local state. A stale receipt is rejected so an Undo can never overwrite a
+  /// newer tap, widget action, or remote convergence.
+  Future<bool> undoTaskProgress(PlannerTaskProgressChange change) =>
       _serializeTaskProgress(() async {
-        final result = await _taskProgressService.cycle(entity);
+        final current = await _taskProgressService.readEntityProgress(
+          entityId: change.entityId,
+          localDay: change.localDay,
+        );
+        if (current == null || current != change.current) return false;
+        if (_latestTaskProgressMutation[change.entityId] != change.mutationId) {
+          return false;
+        }
+        final undoMutationId = _uuid.v4();
+        await _taskProgressService.setProgressById(
+          entityId: change.entityId,
+          progress: change.previous,
+          mutationId: undoMutationId,
+          localDay: change.localDay,
+          source: 'task_undo',
+        );
+        _latestTaskProgressMutation[change.entityId] = undoMutationId;
         await _finalizeTaskProgressMutation();
-        return result;
+        return true;
       });
 
   Future<PlannerTaskProgress> setTaskProgress(
@@ -263,13 +317,15 @@ class PlannerWorkspaceController extends ChangeNotifier {
     DateTime? localDay,
     String source = 'app',
   }) => _serializeTaskProgress(() async {
+    final resolvedMutationId = mutationId ?? _uuid.v4();
     final result = await _taskProgressService.setProgress(
       entity,
       progress: progress,
-      mutationId: mutationId,
+      mutationId: resolvedMutationId,
       localDay: localDay,
       source: source,
     );
+    _latestTaskProgressMutation[entity.id] = resolvedMutationId;
     await _finalizeTaskProgressMutation();
     return result;
   });
@@ -277,7 +333,12 @@ class PlannerWorkspaceController extends ChangeNotifier {
   Future<PlannerTaskProgress> taskProgressForDay(
     PlannerEntity entity, {
     DateTime? localDay,
-  }) => _taskProgressService.readProgress(entity, localDay: localDay);
+  }) async =>
+      await _taskProgressService.readEntityProgress(
+        entityId: entity.id,
+        localDay: localDay,
+      ) ??
+      (throw StateError('Task is no longer available locally.'));
 
   Future<PlannerTodayEligibility> todayEligibilityForDay(
     PlannerEntity entity, {

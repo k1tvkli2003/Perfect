@@ -589,6 +589,96 @@ void main() {
   });
 
   test(
+    'task outcome receipts preserve each prior state under rapid taps',
+    () async {
+      final database = PlannerDatabase(NativeDatabase.memory());
+      final local = PlannerLocalStore(database);
+      final controller = PlannerWorkspaceController(
+        local,
+        PlannerSyncRepository(
+          local,
+          _DisconnectedGateway(),
+          ownerId: 'controller-owner',
+          deviceId: '11111111-1111-4111-8111-111111111111',
+        ),
+        ownerId: 'controller-owner',
+        now: () => DateTime.utc(2026, 7, 27, 9),
+      );
+      addTearDown(controller.disposeAsync);
+      await controller.start();
+      await controller.saveEntity(
+        kind: PlannerEntityKind.oneOffTask,
+        payload: defaultPlannerPayload(title: 'Receipt for Undo'),
+      );
+      final task = (await local.readActiveEntities('controller-owner')).single;
+      final first = await controller.cycleTaskProgressWithReceipt(task);
+      expect(first.previous, const PlannerTaskProgress.pending());
+      expect(first.current.state, PlannerTaskProgressState.completed);
+      final second = await controller.cycleTaskProgressWithReceipt(task);
+      expect(second.previous, first.current);
+      expect(second.current.state, PlannerTaskProgressState.missed);
+      expect(await controller.undoTaskProgress(first), isFalse);
+      final unchanged = await controller.taskProgressForDay(task);
+      expect(unchanged.state, PlannerTaskProgressState.missed);
+      expect(unchanged.percent, second.current.percent);
+      expect(await controller.undoTaskProgress(second), isTrue);
+      final restored = await controller.taskProgressForDay(task);
+      expect(restored.state, PlannerTaskProgressState.completed);
+      expect(restored.percent, second.previous.percent);
+      expect(await controller.undoTaskProgress(second), isFalse);
+      final concurrent = await Future.wait([
+        controller.cycleTaskProgressWithReceipt(task),
+        controller.cycleTaskProgressWithReceipt(task),
+      ]);
+      final states =
+          concurrent
+              .map((change) => change.current.state)
+              .toList(growable: false)
+            ..sort((a, b) => a.index.compareTo(b.index));
+      expect(states, <PlannerTaskProgressState>[
+        PlannerTaskProgressState.missed,
+        PlannerTaskProgressState.partial,
+      ]);
+      expect(concurrent[0].previous, concurrent[0].previous.normalized);
+      expect(concurrent[1].previous, concurrent[1].previous.normalized);
+    },
+  );
+
+  test('an exact-value edit invalidates an older Undo receipt', () async {
+    final database = PlannerDatabase(NativeDatabase.memory());
+    final local = PlannerLocalStore(database);
+    final controller = PlannerWorkspaceController(
+      local,
+      PlannerSyncRepository(
+        local,
+        _DisconnectedGateway(),
+        ownerId: 'controller-owner',
+        deviceId: '11111111-1111-4111-8111-111111111111',
+      ),
+      ownerId: 'controller-owner',
+      now: () => DateTime.utc(2026, 7, 27, 9),
+    );
+    addTearDown(controller.disposeAsync);
+    await controller.start();
+    await controller.saveEntity(
+      kind: PlannerEntityKind.oneOffTask,
+      payload: defaultPlannerPayload(title: 'Exact edit'),
+    );
+    final task = (await local.readActiveEntities('controller-owner')).single;
+    final receipt = await controller.cycleTaskProgressWithReceipt(task);
+    await controller.setTaskProgress(
+      task,
+      progress: receipt.current,
+      source: 'app_exact_percent',
+    );
+    expect(await controller.undoTaskProgress(receipt), isFalse);
+    expect(
+      (await controller.taskProgressForDay(task)).state,
+      PlannerTaskProgressState.completed,
+    );
+  });
+
+  test(
     'a recurring outcome immediately republishes the widget projection',
     () async {
       final database = PlannerDatabase(NativeDatabase.memory());
