@@ -6,33 +6,32 @@
 
 ## Current State
 
-### Stage 12 release / Stage 13 design checkpoint — 2026-09-24
+### Stage 13 Today slice — 2026-09-24
 
-Trusted-main run `35910111235` at `846662ed365e12cdf34aec34502b5f8811559b23`
-was rerun as attempt 2. Windows exact-source build/package/signature, Android
-build/checksum, quality, and upgrade/setup proofs passed. Both private build
-transport uploads failed with the exact GitHub error `Artifact storage quota has
-been hit`; publication was skipped. The last private Windows MSIX artifact
-`10286253394` remains unexpired and was not deleted.
+Shared `TaskStatusControl` is implemented and wired into Today through
+`_AgendaCompletionButton`. Runtime and evidence gates passed:
+workspace page goldens 80/80, primitive semantics/geometry tests 3/3, full
+non-golden regression 498/498, native Android preview screenshot/hierarchy,
+analyze/format/diff checks. Pending 0% and partial 60% states are visible on
+`com.k1tvkli2003.perfect.preview`; Tasks/Plan/Detail/widget parity, rollback,
+Undo and broader row consumers remain open.
 
-The guarded retry is exhausted for this run; no third retry is authorized. Account
-inventory showed Perfect has one active 46,897,512-byte artifact, while unrelated
-retained account artifacts consume the shared quota. Deleting Perfect's protected
-upgrade baseline would not be a safe or sufficient fix. A release-only transport
-patch is prepared on branch `feat/stage13-status-prep`: trusted jobs upload the
-three final assets to an exact-commit draft GitHub Release, publish verifies those
-bytes, and a separate PR workflow keeps pull requests unprivileged. Local YAML,
-Bash, PowerShell parse, and diff checks pass. The patch is not yet on `main`; Stage
-12 release/upgrade acceptance remains open until a fresh main run publishes and
-verifies the immutable release.
+Stage 12 release is closed. Main run `35932986938` passed exact-source Windows
+build/package/signature, Android build/checksum, quality, release upload and
+upgrade/setup proofs. Immutable release `v1.1.0-build.2071` targets the merged
+main commit and contains three digest-verified assets. The old private upgrade
+baseline was retained; Actions artifact quota was bypassed with release-only
+transport. Guarded quota retry jobs were removed after verification.
 
-Stage 13 independent design preparation is frozen in
+Stage 13 preview remains frozen in
 `design/07-task-row-stage13/decision.md`: 9 plates, 13 fixture rows,
-38 controls and 5 browser viewport/text-scale checks. Overdue, recurring,
-RTL/mixed-script, long-copy and 200% cases were corrected and visually rechecked. This is static
-design evidence only; Flutter implementation and Stage 13 acceptance remain
-pending the Stage 12 exact-source release gate. No production Dart changed in
-this preparation.
+38 controls and 5 browser viewport/text-scale checks. The Today vertical slice
+now implements the shared primitive. Workspace page goldens pass 80/80, primitive
+semantics/geometry tests pass 3/3, full non-golden regression passes 498/498,
+analyze/format/diff checks pass, and native Android `com.k1tvkli2003.perfect.preview`
+shows pending `0%` and partial `60%` controls with clean hierarchy/screenshot.
+Tasks, Plan, Detail, widget parity, rollback/Undo, and broader row consumers remain
+open; Stage 13 is not closed.
 
 ### Stage 12 integrated checkpoint — 2026-09-23
 

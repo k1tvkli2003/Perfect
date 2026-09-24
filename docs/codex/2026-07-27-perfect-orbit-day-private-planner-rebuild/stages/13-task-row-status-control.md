@@ -1,6 +1,6 @@
 # Stage 13 — Task row and unified status control
 
-Status: preview frozen; implementation pending Stage 12 exact-source release gate
+Status: Stage 13 vertical slice implemented; Today runtime gate passed; Tasks/Plan/Detail/widget parity remains open
 Depends on: Stages 04, 05, 12
 Primary consumers: Today, Tasks, Plan, Detail, widget and accessibility
 
