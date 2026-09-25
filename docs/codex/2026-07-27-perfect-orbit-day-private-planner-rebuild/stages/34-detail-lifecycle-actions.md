@@ -1,6 +1,6 @@
 # Stage 34 — Detail actions and entity lifecycle safety
 
-Status: in progress — explicit Edit separation, context-menu placement, archive
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — explicit Edit separation, context-menu placement, archive
 compatibility naming, duplicate-ID reset, and owner-scoped mutation suites are
 GREEN; confirmation semantics, cross-consumer invalidation, conflict/offline
 replay, and native matrices remain open

@@ -1,6 +1,6 @@
 # Stage 32 — Task detail, status and history
 
-Status: in progress — four-state task control, rapid-tap receipt/order, and
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — four-state task control, rapid-tap receipt/order, and
 responsive wizard edit-return suites are GREEN; derived calendar/stat vectors,
 range-query performance, and visual/semantic matrices remain open
 Depends on: Stage 31 and task occurrence/progress contracts  

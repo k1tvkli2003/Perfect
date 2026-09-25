@@ -1,6 +1,6 @@
 # Stage 31 — Shared view-first entity detail route
 
-Status: in progress — view-first intent matrix (`IR-001`/`IR-002`,
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — view-first intent matrix (`IR-001`/`IR-002`,
 `EntityDetailCoordinator`), entry/isolation suites, and secondary-sheet parity
 are GREEN; full detail route/body/inspector implementation and native matrices
 remain open

@@ -1,6 +1,6 @@
 # Stage 33 — Habit detail, calendar and actionable analytics
 
-Status: in progress — method-aware logging/correction, daily-state outcomes,
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — method-aware logging/correction, daily-state outcomes,
 over-target and legacy-observation folding suites are GREEN; derived metrics,
 calendar encoding, pagination, parity, and keyboard/screen-reader matrices
 remain open

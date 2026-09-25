@@ -1,6 +1,6 @@
 # Stage 35 — Windows inspector, adaptive detail and deep-link continuity
 
-Status: in progress — Windows rail/inspector geometry, adjacent-pane
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — Windows rail/inspector geometry, adjacent-pane
 selection, resizable divider/keyboard, and cold navigation controller suites
 are GREEN; resize-state migration, protocol/widget/notification cold starts,
 duplicate/deleted-link behavior, and high-DPI/native matrices remain open
