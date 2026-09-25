@@ -416,6 +416,15 @@ Do not remove the retained pre-rebuild stash.
   accepted subtitle; full `flutter test --no-pub` 561/561 GREEN; `dart
   analyze` clean. Copy fidelity is string-level only: exact runtime vs
   preview pixel comparison remains open.
+- Typed-query tracer 10 (keyboard/shortcut contract, 2026-09-25, real runs):
+  `lib/planner/domain/planner_task_keyboard.dart` (`PlannerTaskKeyboardState`
+  pure machine). Esc consumes in order: clear search, close Refine, exit
+  selection, then defer to the shell (`consumed: false`). Select-all applies
+  only while the work field has focus. Shift+Arrow extends the stable ID
+  range from the anchor. Space toggles the focused row without moving the
+  anchor. New `test/planner/planner_task_keyboard_test.dart` 6/6 GREEN; full
+  `flutter test --no-pub` 567/567 GREEN; `dart analyze` clean. Wiring into
+  the widget hardware-shortcut path is still open.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
