@@ -172,4 +172,46 @@ void main() {
           'the controller supplies the task-kind snapshot.',
     );
   });
+
+  test('results use deterministic ordering with ID tie-break', () async {
+    PlannerEntity task(String id, String title, String? scheduledAt) =>
+        PlannerEntity(
+          id: id,
+          ownerId: 'owner-a',
+          kind: PlannerEntityKind.oneOffTask,
+          payload: <String, dynamic>{
+            ...defaultPlannerPayload(title: title),
+            if (scheduledAt != null)
+              PlannerPayloadKeys.timing: <String, dynamic>{
+                'scheduled_at': scheduledAt,
+              },
+          },
+          createdAt: DateTime.utc(2026, 7, 27, 8),
+          updatedAt: DateTime.utc(2026, 7, 27, 8),
+        );
+    final entities = <PlannerEntity>[
+      task('task-unscheduled-b', 'Banana', null),
+      task('task-scheduled-b', 'Banana', '2026-07-28T09:00:00.000Z'),
+      task('task-unscheduled-a2', 'APPLE', null),
+      task('task-scheduled-a', 'apple', '2026-07-28T09:00:00.000Z'),
+      task('task-unscheduled-a1', 'apple', null),
+    ];
+    const expected = <String>[
+      'task-scheduled-a',
+      'task-scheduled-b',
+      'task-unscheduled-a1',
+      'task-unscheduled-a2',
+      'task-unscheduled-b',
+    ];
+
+    final forward = PlannerTaskQuery.builtIn(
+      PlannerTaskQuery.openViewId,
+    ).applyTo(entities);
+    final reversed = PlannerTaskQuery.builtIn(
+      PlannerTaskQuery.openViewId,
+    ).applyTo(entities.reversed.toList(growable: false));
+
+    expect(forward.entityIds, expected);
+    expect(reversed.entityIds, expected);
+  });
 }

@@ -51,11 +51,12 @@ class PlannerTaskQuery {
 
   /// Resolves the query over an entity snapshot into ordered stable IDs.
   ///
-  /// Pure projection: no store access, no mutation. Ordering is stable input
-  /// order; deterministic ordering rules arrive in a later tracer.
+  /// Pure projection: no store access, no mutation. Ordering is deterministic
+  /// (scheduled first by `scheduled_at`, then case-insensitive title, then
+  /// stable ID tie-break), so any input order settles to the same result.
   PlannerTaskQueryResult applyTo(List<PlannerEntity> entities) {
     final normalizedNeedle = _normalizeSearch(text);
-    final ids = <String>[];
+    final matched = <PlannerEntity>[];
     for (final entity in entities) {
       if (kinds.isNotEmpty && !kinds.contains(entity.kind)) continue;
       if (!_matchesView(entity)) continue;
@@ -63,12 +64,33 @@ class PlannerTaskQuery {
           !_matchesSearch(entity, normalizedNeedle)) {
         continue;
       }
-      ids.add(entity.id);
+      matched.add(entity);
     }
+    matched.sort(_compareDeterministic);
+    final ids = <String>[for (final entity in matched) entity.id];
     return PlannerTaskQueryResult(
       entityIds: List<String>.unmodifiable(ids),
       totalCount: ids.length,
     );
+  }
+
+  /// Deterministic ordering: scheduled rows first (earliest `scheduled_at`),
+  /// then case-insensitive title, then stable ID. Unscheduled rows sort after
+  /// every scheduled row regardless of title.
+  static int _compareDeterministic(PlannerEntity a, PlannerEntity b) {
+    final aScheduled = a.scheduledAt;
+    final bScheduled = b.scheduledAt;
+    if (aScheduled != null || bScheduled != null) {
+      if (aScheduled == null) return 1;
+      if (bScheduled == null) return -1;
+      final scheduled = aScheduled.compareTo(bScheduled);
+      if (scheduled != 0) return scheduled;
+    }
+    final title = _normalizeSearch(
+      a.title,
+    ).compareTo(_normalizeSearch(b.title));
+    if (title != 0) return title;
+    return a.id.compareTo(b.id);
   }
 
   bool _matchesView(PlannerEntity entity) => switch (viewId) {

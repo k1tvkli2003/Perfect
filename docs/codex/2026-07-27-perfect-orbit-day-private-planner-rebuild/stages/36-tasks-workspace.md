@@ -352,6 +352,13 @@ Do not remove the retained pre-rebuild stash.
   `test/presentation/planner_task_query_adoption_test.dart` 4/4 GREEN;
   full `flutter test --no-pub` 541/541 GREEN; `dart analyze` clean on all
   five touched files.
+- Typed-query tracer 3 (deterministic ordering, 2026-09-25, real runs): new
+  RED test `results use deterministic ordering with ID tie-break` (failed
+  before, passed after). `PlannerTaskQuery.applyTo` now sorts matches —
+  scheduled rows first by earliest `scheduled_at`, then case-insensitive
+  title, then stable ID tie-break — independent of input order. Focused
+  query + adoption files 5/5 GREEN; full `flutter test --no-pub` 542/542
+  GREEN; `dart analyze` clean on all five touched files.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
