@@ -1,6 +1,6 @@
 # Stage 41 — Agent-friendly canonical schema and migrations
 
-Status: in progress — migration rollback/recovery, owner-scoped local store,
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — migration rollback/recovery, owner-scoped local store,
 and AI/agent proposal validation domain suites are GREEN; canonical table
 contract, Supabase/RLS, and import/export matrices remain open
 Depends on: Stages 01, 05, 17, 21–29, 31–40  

@@ -1,6 +1,6 @@
 # Stage 45 — Owner settings, diagnostics, backup and recovery
 
-Status: in progress — sync indicator/error semantics, self-connect, secret-key
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — sync indicator/error semantics, self-connect, secret-key
 guard, and reminder/feedback surface suites are GREEN; backup/export/import,
 archive/trash, encrypted containers, recovery ladder, and clean-account proof
 remain open

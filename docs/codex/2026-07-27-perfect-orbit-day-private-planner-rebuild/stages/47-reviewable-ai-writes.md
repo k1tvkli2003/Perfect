@@ -1,6 +1,6 @@
 # Stage 47 — Reviewable and undoable AI planner writes
 
-Status: in progress — typed conversation/proposal parsing, explicit Apply
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — typed conversation/proposal parsing, explicit Apply
 confirmation, local apply receipt, Apply error retention, and Undo-capable
 controller mutation suites are GREEN; coordinator/registry, hash-gated
 confirmation, audit trail, and convergence proof remain open

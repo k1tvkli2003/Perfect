@@ -1,6 +1,6 @@
 # Stage 44 — Sync runtime, background refresh and conflict delivery
 
-Status: in progress — three-state cloud contract, local-first queue behavior,
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — three-state cloud contract, local-first queue behavior,
 bounded retry, realtime-gap recovery intent, and subscription-based Today
 suites are GREEN; background workers, cursor proof, and native conflict
 matrices remain open

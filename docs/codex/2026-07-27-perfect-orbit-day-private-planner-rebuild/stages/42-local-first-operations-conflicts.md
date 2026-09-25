@@ -1,6 +1,6 @@
 # Stage 42 — Local-first operations, causality and conflict correctness
 
-Status: in progress — local-first mutation receipts, unique mutation IDs,
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — local-first mutation receipts, unique mutation IDs,
 operation backoff/retry/dispose, Undo receipts, and AI-confirmation contract
 suites are GREEN; merge/conflict-center parity and multi-device convergence
 remain open

@@ -1,6 +1,6 @@
 # Stage 43 — Private auth, durable session and owner bootstrap
 
-Status: in progress — sign-out/session preservation, migration rollback, and
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — sign-out/session preservation, migration rollback, and
 private boundary scanning suites are GREEN; Supabase key handling, secure
 storage, refresh/revoke flows, and native sign-in matrices remain open
 Depends on: Stages 01, 05, 06–10 and 41  

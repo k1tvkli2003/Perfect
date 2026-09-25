@@ -1,6 +1,6 @@
 # Stage 48 — Responsive, scrollable and actionable Android Today widget
 
-Status: in progress — protocol validation, hidden-title privacy, exact-token
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — protocol validation, hidden-title privacy, exact-token
 comparison, replay/schedule/idempotent bridge, and action reconciliation suites
 are GREEN; native host screenshots, launcher picker, and Quick Add dialog proof
 remain open

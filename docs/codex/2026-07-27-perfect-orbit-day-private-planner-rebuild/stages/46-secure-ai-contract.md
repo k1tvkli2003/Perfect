@@ -1,6 +1,6 @@
 # Stage 46 — Secure Perfect AI conversation contract
 
-Status: in progress — typed turn/proposal/apply parsing, guarded payloads,
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — typed turn/proposal/apply parsing, guarded payloads,
 deterministic replay, final-state persistence, and transcription boundary suites
 are GREEN; server registry/preflight, deployment config, and native matrices
 remain open
