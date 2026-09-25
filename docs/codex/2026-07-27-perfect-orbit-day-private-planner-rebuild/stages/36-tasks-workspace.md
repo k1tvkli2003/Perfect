@@ -389,6 +389,14 @@ Do not remove the retained pre-rebuild stash.
   `Work`), project split, schedule day key. Focused query + saved-view +
   adoption files 13/13 GREEN; full `flutter test --no-pub` 550/550 GREEN;
   `dart analyze` clean.
+- Typed-query tracer 7 (stable-ID selection, 2026-09-25, real runs):
+  `lib/planner/domain/planner_task_selection.dart` (`PlannerTaskSelection`:
+  toggle, selectAll/selectVisible scoped by eligibility, index-free
+  `selectRange` walking ordered IDs either direction with unknown anchors
+  returning unchanged, `prune` with removed-IDs + announcement summary,
+  pure `previewBulk` eligible/skipped split) + new
+  `test/planner/planner_task_selection_test.dart` 5/5 GREEN; full
+  `flutter test --no-pub` 555/555 GREEN; `dart analyze` clean.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
