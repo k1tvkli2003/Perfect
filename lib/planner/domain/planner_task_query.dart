@@ -57,13 +57,21 @@ class PlannerTaskQuery {
   PlannerTaskQueryResult applyTo(List<PlannerEntity> entities) {
     final normalizedNeedle = _normalizeSearch(text);
     final matched = <PlannerEntity>[];
+    final facets = <String, int>{
+      for (final viewId in builtInViewIds) viewId: 0,
+    };
     for (final entity in entities) {
       if (kinds.isNotEmpty && !kinds.contains(entity.kind)) continue;
-      if (!_matchesView(entity)) continue;
       if (normalizedNeedle.isNotEmpty &&
           !_matchesSearch(entity, normalizedNeedle)) {
         continue;
       }
+      for (final viewId in builtInViewIds) {
+        if (_matchesViewId(viewId, entity)) {
+          facets[viewId] = facets[viewId]! + 1;
+        }
+      }
+      if (!_matchesView(entity)) continue;
       matched.add(entity);
     }
     matched.sort(_compareDeterministic);
@@ -71,6 +79,7 @@ class PlannerTaskQuery {
     return PlannerTaskQueryResult(
       entityIds: List<String>.unmodifiable(ids),
       totalCount: ids.length,
+      facetCounts: Map<String, int>.unmodifiable(facets),
     );
   }
 
@@ -93,7 +102,12 @@ class PlannerTaskQuery {
     return a.id.compareTo(b.id);
   }
 
-  bool _matchesView(PlannerEntity entity) => switch (viewId) {
+  bool _matchesView(PlannerEntity entity) => _matchesViewId(viewId, entity);
+
+  static bool _matchesViewId(
+    String viewId,
+    PlannerEntity entity,
+  ) => switch (viewId) {
     inboxViewId =>
       entity.status == PlannerEntityStatus.active && entity.scheduledAt == null,
     openViewId => entity.status == PlannerEntityStatus.active,
@@ -121,13 +135,16 @@ class PlannerTaskQuery {
 
 /// The resolved result of a [PlannerTaskQuery].
 ///
-/// Later tracers add group descriptors, facet counts, source revision and
-/// continuation cursors. This tracer carries only ordered stable IDs plus
-/// the total count, which is all the widget needs to replace its local list.
+/// Later tracers add group descriptors, source revision and continuation
+/// cursors. This tracer carries ordered stable IDs plus the total count and
+/// per-view facet counts (computed under the same kind/text scope), which
+/// lets the workspace crown show result counts for every view from ONE
+/// shared projection instead of re-filtering per tab.
 class PlannerTaskQueryResult {
   const PlannerTaskQueryResult({
     required this.entityIds,
     required this.totalCount,
+    required this.facetCounts,
   });
 
   /// Ordered stable entity IDs matching the query.
@@ -135,4 +152,7 @@ class PlannerTaskQueryResult {
 
   /// Total matches before any pagination (no pagination yet).
   final int totalCount;
+
+  /// Per built-in view ID: matches under the same kind/text scope.
+  final Map<String, int> facetCounts;
 }

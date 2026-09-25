@@ -214,4 +214,34 @@ void main() {
     expect(forward.entityIds, expected);
     expect(reversed.entityIds, expected);
   });
+
+  test(
+    'result carries per-view facet counts under the same kind/text scope',
+    () async {
+      await seedTasks();
+      final entities = await store.readActiveEntities('owner-a');
+
+      final open = PlannerTaskQuery.builtIn(
+        PlannerTaskQuery.openViewId,
+      ).applyTo(entities);
+      expect(open.facetCounts, <String, int>{
+        PlannerTaskQuery.inboxViewId: 1,
+        PlannerTaskQuery.openViewId: 2,
+        PlannerTaskQuery.scheduledViewId: 1,
+        PlannerTaskQuery.completedViewId: 1,
+      });
+
+      final scoped = const PlannerTaskQuery(
+        viewId: PlannerTaskQuery.openViewId,
+        text: 'milk',
+      ).applyTo(entities);
+      expect(scoped.entityIds, <String>['task-inbox']);
+      expect(scoped.facetCounts, <String, int>{
+        PlannerTaskQuery.inboxViewId: 1,
+        PlannerTaskQuery.openViewId: 1,
+        PlannerTaskQuery.scheduledViewId: 0,
+        PlannerTaskQuery.completedViewId: 0,
+      });
+    },
+  );
 }

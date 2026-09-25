@@ -359,6 +359,13 @@ Do not remove the retained pre-rebuild stash.
   title, then stable ID tie-break — independent of input order. Focused
   query + adoption files 5/5 GREEN; full `flutter test --no-pub` 542/542
   GREEN; `dart analyze` clean on all five touched files.
+- Typed-query tracer 4 (facet counts, 2026-09-25, real runs): new GREEN
+  test `result carries per-view facet counts under the same kind/text
+  scope`. `PlannerTaskQueryResult.facetCounts` maps every built-in view ID
+  to its matches under the SAME kind/text scope, so the workspace crown
+  reads counts from ONE shared projection instead of re-filtering per tab.
+  Focused query + adoption files 6/6 GREEN; full `flutter test --no-pub`
+  543/543 GREEN; `dart analyze` clean.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
