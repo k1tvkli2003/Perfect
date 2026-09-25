@@ -424,7 +424,17 @@ Do not remove the retained pre-rebuild stash.
   range from the anchor. Space toggles the focused row without moving the
   anchor. New `test/planner/planner_task_keyboard_test.dart` 6/6 GREEN; full
   `flutter test --no-pub` 567/567 GREEN; `dart analyze` clean. Wiring into
-  the widget hardware-shortcut path is still open.
+ the widget hardware-shortcut path is still open.
+- Typed-query tracer 11 (keyboard wiring adapter, 2026-09-26, real runs):
+  `applyTasksKeyboardEvent` is the only bridge from live Tasks values
+  (search text, Refine disclosure, selection, ordered IDs, work-field focus)
+  into `PlannerTaskKeyboardState`. `_TasksPageState.handleTasksKey` applies
+  the returned search/Refine state and reports `consumed` so the shell only
+  sees Esc when the machine defers. New
+  `test/planner/planner_tasks_keyboard_wiring_test.dart` 3/3 GREEN; focused
+  keyboard + wiring + adoption 10/10 GREEN; full `flutter test --no-pub`
+  570/570 GREEN; `dart analyze` clean. Selection/range/Space still have no
+  visible selection UI; pixel Copy comparison remains open.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)

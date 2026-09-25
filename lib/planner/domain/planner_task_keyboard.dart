@@ -113,3 +113,29 @@ class PlannerTaskKeyboardState {
     consumed: consumed ?? this.consumed,
   );
 }
+
+/// Widget-side adapter for the Tasks keyboard machine.
+///
+/// The page owns search text, Refine disclosure, selection and focus. This
+/// function is the only bridge from those live values into
+/// [PlannerTaskKeyboardState], so the widget never reimplements Esc order,
+/// select-all scope, range extension or Space toggle.
+PlannerTaskKeyboardState applyTasksKeyboardEvent({
+  required PlannerTaskKeyEvent event,
+  required String searchText,
+  required bool refineOpen,
+  required Set<String> selectedIds,
+  required List<String> orderedIds,
+  bool workFieldFocused = false,
+  String? anchorId,
+  String? focusedId,
+  PlannerTaskArrowDirection direction = PlannerTaskArrowDirection.down,
+}) => PlannerTaskKeyboardState(
+  searchText: searchText,
+  refineOpen: refineOpen,
+  selectedIds: selectedIds,
+  orderedIds: orderedIds,
+  workFieldFocused: workFieldFocused,
+  anchorId: anchorId,
+  focusedId: focusedId,
+).handle(event, direction: direction);

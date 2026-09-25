@@ -12,6 +12,7 @@ import 'package:perfect/feedback/ready_feedback_capture.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_formula.dart';
 import 'package:perfect/planner/domain/planner_task_query.dart';
+import 'package:perfect/planner/domain/planner_task_keyboard.dart';
 import 'package:perfect/planner/domain/planner_tasks_copy.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
@@ -4305,11 +4306,38 @@ class _TasksPageState extends State<_TasksPage> {
   _TaskFilter _filter = _TaskFilter.active;
   _TaskKindFilter _kindFilter = _TaskKindFilter.all;
   bool _filtersExpanded = false;
+  final _workFocusNode = FocusNode();
 
   @override
   void dispose() {
     _search.dispose();
+    _workFocusNode.dispose();
     super.dispose();
+  }
+
+  /// Shared keyboard entry for the Tasks surface: the page feeds its live
+  /// search/Refine/selection/focus values into the pure
+  /// [PlannerTaskKeyboardState] machine and applies the returned state. Only
+  /// `consumed: false` defers to the shell.
+  bool handleTasksKey(PlannerTaskKeyEvent event) {
+    final orderedIds = widget.controller.tasks
+        .map((entity) => entity.id)
+        .toList(growable: false);
+    final applied = applyTasksKeyboardEvent(
+      event: event,
+      searchText: _search.text,
+      refineOpen: _filtersExpanded,
+      selectedIds: const <String>{},
+      orderedIds: orderedIds,
+      workFieldFocused: _workFocusNode.hasFocus,
+    );
+    if (applied.searchText != _search.text) {
+      _search.text = applied.searchText;
+    }
+    if (applied.refineOpen != _filtersExpanded || applied.consumed) {
+      setState(() => _filtersExpanded = applied.refineOpen);
+    }
+    return applied.consumed;
   }
 
   @override
@@ -4340,52 +4368,62 @@ class _TasksPageState extends State<_TasksPage> {
         .map(widget.controller.entityById)
         .whereType<PlannerEntity>()
         .toList(growable: false);
-    return _PageScrollFrame(
-      scrollKey: const ValueKey<String>('perfect-tasks-scroll'),
-      children: [
-        _PageTitle(
-          title: PlannerTasksCopy.defaultTitle,
-          subtitle: PlannerTasksCopy.defaultSubtitle,
-          onAdd: widget.onAdd,
-        ),
-        const SizedBox(height: PerfectSpace.md),
-        _TaskFilterDeck(
-          search: _search,
-          filter: _filter,
-          kindFilter: _kindFilter,
-          resultCount: tasks.length,
-          expanded: _filtersExpanded,
-          onSearchChanged: () => setState(() {}),
-          onFilterChanged: (value) => setState(() => _filter = value),
-          onKindChanged: (value) => setState(() => _kindFilter = value),
-          onToggleExpanded: () =>
-              setState(() => _filtersExpanded = !_filtersExpanded),
-        ),
-        const SizedBox(height: PerfectSpace.md),
-        if (tasks.isEmpty)
-          _EmptyState(
-            icon: _filter == _TaskFilter.completed
-                ? Icons.celebration_outlined
-                : Icons.inbox_outlined,
-            title: _search.text.trim().isEmpty
-                ? _taskEmptyTitle(_filter)
-                : 'Nothing matches that search.',
-            body: _search.text.trim().isEmpty
-                ? _taskEmptyBody(_filter)
-                : 'Try a title, note, or category you used before.',
-            actionLabel: 'Create task',
-            onAction: widget.onAdd,
-          )
-        else
-          ...tasks.map(
-            (entity) => _AgendaRow(
-              entity: entity,
-              controller: widget.controller,
-              onInspect: widget.onInspect,
-              showKind: true,
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+          if (handleTasksKey(PlannerTaskKeyEvent.escape)) return;
+        },
+      },
+      child: Focus(
+        focusNode: _workFocusNode,
+        child: _PageScrollFrame(
+          scrollKey: const ValueKey<String>('perfect-tasks-scroll'),
+          children: [
+            _PageTitle(
+              title: PlannerTasksCopy.defaultTitle,
+              subtitle: PlannerTasksCopy.defaultSubtitle,
+              onAdd: widget.onAdd,
             ),
-          ),
-      ],
+            const SizedBox(height: PerfectSpace.md),
+            _TaskFilterDeck(
+              search: _search,
+              filter: _filter,
+              kindFilter: _kindFilter,
+              resultCount: tasks.length,
+              expanded: _filtersExpanded,
+              onSearchChanged: () => setState(() {}),
+              onFilterChanged: (value) => setState(() => _filter = value),
+              onKindChanged: (value) => setState(() => _kindFilter = value),
+              onToggleExpanded: () =>
+                  setState(() => _filtersExpanded = !_filtersExpanded),
+            ),
+            const SizedBox(height: PerfectSpace.md),
+            if (tasks.isEmpty)
+              _EmptyState(
+                icon: _filter == _TaskFilter.completed
+                    ? Icons.celebration_outlined
+                    : Icons.inbox_outlined,
+                title: _search.text.trim().isEmpty
+                    ? _taskEmptyTitle(_filter)
+                    : 'Nothing matches that search.',
+                body: _search.text.trim().isEmpty
+                    ? _taskEmptyBody(_filter)
+                    : 'Try a title, note, or category you used before.',
+                actionLabel: 'Create task',
+                onAction: widget.onAdd,
+              )
+            else
+              ...tasks.map(
+                (entity) => _AgendaRow(
+                  entity: entity,
+                  controller: widget.controller,
+                  onInspect: widget.onInspect,
+                  showKind: true,
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
