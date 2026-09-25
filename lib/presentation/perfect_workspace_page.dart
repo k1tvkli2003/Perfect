@@ -13,6 +13,7 @@ import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_formula.dart';
 import 'package:perfect/planner/domain/planner_task_query.dart';
 import 'package:perfect/planner/domain/planner_task_keyboard.dart';
+import 'package:perfect/planner/domain/planner_task_selection.dart';
 import 'package:perfect/planner/domain/planner_tasks_copy.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
@@ -4307,6 +4308,12 @@ class _TasksPageState extends State<_TasksPage> {
   _TaskKindFilter _kindFilter = _TaskKindFilter.all;
   bool _filtersExpanded = false;
   final _workFocusNode = FocusNode();
+  PlannerTasksSelectionSurface _selection =
+      const PlannerTasksSelectionSurface();
+
+  void _toggleTaskSelection(String id) {
+    setState(() => _selection = _selection.toggle(id));
+  }
 
   @override
   void dispose() {
@@ -4327,7 +4334,7 @@ class _TasksPageState extends State<_TasksPage> {
       event: event,
       searchText: _search.text,
       refineOpen: _filtersExpanded,
-      selectedIds: const <String>{},
+      selectedIds: _selection.selectedIds,
       orderedIds: orderedIds,
       workFieldFocused: _workFocusNode.hasFocus,
     );
@@ -4413,15 +4420,83 @@ class _TasksPageState extends State<_TasksPage> {
                 onAction: widget.onAdd,
               )
             else
-              ...tasks.map(
-                (entity) => _AgendaRow(
-                  entity: entity,
-                  controller: widget.controller,
-                  onInspect: widget.onInspect,
-                  showKind: true,
+              for (final entity in tasks)
+                _TaskSelectionRow(
+                  selected: _selection.isSelected(entity.id),
+                  onToggle: () => _toggleTaskSelection(entity.id),
+                  child: _AgendaRow(
+                    entity: entity,
+                    controller: widget.controller,
+                    onInspect: widget.onInspect,
+                    showKind: true,
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TaskSelectionRow extends StatelessWidget {
+  const _TaskSelectionRow({
+    required this.selected,
+    required this.onToggle,
+    required this.child,
+  });
+
+  final bool selected;
+  final VoidCallback onToggle;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      selected: selected,
+      label: selected
+          ? 'Selected task. Activate to deselect.'
+          : 'Task. Activate to select.',
+      child: GestureDetector(
+        onLongPress: onToggle,
+        child: AnimatedContainer(
+          duration: PerfectMotion.responsive(context, PerfectMotion.quick),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected ? scheme.primary : Colors.transparent,
+              width: selected ? 2 : 0,
+            ),
+          ),
+          child: Stack(
+            children: [
+              child,
+              PositionedDirectional(
+                top: 6,
+                end: 6,
+                child: InkWell(
+                  key: ValueKey<String>(
+                    'task-select-${selected ? 'on' : 'off'}',
+                  ),
+                  onTap: onToggle,
+                  child: Semantics(
+                    button: true,
+                    selected: selected,
+                    label: selected ? 'Deselect task' : 'Select task',
+                    child: Icon(
+                      selected
+                          ? Icons.check_circle_rounded
+                          : Icons.circle_outlined,
+                      size: 24,
+                      color: selected
+                          ? scheme.primary
+                          : scheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -435,6 +435,18 @@ Do not remove the retained pre-rebuild stash.
   keyboard + wiring + adoption 10/10 GREEN; full `flutter test --no-pub`
   570/570 GREEN; `dart analyze` clean. Selection/range/Space still have no
   visible selection UI; pixel Copy comparison remains open.
+- Typed-query tracer 12 (visible selection surface, 2026-09-26, real runs):
+  `PlannerTasksSelectionSurface` holds exactly one stable-ID set for the
+  Tasks rows: row tap/long-press toggles one ID, `alignTo` keeps it across
+  result reorder and drops IDs that left the set with an announcement.
+  `_TasksPageState` owns one surface, passes live IDs into the keyboard
+  machine, and renders `_TaskSelectionRow` (select toggle + selected ring +
+  selection semantics) around each `_AgendaRow`. New
+  `test/planner/planner_tasks_selection_surface_test.dart` 3/3 GREEN. One
+  motion-vocabulary regression (`Duration(milliseconds: 160)` in the new row)
+  was RED then fixed to `PerfectMotion.responsive(context,
+  PerfectMotion.quick)`; full `flutter test --no-pub` 573/573 GREEN; `dart
+  analyze` clean. Bulk action surface and pixel Copy comparison remain open.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)

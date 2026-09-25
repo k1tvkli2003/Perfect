@@ -158,3 +158,53 @@ class PlannerBulkPreview {
   int get eligibleCount => eligibleIds.length;
   int get skippedCount => skippedIds.length;
 }
+
+/// Visible-selection state for the Tasks result rows (tracer 12).
+///
+/// The page keeps exactly one of these. Row taps toggle one stable ID;
+/// [alignTo] keeps the selection keyed by ID across reorders and drops IDs
+/// that left the current result set, reporting what changed for the
+/// announcement surface. No list index is ever stored.
+class PlannerTasksSelectionSurface {
+  const PlannerTasksSelectionSurface({
+    this.selectedIds = const <String>{},
+    this.removedIds = const <String>{},
+  });
+
+  final Set<String> selectedIds;
+  final Set<String> removedIds;
+
+  bool isSelected(String id) => selectedIds.contains(id);
+
+  PlannerTasksSelectionSurface toggle(String id) {
+    final next = Set<String>.from(selectedIds);
+    if (next.contains(id)) {
+      next.remove(id);
+    } else {
+      next.add(id);
+    }
+    return PlannerTasksSelectionSurface(selectedIds: next);
+  }
+
+  PlannerTasksSelectionSurface alignTo(List<String> orderedIds) {
+    final current = Set<String>.from(orderedIds);
+    final kept = <String>{};
+    final removed = <String>{};
+    for (final id in selectedIds) {
+      if (current.contains(id)) {
+        kept.add(id);
+      } else {
+        removed.add(id);
+      }
+    }
+    return PlannerTasksSelectionSurface(selectedIds: kept, removedIds: removed);
+  }
+
+  String get announcement => switch (removedIds.length) {
+    0 => 'Selection unchanged.',
+    1 => '1 selected item is no longer available and was removed.',
+    _ =>
+      '${removedIds.length} selected items are no longer available '
+          'and were removed.',
+  };
+}
