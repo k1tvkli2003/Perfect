@@ -458,6 +458,21 @@ Do not remove the retained pre-rebuild stash.
   3/3 GREEN; full `flutter test --no-pub` 576/576 GREEN; `dart analyze`
   clean. The receipt is domain-only: no bulk action surface in the Tasks UI
   yet, and pixel Copy comparison remains open.
+- Typed-query tracer 14 (controller bulk execution, 2026-09-26, real runs):
+  `PlannerWorkspaceController.applyBulkReceipt` executes a frozen
+  `PlannerTasksBulkReceipt` against exactly its previewed eligible IDs: rows
+  are re-fetched owner-scoped, `complete`/`reopen` flow through the existing
+  task-progress mutation path, `archive`/`delete` through `softDeleteEntity`,
+  `restore` through `restoreEntity`, `schedule`/`move` stay skipped until the
+  Refine surface exists. Gone rows stay skipped with their reason; keys are
+  UUID v5 (the store rejects any other mutation-ID shape — two RED rounds
+  first proved the text-key and hand-rolled UUID shapes fail). Returns
+  `PlannerTasksBulkReport` with batchId, applied/skipped IDs and reasons.
+  New `test/presentation/planner_tasks_bulk_execution_test.dart` 2/2 GREEN
+  (bulk complete re-projects with progress actually completed; bulk archive
+  tombstones and leaves the active projection); full
+  `flutter test --no-pub` 578/578 GREEN; `dart analyze` clean. No bulk
+  action surface in the Tasks UI yet; pixel Copy comparison remains open.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)

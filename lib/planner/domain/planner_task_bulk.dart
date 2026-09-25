@@ -1,10 +1,12 @@
-/// Stage 36 bulk-action contract: preview first, then execute with one
-/// idempotency key per entity and a batch receipt.
-///
-/// The plan is a pure preview: it splits the ordered selection into eligible
-/// vs skipped rows and issues no mutation keys. [PlannerTasksBulkPlan.execute]
-/// freezes that preview into a receipt carrying a `batchId`, per-entity
-/// idempotency keys, skipped reasons and Undo eligibility.
+import 'package:uuid/uuid.dart';
+
+// Stage 36 bulk-action contract: preview first, then execute with one
+// idempotency key per entity and a batch receipt.
+//
+// The plan is a pure preview: it splits the ordered selection into eligible
+// vs skipped rows and issues no mutation keys. [PlannerTasksBulkPlan.execute]
+// freezes that preview into a receipt carrying a `batchId`, per-entity
+// idempotency keys, skipped reasons and Undo eligibility.
 enum PlannerTasksBulkAction {
   complete,
   reopen,
@@ -21,6 +23,12 @@ String _nextBulkBatchId() {
   _bulkBatchCounter += 1;
   return 'bulk-${DateTime.now().microsecondsSinceEpoch}-$_bulkBatchCounter';
 }
+
+/// One idempotency key per entity, deterministic for a batch. UUID v5 so
+/// the store's RFC-UUID gate accepts it; retrying the same receipt reuses
+/// the same key instead of duplicating the mutation.
+String _bulkKey({required String batchId, required String entityId}) =>
+    const Uuid().v5(Namespace.url.value, 'perfect:bulk:$batchId:$entityId');
 
 /// Builds a preview-only bulk plan over [orderedIds] filtered by
 /// [selectedIds]. Eligibility is decided by [isEligible]; skipped rows carry
@@ -77,11 +85,14 @@ class PlannerTasksBulkPlan {
   int get skippedCount => skippedIds.length;
 
   /// Freezes the preview into an executable receipt for [action], issuing
-  /// exactly one idempotency key per eligible entity.
+  /// exactly one idempotency key per eligible entity. Keys are RFC UUIDs
+  /// (v5 over batch + entity) because the local store rejects any other
+  /// mutation-ID shape.
   PlannerTasksBulkReceipt execute({required PlannerTasksBulkAction action}) {
     final batchId = _nextBulkBatchId();
     final perEntityKeys = <String, String>{
-      for (final id in eligibleIds) id: '$batchId::$id',
+      for (final id in eligibleIds)
+        id: _bulkKey(batchId: batchId, entityId: id),
     };
     return PlannerTasksBulkReceipt._(
       batchId: batchId,
@@ -118,6 +129,31 @@ class PlannerTasksBulkReceipt {
   final Map<String, String> skippedReasons;
 
   int get eligibleCount => appliedIds.length;
+  int get skippedCount => skippedIds.length;
+
+  /// Undo is offered only when the batch actually applied something.
+  bool get undoEligible => appliedIds.isNotEmpty;
+}
+
+/// Report of one controller-executed bulk receipt: what applied, what was
+/// skipped, and why. The controller owns this report; the domain receipt
+/// stays the frozen preview the batch was built from.
+class PlannerTasksBulkReport {
+  const PlannerTasksBulkReport({
+    required this.batchId,
+    required this.action,
+    required this.appliedIds,
+    required this.skippedIds,
+    required this.skippedReasons,
+  });
+
+  final String batchId;
+  final PlannerTasksBulkAction action;
+  final List<String> appliedIds;
+  final List<String> skippedIds;
+  final Map<String, String> skippedReasons;
+
+  int get appliedCount => appliedIds.length;
   int get skippedCount => skippedIds.length;
 
   /// Undo is offered only when the batch actually applied something.

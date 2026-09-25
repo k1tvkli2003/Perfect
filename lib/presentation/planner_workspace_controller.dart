@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
+import 'package:perfect/planner/domain/planner_task_bulk.dart';
 import 'package:perfect/planner/domain/planner_task_query.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_operation.dart';
@@ -490,6 +491,84 @@ class PlannerWorkspaceController extends ChangeNotifier {
   /// Kept as the compatibility name for existing callers. Archiving is a
   /// reversible local tombstone, not a destructive delete.
   Future<void> archiveEntity(PlannerEntity entity) => deleteEntity(entity);
+
+  /// Stage 36 bulk execution: applies a frozen [PlannerTasksBulkReceipt] to
+  /// exactly its previewed eligible IDs through the existing local-first
+  /// mutation paths, then re-projects. Gone rows stay skipped with their
+  /// reason on the report; the outbox replay path is unchanged.
+  Future<PlannerTasksBulkReport> applyBulkReceipt(
+    PlannerTasksBulkReceipt receipt,
+  ) => _serializeTaskProgress(() async {
+    final appliedIds = <String>[];
+    final skippedIds = <String>[...receipt.skippedIds];
+    final skippedReasons = <String, String>{...receipt.skippedReasons};
+    for (final id in receipt.appliedIds) {
+      final key = receipt.perEntityKeys[id];
+      if (key == null) {
+        skippedIds.add(id);
+        skippedReasons[id] = 'Missing idempotency key for this row.';
+        continue;
+      }
+      final entity = await _localStore.readEntity(
+        ownerId: ownerId,
+        entityId: id,
+      );
+      if (entity == null) {
+        skippedIds.add(id);
+        skippedReasons[id] = 'Task is no longer available locally.';
+        continue;
+      }
+      switch (receipt.action) {
+        case PlannerTasksBulkAction.complete:
+          await _taskProgressService.setProgressById(
+            entityId: id,
+            progress: const PlannerTaskProgress(
+              state: PlannerTaskProgressState.completed,
+              percent: 100,
+            ),
+            mutationId: key,
+            source: 'bulk:${receipt.batchId}',
+          );
+        case PlannerTasksBulkAction.reopen:
+          await _taskProgressService.setProgressById(
+            entityId: id,
+            progress: const PlannerTaskProgress.pending(),
+            mutationId: key,
+            source: 'bulk:${receipt.batchId}',
+          );
+        case PlannerTasksBulkAction.archive:
+        case PlannerTasksBulkAction.delete:
+          await _localStore.softDeleteEntity(
+            ownerId: ownerId,
+            entityId: id,
+            mutationId: key,
+          );
+        case PlannerTasksBulkAction.restore:
+          await _localStore.restoreEntity(
+            ownerId: ownerId,
+            entityId: id,
+            mutationId: key,
+          );
+        case PlannerTasksBulkAction.schedule:
+        case PlannerTasksBulkAction.move:
+          skippedIds.add(id);
+          skippedReasons[id] =
+              'Scheduled and move targets need the Refine surface first.';
+          continue;
+      }
+      appliedIds.add(id);
+    }
+    if (appliedIds.isNotEmpty) {
+      await _finalizeTaskProgressMutation();
+    }
+    return PlannerTasksBulkReport(
+      batchId: receipt.batchId,
+      action: receipt.action,
+      appliedIds: List.unmodifiable(appliedIds),
+      skippedIds: List.unmodifiable(skippedIds),
+      skippedReasons: Map.unmodifiable(skippedReasons),
+    );
+  });
 
   Future<void> restoreEntity(PlannerEntity entity) async {
     await _localStore.restoreEntity(ownerId: ownerId, entityId: entity.id);
