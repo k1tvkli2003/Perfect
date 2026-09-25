@@ -403,6 +403,19 @@ Do not remove the retained pre-rebuild stash.
   incl. Persian, grouping; default Open yields zero tokens + `isDefault`).
   New `test/planner/planner_task_query_summary_test.dart` 3/3 GREEN; full
   `flutter test --no-pub` 558/558 GREEN; `dart analyze` clean.
+- Typed-query tracer 9 (Copy fidelity receipt, 2026-09-25, real runs):
+  `lib/planner/domain/planner_tasks_copy.dart` (`PlannerTasksCopy`) holds the
+  exact accepted live-copy strings from `04-copy-manifests/copy.json` for the
+  five pg-tasks pages (titles: Tasks / Search tasks / Filtered tasks / Dense
+  task workspace / Bulk task actions; shared subtitle "Search, filter and act
+  without losing the working context."). `_TasksPageState.build` crown now
+  renders `PlannerTasksCopy.defaultTitle`/`defaultSubtitle` verbatim — the
+  old paraphrase "All open work first. Narrow only when you need to." is
+  gone. New `test/planner/planner_tasks_copy_test.dart` 3/3 GREEN; the three
+  widget assertions in `perfect_workspace_page_test.dart` updated to the
+  accepted subtitle; full `flutter test --no-pub` 561/561 GREEN; `dart
+  analyze` clean. Copy fidelity is string-level only: exact runtime vs
+  preview pixel comparison remains open.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)

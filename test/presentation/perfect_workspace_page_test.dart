@@ -794,7 +794,7 @@ void main() {
       await _sendControlShortcut(tester, LogicalKeyboardKey.digit2);
       await tester.pumpAndSettle();
       expect(
-        find.text('All open work first. Narrow only when you need to.'),
+        find.text('Search, filter and act without losing the working context.'),
         findsOneWidget,
       );
 
@@ -830,7 +830,7 @@ void main() {
         1,
       );
       expect(
-        find.text('All open work first. Narrow only when you need to.'),
+        find.text('Search, filter and act without losing the working context.'),
         findsOneWidget,
       );
       expect(tester.takeException(), isNull);
@@ -1254,7 +1254,7 @@ void main() {
         reason: 'Reduced motion swaps pages immediately but retains state.',
       );
       expect(
-        find.text('All open work first. Narrow only when you need to.'),
+        find.text('Search, filter and act without losing the working context.'),
         findsOneWidget,
       );
       expect(find.text('Open · All'), findsOneWidget);

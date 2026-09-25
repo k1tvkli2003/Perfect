@@ -12,6 +12,7 @@ import 'package:perfect/feedback/ready_feedback_capture.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_formula.dart';
 import 'package:perfect/planner/domain/planner_task_query.dart';
+import 'package:perfect/planner/domain/planner_tasks_copy.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
@@ -4343,8 +4344,8 @@ class _TasksPageState extends State<_TasksPage> {
       scrollKey: const ValueKey<String>('perfect-tasks-scroll'),
       children: [
         _PageTitle(
-          title: 'Tasks',
-          subtitle: 'All open work first. Narrow only when you need to.',
+          title: PlannerTasksCopy.defaultTitle,
+          subtitle: PlannerTasksCopy.defaultSubtitle,
           onAdd: widget.onAdd,
         ),
         const SizedBox(height: PerfectSpace.md),
