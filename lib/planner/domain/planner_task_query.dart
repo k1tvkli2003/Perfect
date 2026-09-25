@@ -7,15 +7,50 @@ import 'package:perfect/planner/domain/planner_entity.dart';
 /// resolves views plus normalized search over a supplied entity snapshot, so
 /// no consumer applies a second hidden predicate after the result.
 ///
+/// Stable grouping for the Tasks work field: None, Schedule, Project, Area,
+/// Category, Priority and Status. Empty groups are omitted from results; an
+/// explicit `Unassigned` group carries rows with no value rather than an
+/// empty-string heading.
+enum PlannerTaskGroup {
+  none('none'),
+  schedule('schedule'),
+  project('project'),
+  area('area'),
+  category('category'),
+  priority('priority'),
+  status('status');
+
+  const PlannerTaskGroup(this.wireValue);
+
+  final String wireValue;
+
+  /// Unknown wire values fall back to [none]: grouping must never silently
+  /// scatter rows into an unexpected layout.
+  static PlannerTaskGroup fromWire(Object? value) =>
+      PlannerTaskGroup.values.firstWhere(
+        (group) => group.wireValue == value,
+        orElse: () => PlannerTaskGroup.none,
+      );
+}
+
+/// A typed Tasks workspace query: one shared projection contract.
+///
+/// The widget-local `_TaskFilter` path filters an in-memory controller list
+/// inside `build()`. This contract replaces that path: one typed query object
+/// resolves views plus normalized search over a supplied entity snapshot, so
+/// no consumer applies a second hidden predicate after the result.
+///
 /// Scope of this tracer: the four built-in lifecycle views (`inbox`, `open`,
 /// `scheduled`, `completed`) plus Unicode-aware search over the same three
-/// fields the old widget path searched (title, note, category). Sort, group,
-/// saved views, selection and bulk actions arrive in later tracers.
+/// fields the old widget path searched (title, note, category), deterministic
+/// ordering, per-view facet counts and stable grouping. Selection and bulk
+/// actions arrive in later tracers.
 class PlannerTaskQuery {
   const PlannerTaskQuery({
     required this.viewId,
     this.text = '',
     this.kinds = const <PlannerEntityKind>{},
+    this.groupBy = PlannerTaskGroup.none,
     this.unknownFields = const <String, dynamic>{},
   });
 
@@ -41,6 +76,11 @@ class PlannerTaskQuery {
   /// the right snapshot (the controller passes its task-kind snapshot, so the
   /// query stays a pure projection over whatever it receives).
   final Set<PlannerEntityKind> kinds;
+
+  /// Stable grouping for the result. [PlannerTaskGroup.none] keeps the flat
+  /// ordered ID list; any other value also emits [PlannerTaskQueryResult]
+  /// group descriptors in display order (empty groups omitted).
+  final PlannerTaskGroup groupBy;
 
   /// Forward-compatible fields a newer client may have written; preserved
   /// verbatim through [toJson] so older clients never drop newer data.
@@ -81,11 +121,120 @@ class PlannerTaskQuery {
     }
     matched.sort(_compareDeterministic);
     final ids = <String>[for (final entity in matched) entity.id];
+    final groups = _groupMatched(matched);
     return PlannerTaskQueryResult(
       entityIds: List<String>.unmodifiable(ids),
       totalCount: ids.length,
       facetCounts: Map<String, int>.unmodifiable(facets),
+      groups: List<PlannerTaskGroupResult>.unmodifiable(groups),
     );
+  }
+
+  /// Emits group descriptors in display order for [groupBy]. [none] yields
+  /// no groups. Empty groups are omitted; rows without a value land in an
+  /// explicit `Unassigned` group. Members keep the same deterministic
+  /// ordering as the flat result.
+  List<PlannerTaskGroupResult> _groupMatched(List<PlannerEntity> matched) {
+    if (groupBy == PlannerTaskGroup.none || matched.isEmpty) {
+      return const <PlannerTaskGroupResult>[];
+    }
+    final memberIds = <String, List<String>>{};
+    final titles = <String, String>{};
+    for (final entity in matched) {
+      final slot = _groupSlot(entity);
+      (memberIds[slot.key] ??= <String>[]).add(entity.id);
+      titles.putIfAbsent(slot.key, () => slot.title);
+    }
+    final order = _groupDisplayOrder(
+      memberIds.keys.toList(growable: false),
+      titles,
+    );
+    return <PlannerTaskGroupResult>[
+      for (final key in order)
+        PlannerTaskGroupResult(
+          group: groupBy,
+          groupId: key,
+          title: titles[key]!,
+          entityIds: List<String>.unmodifiable(memberIds[key]!),
+        ),
+    ];
+  }
+
+  /// Display order for groups: `Unassigned` always last, everything else in
+  /// case-insensitive title order with stable key tie-break.
+  static List<String> _groupDisplayOrder(
+    List<String> keys,
+    Map<String, String> titles,
+  ) {
+    const unassigned = 'unassigned';
+    final named = keys.where((key) => key != unassigned).toList();
+    named.sort((a, b) {
+      final titleOrder = _normalizeSearch(
+        titles[a]!,
+      ).compareTo(_normalizeSearch(titles[b]!));
+      if (titleOrder != 0) return titleOrder;
+      return a.compareTo(b);
+    });
+    if (keys.contains(unassigned)) named.add(unassigned);
+    return named;
+  }
+
+  /// Groups a matched entity into a stable key plus display title.
+  ///
+  /// Project/area read the first typed relation; category reads the legacy
+  /// `category` payload (falls back to kind label when absent); priority
+  /// reads the legacy `priority` payload (falls back to `normal`).
+  /// Schedule groups by calendar day of `scheduled_at` (UTC date key), with
+  /// unscheduled rows in `Unassigned`. Status groups by lifecycle wire value.
+  _GroupSlot _groupSlot(PlannerEntity entity) {
+    switch (groupBy) {
+      case PlannerTaskGroup.none:
+        return const _GroupSlot('none', 'None');
+      case PlannerTaskGroup.schedule:
+        final scheduled = entity.scheduledAt;
+        if (scheduled == null) {
+          return const _GroupSlot('unassigned', 'Unassigned');
+        }
+        final day = DateTime.utc(
+          scheduled.year,
+          scheduled.month,
+          scheduled.day,
+        );
+        final key =
+            '${day.year.toString().padLeft(4, '0')}-'
+            '${day.month.toString().padLeft(2, '0')}-'
+            '${day.day.toString().padLeft(2, '0')}';
+        return _GroupSlot(key, key);
+      case PlannerTaskGroup.project:
+      case PlannerTaskGroup.area:
+        final want = groupBy == PlannerTaskGroup.project ? 'project' : 'area';
+        for (final relation in entity.relations) {
+          final type = relation['type']?.toString();
+          final target = relation['id']?.toString();
+          if (type == want && target != null && target.isNotEmpty) {
+            return _GroupSlot('relation:$target', target);
+          }
+        }
+        return const _GroupSlot('unassigned', 'Unassigned');
+      case PlannerTaskGroup.category:
+        final raw = safeNullableJsonString(entity.payload['category'])?.trim();
+        if (raw == null || raw.isEmpty) {
+          return _GroupSlot('unassigned', 'Unassigned');
+        }
+        return _GroupSlot('category:${raw.toLowerCase()}', raw);
+      case PlannerTaskGroup.priority:
+        final raw = safeJsonString(
+          entity.payload['priority'],
+          fallback: 'normal',
+        ).trim().toLowerCase();
+        final value = raw.isEmpty ? 'normal' : raw;
+        return _GroupSlot('priority:$value', value);
+      case PlannerTaskGroup.status:
+        return _GroupSlot(
+          'status:${entity.status.wireValue}',
+          entity.status.wireValue,
+        );
+    }
   }
 
   /// Deterministic ordering: scheduled rows first (earliest `scheduled_at`),
@@ -141,6 +290,7 @@ class PlannerTaskQuery {
     'view_id': viewId,
     'text': text,
     'kinds': <String>[for (final kind in kinds) kind.wireValue],
+    'group_by': groupBy.wireValue,
     ...unknownFields,
   };
 
@@ -155,7 +305,7 @@ class PlannerTaskQuery {
         if (match.isNotEmpty) kinds.add(match.first);
       }
     }
-    const knownKeys = <String>{'view_id', 'text', 'kinds'};
+    const knownKeys = <String>{'view_id', 'text', 'kinds', 'group_by'};
     final unknown = <String, dynamic>{};
     for (final entry in json.entries) {
       final key = entry.key.toString();
@@ -170,23 +320,44 @@ class PlannerTaskQuery {
       viewId: viewId,
       text: rawText is String ? rawText : '',
       kinds: kinds,
+      groupBy: PlannerTaskGroup.fromWire(json['group_by']),
       unknownFields: unknown,
     );
   }
 }
 
+/// One stable group descriptor in display order: the group key, its ordered
+/// stable entity IDs (same deterministic ordering as the flat list) and the
+/// row count. Empty groups never appear; rows without a value land in the
+/// explicit `Unassigned` group (`groupId == 'unassigned'`).
+class PlannerTaskGroupResult {
+  const PlannerTaskGroupResult({
+    required this.group,
+    required this.groupId,
+    required this.title,
+    required this.entityIds,
+  });
+
+  final PlannerTaskGroup group;
+  final String groupId;
+  final String title;
+  final List<String> entityIds;
+
+  int get count => entityIds.length;
+}
+
 /// The resolved result of a [PlannerTaskQuery].
 ///
-/// Later tracers add group descriptors, source revision and continuation
-/// cursors. This tracer carries ordered stable IDs plus the total count and
-/// per-view facet counts (computed under the same kind/text scope), which
-/// lets the workspace crown show result counts for every view from ONE
-/// shared projection instead of re-filtering per tab.
+/// Later tracers add source revision and continuation cursors. This tracer
+/// carries ordered stable IDs plus the total count, per-view facet counts
+/// (computed under the same kind/text scope) and stable group descriptors
+/// for [PlannerTaskQuery.groupBy] (empty when grouping is `none`).
 class PlannerTaskQueryResult {
   const PlannerTaskQueryResult({
     required this.entityIds,
     required this.totalCount,
     required this.facetCounts,
+    this.groups = const <PlannerTaskGroupResult>[],
   });
 
   /// Ordered stable entity IDs matching the query.
@@ -197,4 +368,15 @@ class PlannerTaskQueryResult {
 
   /// Per built-in view ID: matches under the same kind/text scope.
   final Map<String, int> facetCounts;
+
+  /// Group descriptors in display order; empty when grouping is `none`.
+  final List<PlannerTaskGroupResult> groups;
+}
+
+/// Internal stable group slot: lookup key plus display title.
+class _GroupSlot {
+  const _GroupSlot(this.key, this.title);
+
+  final String key;
+  final String title;
 }

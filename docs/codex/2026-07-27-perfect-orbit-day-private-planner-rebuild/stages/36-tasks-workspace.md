@@ -376,6 +376,19 @@ Do not remove the retained pre-rebuild stash.
   fall back to `open`, unknown kinds ignored). New
   `test/planner/planner_saved_view_test.dart` 6/6 GREEN; full
   `flutter test --no-pub` 549/549 GREEN; `dart analyze` clean.
+- Typed-query tracer 6 (stable grouping, 2026-09-25, real runs):
+  `PlannerTaskGroup` enum (`none/schedule/project/area/category/priority/
+  status`, unknown wire falls back to `none`) + `PlannerTaskQuery.groupBy`
+  with `group_by` JSON codec + pure `_groupSlot` projection (schedule by UTC
+  calendar day, project/area by first typed relation, category by legacy
+  payload, priority by legacy payload defaulting `normal`, status by
+  lifecycle) + `PlannerTaskQueryResult.groups` descriptors in display order
+  (empty groups omitted, explicit `Unassigned` last, members keep flat
+  deterministic order). New test `grouping emits stable descriptors, omits
+  empties, Unassigned last` covers flat-empty, category merge (`work`/
+  `Work`), project split, schedule day key. Focused query + saved-view +
+  adoption files 13/13 GREEN; full `flutter test --no-pub` 550/550 GREEN;
+  `dart analyze` clean.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)

@@ -244,4 +244,102 @@ void main() {
       });
     },
   );
+
+  test(
+    'grouping emits stable descriptors, omits empties, Unassigned last',
+    () async {
+      PlannerEntity task(
+        String id,
+        String title, {
+        String? scheduledAt,
+        String? category,
+        String? projectId,
+      }) {
+        final extra = <String, dynamic>{};
+        final scheduledValue = scheduledAt;
+        if (scheduledValue != null) {
+          extra[PlannerPayloadKeys.timing] = <String, dynamic>{
+            'scheduled_at': scheduledValue,
+          };
+        }
+        final categoryValue = category;
+        if (categoryValue != null) {
+          extra['category'] = categoryValue;
+        }
+        final projectValue = projectId;
+        if (projectValue != null) {
+          extra[PlannerPayloadKeys.relations] = <Map<String, dynamic>>[
+            <String, dynamic>{'type': 'project', 'id': projectValue},
+          ];
+        }
+        return PlannerEntity(
+          id: id,
+          ownerId: 'owner-a',
+          kind: PlannerEntityKind.oneOffTask,
+          payload: <String, dynamic>{
+            ...defaultPlannerPayload(title: title),
+            ...extra,
+          },
+          createdAt: DateTime.utc(2026, 7, 27, 8),
+          updatedAt: DateTime.utc(2026, 7, 27, 8),
+        );
+      }
+
+      final entities = <PlannerEntity>[
+        task('task-b-work', 'Beta', category: 'work'),
+        task('task-a-work', 'Alpha', category: 'Work'),
+        task('task-c-none', 'Gamma'),
+        task(
+          'task-d-day',
+          'Delta',
+          scheduledAt: '2026-07-28T09:00:00.000Z',
+          projectId: 'project-1',
+        ),
+      ];
+
+      final flat = PlannerTaskQuery.builtIn(
+        PlannerTaskQuery.openViewId,
+      ).applyTo(entities);
+      expect(flat.groups, isEmpty);
+
+      final byCategory = const PlannerTaskQuery(
+        viewId: PlannerTaskQuery.openViewId,
+        groupBy: PlannerTaskGroup.category,
+      ).applyTo(entities);
+      expect(byCategory.groups.map((group) => group.groupId), <String>[
+        'category:work',
+        'unassigned',
+      ]);
+      expect(byCategory.groups.map((group) => group.title), <String>[
+        'Work',
+        'Unassigned',
+      ]);
+      expect(byCategory.groups.first.entityIds, <String>[
+        'task-a-work',
+        'task-b-work',
+      ]);
+      expect(byCategory.groups.last.entityIds, <String>[
+        'task-d-day',
+        'task-c-none',
+      ]);
+
+      final byProject = const PlannerTaskQuery(
+        viewId: PlannerTaskQuery.openViewId,
+        groupBy: PlannerTaskGroup.project,
+      ).applyTo(entities);
+      expect(byProject.groups.map((group) => group.groupId), <String>[
+        'relation:project-1',
+        'unassigned',
+      ]);
+
+      final bySchedule = const PlannerTaskQuery(
+        viewId: PlannerTaskQuery.openViewId,
+        groupBy: PlannerTaskGroup.schedule,
+      ).applyTo(entities);
+      expect(bySchedule.groups.map((group) => group.groupId), <String>[
+        '2026-07-28',
+        'unassigned',
+      ]);
+    },
+  );
 }
