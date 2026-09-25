@@ -2,7 +2,6 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
-import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_task_bulk.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
 import 'package:perfect/planner/sync/planner_sync_repository.dart';

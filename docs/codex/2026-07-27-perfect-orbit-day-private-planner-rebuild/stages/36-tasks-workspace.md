@@ -473,6 +473,22 @@ Do not remove the retained pre-rebuild stash.
   tombstones and leaves the active projection); full
   `flutter test --no-pub` 578/578 GREEN; `dart analyze` clean. No bulk
   action surface in the Tasks UI yet; pixel Copy comparison remains open.
+- Typed-query tracer 15 (bulk action surface widgets, 2026-09-26, real runs):
+  `lib/presentation/tasks_bulk_bar.dart` (owner `ws-bulk-bar`). `TasksBulkBar`
+  is intent-only: counts (selected/eligible/skipped) plus Preview/Clear intents
+  with keys `tasks-bulk-bar`/`tasks-bulk-preview`/`tasks-bulk-clear`, 48dp
+  targets, one semantic owner (`Bulk task actions. <accepted subtitle>` +
+  counts value). `TasksBulkPreviewSheet` lists eligible IDs plus skipped IDs
+  with reasons, then Confirm/Cancel intents (`tasks-bulk-confirm`/
+  `tasks-bulk-cancel`). No controller/store imports — host executes the frozen
+  receipt after Confirm. Motion only via `PerfectMotion.responsive/quick`;
+  copy via `PlannerTasksCopy` (`pg-tasks-bulk` title + shared subtitle).
+  New `test/presentation/tasks_bulk_bar_test.dart` 5/5 GREEN (domain preview +
+  receipt + empty no-op; bar counts/keys/semantics/callbacks; sheet
+  lists/keys/callbacks); full `flutter test --no-pub` 583/583 GREEN; `dart
+  analyze` clean (one unused-import lint found and fixed). Still open: wiring
+  the bar/sheet into `_TasksPageState` (preview sheet open + Confirm executes
+  `applyBulkReceipt` + Undo surface), and pixel Copy comparison.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
