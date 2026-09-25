@@ -366,6 +366,16 @@ Do not remove the retained pre-rebuild stash.
   reads counts from ONE shared projection instead of re-filtering per tab.
   Focused query + adoption files 6/6 GREEN; full `flutter test --no-pub`
   543/543 GREEN; `dart analyze` clean.
+- Typed-query tracer 5 (saved views contract, 2026-09-25, real runs):
+  `lib/planner/domain/planner_saved_view.dart` (owner-scoped
+  `PlannerSavedView`: stable ID identity, `schemaVersion` + migration to
+  `currentSchemaVersion`, forward-compatible unknown-field round trips on
+  both view and query, reserved `builtin:` namespace with remote-overwrite
+  rejection, active-view fallback to `builtin:open`, title-not-identity
+  rename) + `PlannerTaskQuery.toJson/fromJson` codec (unknown view IDs
+  fall back to `open`, unknown kinds ignored). New
+  `test/planner/planner_saved_view_test.dart` 6/6 GREEN; full
+  `flutter test --no-pub` 549/549 GREEN; `dart analyze` clean.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)

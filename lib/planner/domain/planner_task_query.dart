@@ -16,6 +16,7 @@ class PlannerTaskQuery {
     required this.viewId,
     this.text = '',
     this.kinds = const <PlannerEntityKind>{},
+    this.unknownFields = const <String, dynamic>{},
   });
 
   static const String inboxViewId = 'inbox';
@@ -40,6 +41,10 @@ class PlannerTaskQuery {
   /// the right snapshot (the controller passes its task-kind snapshot, so the
   /// query stays a pure projection over whatever it receives).
   final Set<PlannerEntityKind> kinds;
+
+  /// Forward-compatible fields a newer client may have written; preserved
+  /// verbatim through [toJson] so older clients never drop newer data.
+  final Map<String, dynamic> unknownFields;
 
   /// The built-in query for a lifecycle view with no search text.
   factory PlannerTaskQuery.builtIn(String viewId) {
@@ -131,6 +136,43 @@ class PlannerTaskQuery {
   /// `toLowerCase` handles Latin case folding and leaves Persian/Arabic
   /// script untouched, so both scripts match without a second code path.
   static String _normalizeSearch(String value) => value.trim().toLowerCase();
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'view_id': viewId,
+    'text': text,
+    'kinds': <String>[for (final kind in kinds) kind.wireValue],
+    ...unknownFields,
+  };
+
+  factory PlannerTaskQuery.fromJson(Map<String, dynamic> json) {
+    final kinds = <PlannerEntityKind>{};
+    final rawKinds = json['kinds'];
+    if (rawKinds is Iterable) {
+      for (final raw in rawKinds) {
+        final match = PlannerEntityKind.values.where(
+          (kind) => kind.wireValue == raw,
+        );
+        if (match.isNotEmpty) kinds.add(match.first);
+      }
+    }
+    const knownKeys = <String>{'view_id', 'text', 'kinds'};
+    final unknown = <String, dynamic>{};
+    for (final entry in json.entries) {
+      final key = entry.key.toString();
+      if (!knownKeys.contains(key)) unknown[key] = entry.value;
+    }
+    final rawViewId = json['view_id'];
+    final viewId = rawViewId is String && builtInViewIds.contains(rawViewId)
+        ? rawViewId
+        : openViewId;
+    final rawText = json['text'];
+    return PlannerTaskQuery(
+      viewId: viewId,
+      text: rawText is String ? rawText : '',
+      kinds: kinds,
+      unknownFields: unknown,
+    );
+  }
 }
 
 /// The resolved result of a [PlannerTaskQuery].
