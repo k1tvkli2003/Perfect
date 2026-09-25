@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
+import 'package:perfect/planner/domain/planner_task_query.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_operation.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
@@ -97,6 +98,22 @@ class PlannerWorkspaceController extends ChangeNotifier {
   List<PlannerEntity> get areas => _entities
       .where((entity) => entity.kind == PlannerEntityKind.area)
       .toList(growable: false);
+
+  /// Stable lookup for query-resolved IDs; null when the ID is not cached.
+  PlannerEntity? entityById(String id) {
+    for (final entity in _entities) {
+      if (entity.id == id) return entity;
+    }
+    return null;
+  }
+
+  /// Stage 36 query contract: the ONE shared Tasks workspace read.
+  ///
+  /// Resolves [query] over the cached task-kind snapshot, so every Tasks
+  /// consumer shares one typed projection and no caller adds a second hidden
+  /// predicate after the result.
+  PlannerTaskQueryResult queryTasks(PlannerTaskQuery query) =>
+      query.applyTo(tasks);
 
   Future<void> start() async {
     if (_disposed || _shutdownRequested || _isReady) return;

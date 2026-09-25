@@ -11,6 +11,7 @@ import 'package:perfect/app/perfect_preferences.dart';
 import 'package:perfect/feedback/ready_feedback_capture.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_formula.dart';
+import 'package:perfect/planner/domain/planner_task_query.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
@@ -4312,33 +4313,31 @@ class _TasksPageState extends State<_TasksPage> {
 
   @override
   Widget build(BuildContext context) {
-    final query = _search.text.trim().toLowerCase();
-    final tasks = widget.controller.tasks
-        .where((task) {
-          final matchesKind = switch (_kindFilter) {
-            _TaskKindFilter.all => true,
-            _TaskKindFilter.oneOff => task.kind == PlannerEntityKind.oneOffTask,
-            _TaskKindFilter.recurring =>
-              task.kind == PlannerEntityKind.recurringTask,
-          };
-          if (!matchesKind) return false;
-          final matchesFilter = switch (_filter) {
-            _TaskFilter.inbox =>
-              task.status == PlannerEntityStatus.active &&
-                  task.scheduledAt == null,
-            _TaskFilter.active => task.status == PlannerEntityStatus.active,
-            _TaskFilter.scheduled =>
-              task.status == PlannerEntityStatus.active &&
-                  task.scheduledAt != null,
-            _TaskFilter.completed =>
-              task.status == PlannerEntityStatus.completed,
-          };
-          if (!matchesFilter) return false;
-          if (query.isEmpty) return true;
-          return '${task.title} ${task.note ?? ''} ${task.payload['category'] ?? ''}'
-              .toLowerCase()
-              .contains(query);
-        })
+    final query = PlannerTaskQuery(
+      viewId: switch (_filter) {
+        _TaskFilter.inbox => PlannerTaskQuery.inboxViewId,
+        _TaskFilter.active => PlannerTaskQuery.openViewId,
+        _TaskFilter.scheduled => PlannerTaskQuery.scheduledViewId,
+        _TaskFilter.completed => PlannerTaskQuery.completedViewId,
+      },
+      text: _search.text,
+      kinds: switch (_kindFilter) {
+        _TaskKindFilter.all => const {
+          PlannerEntityKind.oneOffTask,
+          PlannerEntityKind.recurringTask,
+        },
+        _TaskKindFilter.oneOff => const {PlannerEntityKind.oneOffTask},
+        _TaskKindFilter.recurring => const {PlannerEntityKind.recurringTask},
+      },
+    );
+    // ONE shared projection: the controller resolves the query over its
+    // cached snapshot; the widget maps stable IDs back to entities and never
+    // applies a second hidden predicate.
+    final tasks = widget.controller
+        .queryTasks(query)
+        .entityIds
+        .map(widget.controller.entityById)
+        .whereType<PlannerEntity>()
         .toList(growable: false);
     return _PageScrollFrame(
       scrollKey: const ValueKey<String>('perfect-tasks-scroll'),

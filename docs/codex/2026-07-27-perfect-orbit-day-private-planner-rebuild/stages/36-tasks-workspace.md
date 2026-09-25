@@ -342,6 +342,16 @@ Do not remove the retained pre-rebuild stash.
   Inbox/Open/Scheduled/Completed views plus Unicode-aware search over the
   existing store rows. Widget still resolves filters locally; shared query
   adoption has **not** landed and full suite has **not** re-run after it.
+- Typed-query tracer 2 (adoption, 2026-09-25, real runs):
+  `PlannerTaskQuery.kinds` optional kind scope +
+  `PlannerWorkspaceController.queryTasks`/`entityById` (shared read over the
+  cached task snapshot) + `_TasksPageState.build` resolves through
+  `queryTasks` and maps stable IDs via `entityById` — no second hidden
+  predicate in the widget. Focused
+  `test/planner/planner_task_query_test.dart` +
+  `test/presentation/planner_task_query_adoption_test.dart` 4/4 GREEN;
+  full `flutter test --no-pub` 541/541 GREEN; `dart analyze` clean on all
+  five touched files.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)

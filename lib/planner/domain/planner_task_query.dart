@@ -12,7 +12,11 @@ import 'package:perfect/planner/domain/planner_entity.dart';
 /// fields the old widget path searched (title, note, category). Sort, group,
 /// saved views, selection and bulk actions arrive in later tracers.
 class PlannerTaskQuery {
-  const PlannerTaskQuery({required this.viewId, this.text = ''});
+  const PlannerTaskQuery({
+    required this.viewId,
+    this.text = '',
+    this.kinds = const <PlannerEntityKind>{},
+  });
 
   static const String inboxViewId = 'inbox';
   static const String openViewId = 'open';
@@ -32,6 +36,11 @@ class PlannerTaskQuery {
   /// Raw user search text. Normalization happens inside [applyTo].
   final String text;
 
+  /// Optional kind scope. Empty means no kind predicate; the caller supplies
+  /// the right snapshot (the controller passes its task-kind snapshot, so the
+  /// query stays a pure projection over whatever it receives).
+  final Set<PlannerEntityKind> kinds;
+
   /// The built-in query for a lifecycle view with no search text.
   factory PlannerTaskQuery.builtIn(String viewId) {
     if (!builtInViewIds.contains(viewId)) {
@@ -48,6 +57,7 @@ class PlannerTaskQuery {
     final normalizedNeedle = _normalizeSearch(text);
     final ids = <String>[];
     for (final entity in entities) {
+      if (kinds.isNotEmpty && !kinds.contains(entity.kind)) continue;
       if (!_matchesView(entity)) continue;
       if (normalizedNeedle.isNotEmpty &&
           !_matchesSearch(entity, normalizedNeedle)) {

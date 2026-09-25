@@ -118,4 +118,58 @@ void main() {
       expect(category.entityIds, <String>['task-done']);
     },
   );
+
+  test('kind scope narrows the query to requested task kinds', () async {
+    const ownerId = 'owner-a';
+    final recurring = PlannerEntity(
+      id: 'task-recurring',
+      ownerId: ownerId,
+      kind: PlannerEntityKind.recurringTask,
+      payload: <String, dynamic>{
+        ...defaultPlannerPayload(title: 'Gym session'),
+      },
+      createdAt: DateTime.utc(2026, 7, 27, 11),
+      updatedAt: DateTime.utc(2026, 7, 27, 11),
+    );
+    final habit = PlannerEntity(
+      id: 'habit-water',
+      ownerId: ownerId,
+      kind: PlannerEntityKind.habit,
+      payload: <String, dynamic>{
+        ...defaultPlannerPayload(title: 'Drink water'),
+      },
+      createdAt: DateTime.utc(2026, 7, 27, 11),
+      updatedAt: DateTime.utc(2026, 7, 27, 11),
+    );
+    await seedTasks();
+    await store.upsertEntity(entity: recurring);
+    await store.upsertEntity(entity: habit);
+    final entities = await store.readActiveEntities(ownerId);
+
+    final recurringOnly = const PlannerTaskQuery(
+      viewId: PlannerTaskQuery.openViewId,
+      kinds: {PlannerEntityKind.recurringTask},
+    ).applyTo(entities);
+    expect(recurringOnly.entityIds, <String>['task-recurring']);
+
+    final oneOffOnly = const PlannerTaskQuery(
+      viewId: PlannerTaskQuery.openViewId,
+      kinds: {PlannerEntityKind.oneOffTask},
+    ).applyTo(entities);
+    expect(oneOffOnly.entityIds.toSet(), <String>{
+      'task-inbox',
+      'task-scheduled',
+    });
+
+    final unscoped = PlannerTaskQuery.builtIn(
+      PlannerTaskQuery.openViewId,
+    ).applyTo(entities);
+    expect(
+      unscoped.entityIds.toSet(),
+      <String>{'task-inbox', 'task-scheduled', 'task-recurring', 'habit-water'},
+      reason:
+          'no kind constraint means no kind predicate; '
+          'the controller supplies the task-kind snapshot.',
+    );
+  });
 }
