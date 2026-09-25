@@ -337,6 +337,16 @@ Do not remove the retained pre-rebuild stash.
   test/presentation/task_status_control_test.dart
   test/presentation/planner_secondary_surfaces_adaptive_test.dart
   test/presentation/planner_editor_test.dart` are all GREEN.
-- This does **not** close Stage 36. Runtime/query/view implementation remains
-  blocked until the Stage 03–05 preview/Copy gate has recorded autonomous
-  acceptance.
+- Typed-query tracer 1 (behavior only, `lib/planner/domain/planner_task_query.dart`,
+  `test/planner/planner_task_query_test.dart`, 2/2 GREEN): built-in
+  Inbox/Open/Scheduled/Completed views plus Unicode-aware search over the
+  existing store rows. Widget still resolves filters locally; shared query
+  adoption has **not** landed and full suite has **not** re-run after it.
+- This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
+  exact paths): all five tasks composition pages
+  (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
+  record `Accepted under owner-delegated autonomous design authority: yes` as
+  design authority only — explicitly not runtime fidelity proof. Runtime/query/
+  view implementation remains blocked on (a) Copy fidelity (exact runtime vs
+  preview comparison per `04-copy-manifests/copy.json`), (b) sort/group/saved
+  views, and (c) full verification evidence.
