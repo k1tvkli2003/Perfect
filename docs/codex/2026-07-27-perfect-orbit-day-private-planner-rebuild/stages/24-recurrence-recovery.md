@@ -1,9 +1,9 @@
 # Stage 24 — Recurring task, recovery and Carry policy
 
-Status: in progress — leap/yearly/monthly/flexible recurrence vectors,
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — leap/yearly/monthly/flexible recurrence vectors,
 exception/limit handling, carry/miss-then-next recovery domain suites, and
-responsive wizard flows are GREEN; preview/UI parity, notifications, AI/schema
-and device matrices remain open
+responsive wizard flows GREEN; preview/UI parity, notifications, AI/schema
+and device matrices remain open; CI workflows disabled_manually
 Depends on: Stages 21–23 and recurrence domain baseline  
 Primary surfaces: recurring wizard, Today projection, Plan, notifications, detail, AI
 

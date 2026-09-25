@@ -1,8 +1,8 @@
 # Stage 23 — Task definition, timing, reminders and working context
 
-Status: in progress — dual-calendar local time, reminder copy/recovery, and
-wizard definition/timing suites are GREEN; permission/Device flow, picker
-screenshots, and native review-summary proof remain open
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — dual-calendar local time, reminder copy/recovery, and
+wizard definition/timing suites GREEN; permission/Device flow, picker
+screenshots, and native review-summary proof remain open; CI workflows disabled_manually
 Depends on: Stages 08, 21–22  
 Primary surfaces: definition, schedule and details steps; notification consumers
 

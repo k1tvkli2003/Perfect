@@ -1,6 +1,6 @@
 # Stage 30 — Habit logging feedback, ergonomics and upgrade proof
 
-Status: in progress — primary-tap/Undo geometry, compact correction, tooltip
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — primary-tap/Undo geometry, compact correction, tooltip
 contracts, and controller/widget gesture suites are GREEN; celebration,
 haptics/rebuild profiling, accessibility announcements, parity matrices, and
 signed N→N+1 upgrade remain open

@@ -1,9 +1,9 @@
 # Stage 26 — HabitNow-inspired Habit creation flow
 
-Status: in progress — six-step order, measurement choices, checklist
-definition round-trip, frequency/plan/review, and edit-return suites are GREEN;
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — six-step order, measurement choices, checklist
+definition round-trip, frequency/plan/review, and edit-return suites GREEN;
 template library, method-migration matrix, engine-summary equality proof, and
-native screenshot comparison remain open
+native screenshot comparison remain open; CI workflows disabled_manually
 Depends on: Stages 21–25  
 Primary surfaces: Create/Edit Habit wizard and review summary
 

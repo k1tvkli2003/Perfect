@@ -1,8 +1,8 @@
 # Stage 21 — Unified modern wizard shell
 
-Status: in progress — existing wizard behavior, route/state, validation, IME,
-200%/RTL, phone/tablet/desktop suites are GREEN; shell visual modernization and
-native matrix proof remain open
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — existing wizard behavior, route/state, validation, IME,
+200%/RTL, phone/tablet/desktop suites GREEN (2026-09-25); shell visual modernization and
+native matrix proof remain open; CI workflows disabled_manually
 Depends on: Stages 04, 05, 07–10, 18  
 Primary surfaces: create/edit Task, Recurring Task, Habit, Project, Area and Goal
 

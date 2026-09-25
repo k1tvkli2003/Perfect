@@ -1,8 +1,8 @@
 # Stage 17 — Task capture mode and resilient quick save
 
-Status: in progress — local receipt, duplicate protection, Undo, and failed-save
- draft retention are GREEN in widget/controller suites; exact field geometry,
-IME/device and native screenshot proof remain open
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — local receipt, duplicate protection, Undo, and failed-save
+ draft retention GREEN in widget/controller suites (2026-09-25, 132-pass gate); exact field geometry,
+IME/device and native screenshot proof remain open; CI workflows disabled_manually so no fresh remote run
 Depends on: Stage 16  
 Primary surfaces: Task mode of the morphing composer
 

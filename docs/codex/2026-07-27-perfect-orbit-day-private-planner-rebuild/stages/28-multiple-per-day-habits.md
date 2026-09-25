@@ -1,6 +1,6 @@
 # Stage 28 — Multiple-per-day habits and atomic accumulation
 
-Status: in progress — 20-operation concurrent count accumulation, serialized
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — 20-operation concurrent count accumulation, serialized
 row logging, Undo/correction scopes, and over-target retention are GREEN;
 two-device offline sync convergence and native widget/device recording remain
 open

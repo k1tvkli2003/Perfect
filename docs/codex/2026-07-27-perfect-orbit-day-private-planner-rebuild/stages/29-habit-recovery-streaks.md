@@ -1,6 +1,6 @@
 # Stage 29 — Habit skip, miss, recovery and streak integrity
 
-Status: in progress — daily-state outcomes (pending/partial/completed/missed),
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — daily-state outcomes (pending/partial/completed/missed),
 miss-then-next recovery, carry-cap, flexible quota, and editing-old-work
 preservation are GREEN at domain/projection layers; derived streak math,
 freeze/quit semantics, accessibility wording, and calendar parity remain open

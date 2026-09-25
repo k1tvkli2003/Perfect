@@ -1,6 +1,6 @@
 # Stage 27 — Complete Habit tracking-method model
 
-Status: in progress — check/count/duration/numeric/checklist/formula method
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — check/count/duration/numeric/checklist/formula method
 vectors, checklist all/threshold rules, invalid/missing formula safety, and the
 Stage 14 count-vs-numeric contract are GREEN at domain/controller/widget
 layers; schema migration, server/RLS, AI proposal, and old-client parity remain

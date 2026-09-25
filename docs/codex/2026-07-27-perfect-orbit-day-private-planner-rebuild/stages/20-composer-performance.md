@@ -1,8 +1,8 @@
 # Stage 20 — Composer motion, layout and performance hardening
 
-Status: in progress — heartbeat lifecycle, one-surface morph, blur-off glass
-fallback, duplicate-send guard, and 154-test behavioral stability are GREEN;
-frame/memory budgets, host-renderer proof, and signed N→N+1 upgrade remain open
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — heartbeat lifecycle, one-surface morph, blur-off glass
+fallback, duplicate-send guard, and 154-test behavioral stability GREEN (2026-09-25);
+frame/memory budgets, host-renderer proof, and signed N→N+1 upgrade remain open; CI workflows disabled_manually
 Depends on: Stages 16–19  
 Primary surfaces: all composer modes under real viewport/input constraints
 

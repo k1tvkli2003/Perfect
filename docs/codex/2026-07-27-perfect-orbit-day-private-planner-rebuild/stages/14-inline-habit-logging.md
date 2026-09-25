@@ -1,6 +1,6 @@
 # Stage 14 — Effortless inline habit logging
 
-Status: in progress — controller + workspace/Pulse/AI-dock/editor/route/motion suites GREEN (198/198, exit 0); native/device, Android widget parity, preview and cross-consumer acceptance pending
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — controller + workspace suites GREEN (43 + 97 = 140 pass, exit 0, 2026-09-25); native/device, Android widget parity, preview and cross-consumer acceptance pending; CI workflows disabled_manually so no fresh remote run
 Depends on: Stages 12–13 and existing habit domain contracts  
 Primary consumers: Today, Habits, Detail and Android widget
 

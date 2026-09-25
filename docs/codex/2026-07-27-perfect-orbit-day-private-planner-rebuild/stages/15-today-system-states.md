@@ -1,9 +1,9 @@
 # Stage 15 — Today empty, loading, offline, retry and optimistic states
 
-Status: in progress — empty owner, projection retry (Today rows preserved),
-and local-source retry (no destructive reset) are GREEN in widget/contract
-suites; offline, optimistic/conflict, fixture isolation, and state/focus
-retention remain open
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — empty owner, projection retry (Today rows preserved),
+and local-source retry (no destructive reset) GREEN in widget suites (2026-09-25);
+offline, optimistic/conflict, fixture isolation, and state/focus
+retention remain open; CI workflows disabled_manually so no fresh remote run
 Depends on: Stages 11–14  
 Primary surfaces: Today and all shared rows/controls
 

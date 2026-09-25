@@ -1,8 +1,8 @@
 # Stage 18 — Inline Plan mode morph
 
-Status: in progress — inline mode morph, draft preservation, exact wizard kind
-routing, and whole-label options are GREEN in widget suites; animatic/device
-recording, focus-order/no-hidden-hit, and native screenshot proof remain open
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — inline mode morph, draft preservation, exact wizard kind
+routing, and whole-label options GREEN in widget suites (2026-09-25); animatic/device
+recording, focus-order/no-hidden-hit, and native screenshot proof remain open; CI workflows disabled_manually
 Depends on: Stages 17 and 21 route contract characterization  
 Primary surfaces: Plan mode inside the same composer
 

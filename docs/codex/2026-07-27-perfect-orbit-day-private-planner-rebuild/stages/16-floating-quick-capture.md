@@ -1,8 +1,8 @@
 # Stage 16 — Floating Quick Capture control
 
-Status: in progress — collapsed 64dp orb geometry plus exactly-one local
-receipt/Undo are GREEN in widget suites; background-strip/hit-test/no-IME and
-native screenshot proof remain open
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — collapsed 64dp orb geometry plus exactly-one local
+receipt/Undo GREEN in widget suites (2026-09-25, 132-pass gate); background-strip/hit-test/no-IME and
+native screenshot proof remain open; CI workflows disabled_manually so no fresh remote run
 Depends on: Stages 07, 09, 12, 15  
 Primary surfaces: Today lower edge on phone/tablet/Windows
 

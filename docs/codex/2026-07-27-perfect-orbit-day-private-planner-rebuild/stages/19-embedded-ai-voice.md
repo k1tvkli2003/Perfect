@@ -1,8 +1,8 @@
 # Stage 19 — Perfect AI and Voice embedded in the composer
 
-Status: in progress — existing same-instrument AI/voice, consent, proposal review,
-explicit Apply boundary, retry and 200%/IME tests are GREEN; composer morph
-integration and native screenshot proof remain open
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — existing same-instrument AI/voice, consent, proposal review,
+explicit Apply boundary, retry and 200%/IME tests GREEN (21 pass, 2026-09-25); composer morph
+integration and native screenshot proof remain open; CI workflows disabled_manually
 Depends on: Stages 17–18 and Stage 46 contract characterization
 
 ## Evidence — 2026-09-25 (real run, pre-existing AI surface)

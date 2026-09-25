@@ -1,8 +1,8 @@
 # Stage 22 — Task identity, category and organization
 
-Status: in progress — existing wizard/editor, SVG pictogram, no-raw-emoji,
-planner-row category/color identity suites are GREEN; 30+ curated catalog
-contract and round-trip matrix remain open
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — existing wizard/editor, SVG pictogram, no-raw-emoji,
+planner-row category/color identity suites GREEN; 30+ curated catalog
+contract and round-trip matrix remain open; CI workflows disabled_manually
 Depends on: Stage 21  
 Primary surfaces: Create Task/Recurring Task identity and organization steps
 

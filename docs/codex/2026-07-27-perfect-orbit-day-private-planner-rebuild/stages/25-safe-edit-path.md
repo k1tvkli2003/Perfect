@@ -1,8 +1,8 @@
 # Stage 25 — View-first, type-stable and draft-safe editing
 
-Status: in progress — invalid-timing draft retention and create/edit wizard
-suites are GREEN; all-kinds Type-step absence, discard guard, stable ID/history,
-return-route and footer/widget parity matrices remain open
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — invalid-timing draft retention and create/edit wizard
+suites GREEN; all-kinds Type-step absence, discard guard, stable ID/history,
+return-route and footer/widget parity matrices remain open; CI workflows disabled_manually
 Depends on: Stages 21–24; anticipates Stage 31 detail route  
 Primary surfaces: Edit Task/Recurring/Habit/Project/Area/Goal
 
