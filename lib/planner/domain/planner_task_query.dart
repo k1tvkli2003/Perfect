@@ -286,6 +286,44 @@ class PlannerTaskQuery {
   /// script untouched, so both scripts match without a second code path.
   static String _normalizeSearch(String value) => value.trim().toLowerCase();
 
+  /// Human-readable summary for the lens/Refine surface.
+  ///
+  /// Derived from this SAME typed query: one token per non-default
+  /// constraint (kind scope, search text, grouping). The default Open query
+  /// yields no tokens. Persian search text is preserved verbatim.
+  PlannerTaskQuerySummary summary() {
+    final viewLabel = switch (viewId) {
+      inboxViewId => 'Inbox',
+      scheduledViewId => 'Scheduled',
+      completedViewId => 'Completed',
+      _ => 'Open',
+    };
+    final tokens = <String>[];
+    if (kinds.length == 1 && kinds.contains(PlannerEntityKind.oneOffTask)) {
+      tokens.add('One-off only');
+    } else if (kinds.length == 1 &&
+        kinds.contains(PlannerEntityKind.recurringTask)) {
+      tokens.add('Recurring only');
+    } else if (kinds.isNotEmpty) {
+      tokens.add('Filtered by type');
+    }
+    final trimmedText = text.trim();
+    if (trimmedText.isNotEmpty) tokens.add('“$trimmedText”');
+    if (groupBy != PlannerTaskGroup.none) {
+      final groupLabel = switch (groupBy) {
+        PlannerTaskGroup.schedule => 'Schedule',
+        PlannerTaskGroup.project => 'Project',
+        PlannerTaskGroup.area => 'Area',
+        PlannerTaskGroup.category => 'Category',
+        PlannerTaskGroup.priority => 'Priority',
+        PlannerTaskGroup.status => 'Status',
+        PlannerTaskGroup.none => '',
+      };
+      tokens.add('Grouped by $groupLabel');
+    }
+    return PlannerTaskQuerySummary(viewLabel: viewLabel, tokens: tokens);
+  }
+
   Map<String, dynamic> toJson() => <String, dynamic>{
     'view_id': viewId,
     'text': text,
@@ -324,6 +362,21 @@ class PlannerTaskQuery {
       unknownFields: unknown,
     );
   }
+}
+
+/// Human-readable summary of a [PlannerTaskQuery] for the lens/Refine
+/// surface: the active view label plus one removable token per non-default
+/// constraint. `isDefault` is true only for the plain Open query.
+class PlannerTaskQuerySummary {
+  const PlannerTaskQuerySummary({
+    required this.viewLabel,
+    required this.tokens,
+  });
+
+  final String viewLabel;
+  final List<String> tokens;
+
+  bool get isDefault => tokens.isEmpty;
 }
 
 /// One stable group descriptor in display order: the group key, its ordered

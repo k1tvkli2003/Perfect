@@ -397,6 +397,12 @@ Do not remove the retained pre-rebuild stash.
   pure `previewBulk` eligible/skipped split) + new
   `test/planner/planner_task_selection_test.dart` 5/5 GREEN; full
   `flutter test --no-pub` 555/555 GREEN; `dart analyze` clean.
+- Typed-query tracer 8 (query summary, 2026-09-25, real runs):
+  `PlannerTaskQuery.summary()` → `PlannerTaskQuerySummary` (view label +
+  one token per non-default constraint: kind scope, verbatim search text
+  incl. Persian, grouping; default Open yields zero tokens + `isDefault`).
+  New `test/planner/planner_task_query_summary_test.dart` 3/3 GREEN; full
+  `flutter test --no-pub` 558/558 GREEN; `dart analyze` clean.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
