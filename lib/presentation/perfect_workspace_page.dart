@@ -148,6 +148,16 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
   PlannerTodayStream? _todayStream;
   double? _inspectorWidthOverride;
 
+  void _retryTodayProjection() {
+    if (!mounted) return;
+    setState(() {
+      // Force a fresh owner/day-scoped read; never trigger remote sync or clear
+      // the last coherent local snapshot merely to retry one failed projection.
+      _requestedTodayProjection = null;
+      _failedTodayProjection = null;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -313,7 +323,13 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
           child: AnimatedBuilder(
             animation: widget.controller,
             builder: (context, _) {
-              if (!widget.controller.isReady) return const _WorkspaceLoading();
+              // A failed local read is recoverable. Keep the user inside the
+              // workspace and show the actionable state instead of spinning
+              // forever on the boot loader.
+              if (!widget.controller.isReady &&
+                  widget.controller.localError == null) {
+                return const _WorkspaceLoading();
+              }
               _schedulePendingNavigationConsumption();
               _ensureTodayProjection();
               return LayoutBuilder(
@@ -559,6 +575,10 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     key: _quickCaptureDockKey,
     controller: widget.controller,
     onOpenEditor: () => _openEditor(),
+    onPlanKind: (kind) {
+      _quickCaptureDockKey.currentState?.collapse();
+      _openEditor(initialKind: kind);
+    },
     captureController: _quickCaptureController,
     focusNode: _quickCaptureFocusNode,
     desktop: desktop,
@@ -656,6 +676,8 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     required bool shortLandscape,
   }) {
     final now = widget.now().toLocal();
+    final projectionFailed =
+        _failedTodayProjection == _todayProjectionFailureKey(now);
     return switch (tier) {
       _WorkspaceLayoutTier.compact => _TodayPage(
         controller: widget.controller,
@@ -668,6 +690,8 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         taskProgressById: _displayTaskProgress,
         scheduledAtById: _displayTodayScheduledAt,
         projectionResolved: _isTodayProjectionResolved,
+        projectionFailed: projectionFailed,
+        onRetryToday: _retryTodayProjection,
         onInspect: _inspect,
         onAdd: _openEditor,
         onOpenPlan: () => _selectDestination(_PerfectDestination.plan.index),
@@ -683,6 +707,8 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         taskProgressById: _displayTaskProgress,
         scheduledAtById: _displayTodayScheduledAt,
         projectionResolved: _isTodayProjectionResolved,
+        projectionFailed: projectionFailed,
+        onRetryToday: _retryTodayProjection,
         nowProvider: widget.now,
         onInspect: _inspect,
         onAdd: _openEditor,
@@ -699,6 +725,8 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         taskProgressById: _displayTaskProgress,
         scheduledAtById: _displayTodayScheduledAt,
         projectionResolved: _isTodayProjectionResolved,
+        projectionFailed: projectionFailed,
+        onRetryToday: _retryTodayProjection,
         nowProvider: widget.now,
         inspected: _destination == _PerfectDestination.today
             ? _inspected
@@ -830,12 +858,15 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
 
   bool get _isTodayProjectionResolved {
     final now = widget.now().toLocal();
-    if (_failedTodayProjection == _todayProjectionSignature(now)) {
+    if (_failedTodayProjection == _todayProjectionFailureKey(now)) {
       // A failed read is stale by definition; the Pulse must not certify it.
       return false;
     }
     return _resolvedTodayProjection == _todayProjectionSignature(now);
   }
+
+  String _todayProjectionFailureKey(DateTime now) =>
+      '${identityHashCode(widget.controller)}:${widget.controller.ownerId}:${now.year}-${now.month}-${now.day}';
 
   String _todayProjectionSignature(DateTime now) {
     final day = '${now.year}-${now.month}-${now.day}';
@@ -938,7 +969,14 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       // Never log raw storage errors, which may contain private planner values.
       debugPrint('TODAY_PROJECTION_READ_FAILED');
       setState(() {
-        _failedTodayProjection = signature;
+        // Keep the last same-day coherent snapshot, but paint the inline
+        // verdict in the same frame. Setting only the verdict leaves the
+        // failed read invisible because no consumer can observe a new flag.
+        // Stable day key: a mutation-only revision bump must not clear the
+        // visible retry verdict, and a new local mutation triggers its own
+        // signature read which clears or replaces this verdict.
+        _failedTodayProjection = _todayProjectionFailureKey(day);
+        _resolvedTodayProjection = null;
       });
     }
   }
@@ -1938,6 +1976,7 @@ class _QuickCaptureDock extends StatefulWidget {
     this.aiAvailable = false,
     this.aiOpen = false,
     this.onToggleAi,
+    this.onPlanKind,
     this.onOpenAiVoice,
   });
 
@@ -1949,6 +1988,7 @@ class _QuickCaptureDock extends StatefulWidget {
   final bool aiAvailable;
   final bool aiOpen;
   final VoidCallback? onToggleAi;
+  final ValueChanged<PlannerEntityKind>? onPlanKind;
   final VoidCallback? onOpenAiVoice;
 
   @override
@@ -1966,6 +2006,7 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
   bool _hovered = false;
   bool _fieldFocused = false;
   bool _expanded = false;
+  bool _planMode = false;
   bool _reduceMotion = false;
   bool _foreground = true;
 
@@ -2084,17 +2125,38 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
     _syncPulseAnimation();
   }
 
+  void _showPlanMode() {
+    setState(() {
+      _expanded = true;
+      _planMode = true;
+    });
+    _syncPulseAnimation();
+  }
+
+  void _hidePlanMode() {
+    if (!_planMode) return;
+    setState(() => _planMode = false);
+  }
+
   void _collapse() {
     widget.focusNode.unfocus();
-    if (_expanded) setState(() => _expanded = false);
+    if (_expanded || _planMode) {
+      setState(() {
+        _expanded = false;
+        _planMode = false;
+      });
+    }
     _syncPulseAnimation();
   }
 
   void collapse() => _collapse();
 
-  void _openFullEditor() {
+  void _openPlanKind(PlannerEntityKind kind) {
+    // The preserved Task draft stays in the shared controller; this only
+    // hides the mode surface before routing to the exact wizard kind.
+    setState(() => _planMode = false);
     _collapse();
-    widget.onOpenEditor();
+    widget.onPlanKind?.call(kind);
   }
 
   @override
@@ -2177,16 +2239,26 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
                       );
                     },
                     child: _expanded
-                        ? _buildExpandedComposer(
-                            context,
-                            key: const ValueKey<String>(
-                              'quick-capture-expanded',
-                            ),
-                            maxWidth: maxDockWidth,
-                            effectiveTextScale: effectiveTextScale,
-                            hintText: hintText,
-                            duration: duration,
-                          )
+                        ? (_planMode
+                              ? _buildPlanMode(
+                                  context,
+                                  key: const ValueKey<String>(
+                                    'quick-capture-plan-mode',
+                                  ),
+                                  maxWidth: maxDockWidth,
+                                  effectiveTextScale: effectiveTextScale,
+                                  duration: duration,
+                                )
+                              : _buildExpandedComposer(
+                                  context,
+                                  key: const ValueKey<String>(
+                                    'quick-capture-expanded',
+                                  ),
+                                  maxWidth: maxDockWidth,
+                                  effectiveTextScale: effectiveTextScale,
+                                  hintText: hintText,
+                                  duration: duration,
+                                ))
                         : _buildCollapsedLauncher(
                             context,
                             key: const ValueKey<String>(
@@ -2323,6 +2395,132 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
     );
   }
 
+  Widget _buildPlanMode(
+    BuildContext context, {
+    required Key key,
+    required double maxWidth,
+    required double effectiveTextScale,
+    required Duration duration,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    final stacked = maxWidth < 620 || effectiveTextScale >= 1.25;
+    const kinds = <_PlanKindOption>[
+      _PlanKindOption(
+        kind: PlannerEntityKind.oneOffTask,
+        label: 'Task',
+        pictogram: 'task',
+        semantics: 'Create a single task',
+        keyName: 'perfect-plan-kind-task',
+      ),
+      _PlanKindOption(
+        kind: PlannerEntityKind.recurringTask,
+        label: 'Recurring task',
+        pictogram: 'calendar',
+        semantics: 'Create a recurring task',
+        keyName: 'perfect-plan-kind-recurring',
+      ),
+      _PlanKindOption(
+        kind: PlannerEntityKind.habit,
+        label: 'Habit',
+        pictogram: 'capture',
+        semantics: 'Create a habit',
+        keyName: 'perfect-plan-kind-habit',
+      ),
+    ];
+    Widget kindButton(_PlanKindOption option) {
+      return _CaptureOptionButton(
+        key: ValueKey<String>(option.keyName),
+        tooltip: option.semantics,
+        label: option.label,
+        tone: _CaptureOptionTone.plan,
+        showLabel: true,
+        vertical: stacked,
+        onPressed: () => _openPlanKind(option.kind),
+        icon: PerfectPictogram(
+          name: option.pictogram,
+          size: 23,
+          semanticLabel: option.semantics,
+        ),
+      );
+    }
+
+    return Semantics(
+      key: key,
+      container: true,
+      explicitChildNodes: true,
+      label: 'Plan mode. Choose what to create.',
+      child: PerfectGlassSurface(
+        surfaceKey: const ValueKey<String>('perfect-plan-mode'),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(PerfectRadius.dock),
+        ),
+        strength: PerfectGlassStrength.soft,
+        enableBlur: false,
+        tint: scheme.surface.withValues(alpha: .94),
+        borderColor: PerfectSemanticTheme.of(context).focus,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    key: const ValueKey<String>('perfect-plan-back'),
+                    tooltip: 'Back to quick capture',
+                    onPressed: _hidePlanMode,
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size.square(48),
+                      shape: const CircleBorder(),
+                      backgroundColor: scheme.surface.withValues(alpha: .62),
+                      foregroundColor: scheme.onSurfaceVariant,
+                      side: BorderSide(
+                        color: scheme.outline.withValues(alpha: .20),
+                      ),
+                    ),
+                    icon: const Icon(Icons.arrow_back_rounded, size: 23),
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Plan',
+                      maxLines: 1,
+                      overflow: TextOverflow.fade,
+                      style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 9),
+              if (stacked)
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var index = 0; index < kinds.length; index++) ...[
+                      if (index > 0) const SizedBox(height: 7),
+                      SizedBox(
+                        width: double.infinity,
+                        child: kindButton(kinds[index]),
+                      ),
+                    ],
+                  ],
+                )
+              else
+                Row(
+                  children: [
+                    for (var index = 0; index < kinds.length; index++) ...[
+                      if (index > 0) const SizedBox(width: 7),
+                      Expanded(child: kindButton(kinds[index])),
+                    ],
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildExpandedComposer(
     BuildContext context, {
     required Key key,
@@ -2358,14 +2556,12 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
     final send = _buildSendAction(context, duration: duration);
     final plan = _CaptureOptionButton(
       key: const ValueKey<String>('perfect-capture-plan'),
-      tooltip: widget.desktop
-          ? 'Plan a task or habit (Ctrl+N)'
-          : 'Plan a task or habit',
+      tooltip: widget.desktop ? 'Open plan mode (Ctrl+N)' : 'Open plan mode',
       label: 'Plan',
       tone: _CaptureOptionTone.plan,
       showLabel: showOptionLabels,
       vertical: stacked,
-      onPressed: _openFullEditor,
+      onPressed: _showPlanMode,
       icon: const PerfectPictogram(
         name: 'calendar',
         size: 23,
@@ -2704,16 +2900,37 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
     if (title.isEmpty || _sending) return;
     setState(() => _sending = true);
     try {
-      await widget.controller.quickCapture(title);
+      final receipt = await widget.controller.quickCapture(title);
+      final capturedId = receipt.entity?.id;
       _capture.clear();
       widget.focusNode.unfocus();
       if (mounted) {
         setState(() => _expanded = false);
         _syncPulseAnimation();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Captured locally. Sync will follow.')),
+          SnackBar(
+            content: const Text('Captured locally. Sync will follow.'),
+            action: capturedId == null
+                ? null
+                : SnackBarAction(
+                    label: 'Undo',
+                    onPressed: () {
+                      final captured = capturedId;
+                      unawaited(widget.controller.deleteEntityById(captured));
+                    },
+                  ),
+          ),
         );
       }
+    } on Object {
+      if (!mounted) return;
+      setState(() => _sending = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not save this task locally. Try again.'),
+        ),
+      );
+      return;
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -2749,6 +2966,23 @@ class _MotionAwareAnimatedSize extends StatelessWidget {
 }
 
 enum _CaptureOptionTone { plan, ai, voice }
+
+@immutable
+class _PlanKindOption {
+  const _PlanKindOption({
+    required this.kind,
+    required this.label,
+    required this.pictogram,
+    required this.semantics,
+    required this.keyName,
+  });
+
+  final PlannerEntityKind kind;
+  final String label;
+  final String pictogram;
+  final String semantics;
+  final String keyName;
+}
 
 class _CaptureOptionButton extends StatelessWidget {
   const _CaptureOptionButton({
@@ -2981,6 +3215,8 @@ class _ExpandedTodayDeck extends StatelessWidget {
     required this.taskProgressById,
     required this.scheduledAtById,
     required this.projectionResolved,
+    required this.projectionFailed,
+    required this.onRetryToday,
     required this.nowProvider,
     required this.inspected,
     required this.onInspect,
@@ -2999,6 +3235,8 @@ class _ExpandedTodayDeck extends StatelessWidget {
   final Map<String, PlannerTaskProgress> taskProgressById;
   final Map<String, DateTime?> scheduledAtById;
   final bool projectionResolved;
+  final bool projectionFailed;
+  final VoidCallback onRetryToday;
   final PerfectNow nowProvider;
   final PlannerEntity? inspected;
   final ValueChanged<PlannerEntity> onInspect;
@@ -3085,6 +3323,10 @@ class _ExpandedTodayDeck extends StatelessWidget {
                       onOpenPlan: onOpenPlan,
                     ),
                   ),
+                  if (projectionFailed) ...[
+                    const SizedBox(height: PerfectSpace.sm),
+                    _TodayProjectionRecovery(onRetry: onRetryToday),
+                  ],
                   const SizedBox(height: PerfectSpace.lg),
                   SizedBox(
                     key: const ValueKey<String>('expanded-day-deck-stage'),
@@ -3105,6 +3347,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
                                 habitSummaryById: habitSummaryById,
                                 taskProgressById: taskProgressById,
                                 scheduledAtById: scheduledAtById,
+                                projectionResolved: projectionResolved,
                                 onInspect: onInspect,
                                 onAdd: onAdd,
                                 constrained: true,
@@ -3176,6 +3419,8 @@ class _MediumTodayDeck extends StatelessWidget {
     required this.taskProgressById,
     required this.scheduledAtById,
     required this.projectionResolved,
+    required this.projectionFailed,
+    required this.onRetryToday,
     required this.nowProvider,
     required this.onInspect,
     required this.onAdd,
@@ -3192,6 +3437,8 @@ class _MediumTodayDeck extends StatelessWidget {
   final Map<String, PlannerTaskProgress> taskProgressById;
   final Map<String, DateTime?> scheduledAtById;
   final bool projectionResolved;
+  final bool projectionFailed;
+  final VoidCallback onRetryToday;
   final PerfectNow nowProvider;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
@@ -3258,6 +3505,10 @@ class _MediumTodayDeck extends StatelessWidget {
                         shortLandscape: shortLandscape,
                       ),
                     ),
+                    if (projectionFailed) ...[
+                      const SizedBox(height: PerfectSpace.sm),
+                      _TodayProjectionRecovery(onRetry: onRetryToday),
+                    ],
                     const SizedBox(height: PerfectSpace.lg),
                     SizedBox(
                       key: const ValueKey<String>('medium-day-deck'),
@@ -3270,6 +3521,7 @@ class _MediumTodayDeck extends StatelessWidget {
                         habitSummaryById: habitSummaryById,
                         taskProgressById: taskProgressById,
                         scheduledAtById: scheduledAtById,
+                        projectionResolved: projectionResolved,
                         onInspect: onInspect,
                         onAdd: onAdd,
                         constrained: true,
@@ -3283,6 +3535,48 @@ class _MediumTodayDeck extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _TodayProjectionRecovery extends StatelessWidget {
+  const _TodayProjectionRecovery({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label:
+          'Today could not refresh. Saved local rows are still shown. Retry the local refresh.',
+      child: DecoratedBox(
+        key: const ValueKey<String>('today-projection-recovery'),
+        decoration: BoxDecoration(
+          color: scheme.errorContainer.withValues(alpha: .28),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: scheme.error.withValues(alpha: .55)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.cloud_off_outlined, size: 22, color: scheme.error),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Today could not refresh. Saved local rows are still shown.',
+                  maxLines: 3,
+                ),
+              ),
+              TextButton(onPressed: onRetry, child: const Text('Retry today')),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -3333,6 +3627,7 @@ class _DayStreamPanel extends StatelessWidget {
     required this.habitSummaryById,
     required this.taskProgressById,
     required this.scheduledAtById,
+    required this.projectionResolved,
     required this.onInspect,
     required this.onAdd,
     required this.constrained,
@@ -3346,6 +3641,7 @@ class _DayStreamPanel extends StatelessWidget {
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
   final Map<String, PlannerTaskProgress> taskProgressById;
   final Map<String, DateTime?> scheduledAtById;
+  final bool projectionResolved;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
   final bool constrained;
@@ -3362,7 +3658,7 @@ class _DayStreamPanel extends StatelessWidget {
       ),
       SizedBox(height: dense ? PerfectSpace.xs : PerfectSpace.md),
       if (items.isEmpty)
-        _DayStreamEmpty(onAdd: onAdd)
+        _DayStreamEmpty(onAdd: onAdd, projectionResolved: projectionResolved)
       else
         _DayStreamTimeline(
           controller: controller,
@@ -3640,9 +3936,13 @@ class _DayStreamTimeline extends StatelessWidget {
 }
 
 class _DayStreamEmpty extends StatelessWidget {
-  const _DayStreamEmpty({required this.onAdd});
+  const _DayStreamEmpty({
+    required this.onAdd,
+    required this.projectionResolved,
+  });
 
   final VoidCallback onAdd;
+  final bool projectionResolved;
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
@@ -3661,7 +3961,7 @@ class _DayStreamEmpty extends StatelessWidget {
           ),
           const SizedBox(height: PerfectSpace.xs),
           Text(
-            'Your day has room.',
+            projectionResolved ? 'Your day has room.' : 'Updating today…',
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -3824,6 +4124,8 @@ class _TodayPage extends StatelessWidget {
     required this.taskProgressById,
     required this.scheduledAtById,
     required this.projectionResolved,
+    required this.projectionFailed,
+    required this.onRetryToday,
     required this.onInspect,
     required this.onAdd,
     required this.onOpenPlan,
@@ -3840,6 +4142,8 @@ class _TodayPage extends StatelessWidget {
   final Map<String, PlannerTaskProgress> taskProgressById;
   final Map<String, DateTime?> scheduledAtById;
   final bool projectionResolved;
+  final bool projectionFailed;
+  final VoidCallback onRetryToday;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
   final VoidCallback onOpenPlan;
@@ -3881,6 +4185,10 @@ class _TodayPage extends StatelessWidget {
           shortLandscape: shortLandscape,
         ),
       ),
+      if (projectionFailed) ...[
+        const SizedBox(height: PerfectSpace.sm),
+        _TodayProjectionRecovery(onRetry: onRetryToday),
+      ],
       const SizedBox(height: PerfectSpace.lg),
       PerfectStagedEntrance(
         order: 2,
@@ -3896,7 +4204,7 @@ class _TodayPage extends StatelessWidget {
       ),
       const SizedBox(height: PerfectSpace.xs),
       if (items.isEmpty)
-        _DayStreamEmpty(onAdd: onAdd)
+        _DayStreamEmpty(onAdd: onAdd, projectionResolved: projectionResolved)
       else
         ..._groupTodayRows(
           items: items,
@@ -5237,9 +5545,19 @@ class _MorePage extends StatelessWidget {
             ),
             title: const Text('Sync & diagnostics'),
             subtitle: Text(_syncCopy(controller.syncStatus)),
-            trailing: TextButton(
-              onPressed: controller.refresh,
-              child: const Text('Sync now'),
+            trailing: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                if (onOpenFeedback != null)
+                  TextButton(
+                    onPressed: onOpenFeedback,
+                    child: const Text('Report issue'),
+                  ),
+                TextButton(
+                  onPressed: controller.refresh,
+                  child: const Text('Sync now'),
+                ),
+              ],
             ),
           ),
         ),
@@ -6252,6 +6570,10 @@ enum _EntityContextAction {
   edit,
   duplicate,
   logHabit,
+  setHabitExact,
+  resetHabitToday,
+  adjustDuration,
+  adjustCount,
   resolveRecovery,
   percentage,
   miss,
@@ -6338,7 +6660,61 @@ Future<void> _showEntityContextMenu(
           ),
         ),
       if (entity.kind == PlannerEntityKind.recurringTask ||
-          entity.kind == PlannerEntityKind.habit)
+          entity.kind == PlannerEntityKind.habit) ...[
+        if (entity.kind == PlannerEntityKind.habit &&
+            (safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                    'count' ||
+                safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                    'numeric' ||
+                safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                    'duration')) ...[
+          const PopupMenuItem<_EntityContextAction>(
+            value: _EntityContextAction.setHabitExact,
+            child: _ContextMenuLabel(
+              icon: Icons.edit_calendar_outlined,
+              label: 'Set exact',
+            ),
+          ),
+          const PopupMenuItem<_EntityContextAction>(
+            value: _EntityContextAction.resetHabitToday,
+            child: _ContextMenuLabel(
+              icon: Icons.restart_alt_rounded,
+              label: 'Reset today',
+            ),
+          ),
+        ],
+        if (entity.kind == PlannerEntityKind.habit &&
+            safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                'count')
+          const PopupMenuItem<_EntityContextAction>(
+            value: _EntityContextAction.adjustCount,
+            child: _ContextMenuLabel(
+              icon: Icons.remove_circle_outline_rounded,
+              label: 'Subtract one',
+            ),
+          ),
+        if (entity.kind == PlannerEntityKind.habit &&
+            safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                'numeric')
+          PopupMenuItem<_EntityContextAction>(
+            value: _EntityContextAction.adjustCount,
+            child: _ContextMenuLabel(
+              icon: Icons.remove_circle_outline_rounded,
+              label:
+                  'Subtract ${_formatHabitStep(_habitStep(entity, fallback: 1))} ${safeNullableJsonString(entity.tracking['unit']) ?? 'units'}',
+            ),
+          ),
+        if (entity.kind == PlannerEntityKind.habit &&
+            safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                'duration')
+          PopupMenuItem<_EntityContextAction>(
+            value: _EntityContextAction.adjustDuration,
+            child: _ContextMenuLabel(
+              icon: Icons.remove_circle_outline_rounded,
+              label:
+                  'Subtract ${_formatHabitStep(_habitStep(entity, fallback: 5))} minutes',
+            ),
+          ),
         const PopupMenuItem<_EntityContextAction>(
           value: _EntityContextAction.miss,
           child: _ContextMenuLabel(
@@ -6346,6 +6722,7 @@ Future<void> _showEntityContextMenu(
             label: 'Mark miss today',
           ),
         ),
+      ],
       if (_canFocusEntity(entity))
         const PopupMenuItem<_EntityContextAction>(
           value: _EntityContextAction.focus,
@@ -6399,6 +6776,18 @@ Future<void> _showEntityContextMenu(
           controller: controller,
         ),
       );
+      return;
+    case _EntityContextAction.setHabitExact:
+      await _showHabitCorrectionDialog(context, controller, entity);
+      return;
+    case _EntityContextAction.resetHabitToday:
+      await _undoHabitDayWithFeedback(context, controller, entity);
+      return;
+    case _EntityContextAction.adjustDuration:
+      await _adjustDurationHabitWithFeedback(context, controller, entity);
+      return;
+    case _EntityContextAction.adjustCount:
+      await _adjustCountHabitWithFeedback(context, controller, entity);
       return;
     case _EntityContextAction.resolveRecovery:
       if (eligibility != null) {
@@ -6963,15 +7352,64 @@ class _AgendaCompletionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (entity.kind == PlannerEntityKind.habit) {
+      final method = safeJsonString(
+        entity.tracking['method'],
+        fallback: 'check',
+      );
+      final countHabit = method == 'count' || method == 'numeric';
+      final durationHabit = method == 'duration';
+      final booleanHabit = method == 'check' || method == 'avoid';
+      final checklistHabit = method == 'checklist';
+      final completed = habitSummary?.isSuccessful ?? false;
+      final step = _habitStep(entity, fallback: durationHabit ? 5 : 1);
+      final stepLabel = _formatHabitStep(step);
+      final unitLabel =
+          safeNullableJsonString(entity.tracking['unit']) ??
+          (countHabit ? 'units' : 'minutes');
+      final nextChecklistLabel = checklistHabit
+          ? _nextChecklistItemLabel(entity, habitSummary)
+          : null;
       return IconButton(
-        tooltip: habitSummary?.hasLog == true
+        tooltip: method == 'count'
+            ? 'Add one'
+            : countHabit
+            ? (step == 1 ? 'Add one' : 'Add $stepLabel $unitLabel')
+            : durationHabit
+            ? 'Add ${_formatHabitStep(step)} minutes'
+            : booleanHabit
+            ? (completed ? 'Mark habit pending' : 'Mark habit done')
+            : checklistHabit && nextChecklistLabel != null
+            ? 'Complete $nextChecklistLabel'
+            : checklistHabit
+            ? 'Checklist complete'
+            : habitSummary?.hasLog == true
             ? 'Edit today’s habit result'
             : 'Log habit',
-        onPressed: () => PlannerHabitLogSheet.show(
-          context,
-          habit: entity,
-          controller: controller,
-        ),
+        onPressed: countHabit
+            ? () => unawaited(
+                _incrementCountHabitWithFeedback(context, controller, entity),
+              )
+            : durationHabit
+            ? () => unawaited(
+                _incrementDurationTapWithFeedback(context, controller, entity),
+              )
+            : booleanHabit
+            ? () => unawaited(
+                _toggleBooleanHabitWithFeedback(context, controller, entity),
+              )
+            : checklistHabit
+            ? () => unawaited(
+                _completeNextChecklistItemWithFeedback(
+                  context,
+                  controller,
+                  entity,
+                ),
+              )
+            : () => PlannerHabitLogSheet.show(
+                context,
+                habit: entity,
+                controller: controller,
+              ),
         icon: _habitSummaryVisual(
           context,
           habitSummary,
@@ -6987,6 +7425,389 @@ class _AgendaCompletionButton extends StatelessWidget {
       color: _colorFor(context, entity),
       onPressed: () =>
           _cycleTaskProgressWithFeedback(context, controller, entity),
+    );
+  }
+}
+
+String? _nextChecklistItemLabel(
+  PlannerEntity habit,
+  PlannerHabitDaySummary? summary,
+) {
+  final checked = summary?.checkedItemIds ?? const <String>{};
+  final items = _habitChecklistItems(habit);
+  for (var i = 0; i < items.length; i++) {
+    final item = items[i];
+    final id = safeJsonString(
+      item[PlannerHabitTrackingKeys.itemId],
+      fallback: 'item-${i + 1}',
+    );
+    if (!checked.contains(id)) {
+      return safeJsonString(item['label'], fallback: 'item ${i + 1}');
+    }
+  }
+  return null;
+}
+
+Future<void> _completeNextChecklistItemWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.completeNextChecklistItem(habit);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            '${summary.checkedCount} of ${summary.totalChecklistItems} checked',
+          ),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Checklist unchanged. Previous result is safe.'),
+      ),
+    );
+  }
+}
+
+Future<void> _incrementCountHabitWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.incrementHabit(habit);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            '${summary.amount.toStringAsFixed(summary.amount == summary.amount.roundToDouble() ? 0 : 1)} of ${summary.target.toStringAsFixed(summary.target == summary.target.roundToDouble() ? 0 : 1)}',
+          ),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Today’s count did not change. Your previous total is still safe.',
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _adjustCountHabitWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.decrementHabit(habit);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('Today’s count: ${summary.amount.toStringAsFixed(0)}'),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not adjust count. Previous total is safe.'),
+      ),
+    );
+  }
+}
+
+Future<void> _adjustDurationHabitWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.adjustMeasuredHabit(habit, direction: -1);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('Today’s minutes: ${_formatHabitStep(summary.amount)}'),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not adjust minutes. Previous total is safe.'),
+      ),
+    );
+  }
+}
+
+Future<void> _incrementDurationTapWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.incrementDurationHabit(habit);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            '${summary.amount.toStringAsFixed(summary.amount == summary.amount.roundToDouble() ? 0 : 1)} of ${summary.target.toStringAsFixed(summary.target == summary.target.roundToDouble() ? 0 : 1)} minutes',
+          ),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Today’s minutes did not change. Previous total is safe.',
+        ),
+      ),
+    );
+  }
+}
+
+double _habitStep(PlannerEntity habit, {required double fallback}) {
+  final rawStep = habit.tracking['step'];
+  final parsed = rawStep is num && rawStep.isFinite
+      ? rawStep.toDouble()
+      : double.tryParse('$rawStep') ?? fallback;
+  return parsed > 0 ? parsed : fallback;
+}
+
+String _formatHabitStep(double step) =>
+    step.toStringAsFixed(step == step.roundToDouble() ? 0 : 1);
+
+Future<void> _showHabitCorrectionDialog(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  final method = safeJsonString(habit.tracking['method'], fallback: 'check');
+  final summary = await controller.habitDaySummary(habit);
+  if (!context.mounted) return;
+  final entered = await _HabitCorrectionDialog.show(
+    context,
+    habit: habit,
+    method: method,
+    summary: summary,
+  );
+  if (entered == null || !context.mounted) return;
+  try {
+    await controller.logHabit(habit, value: entered);
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Exact total not saved. Previous total is safe.'),
+      ),
+    );
+  }
+}
+
+class _HabitCorrectionDialog extends StatefulWidget {
+  const _HabitCorrectionDialog({
+    required this.habit,
+    required this.method,
+    required this.summary,
+  });
+
+  final PlannerEntity habit;
+  final String method;
+  final PlannerHabitDaySummary summary;
+
+  static Future<double?> show(
+    BuildContext context, {
+    required PlannerEntity habit,
+    required String method,
+    required PlannerHabitDaySummary summary,
+  }) => showPerfectDialog<double>(
+    context: context,
+    builder: (dialogContext) =>
+        _HabitCorrectionDialog(habit: habit, method: method, summary: summary),
+  );
+
+  @override
+  State<_HabitCorrectionDialog> createState() => _HabitCorrectionDialogState();
+}
+
+class _HabitCorrectionDialogState extends State<_HabitCorrectionDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _value = TextEditingController(
+    text: widget.summary.amount == widget.summary.amount.roundToDouble()
+        ? widget.summary.amount.toStringAsFixed(0)
+        : widget.summary.amount.toString(),
+  );
+  var _saving = false;
+
+  @override
+  void dispose() {
+    _value.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final unit =
+        safeNullableJsonString(widget.habit.tracking['unit']) ??
+        (widget.method == 'duration' ? 'minutes' : '');
+    final target = widget.summary.target > 0 ? widget.summary.target : 1;
+    final amount = widget.summary.amount;
+    return AlertDialog(
+      key: const ValueKey<String>('habit-correction-dialog'),
+      title: Text('Today total · ${widget.habit.title}', maxLines: 2),
+      scrollable: true,
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Current ${amount.toStringAsFixed(amount == amount.roundToDouble() ? 0 : 1)} of ${target.toStringAsFixed(target == target.roundToDouble() ? 0 : 1)}${unit.isEmpty ? '' : ' $unit'}.',
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              key: const ValueKey<String>('habit-correction-value'),
+              controller: _value,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Today total${unit.isEmpty ? '' : ' ($unit)'}',
+                helperText: 'Enter a whole or decimal value from 0 upward.',
+              ),
+              validator: (text) {
+                final parsed = double.tryParse((text ?? '').trim());
+                if (parsed == null || !parsed.isFinite || parsed < 0) {
+                  return 'Enter a value from 0 upward.';
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) => _save(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(onPressed: _save, child: const Text('Save exact')),
+      ],
+    );
+  }
+
+  void _save() {
+    if (!(_formKey.currentState?.validate() ?? false) || _saving) return;
+    setState(() => _saving = true);
+    Navigator.of(context).pop(double.parse(_value.text.trim()));
+  }
+}
+
+Future<void> _undoHabitDayWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    await controller.undoHabitDay(habit);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Habit pending')));
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Undo failed. Previous result is safe.')),
+    );
+  }
+}
+
+Future<void> _undoHabitDayIfCurrentWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+  PlannerHabitDaySummary change,
+) async {
+  try {
+    final restored = await controller.undoHabitIfCurrent(habit, change);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          restored
+              ? 'Habit pending'
+              : 'Undo expired. A newer habit result was kept.',
+        ),
+      ),
+    );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Undo failed. Previous result is safe.')),
+    );
+  }
+}
+
+Future<void> _toggleBooleanHabitWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.toggleHabit(habit);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(summary.isSuccessful ? 'Habit done' : 'Habit pending'),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () => unawaited(
+              _undoHabitDayIfCurrentWithFeedback(
+                context,
+                controller,
+                habit,
+                summary,
+              ),
+            ),
+          ),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Today’s habit did not change. Your previous result is still safe.',
+        ),
+      ),
     );
   }
 }
@@ -7375,7 +8196,9 @@ String _habitSummaryDetail(
     PlannerHabitDayState.completed => 'Complete',
     PlannerHabitDayState.missed => 'Not done',
   };
-  if (summary.method == 'count' || summary.method == 'duration') {
+  if (summary.method == 'count' ||
+      summary.method == 'numeric' ||
+      summary.method == 'duration') {
     final unit = safeNullableJsonString(habit.tracking['unit']);
     final suffix = unit == null ? '' : ' $unit';
     return '$state · ${_compactNumber(summary.amount)} of '

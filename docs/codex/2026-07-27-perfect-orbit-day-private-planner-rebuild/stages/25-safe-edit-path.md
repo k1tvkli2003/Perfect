@@ -1,6 +1,8 @@
 # Stage 25 — View-first, type-stable and draft-safe editing
 
-Status: pending  
+Status: in progress — invalid-timing draft retention and create/edit wizard
+suites are GREEN; all-kinds Type-step absence, discard guard, stable ID/history,
+return-route and footer/widget parity matrices remain open
 Depends on: Stages 21–24; anticipates Stage 31 detail route  
 Primary surfaces: Edit Task/Recurring/Habit/Project/Area/Goal
 
@@ -77,3 +79,11 @@ phone/tablet/Windows screenshots and real IME/back behavior.
 
 Stage 26 reuses the corrected edit shell for habits. Commit/push/release with edit
 history/route evidence and clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 25 partial)
+
+`flutter test --no-pub test/presentation/planner_editor_test.dart`:
+**EXIT:0, 17 pass**. Includes validation focus and draft retention through
+invalid time blocks, and create/edit wizard continuity. Stage 25's all-kinds
+Type-step absence, dirty discard guard, stable-ID/history and return-route
+matrix remain open; these tests alone do not close the stage.

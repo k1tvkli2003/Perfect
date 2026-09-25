@@ -8,6 +8,18 @@ import 'package:perfect/presentation/today_pulse.dart';
 
 void main() {
   group('TodayPulseSnapshot', () {
+    test('unresolved empty projection is not a confirmed empty owner', () {
+      final snapshot = TodayPulseSnapshot.fromPlanner(
+        items: const <PlannerEntity>[],
+        taskProgressById: const <String, PlannerTaskProgress>{},
+        habitSummaryById: const <String, PlannerHabitDaySummary>{},
+        projectionResolved: false,
+      );
+
+      expect(snapshot.state, TodayPulseState.resolving);
+      expect(snapshot.outcomePrimary, 'Updating today…');
+    });
+
     test('empty projection remains truthful and action-oriented', () {
       final snapshot = TodayPulseSnapshot.fromPlanner(
         items: const <PlannerEntity>[],

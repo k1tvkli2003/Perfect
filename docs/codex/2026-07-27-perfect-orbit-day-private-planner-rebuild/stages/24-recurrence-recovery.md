@@ -1,6 +1,9 @@
 # Stage 24 — Recurring task, recovery and Carry policy
 
-Status: pending  
+Status: in progress — leap/yearly/monthly/flexible recurrence vectors,
+exception/limit handling, carry/miss-then-next recovery domain suites, and
+responsive wizard flows are GREEN; preview/UI parity, notifications, AI/schema
+and device matrices remain open
 Depends on: Stages 21–23 and recurrence domain baseline  
 Primary surfaces: recurring wizard, Today projection, Plan, notifications, detail, AI
 
@@ -77,3 +80,40 @@ visual matrices for simple/advanced rules and 200% text.
 
 Stage 25 receives immutable kind/rule/history contracts for editing. Commit/push/
 release with recurrence/recovery evidence and clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 24 partial)
+
+- `flutter test --no-pub
+  test/planner/planner_recovery_engine_test.dart
+  test/planner/planner_habit_day_summary_test.dart
+  test/planner/planner_habit_tracking_test.dart
+  test/planner/planner_formula_test.dart
+  test/planner/planner_today_stream_test.dart
+  test/planner/planner_reminder_projection_test.dart
+  test/presentation/planner_editor_test.dart
+  test/presentation/planner_habit_log_sheet_test.dart`:
+  **EXIT:0, 68 pass**. Includes leap-day/yearly/monthly recurrence, exception
+  and flexible quota behavior; one-off Carry cap; overdue miss-then-next;
+  editing old completed task not resurrected in Today.
+- Cross-consumer visual parity, notification receipt and AI/schema validation
+  remain unverified for this stage.
+
+### Evidence — 2026-09-25 (real runs, Stage 31+ partial)
+
+- View-first route intent (Stage 31): `IR-002` characterizes the current
+  compact direct-to-editor defect, while `IR-001`/detail requirements own the
+  target contract. `interaction_route_inventory_contract_test.dart`
+  **EXIT:0, 7 pass**, including the corrected `quickCapture` local-first
+  signature marker.
+- Task status/four-state transitions (Stage 32+34 surface):
+  `task_status_control_test.dart` and controller rapid-tap/order/receipt
+  vectors are GREEN inside the **EXIT:0, 187 pass** combined workspace gate.
+- Focus session surface (Stage 40 surface):
+  `focus_session_sheet_test.dart` compact/Windows dialog behavior GREEN in the
+  same 187 gate.
+- Adaptive secondary sheets/dialogs (Stages 31/35 surface):
+  `planner_secondary_surfaces_adaptive_test.dart` GREEN in the same gate.
+- Pulse contract (Stage 11 baseline): `stage11_today_pulse_contract_test.dart`
+  GREEN in the same gate.
+- Full visual matrices, deep-link queueing, inspector parity, and lifecycle
+  confirmation semantics remain open across Stages 31–40.

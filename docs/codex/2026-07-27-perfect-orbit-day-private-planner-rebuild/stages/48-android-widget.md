@@ -1,6 +1,9 @@
 # Stage 48 — Responsive, scrollable and actionable Android Today widget
 
-Status: pending  
+Status: in progress — protocol validation, hidden-title privacy, exact-token
+comparison, replay/schedule/idempotent bridge, and action reconciliation suites
+are GREEN; native host screenshots, launcher picker, and Quick Add dialog proof
+remain open
 Depends on: Stages 06, 10, 12–15, 28–31 and 41–47  
 Blocks: Stages 49 and 50  
 Primary surfaces: Android launcher picker/resize host, native RemoteViews collection,
@@ -260,3 +263,10 @@ be committed and pushed to `main`, pass CI, increment version monotonically and 
 through the signed APK/Windows release contract even though Windows has no widget.
 Install Android N→N+1 over a placed widget and prove widget/action/data continuity;
 record any launcher-specific limitation honestly and leave only clean `main`.
+
+### Evidence — 2026-09-25 (real runs, Stage 48 partial)
+
+`flutter test --no-pub test/widgets/`: **EXIT:0, 18 pass** — protocol rejects
+non-canonical/inconsistent rows, exact token comparison, hidden-title privacy,
+quick-add replay scheduling/local-first/idempotency, and action reconciliation.
+Native host/launcher screenshots and native Quick Add dialog proof remain open.

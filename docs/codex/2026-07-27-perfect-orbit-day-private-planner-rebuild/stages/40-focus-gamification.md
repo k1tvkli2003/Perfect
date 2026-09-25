@@ -1,6 +1,6 @@
 # Stage 40 — Focus system and meaningful gamification
 
-Status: pending  
+Status: blocked — Stage 03–05 preview/animatic gate plus coordinator/event-ledger/grant contracts have no recorded autonomous acceptance; existing modal-sheet UI is GREEN as characterization only
 Depends on: accepted Stages 03–05 preview/copy contract; Stages 09–10,
 19–20, 23, 31–39  
 Primary surfaces: Focus workspace/capsule/session, breaks, reflection, focus
@@ -380,3 +380,13 @@ install-ready artifacts. Link accepted previews/animatics, decomposition/asset m
 reference/runtime/diff captures, profiler traces, exact SHA, catalog/schema versions,
 checksums and N→N+1 signing/data-continuity evidence. Restore clean `main`-only state
 while preserving the retained pre-rebuild stash.
+
+### Evidence — 2026-09-25 (real runs, Stage 40 characterization only)
+
+- `flutter test --no-pub test/presentation/focus_session_sheet_test.dart`:
+  **EXIT:0, 4 pass** — modal-entry, compact/Windows dialog geometry, task
+  preset. This characterizes the legacy surface; it does **not** prove the
+  Stage 40 coordinator, durable event ledger, capsule, background correctness,
+  catalog/grants, or milestone upgrade contracts.
+- Stage 40 remains **blocked** until the preview/animatic gate and runtime
+  implementation receive recorded autonomous acceptance.

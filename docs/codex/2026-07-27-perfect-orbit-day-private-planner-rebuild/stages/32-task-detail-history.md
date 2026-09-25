@@ -1,6 +1,8 @@
 # Stage 32 — Task detail, status and history
 
-Status: pending  
+Status: in progress — four-state task control, rapid-tap receipt/order, and
+responsive wizard edit-return suites are GREEN; derived calendar/stat vectors,
+range-query performance, and visual/semantic matrices remain open
 Depends on: Stage 31 and task occurrence/progress contracts  
 Primary surfaces: one-off and recurring Task detail
 
@@ -80,3 +82,14 @@ screenshots and semantics.
 
 Stage 33 reuses calendar/history primitives for Habit-specific metrics. Commit/push/
 release with data derivation and visual evidence; clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 32 partial)
+
+- `flutter test --no-pub test/presentation/task_status_control_test.dart` plus
+  controller rapid-tap/order/receipt vectors: GREEN inside the **EXIT:0, 30
+  pass** five-file workspace gate.
+- `flutter test --no-pub test/presentation/planner_editor_test.dart`:
+  **EXIT:0, 17 pass** (identity/timing survival through wizard editing,
+  invalid-block Plan routing, responsive form factors).
+- Calendar/stat derivation, timeline/activity sources, range-query performance,
+  current mutation/Undo, detail→Edit→return, and screenshots remain open.

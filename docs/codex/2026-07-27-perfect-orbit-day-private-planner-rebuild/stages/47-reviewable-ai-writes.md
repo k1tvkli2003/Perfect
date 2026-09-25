@@ -1,6 +1,9 @@
 # Stage 47 — Reviewable and undoable AI planner writes
 
-Status: pending  
+Status: in progress — typed conversation/proposal parsing, explicit Apply
+confirmation, local apply receipt, Apply error retention, and Undo-capable
+controller mutation suites are GREEN; coordinator/registry, hash-gated
+confirmation, audit trail, and convergence proof remain open
 Depends on: Stages 25, 31–45 and 46  
 Blocks: Stages 49 and 50  
 Primary surfaces: AI proposal review, local apply coordinator, planner operation
@@ -266,3 +269,13 @@ audit, undo and end-to-end evidence. If runtime/schema/function code changed, ap
 forward-safe migrations, commit/push `main`, pass CI and publish/install the three
 signed private artifacts. Record any unrun live two-device/Supabase proof as a blocker,
 not as completion, and leave the tree clean with no extra branch or secret.
+
+### Evidence — 2026-09-25 (real runs, Stage 47 partial)
+
+- AI-side confirmation/receipt boundary inside the **EXIT:0, 21 pass** AI dock
+  suite (no write before Apply, item-count receipt, error retention).
+- Manual-side mutation/Undo boundary inside the **EXIT:0, 133 pass**
+  integrated controller/Pulse/workspace gate (quick-capture Undo, task/hash
+  Undo receipts, habit correction Undo).
+- Registry/coordinator, canonical-hash confirmation, audit entries, and
+  cross-consumer convergence remain open.

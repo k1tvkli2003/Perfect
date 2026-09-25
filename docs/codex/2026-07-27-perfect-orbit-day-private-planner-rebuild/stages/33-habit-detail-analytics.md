@@ -1,6 +1,9 @@
 # Stage 33 — Habit detail, calendar and actionable analytics
 
-Status: pending  
+Status: in progress — method-aware logging/correction, daily-state outcomes,
+over-target and legacy-observation folding suites are GREEN; derived metrics,
+calendar encoding, pagination, parity, and keyboard/screen-reader matrices
+remain open
 Depends on: Stages 27–32  
 Primary surfaces: Habit detail and selected-day correction
 
@@ -77,3 +80,11 @@ screen-reader calendar; visual matrix at phone/tablet/Windows/light/dark/200%.
 
 Stage 34 receives complete detail body and history constraints. Commit/push/release
 with reproducible metric evidence and clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 33 partial)
+
+- Method-aware Today/Habit logging and correction inside the **EXIT:0, 133
+  pass** integrated controller/Pulse/workspace gate.
+- Daily-state vectors inside the **EXIT:0, 68 pass** domain+wizard gate.
+- Metric/calendar goldens, pagination, app/widget/AI parity, keyboard/screen
+  reader, and visual matrices remain open.

@@ -1,6 +1,9 @@
 # Stage 35 — Windows inspector, adaptive detail and deep-link continuity
 
-Status: pending  
+Status: in progress — Windows rail/inspector geometry, adjacent-pane
+selection, resizable divider/keyboard, and cold navigation controller suites
+are GREEN; resize-state migration, protocol/widget/notification cold starts,
+duplicate/deleted-link behavior, and high-DPI/native matrices remain open
 Depends on: Stages 07, 31–34  
 Primary surfaces: expanded Windows/tablet detail, notifications, widget/protocol links
 
@@ -69,3 +72,14 @@ delay; Windows high-DPI screenshot matrix; no direct edit route.
 
 Stage 36 receives final list/detail selection behavior. Commit/push/release with deep-
 link/Windows evidence and clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 35 partial)
+
+- `expanded Windows keeps Today Pulse above one dominant day stream`,
+  `sparse wide Today keeps the selected inspector content-led`,
+  `desktop inspector divider supports drag keyboard and a useful main pane`,
+  `Today deep link clears an inspector already open on Today`, and rail
+  persistence suites GREEN inside the integrated workspace gate.
+- Inspector/full semantic parity, resize migration without duplicate routes,
+  external widget/notification/protocol navigation, and high-DPI/native
+  proof remain open.

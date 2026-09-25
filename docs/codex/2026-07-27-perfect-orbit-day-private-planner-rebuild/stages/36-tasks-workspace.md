@@ -1,6 +1,6 @@
 # Stage 36 — Tasks workspace reconstruction
 
-Status: pending  
+Status: blocked — Stage 03–05 preview/Copy gate plus query/view/sort/group/selection/bulk contracts have no recorded autonomous acceptance; existing row/status, filter-deck, and entry suites remain GREEN as characterization only
 Depends on: accepted Stages 03–05 preview/copy contract; Stages 07, 13, 17,
 22–25, 31–35  
 Primary surfaces: Tasks workspace, task search/filter/sort/grouping, saved views,
@@ -329,3 +329,14 @@ install-ready artifacts required by the project. Record exact commit/artifact ha
 internally accepted preview/decomposition paths, reference/runtime/diff artifacts, runtime evidence
 and known limitations, then return to clean `main`-only branch state.
 Do not remove the retained pre-rebuild stash.
+
+### Evidence — 2026-09-25 (real runs, Stage 36 characterization only)
+
+- Existing row/status/filter/entry behavior is GREEN as characterization:
+  `flutter test --no-pub
+  test/presentation/task_status_control_test.dart
+  test/presentation/planner_secondary_surfaces_adaptive_test.dart
+  test/presentation/planner_editor_test.dart` are all GREEN.
+- This does **not** close Stage 36. Runtime/query/view implementation remains
+  blocked until the Stage 03–05 preview/Copy gate has recorded autonomous
+  acceptance.

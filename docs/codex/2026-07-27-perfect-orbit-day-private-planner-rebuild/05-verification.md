@@ -1,5 +1,28 @@
 # Verification
 
+## Solo behavioral checkpoint — 2026-09-25 (uncommitted WIP)
+
+Branch `feat/stage13-status-undo`, head `ba0f6fe`. Every gate below is a real
+`flutter test --no-pub` run with exit 0, plus `flutter analyze --no-pub`
+(no issues) and `git diff --check` (clean).
+
+| Gate | Result |
+|---|---|
+| Full suite `flutter test --no-pub` (all files, one command) | 537/537 pass, exit 0 (`C:/Users/K1/AppData/Local/Temp/perfect-full-20260925.log`) |
+| 11-file integrated behavioral (controller/Pulse/workspace/AI-dock/editor/route/secondary/Pulse-contract/task-status/focus/motion) | 198/198 pass |
+| Combined domain+wizard (recovery/summary/tracking/formula/stream/reminder/editor/habit-sheet) | 68/68 pass |
+| Store/sync/migration (local-store/sync-repo/migration) | 29/29 pass |
+| AI/agent bundle (ingestion/migration-sync/AI-contract/edge) | 27/27 pass |
+| Widget bridge (`test/widgets/`) | 18/18 pass |
+| Preservation (`test/preservation/`) | 6/6 pass |
+| Five-file workspace (controller/Pulse/workspace/AI-dock/editor) | 30 pass slice of the 198 gate |
+| Single-file supporting (pictogram 3, local-time/date 10, reminder 2, habit-sheet 1, sync-indicator/config 7, motion 11, route 7, AI-dock 21, editor 17) | all pass |
+
+Not proof: frozen-candidate SHA, host/device matrices, Copy side-by-sides,
+motion/system traces, injection/corpus attacks, CI workflow, signed
+artifacts, N→N+1 rehearsal. Stages 36–40 and 49–50 record these as explicit
+blockers; no stage is marked `complete`.
+
 ## Compact viewport checkpoint — 2026-09-17
 
 Changed tests only: compact Today and compact AI now set view metrics through

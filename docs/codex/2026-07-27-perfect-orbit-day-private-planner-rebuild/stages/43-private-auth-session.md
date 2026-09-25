@@ -1,6 +1,8 @@
 # Stage 43 — Private auth, durable session and owner bootstrap
 
-Status: pending  
+Status: in progress — sign-out/session preservation, migration rollback, and
+private boundary scanning suites are GREEN; Supabase key handling, secure
+storage, refresh/revoke flows, and native sign-in matrices remain open
 Depends on: Stages 01, 05, 06–10 and 41  
 Blocks: Stages 44–50  
 Primary surfaces: boot/splash, Supabase configuration, keyvan sign-in, password
@@ -217,3 +219,9 @@ worker cancellation/resume rules and secure external-intent queue. Commit/push o
 after CI, Supabase integration, real Android/Windows auth flows, secret scans and
 signed upgrade proof pass; record remote configuration/deployment separately and
 leave clean `main` only.
+
+### Evidence — 2026-09-25 (real runs, Stage 43 partial)
+
+`flutter test --no-pub test/preservation/`: **EXIT:0, 6 pass** — private
+boundary scan, sign-out/session preservation, and failed migration rollback.
+Supabase/session/refresh device flows and native matrices remain open.

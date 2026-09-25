@@ -1,6 +1,10 @@
 # Stage 27 — Complete Habit tracking-method model
 
-Status: pending  
+Status: in progress — check/count/duration/numeric/checklist/formula method
+vectors, checklist all/threshold rules, invalid/missing formula safety, and the
+Stage 14 count-vs-numeric contract are GREEN at domain/controller/widget
+layers; schema migration, server/RLS, AI proposal, and old-client parity remain
+open
 Depends on: Stage 26 and occurrence schema baseline  
 Primary consumers: wizard, Today/Habits rows, detail analytics, widget and AI
 
@@ -89,3 +93,23 @@ validation; mixed locale input; performance over long history.
 
 Stage 28 builds high-frequency multiple-per-day behavior on Count/Duration/Value.
 Commit/push/release with cross-consumer contract evidence and clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 27 partial)
+
+- Domain method vectors:
+  `flutter test --no-pub
+  test/planner/planner_habit_tracking_test.dart
+  test/planner/planner_habit_day_summary_test.dart
+  test/planner/planner_formula_test.dart` — checklist `all`/threshold success,
+  legacy checklist readability, measured-method daily summary, safe arithmetic
+  from typed values, bracketed names/bounded functions. Covered inside the
+  **EXIT:0, 68 pass** combined domain+wizard gate.
+- Stage 14 runtime contract is now the decisive method-boundary proof:
+  `flutter test --no-pub
+  test/presentation/planner_workspace_controller_test.dart
+  test/presentation/today_pulse_test.dart
+  test/presentation/perfect_workspace_page_test.dart` — **EXIT:0, 133 pass**,
+  including count `+1` versus numeric configured-step behavior at controller
+  and row layers.
+- Migration, server/RLS, AI proposal, old-client parity, mixed-locale input,
+  and long-history performance remain open.

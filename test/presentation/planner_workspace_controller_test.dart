@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
+import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
 import 'package:perfect/planner/notifications/planner_reminder_scheduler.dart';
 import 'package:perfect/planner/sync/planner_sync_repository.dart';
@@ -77,6 +78,356 @@ void main() {
   });
 
   test(
+    'count habit primary tap adds one unit without replacing the day total',
+    () async {
+      final database = PlannerDatabase(NativeDatabase.memory());
+      final local = PlannerLocalStore(database);
+      final controller = PlannerWorkspaceController(
+        local,
+        PlannerSyncRepository(
+          local,
+          _DisconnectedGateway(),
+          ownerId: 'controller-owner',
+          deviceId: '11111111-1111-4111-8111-111111111111',
+        ),
+        ownerId: 'controller-owner',
+        now: () => DateTime.utc(2026, 7, 27, 9),
+      );
+      addTearDown(controller.disposeAsync);
+      await controller.start();
+      await controller.saveEntity(
+        kind: PlannerEntityKind.habit,
+        payload: <String, dynamic>{
+          ...defaultPlannerPayload(title: 'Water'),
+          PlannerPayloadKeys.tracking: const <String, dynamic>{
+            'method': 'count',
+            'target': 8,
+            'goal': 'at_least',
+            'unit': 'glasses',
+            'step': 1,
+          },
+        },
+      );
+      final habit = (await local.readActiveEntities('controller-owner')).single;
+
+      final first = await controller.incrementHabit(habit);
+      final second = await controller.incrementHabit(habit);
+
+      expect(first.amount, 1);
+      expect(second.amount, 2);
+      expect(second.state.name, 'partial');
+      expect(
+        await database.select(database.plannerOccurrences).get(),
+        hasLength(1),
+        reason: 'Two primary taps stay one durable calendar-day occurrence.',
+      );
+    },
+  );
+
+  test(
+    'numeric habit adds a configured value without dropping corrections',
+    () async {
+      final database = PlannerDatabase(NativeDatabase.memory());
+      final local = PlannerLocalStore(database);
+      final controller = PlannerWorkspaceController(
+        local,
+        PlannerSyncRepository(
+          local,
+          _DisconnectedGateway(),
+          ownerId: 'controller-owner',
+          deviceId: '11111111-1111-4111-8111-111111111111',
+        ),
+        ownerId: 'controller-owner',
+        now: () => DateTime.utc(2026, 7, 27, 9),
+      );
+      addTearDown(controller.disposeAsync);
+      await controller.start();
+      await controller.saveEntity(
+        kind: PlannerEntityKind.habit,
+        payload: <String, dynamic>{
+          ...defaultPlannerPayload(title: 'Pages'),
+          PlannerPayloadKeys.tracking: const <String, dynamic>{
+            'method': 'numeric',
+            'target': 8,
+            'step': 2,
+            'unit': 'pages',
+          },
+        },
+      );
+      final habit = (await local.readActiveEntities('controller-owner')).single;
+      final first = await controller.adjustMeasuredHabit(habit);
+      expect(first.amount, 2);
+      expect(first.state.name, 'partial');
+      final exact = await controller.logHabit(habit, value: 6);
+      expect(exact.amount, 6);
+      final next = await controller.adjustMeasuredHabit(habit);
+      expect(next.amount, 8);
+      expect(next.isSuccessful, isTrue);
+      expect(
+        await database.select(database.plannerOccurrences).get(),
+        hasLength(1),
+      );
+    },
+  );
+
+  test('count primary tap adds one even when a custom step exists', () async {
+    final database = PlannerDatabase(NativeDatabase.memory());
+    final local = PlannerLocalStore(database);
+    final controller = PlannerWorkspaceController(
+      local,
+      PlannerSyncRepository(
+        local,
+        _DisconnectedGateway(),
+        ownerId: 'controller-owner',
+        deviceId: '11111111-1111-4111-8111-111111111111',
+      ),
+      ownerId: 'controller-owner',
+      now: () => DateTime.utc(2026, 7, 27, 9),
+    );
+    addTearDown(controller.disposeAsync);
+    await controller.start();
+    await controller.saveEntity(
+      kind: PlannerEntityKind.habit,
+      payload: <String, dynamic>{
+        ...defaultPlannerPayload(title: 'Water'),
+        PlannerPayloadKeys.tracking: const <String, dynamic>{
+          'method': 'count',
+          'target': 8,
+          'step': 3,
+          'unit': 'glasses',
+        },
+      },
+    );
+    final habit = (await local.readActiveEntities('controller-owner')).single;
+    final first = await controller.incrementHabit(habit);
+    expect(first.amount, 1);
+    final second = await controller.incrementHabit(habit);
+    expect(second.amount, 2);
+    final correction = await controller.decrementHabit(habit);
+    expect(correction.amount, 1);
+    expect(
+      await database.select(database.plannerOccurrences).get(),
+      hasLength(1),
+    );
+  });
+
+  test('duration taps add configured minutes to one daily total', () async {
+    final database = PlannerDatabase(NativeDatabase.memory());
+    final local = PlannerLocalStore(database);
+    final controller = PlannerWorkspaceController(
+      local,
+      PlannerSyncRepository(
+        local,
+        _DisconnectedGateway(),
+        ownerId: 'controller-owner',
+        deviceId: '11111111-1111-4111-8111-111111111111',
+      ),
+      ownerId: 'controller-owner',
+      now: () => DateTime.utc(2026, 7, 27, 9),
+    );
+    addTearDown(controller.disposeAsync);
+    await controller.start();
+    await controller.saveEntity(
+      kind: PlannerEntityKind.habit,
+      payload: <String, dynamic>{
+        ...defaultPlannerPayload(title: 'Read minutes'),
+        PlannerPayloadKeys.tracking: const <String, dynamic>{
+          'method': 'duration',
+          'target': 30,
+          'unit': 'minutes',
+          'step': 10,
+        },
+      },
+    );
+    final habit = (await local.readActiveEntities('controller-owner')).single;
+    final results = await Future.wait(
+      List<Future<PlannerHabitDaySummary>>.generate(
+        3,
+        (_) => controller.incrementDurationHabit(habit),
+      ),
+    );
+    expect(
+      results.map((summary) => summary.amount),
+      orderedEquals([10, 20, 30]),
+    );
+    expect(results.last.isSuccessful, isTrue);
+    expect(
+      (await database.select(database.plannerOccurrences).get()),
+      hasLength(1),
+    );
+  });
+
+  test('20 concurrent count taps preserve every increment offline', () async {
+    final database = PlannerDatabase(NativeDatabase.memory());
+    final local = PlannerLocalStore(database);
+    final controller = PlannerWorkspaceController(
+      local,
+      PlannerSyncRepository(
+        local,
+        _DisconnectedGateway(),
+        ownerId: 'controller-owner',
+        deviceId: '11111111-1111-4111-8111-111111111111',
+      ),
+      ownerId: 'controller-owner',
+      now: () => DateTime.utc(2026, 7, 27, 9),
+    );
+    addTearDown(controller.disposeAsync);
+    await controller.start();
+    await controller.saveEntity(
+      kind: PlannerEntityKind.habit,
+      payload: <String, dynamic>{
+        ...defaultPlannerPayload(title: 'Water'),
+        PlannerPayloadKeys.tracking: const <String, dynamic>{
+          'method': 'count',
+          'target': 8,
+          'goal': 'at_least',
+          'unit': 'glasses',
+        },
+      },
+    );
+    final habit = (await local.readActiveEntities('controller-owner')).single;
+    final burst = List<Future<PlannerHabitDaySummary>>.generate(
+      20,
+      (_) => controller.incrementHabit(habit),
+    );
+    final results = await Future.wait(burst);
+    expect(
+      results.map((summary) => summary.amount),
+      orderedEquals(List<int>.generate(20, (index) => index + 1)),
+    );
+    final stored = await controller.habitDaySummary(habit);
+    expect(stored.amount, 20);
+    expect(stored.isSuccessful, isTrue);
+    expect(
+      await database.select(database.plannerOccurrences).get(),
+      hasLength(1),
+    );
+  });
+
+  test(
+    'count habit correction subtracts one step and floors at zero',
+    () async {
+      final database = PlannerDatabase(NativeDatabase.memory());
+      final local = PlannerLocalStore(database);
+      final controller = PlannerWorkspaceController(
+        local,
+        PlannerSyncRepository(
+          local,
+          _DisconnectedGateway(),
+          ownerId: 'controller-owner',
+          deviceId: '11111111-1111-4111-8111-111111111111',
+        ),
+        ownerId: 'controller-owner',
+        now: () => DateTime.utc(2026, 7, 27, 9),
+      );
+      addTearDown(controller.disposeAsync);
+      await controller.start();
+      await controller.saveEntity(
+        kind: PlannerEntityKind.habit,
+        payload: <String, dynamic>{
+          ...defaultPlannerPayload(title: 'Water'),
+          PlannerPayloadKeys.tracking: const <String, dynamic>{
+            'method': 'count',
+            'target': 8,
+            'goal': 'at_least',
+            'unit': 'glasses',
+            'step': 1,
+          },
+        },
+      );
+      final habit = (await local.readActiveEntities('controller-owner')).single;
+      await controller.incrementHabit(habit);
+      await controller.incrementHabit(habit);
+
+      final reduced = await controller.decrementHabit(habit);
+      final floored = await controller.decrementHabit(habit);
+      final stillZero = await controller.decrementHabit(habit);
+
+      expect(reduced.amount, 1);
+      expect(floored.amount, 0);
+      expect(stillZero.amount, 0);
+      expect(stillZero.isPending, isTrue);
+      expect(
+        await database.select(database.plannerOccurrences).get(),
+        hasLength(1),
+        reason: 'Correction stays one durable calendar-day occurrence.',
+      );
+    },
+  );
+
+  test('stale boolean habit undo cannot erase newer tap', () async {
+    final database = PlannerDatabase(NativeDatabase.memory());
+    final local = PlannerLocalStore(database);
+    final controller = PlannerWorkspaceController(
+      local,
+      PlannerSyncRepository(
+        local,
+        _DisconnectedGateway(),
+        ownerId: 'controller-owner',
+        deviceId: '11111111-1111-4111-8111-111111111111',
+      ),
+      ownerId: 'controller-owner',
+      now: () => DateTime.utc(2026, 7, 27, 9),
+    );
+    addTearDown(controller.disposeAsync);
+    await controller.start();
+    await controller.saveEntity(
+      kind: PlannerEntityKind.habit,
+      payload: <String, dynamic>{
+        ...defaultPlannerPayload(title: 'Meditate'),
+        PlannerPayloadKeys.tracking: const <String, dynamic>{'method': 'check'},
+      },
+    );
+    final habit = (await local.readActiveEntities('controller-owner')).single;
+    final first = await controller.toggleHabit(habit);
+    final second = await controller.toggleHabit(habit);
+    final third = await controller.toggleHabit(habit);
+    expect(first.isSuccessful, isTrue);
+    expect(second.isPending, isTrue);
+    expect(third.isSuccessful, isTrue);
+    expect(await controller.undoHabitIfCurrent(habit, second), isFalse);
+    expect((await controller.habitDaySummary(habit)).isSuccessful, isTrue);
+    expect(await controller.undoHabitIfCurrent(habit, third), isTrue);
+    expect((await controller.habitDaySummary(habit)).isPending, isTrue);
+  });
+
+  test('boolean habit primary tap toggles today completion', () async {
+    final database = PlannerDatabase(NativeDatabase.memory());
+    final local = PlannerLocalStore(database);
+    final controller = PlannerWorkspaceController(
+      local,
+      PlannerSyncRepository(
+        local,
+        _DisconnectedGateway(),
+        ownerId: 'controller-owner',
+        deviceId: '11111111-1111-4111-8111-111111111111',
+      ),
+      ownerId: 'controller-owner',
+      now: () => DateTime.utc(2026, 7, 27, 9),
+    );
+    addTearDown(controller.disposeAsync);
+    await controller.start();
+    await controller.saveEntity(
+      kind: PlannerEntityKind.habit,
+      payload: <String, dynamic>{
+        ...defaultPlannerPayload(title: 'Meditate'),
+        PlannerPayloadKeys.tracking: const <String, dynamic>{'method': 'check'},
+      },
+    );
+    final habit = (await local.readActiveEntities('controller-owner')).single;
+
+    final completed = await controller.toggleHabit(habit);
+    final pending = await controller.toggleHabit(habit);
+
+    expect(completed.isSuccessful, isTrue);
+    expect(pending.isPending, isTrue);
+    expect(
+      await database.select(database.plannerOccurrences).get(),
+      hasLength(1),
+    );
+  });
+
+  test(
     'measured habits aggregate to one goal-aware daily result and can undo',
     () async {
       final database = PlannerDatabase(NativeDatabase.memory());
@@ -144,6 +495,58 @@ void main() {
             .single
             .status,
         'pending',
+      );
+    },
+  );
+
+  test(
+    'checklist primary taps complete next item without duplicate logs',
+    () async {
+      final database = PlannerDatabase(NativeDatabase.memory());
+      final local = PlannerLocalStore(database);
+      final controller = PlannerWorkspaceController(
+        local,
+        PlannerSyncRepository(
+          local,
+          _DisconnectedGateway(),
+          ownerId: 'controller-owner',
+          deviceId: '11111111-1111-4111-8111-111111111111',
+        ),
+        ownerId: 'controller-owner',
+        now: () => DateTime.utc(2026, 7, 27, 9),
+      );
+      addTearDown(controller.disposeAsync);
+      await controller.start();
+      await controller.saveEntity(
+        kind: PlannerEntityKind.habit,
+        payload: <String, dynamic>{
+          ...defaultPlannerPayload(title: 'Morning routine'),
+          PlannerPayloadKeys.tracking: const <String, dynamic>{
+            'method': 'checklist',
+            'checklist': <Map<String, dynamic>>[
+              <String, dynamic>{'id': 'water', 'label': 'Water'},
+              <String, dynamic>{'id': 'stretch', 'label': 'Stretch'},
+              <String, dynamic>{'id': 'journal', 'label': 'Journal'},
+            ],
+            'success_condition': <String, dynamic>{'type': 'count', 'value': 2},
+          },
+        },
+      );
+      final habit = (await local.readActiveEntities('controller-owner')).single;
+      final results = await Future.wait([
+        controller.completeNextChecklistItem(habit),
+        controller.completeNextChecklistItem(habit),
+      ]);
+      expect(results.first.checkedItemIds, <String>{'water'});
+      expect(results.last.checkedItemIds, <String>{'water', 'stretch'});
+      expect(results.last.isSuccessful, isTrue);
+      final third = await controller.completeNextChecklistItem(habit);
+      final full = await controller.completeNextChecklistItem(habit);
+      expect(third.checkedItemIds, <String>{'water', 'stretch', 'journal'});
+      expect(full.checkedItemIds, third.checkedItemIds);
+      expect(
+        (await database.select(database.plannerOccurrences).get()),
+        hasLength(1),
       );
     },
   );

@@ -1,6 +1,8 @@
 # Stage 21 — Unified modern wizard shell
 
-Status: pending  
+Status: in progress — existing wizard behavior, route/state, validation, IME,
+200%/RTL, phone/tablet/desktop suites are GREEN; shell visual modernization and
+native matrix proof remain open
 Depends on: Stages 04, 05, 07–10, 18  
 Primary surfaces: create/edit Task, Recurring Task, Habit, Project, Area and Goal
 
@@ -82,3 +84,12 @@ blank footer strip; screenshot side-by-side with Tasks/Plan selection language.
 
 Stages 22–30 receive shell APIs and primitive contracts. Commit/push/release with
 wizard matrix evidence and clean Git.
+
+### Evidence — 2026-09-25 (real run, pre-existing wizard surface)
+
+`flutter test --no-pub test/presentation/planner_editor_test.dart`:
+**EXIT:0, 17 pass**. This proves create/edit routes, draft/state preservation,
+validation focus, short-landscape/tablet/desktop reachability, compact 200%
+RTL habit flow, and wizard editing continuity for task identity/timing. Full
+Stage 21 remains open until shell visual modernization and native matrix proof
+pass.

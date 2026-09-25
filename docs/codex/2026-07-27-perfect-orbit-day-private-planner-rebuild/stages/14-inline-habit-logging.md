@@ -1,6 +1,6 @@
 # Stage 14 — Effortless inline habit logging
 
-Status: pending  
+Status: in progress — controller + workspace/Pulse/AI-dock/editor/route/motion suites GREEN (198/198, exit 0); native/device, Android widget parity, preview and cross-consumer acceptance pending
 Depends on: Stages 12–13 and existing habit domain contracts  
 Primary consumers: Today, Habits, Detail and Android widget
 
@@ -86,6 +86,61 @@ sheet; real-device repeated-tap recording.
 - Count habit still opens a sheet for every increment.
 - Logging rebuilds/refreshes the whole page or loses a rapid tap.
 - Correction deletes durable history without explicit scope.
+
+## Evidence — 2026-09-25 (integrated Stage 14 gate, real runs)
+
+`C:/Users/K1/AppData/Local/Temp/perfect-stage14-integrated-20260925e.log`
+(`controller + workspace page + Pulse suites`): **EXIT:0, 127 pass**.
+Count/numeric contract fixed at both layers: a `count` primary tap always
+adds `+1` (`Add one`, `Subtract one`) even when a correction `step` exists,
+while `numeric` follows its configured step/unit in the primary tooltip,
+menu label, and durable amount. `flutter analyze --no-pub`: no issues;
+`git diff --check`: clean.
+
+### Stage 15 in-progress evidence — 2026-09-25 (local-source retry, real runs)
+
+`flutter test --no-pub
+test/presentation/perfect_workspace_page_test.dart
+--plain-name "Today local-source retries without destructive reset"
+--reporter expanded`: **EXIT:0, 1 pass** (`TODAY_PROJECTION_READ_FAILED`
+printed inline as proof the injectable local read actually failed before the
+UI retry recovered).
+
+`flutter test --no-pub
+test/presentation/planner_workspace_controller_test.dart
+test/presentation/today_pulse_test.dart
+test/presentation/perfect_workspace_page_test.dart
+test/ai/perfect_ai_dock_test.dart
+test/presentation/planner_editor_test.dart
+test/presentation/interaction_route_inventory_contract_test.dart
+test/presentation/planner_secondary_surfaces_adaptive_test.dart
+test/presentation/stage11_today_pulse_contract_test.dart
+test/presentation/task_status_control_test.dart
+test/presentation/focus_session_sheet_test.dart
+test/presentation/stage09_global_motion_system_test.dart`: **EXIT:0, 198 pass**
+(integrated Stage 14 + Stage 15/16/17/18/19/20/21/31/32/34/40 gate; collapsed
+64dp orb geometry, quick capture exactly-one local receipt plus Undo,
+failed-save draft retention, Plan-mode draft/kind routing, AI proposal
+review boundary, wizard continuity, local-first route contract, secondary
+dialog parity, Pulse contract, task status control, focus session, and
+motion vocabulary are proven by
+`collapsed capture is only a 64dp circle above the footer`,
+`quick capture writes exactly one local task with undo`,
+`quick capture failure keeps the draft with local recovery`,
+`Plan mode preserves task draft and routes exact habit kind`,
+`text answer becomes history and a proposal requires Apply`, and the
+`habit-correction-dialog` now routes through `showPerfectDialog`).
+`flutter analyze --no-pub`: no issues; `git diff --check`: clean.
+
+`C:/Users/K1/AppData/Local/Temp/perfect-stage14-integrated.log`:
+`flutter test --no-pub
+test/presentation/planner_workspace_controller_test.dart
+test/presentation/perfect_workspace_page_test.dart` — **EXIT:0, 112 pass**
+(every Stage 14 method slice GREEN on first integrated attempt;
+only stdout noise is an in-test second `PlannerDatabase.memory()`
+drift multi-open warning).
+Prior sqlite crashes (`flutter_18-21.log`) were infra-only
+(`sqlite3.dll` errno 5 delete lock), not product failures.
 
 ## Handoff
 

@@ -1,6 +1,8 @@
 # Stage 23 — Task definition, timing, reminders and working context
 
-Status: pending  
+Status: in progress — dual-calendar local time, reminder copy/recovery, and
+wizard definition/timing suites are GREEN; permission/Device flow, picker
+screenshots, and native review-summary proof remain open
 Depends on: Stages 08, 21–22  
 Primary surfaces: definition, schedule and details steps; notification consumers
 
@@ -78,3 +80,17 @@ Windows keyboard/picker screenshots and review-summary agreement.
 
 Stage 24 receives canonical timing/reminder values. Commit/push/release with schedule
 and notification proof and clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 23 partial)
+
+- `flutter test --no-pub
+  test/presentation/planner_reminder_settings_message_test.dart`:
+  **EXIT:0, 2 pass** (capacity truncation and failed cancellation remain visible).
+- `flutter test --no-pub
+  test/presentation/perfect_local_time_test.dart
+  test/presentation/perfect_date_time_surface_contract_test.dart`:
+  **EXIT:0, 10 pass** (local minute tick/midnight and dual-calendar surface).
+- `flutter test --no-pub test/presentation/planner_editor_test.dart`:
+  **EXIT:0, 17 pass** (definition/timing validation, draft retention, responsive
+  wizard flow).
+- Permission/device and screenshot/cross-consumer timing proof remain open.

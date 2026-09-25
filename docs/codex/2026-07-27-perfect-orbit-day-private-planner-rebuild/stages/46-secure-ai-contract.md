@@ -1,6 +1,9 @@
 # Stage 46 — Secure Perfect AI conversation contract
 
-Status: pending  
+Status: in progress — typed turn/proposal/apply parsing, guarded payloads,
+deterministic replay, final-state persistence, and transcription boundary suites
+are GREEN; server registry/preflight, deployment config, and native matrices
+remain open
 Depends on: Stages 01, 05, 19 and 41–45  
 Blocks: Stages 47, 49 and 50  
 Primary surfaces: embedded AI/Voice composer, Supabase `perfect-agent`, owner-scoped
@@ -267,3 +270,16 @@ version and any live-smoke limitation honestly. If runtime/server behavior chang
 commit and push the focused changes to `main`, pass CI, publish the required signed
 artifacts under the normal private-release contract, install them on Android and
 Windows, and leave no untracked credential or extra branch.
+
+### Evidence — 2026-09-25 (real runs, Stage 46 partial)
+
+- `flutter test --no-pub test/ai/perfect_ai_contract_test.dart
+  test/ai/perfect_agent_edge_contract_test.dart`: covered inside the
+  **EXIT:0, 27 pass** AI/agent bundle — guarded proposal parsing,
+  typed telemetry, item-count apply receipt, deterministic replay, final chat
+  state, transcription boundary.
+- UI confirmation boundary (`text answer becomes history and a proposal
+  requires Apply`, large-proposal explicit approval) GREEN inside the
+  **EXIT:0, 21 pass** AI dock suite.
+- Server registry/preflight, deployment config, and native matrices remain
+  open.

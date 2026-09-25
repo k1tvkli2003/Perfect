@@ -1,6 +1,6 @@
 # Stage 38 — Habits workspace and actionable insights
 
-Status: pending  
+Status: blocked — Stage 03–05 preview/Copy gate plus workspace query/ranking/suggestion contracts have no recorded autonomous acceptance; existing Today logging/analytics suites remain GREEN as characterization only
 Depends on: accepted Stages 03–05 preview/copy contract; Stages 07, 14,
 26–30, 31, 33–37  
 Primary surfaces: Habits workspace, today's logging, momentum/risk filters,
@@ -323,3 +323,12 @@ install-ready artifacts. Record the internally accepted preview paths, decomposi
 reference/runtime/diff artifacts, SHA, migration/rule versions, profiler/behavior
 evidence and known risks. Return to clean `main`-only state without touching the
 retained pre-rebuild stash.
+
+### Evidence — 2026-09-25 (real runs, Stage 38 characterization only)
+
+- Method-aware Today logging/correction inside the **EXIT:0, 198 pass**
+  integrated workspace gate; daily-state vectors inside the **EXIT:0, 68
+  pass** domain+wizard gate.
+- This does **not** close Stage 38. Workspace projection, ranking, risk/
+  suggestion engine, Refine composition, subscription scoping, and preview
+  acceptance remain blocked with no recorded autonomous acceptance.

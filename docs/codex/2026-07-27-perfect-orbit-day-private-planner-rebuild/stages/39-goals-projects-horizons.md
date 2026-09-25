@@ -1,6 +1,6 @@
 # Stage 39 — Goals, projects, areas and planning horizons
 
-Status: pending  
+Status: blocked — Stage 03–05 preview/Copy gate plus Goal/relation/measure/horizon contracts have no recorded autonomous acceptance; no runtime vertical slice exists yet
 Depends on: accepted Stages 03–05 preview/copy contract; Stages 21–25,
 31–38  
 Primary surfaces: Goals, Projects, Areas, relation management, week/month/
@@ -333,3 +333,10 @@ Finish with a focused commit, push to `main`, successful workflow and three priv
 install-ready artifacts. Record preview/decomposition paths, reference/runtime/diff
 evidence, exact SHA, schema/RPC versions, migration dry-run/rollback, performance and
 cross-surface proof. Restore clean `main`-only state and retain the pre-rebuild stash.
+
+### Evidence — 2026-09-25 (Stage 39 characterization only)
+
+- No runtime vertical slice exists; nothing GREEN can be claimed as Stage 39
+  evidence yet.
+- Stage 39 remains **blocked** until the Stage 03–05 preview/Copy gate has
+  recorded autonomous acceptance for Goal/relation/measure/horizon surfaces.

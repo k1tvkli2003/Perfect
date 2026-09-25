@@ -1,7 +1,17 @@
 # Stage 19 — Perfect AI and Voice embedded in the composer
 
-Status: pending  
-Depends on: Stages 17–18 and Stage 46 contract characterization  
+Status: in progress — existing same-instrument AI/voice, consent, proposal review,
+explicit Apply boundary, retry and 200%/IME tests are GREEN; composer morph
+integration and native screenshot proof remain open
+Depends on: Stages 17–18 and Stage 46 contract characterization
+
+## Evidence — 2026-09-25 (real run, pre-existing AI surface)
+
+`flutter test --no-pub test/ai/perfect_ai_dock_test.dart`: **EXIT:0, 21 pass**.
+This proves typed AI conversation, pending proposal review, no Apply before
+explicit approval, proposal retry/error retention, history recovery, voice
+consent and 200% text reachability. Full Stage 19 remains open until same-shell
+morph integration and native runtime evidence pass.
 Primary surfaces: AI conversation, voice capture and proposal review mode
 
 ## Mission
