@@ -447,6 +447,17 @@ Do not remove the retained pre-rebuild stash.
   was RED then fixed to `PerfectMotion.responsive(context,
   PerfectMotion.quick)`; full `flutter test --no-pub` 573/573 GREEN; `dart
   analyze` clean. Bulk action surface and pixel Copy comparison remain open.
+- Typed-query tracer 13 (bulk preview + receipt, 2026-09-26, real runs):
+  `lib/planner/domain/planner_task_bulk.dart`. `planTasksBulk` is a pure
+  preview: it splits the ordered selection into eligible vs skipped IDs with
+  per-row skip reasons and issues no mutation keys. `execute` freezes that
+  preview into `PlannerTasksBulkReceipt` with one `batchId`, exactly one
+  idempotency key per eligible entity, skipped reasons, and Undo eligibility
+  only when the batch applied something. An empty selection returns a no-op
+  receipt with Undo disabled. New `test/planner/planner_tasks_bulk_test.dart`
+  3/3 GREEN; full `flutter test --no-pub` 576/576 GREEN; `dart analyze`
+  clean. The receipt is domain-only: no bulk action surface in the Tasks UI
+  yet, and pixel Copy comparison remains open.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
