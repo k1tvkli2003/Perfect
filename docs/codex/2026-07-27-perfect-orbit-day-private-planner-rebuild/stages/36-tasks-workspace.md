@@ -536,7 +536,7 @@ Do not remove the retained pre-rebuild stash.
   one real collision (STATUS `Scheduled` chip vs SORT `Scheduled` chip broke
   a right-click test finder) and fixed at the root by renaming the sort
   label; full suite 589/589 GREEN; analyze clean.
- - Typed-query tracer 19 (group-by control, 2026-09-26, real runs):
+- Typed-query tracer 19 (group-by control, 2026-09-26, real runs):
   `_TaskGroupMode` (none/schedule/project/category/priority/status) wired to
   the SAME shared query (`groupBy` on `PlannerTaskQuery`): the page resolves
   ONE projection via `queryTasks`, maps IDs through a local `byId` snapshot
@@ -549,6 +549,24 @@ Do not remove the retained pre-rebuild stash.
   the Schedule chip before tapping since it sits below the fold, assert
   selected chip + grouped summary + row still visible); full suite 590/590
   GREEN; analyze clean.
+- Typed-query tracer 20 (saved-view switcher, 2026-09-27, real runs):
+  `PlannerSavedView.builtInViews` (Inbox/Open/Scheduled/Completed, stable
+  `builtin:` IDs mirroring the four built-in query views, owner taken from the
+  live controller — never a placeholder) renders a 48dp
+  `_SavedViewSwitcher` above the collapsed Refine deck. Applying a view is
+  source-of-truth: the deck restores the full saved query (filter, kind
+  scope, search text, sortMode, groupBy) through shared mapping helpers; any
+  refine edit clears the active ID except lifecycle edits, which move it to
+  the matching built-in view. The duplicate-chip collision (switcher and
+  Refine share Inbox/Open/Scheduled/Completed labels) is fixed at the root:
+  Refine chips carry stable `refine-<group>-<label>` keys and all widget
+  tests pin keys instead of bare text. Proof: new page test
+  (`saved-view switcher applies built-in views` — default Open selected,
+  Completed resolves through the shared projection, re-selecting Open resets
+  a live search narrowing and restores rows, Refine Inbox moves the active
+  view) + domain test `tracer 20b` (narrowed vs restored query cover all six
+  fields); page file 100 GREEN, saved-view file 8/8 GREEN, full
+  suite 593/593 GREEN; analyze clean.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
@@ -556,6 +574,6 @@ Do not remove the retained pre-rebuild stash.
   design authority only — explicitly not runtime fidelity proof. Runtime/query/
   view implementation remains blocked on (a) Copy fidelity (exact runtime vs
   preview comparison per `04-copy-manifests/copy.json`), (b) saved views
-  (group-by is DONE via tracer 19: schedule/project/category/priority/status
-  sections render from the shared query; saved-view wiring remains), and
+  (built-in switcher is DONE via tracer 20; custom named views, active-view
+  preference persistence, and sync convergence remain), and
   (c) full verification evidence.
