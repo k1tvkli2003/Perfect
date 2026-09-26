@@ -509,8 +509,21 @@ Do not remove the retained pre-rebuild stash.
   (bar appear/clear → preview sheet → confirm receipt → counts announced →
   bar dismissed; verified GREEN via `-d windows` (2026-09-26) and via global
   host (2026-09-26: page file 98/98 GREEN, full suite 587/587 GREEN). Note: `_openTasksBulkSheet` comment says "No Undo for
-  bulk" while the domain receipts carry `undoEligible` — an Undo surface at
-  the page level remains explicitly open work, as does pixel Copy comparison.
+  bulk" while the domain receipts carry `undoEligible` — closed by tracer 17
+  (below): a page-level Undo surface now exists.
+- Typed-query tracer 17 (bulk Undo, 2026-09-26, real runs): `applyBulkReceipt`
+  captures the exact per-row prior outcome for `complete`/`reopen` rows and
+  the report now carries the applied per-entity idempotency keys;
+  `undoBulkReceipt` restores those priors only while the batch is still
+  authoritative on every applied row (bulk key still latest + stored outcome
+  still equals the bulk-applied outcome). One moved row expires the whole
+  Undo (no partial restore); a successful Undo consumes the snapshot
+  (single-use); archive/delete/restore/schedule/move return false. The Tasks
+  result SnackBar offers Undo only when `report.undoEligible`, with honest
+  restored/expired/failure announcements. Tests: new controller test (Undo
+  restores pending, then a newer single-row tap expires the next Undo) +
+  extended page test (result Undo → `Bulk change undone. Prior outcomes
+  restored.`); full suite 588/588 GREEN; analyze clean.
  - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
