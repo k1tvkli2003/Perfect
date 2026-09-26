@@ -4307,11 +4307,14 @@ enum _TaskKindFilter { all, oneOff, recurring }
 
 enum _TaskSortMode { scheduled, title, recent }
 
+enum _TaskGroupMode { none, schedule, project, category, priority, status }
+
 class _TasksPageState extends State<_TasksPage> {
   final _search = TextEditingController();
   _TaskFilter _filter = _TaskFilter.active;
   _TaskKindFilter _kindFilter = _TaskKindFilter.all;
   _TaskSortMode _sortMode = _TaskSortMode.scheduled;
+  _TaskGroupMode _groupMode = _TaskGroupMode.none;
   bool _filtersExpanded = false;
   final _workFocusNode = FocusNode();
   PlannerTasksSelectionSurface _selection =
@@ -4491,14 +4494,25 @@ class _TasksPageState extends State<_TasksPage> {
         _TaskSortMode.title => PlannerTaskSortMode.title,
         _TaskSortMode.recent => PlannerTaskSortMode.recent,
       },
+      groupBy: switch (_groupMode) {
+        _TaskGroupMode.none => PlannerTaskGroup.none,
+        _TaskGroupMode.schedule => PlannerTaskGroup.schedule,
+        _TaskGroupMode.project => PlannerTaskGroup.project,
+        _TaskGroupMode.category => PlannerTaskGroup.category,
+        _TaskGroupMode.priority => PlannerTaskGroup.priority,
+        _TaskGroupMode.status => PlannerTaskGroup.status,
+      },
     );
     // ONE shared projection: the controller resolves the query over its
     // cached snapshot; the widget maps stable IDs back to entities and never
     // applies a second hidden predicate.
-    final tasks = widget.controller
-        .queryTasks(query)
-        .entityIds
-        .map(widget.controller.entityById)
+    final result = widget.controller.queryTasks(query);
+    final byId = <String, PlannerEntity>{};
+    for (final entity in widget.controller.tasks) {
+      byId[entity.id] = entity;
+    }
+    final tasks = result.entityIds
+        .map((id) => byId[id])
         .whereType<PlannerEntity>()
         .toList(growable: false);
     final orderedIds = tasks.map((entity) => entity.id).toList();
@@ -4524,12 +4538,14 @@ class _TasksPageState extends State<_TasksPage> {
               filter: _filter,
               kindFilter: _kindFilter,
               sortMode: _sortMode,
+              groupMode: _groupMode,
               resultCount: tasks.length,
               expanded: _filtersExpanded,
               onSearchChanged: () => setState(() {}),
               onFilterChanged: (value) => setState(() => _filter = value),
               onKindChanged: (value) => setState(() => _kindFilter = value),
               onSortChanged: (value) => setState(() => _sortMode = value),
+              onGroupChanged: (value) => setState(() => _groupMode = value),
               onToggleExpanded: () =>
                   setState(() => _filtersExpanded = !_filtersExpanded),
             ),
@@ -4568,7 +4584,7 @@ class _TasksPageState extends State<_TasksPage> {
                 actionLabel: 'Create task',
                 onAction: widget.onAdd,
               )
-            else
+            else if (_groupMode == _TaskGroupMode.none)
               for (final entity in tasks)
                 _TaskSelectionRow(
                   selected: _selection.isSelected(entity.id),
@@ -4579,7 +4595,66 @@ class _TasksPageState extends State<_TasksPage> {
                     onInspect: widget.onInspect,
                     showKind: true,
                   ),
+                )
+            else
+              for (final group in result.groups) ...[
+                _TaskGroupHeader(
+                  title: group.title,
+                  count: group.count,
                 ),
+                for (final id in group.entityIds)
+                  if (byId[id] case final PlannerEntity entity)
+                    _TaskSelectionRow(
+                      selected: _selection.isSelected(entity.id),
+                      onToggle: () => _toggleTaskSelection(entity.id),
+                      child: _AgendaRow(
+                        entity: entity,
+                        controller: widget.controller,
+                        onInspect: widget.onInspect,
+                        showKind: true,
+                      ),
+                    ),
+              ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TaskGroupHeader extends StatelessWidget {
+  const _TaskGroupHeader({required this.title, required this.count});
+
+  final String title;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      header: true,
+      label: '$title, $count ${count == 1 ? 'task' : 'tasks'}',
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: PerfectSpace.sm),
+            Text(
+              '$count',
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
       ),
@@ -4658,12 +4733,14 @@ class _TaskFilterDeck extends StatelessWidget {
     required this.filter,
     required this.kindFilter,
     required this.sortMode,
+    required this.groupMode,
     required this.resultCount,
     required this.expanded,
     required this.onSearchChanged,
     required this.onFilterChanged,
     required this.onKindChanged,
     required this.onSortChanged,
+    required this.onGroupChanged,
     required this.onToggleExpanded,
   });
 
@@ -4671,12 +4748,14 @@ class _TaskFilterDeck extends StatelessWidget {
   final _TaskFilter filter;
   final _TaskKindFilter kindFilter;
   final _TaskSortMode sortMode;
+  final _TaskGroupMode groupMode;
   final int resultCount;
   final bool expanded;
   final VoidCallback onSearchChanged;
   final ValueChanged<_TaskFilter> onFilterChanged;
   final ValueChanged<_TaskKindFilter> onKindChanged;
   final ValueChanged<_TaskSortMode> onSortChanged;
+  final ValueChanged<_TaskGroupMode> onGroupChanged;
   final VoidCallback onToggleExpanded;
 
   @override
@@ -4747,6 +4826,14 @@ class _TaskFilterDeck extends StatelessWidget {
                   iconFor: _taskSortModeIcon,
                   onChanged: onSortChanged,
                 ),
+                const SizedBox(height: PerfectSpace.sm),
+                _FilterGroup<_TaskGroupMode>(
+                  label: 'GROUP',
+                  values: _TaskGroupMode.values,
+                  selected: groupMode,
+                  labelFor: _taskGroupModeLabel,
+                  onChanged: onGroupChanged,
+                ),
               ],
             );
             final resultCopy =
@@ -4754,7 +4841,8 @@ class _TaskFilterDeck extends StatelessWidget {
             final filterSummary =
                 '${_taskFilterLabel(filter)} · '
                 '${_taskKindFilterLabel(kindFilter)} · '
-                '${_taskSortModeLabel(sortMode)}';
+                '${_taskSortModeLabel(sortMode)}'
+                '${groupMode == _TaskGroupMode.none ? '' : ' · ${_taskGroupModeLabel(groupMode)}'}';
             final highTextScale =
                 MediaQuery.textScalerOf(context).scale(14) / 14 >= 1.6;
             final compactToggle = Semantics(
@@ -5038,6 +5126,15 @@ IconData _taskSortModeIcon(_TaskSortMode mode) => switch (mode) {
   _TaskSortMode.scheduled => Icons.event_rounded,
   _TaskSortMode.title => Icons.sort_by_alpha_rounded,
   _TaskSortMode.recent => Icons.history_rounded,
+};
+
+String _taskGroupModeLabel(_TaskGroupMode mode) => switch (mode) {
+  _TaskGroupMode.none => 'None',
+  _TaskGroupMode.schedule => 'Schedule',
+  _TaskGroupMode.project => 'Project',
+  _TaskGroupMode.category => 'Category',
+  _TaskGroupMode.priority => 'Priority',
+  _TaskGroupMode.status => 'Status',
 };
 
 class _PlanPage extends StatefulWidget {

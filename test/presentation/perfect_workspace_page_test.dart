@@ -4962,6 +4962,46 @@ void main() {
       expect(find.byType(Dialog), findsNothing);
     },
   );
+
+  testWidgets('tracer 19: GROUP chips render shared group sections', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+    expect(find.text('None'), findsNothing);
+
+    await tester.tap(find.text('Open · All · Due date'));
+    await tester.pumpAndSettle();
+    expect(find.text('None'), findsWidgets);
+    expect(find.text('Schedule'), findsWidgets);
+
+    // GROUP chips sit below the fold in the collapsible filter deck: bring
+    // the Schedule chip into view before tapping (same pattern as the
+    // recurring-controls test), otherwise the tap misses off-screen.
+    await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Schedule'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Schedule'));
+    await tester.pumpAndSettle();
+    // Schedule must be the selected GROUP chip after the tap settles.
+    final scheduleChip = tester.widget<ChoiceChip>(
+      find.widgetWithText(ChoiceChip, 'Schedule'),
+    );
+    expect(scheduleChip.selected, isTrue);
+    // Schedule groups by UTC calendar-day key (e.g. 2026-07-27), with
+    // unscheduled rows under `Unassigned` — the header comes from the same
+    // shared query projection, not a second predicate. Focus Deep Work is
+    // scheduled at the frozen preview time, so the selected Schedule chip
+    // and the shared group section must both appear.
+    expect(
+      find.text('Open · All · Due date · Schedule'),
+      findsOneWidget,
+    );
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+  });
 }
 
 Future<void> _pump(
