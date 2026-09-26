@@ -104,14 +104,19 @@ class TasksBulkPreviewSheet extends StatelessWidget {
     required this.actionLabel,
     required this.eligibleIds,
     required this.skippedReasons,
-    required this.onConfirm,
+    this.onConfirmAsync,
+    this.onConfirm,
     required this.onCancel,
-  });
+  }) : assert(
+         onConfirmAsync != null || onConfirm != null,
+         'TasksBulkPreviewSheet needs onConfirmAsync or onConfirm.',
+       );
 
   final String actionLabel;
   final List<String> eligibleIds;
   final Map<String, String> skippedReasons;
-  final VoidCallback onConfirm;
+  final Future<void> Function()? onConfirmAsync;
+  final VoidCallback? onConfirm;
   final VoidCallback onCancel;
 
   @override
@@ -199,7 +204,7 @@ class TasksBulkPreviewSheet extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(48, 48),
                     ),
-                    onPressed: onConfirm,
+                    onPressed: onConfirmAsync ?? onConfirm,
                     child: Text(actionLabel),
                   ),
                   TextButton(

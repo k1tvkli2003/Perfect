@@ -3343,6 +3343,46 @@ void main() {
     },
   );
 
+  testWidgets('Tasks selection shows bulk bar and applies previewed complete', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+    expect(find.byKey(const ValueKey<String>('tasks-bulk-bar')), findsNothing);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('task-select-off')).first,
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('tasks-bulk-bar')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('1 selected'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey<String>('tasks-bulk-preview')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('tasks-bulk-confirm')),
+      findsOneWidget,
+    );
+    expect(find.text('Complete'), findsWidgets);
+
+    await tester.tap(find.byKey(const ValueKey<String>('tasks-bulk-confirm')));
+    await _pumpUntil(
+      tester,
+      () =>
+          find.textContaining('Bulk complete applied to').evaluate().isNotEmpty,
+    );
+    expect(find.textContaining('Bulk complete applied to'), findsOneWidget);
+    expect(find.text('Undo'), findsNothing);
+    expect(find.byKey(const ValueKey<String>('tasks-bulk-bar')), findsNothing);
+  });
+
   testWidgets('Habits expose an honest seven-day schedule preview', (
     tester,
   ) async {

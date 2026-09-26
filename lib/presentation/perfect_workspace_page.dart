@@ -14,6 +14,8 @@ import 'package:perfect/planner/domain/planner_formula.dart';
 import 'package:perfect/planner/domain/planner_task_query.dart';
 import 'package:perfect/planner/domain/planner_task_keyboard.dart';
 import 'package:perfect/planner/domain/planner_task_selection.dart';
+import 'package:perfect/planner/domain/planner_task_bulk.dart';
+import 'package:perfect/planner/domain/planner_task_bulk_scope.dart';
 import 'package:perfect/planner/domain/planner_tasks_copy.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
@@ -35,6 +37,7 @@ import 'package:perfect/presentation/planner_habit_log_sheet.dart';
 import 'package:perfect/presentation/planner_insights_sheet.dart';
 import 'package:perfect/presentation/planner_reminder_settings_sheet.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
+import 'package:perfect/presentation/tasks_bulk_bar.dart';
 import 'package:perfect/presentation/today_pulse.dart';
 import 'package:perfect/presentation/task_status_control.dart';
 
@@ -4315,6 +4318,80 @@ class _TasksPageState extends State<_TasksPage> {
     setState(() => _selection = _selection.toggle(id));
   }
 
+  /// Stage 36 bulk sheet: opens the frozen preview, confirms through the
+  /// controller receipt path, then clears selection and announces safely.
+  ///
+  /// No Undo for bulk: multi-row controller writes have no bulk receipt to
+  /// restore, so the report counts plus kept skip reasons are the receipt.
+  Future<void> _openTasksBulkSheet(
+    List<String> orderedIds,
+    PlannerTasksBulkPlan plan,
+  ) async {
+    final action = PlannerTasksBulkAction.complete;
+    final actionLabel = 'Complete';
+    var applying = false;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
+      builder: (sheetContext) => TasksBulkPreviewSheet(
+        actionLabel: actionLabel,
+        eligibleIds: plan.eligibleIds,
+        skippedReasons: plan.skippedReasons,
+        onConfirmAsync: () async {
+          if (applying) return;
+          applying = true;
+          try {
+            final receipt = plan.execute(action: action);
+            final report = await widget.controller.applyBulkReceipt(receipt);
+            if (sheetContext.mounted) {
+              Navigator.of(sheetContext).pop();
+            }
+            if (!mounted) return;
+            setState(() => _selection = const PlannerTasksSelectionSurface());
+            final messenger = ScaffoldMessenger.of(context);
+            messenger
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Bulk complete applied to '
+                    '${report.appliedCount} '
+                    'of ${orderedIds.length} selected; '
+                    '${report.skippedCount} skipped.',
+                  ),
+                ),
+              );
+          } on Object {
+            if (sheetContext.mounted) {
+              ScaffoldMessenger.of(sheetContext).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Bulk complete did not apply. '
+                    'Your selection is unchanged.',
+                  ),
+                ),
+              );
+            }
+            applying = false;
+          }
+        },
+        onCancel: () => Navigator.of(sheetContext).pop(),
+      ),
+    );
+  }
+
+  void _openTasksBulkPreview(List<String> orderedIds) {
+    final plan = planVisibleTasksBulk(
+      orderedIds: orderedIds,
+      selectedIds: _selection.selectedIds,
+      action: PlannerTasksBulkAction.complete,
+      entityById: widget.controller.entityById,
+    );
+    unawaited(_openTasksBulkSheet(orderedIds, plan));
+  }
+
   @override
   void dispose() {
     _search.dispose();
@@ -4375,6 +4452,7 @@ class _TasksPageState extends State<_TasksPage> {
         .map(widget.controller.entityById)
         .whereType<PlannerEntity>()
         .toList(growable: false);
+    final orderedIds = tasks.map((entity) => entity.id).toList();
     return CallbackShortcuts(
       bindings: <ShortcutActivator, VoidCallback>{
         const SingleActivator(LogicalKeyboardKey.escape): () {
@@ -4405,6 +4483,26 @@ class _TasksPageState extends State<_TasksPage> {
                   setState(() => _filtersExpanded = !_filtersExpanded),
             ),
             const SizedBox(height: PerfectSpace.md),
+            if (_selection.selectedIds.isNotEmpty)
+              TasksBulkBar(
+                selectedCount: _selection.selectedIds.length,
+                eligibleCount: planVisibleTasksBulk(
+                  orderedIds: orderedIds,
+                  selectedIds: _selection.selectedIds,
+                  action: PlannerTasksBulkAction.complete,
+                  entityById: widget.controller.entityById,
+                ).eligibleCount,
+                skippedCount: planVisibleTasksBulk(
+                  orderedIds: orderedIds,
+                  selectedIds: _selection.selectedIds,
+                  action: PlannerTasksBulkAction.complete,
+                  entityById: widget.controller.entityById,
+                ).skippedCount,
+                onOpenPreview: () => _openTasksBulkPreview(orderedIds),
+                onClearSelection: () => setState(
+                  () => _selection = const PlannerTasksSelectionSurface(),
+                ),
+              ),
             if (tasks.isEmpty)
               _EmptyState(
                 icon: _filter == _TaskFilter.completed
