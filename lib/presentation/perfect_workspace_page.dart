@@ -4321,8 +4321,10 @@ class _TasksPageState extends State<_TasksPage> {
   /// Stage 36 bulk sheet: opens the frozen preview, confirms through the
   /// controller receipt path, then clears selection and announces safely.
   ///
-  /// No Undo for bulk: multi-row controller writes have no bulk receipt to
-  /// restore, so the report counts plus kept skip reasons are the receipt.
+  /// Bulk Undo is offered on the result SnackBar only while the batch is
+  /// still authoritative: the controller rejects it (returns false) when a
+  /// newer write moved any applied row, when the batch applied archive/
+  /// delete/restore/schedule/move, or after one successful Undo consumed it.
   Future<void> _openTasksBulkSheet(
     List<String> orderedIds,
     PlannerTasksBulkPlan plan,
@@ -4361,6 +4363,14 @@ class _TasksPageState extends State<_TasksPage> {
                     'of ${orderedIds.length} selected; '
                     '${report.skippedCount} skipped.',
                   ),
+                  action: report.undoEligible
+                      ? SnackBarAction(
+                          label: 'Undo',
+                          onPressed: () => unawaited(
+                            _undoTasksBulkWithFeedback(context, report),
+                          ),
+                        )
+                      : null,
                 ),
               );
           } on Object {
@@ -4390,6 +4400,37 @@ class _TasksPageState extends State<_TasksPage> {
       entityById: widget.controller.entityById,
     );
     unawaited(_openTasksBulkSheet(orderedIds, plan));
+  }
+
+  /// Stage 36 bulk Undo feedback: restores the exact prior outcome only
+  /// while the batch is still authoritative; a newer write on any applied
+  /// row expires the whole Undo so the owner never gets a partial restore.
+  Future<void> _undoTasksBulkWithFeedback(
+    BuildContext context,
+    PlannerTasksBulkReport report,
+  ) async {
+    try {
+      final restored = await widget.controller.undoBulkReceipt(report);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            restored
+                ? 'Bulk change undone. Prior outcomes restored.'
+                : 'Undo expired. A newer change is already active.',
+          ),
+        ),
+      );
+    } on Object {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not undo the bulk change. The stored values are unchanged.',
+          ),
+        ),
+      );
+    }
   }
 
   @override

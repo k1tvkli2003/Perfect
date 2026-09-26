@@ -3379,8 +3379,21 @@ void main() {
           find.textContaining('Bulk complete applied to').evaluate().isNotEmpty,
     );
     expect(find.textContaining('Bulk complete applied to'), findsOneWidget);
-    expect(find.text('Undo'), findsNothing);
+    expect(find.widgetWithText(SnackBarAction, 'Undo'), findsOneWidget);
     expect(find.byKey(const ValueKey<String>('tasks-bulk-bar')), findsNothing);
+
+    await tester.tap(find.widgetWithText(SnackBarAction, 'Undo'));
+    await _pumpUntil(
+      tester,
+      () => find
+          .text('Bulk change undone. Prior outcomes restored.')
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect(
+      find.text('Bulk change undone. Prior outcomes restored.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Habits expose an honest seven-day schedule preview', (

@@ -143,6 +143,7 @@ class PlannerTasksBulkReport {
     required this.batchId,
     required this.action,
     required this.appliedIds,
+    required this.perEntityKeys,
     required this.skippedIds,
     required this.skippedReasons,
   });
@@ -150,6 +151,11 @@ class PlannerTasksBulkReport {
   final String batchId;
   final PlannerTasksBulkAction action;
   final List<String> appliedIds;
+
+  /// The per-entity idempotency keys the batch applied, copied from the
+  /// frozen receipt so a later Undo can prove the batch is still the latest
+  /// mutation on every row.
+  final Map<String, String> perEntityKeys;
   final List<String> skippedIds;
   final Map<String, String> skippedReasons;
 

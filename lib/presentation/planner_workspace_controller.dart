@@ -52,6 +52,8 @@ class PlannerWorkspaceController extends ChangeNotifier {
   int _todayProjectionRevision = 0;
   Future<void> _taskProgressSerial = Future<void>.value();
   final Map<String, String> _latestTaskProgressMutation = <String, String>{};
+  final Map<String, Map<String, PlannerTaskProgress>> _latestBulkUndo =
+      <String, Map<String, PlannerTaskProgress>>{};
   Future<void> _habitLogSerial = Future<void>.value();
   Future<void> _focusSerial = Future<void>.value();
   PerfectTodayWidgetSettings _todayWidgetSettings =
@@ -502,6 +504,7 @@ class PlannerWorkspaceController extends ChangeNotifier {
     final appliedIds = <String>[];
     final skippedIds = <String>[...receipt.skippedIds];
     final skippedReasons = <String, String>{...receipt.skippedReasons};
+    final priorProgress = <String, PlannerTaskProgress>{};
     for (final id in receipt.appliedIds) {
       final key = receipt.perEntityKeys[id];
       if (key == null) {
@@ -520,6 +523,7 @@ class PlannerWorkspaceController extends ChangeNotifier {
       }
       switch (receipt.action) {
         case PlannerTasksBulkAction.complete:
+          priorProgress[id] = PlannerTaskProgress.fromEntity(entity);
           await _taskProgressService.setProgressById(
             entityId: id,
             progress: const PlannerTaskProgress(
@@ -530,6 +534,7 @@ class PlannerWorkspaceController extends ChangeNotifier {
             source: 'bulk:${receipt.batchId}',
           );
         case PlannerTasksBulkAction.reopen:
+          priorProgress[id] = PlannerTaskProgress.fromEntity(entity);
           await _taskProgressService.setProgressById(
             entityId: id,
             progress: const PlannerTaskProgress.pending(),
@@ -560,11 +565,20 @@ class PlannerWorkspaceController extends ChangeNotifier {
     }
     if (appliedIds.isNotEmpty) {
       await _finalizeTaskProgressMutation();
+      for (final id in appliedIds) {
+        _latestTaskProgressMutation[id] = receipt.perEntityKeys[id]!;
+      }
+      if (priorProgress.length == appliedIds.length &&
+          (receipt.action == PlannerTasksBulkAction.complete ||
+              receipt.action == PlannerTasksBulkAction.reopen)) {
+        _latestBulkUndo[receipt.batchId] = Map.unmodifiable(priorProgress);
+      }
     }
     return PlannerTasksBulkReport(
       batchId: receipt.batchId,
       action: receipt.action,
       appliedIds: List.unmodifiable(appliedIds),
+      perEntityKeys: Map.unmodifiable(receipt.perEntityKeys),
       skippedIds: List.unmodifiable(skippedIds),
       skippedReasons: Map.unmodifiable(skippedReasons),
     );
@@ -575,6 +589,53 @@ class PlannerWorkspaceController extends ChangeNotifier {
     unawaited(_syncRepository.syncNow());
     unawaited(_refreshReminders());
   }
+
+  /// Stage 36 bulk Undo: restores the exact per-row outcome captured before
+  /// [report]'s batch ran. The batch must still be authoritative on every
+  /// applied row: the bulk key must be the latest mutation and the stored
+  /// outcome must still equal the bulk-applied outcome. One moved row (newer
+  /// tap, widget action, remote convergence) expires the whole Undo instead
+  /// of partially restoring. Single-use: a successful Undo consumes the
+  /// snapshot. Non-progress actions (archive/delete/restore/schedule/move)
+  /// always return false.
+  Future<bool> undoBulkReceipt(PlannerTasksBulkReport report) =>
+      _serializeTaskProgress(() async {
+        final prior = _latestBulkUndo[report.batchId];
+        if (prior == null || prior.isEmpty) return false;
+        if (report.action != PlannerTasksBulkAction.complete &&
+            report.action != PlannerTasksBulkAction.reopen) {
+          return false;
+        }
+        if (prior.length != report.appliedIds.length) return false;
+        final expectedCurrent = report.action == PlannerTasksBulkAction.complete
+            ? const PlannerTaskProgress(
+                state: PlannerTaskProgressState.completed,
+                percent: 100,
+              )
+            : const PlannerTaskProgress.pending();
+        for (final id in report.appliedIds) {
+          final snapshot = prior[id];
+          if (snapshot == null) return false;
+          final bulkKey = report.perEntityKeys[id];
+          if (_latestTaskProgressMutation[id] != bulkKey) return false;
+          final current = await _taskProgressService.readEntityProgress(
+            entityId: id,
+          );
+          if (current == null || current != expectedCurrent) return false;
+        }
+        for (final id in report.appliedIds) {
+          await _taskProgressService.setProgressById(
+            entityId: id,
+            progress: prior[id]!,
+            mutationId: _uuid.v4(),
+            source: 'bulk:${report.batchId}:undo',
+          );
+          _latestTaskProgressMutation[id] = 'bulk:${report.batchId}:undo';
+        }
+        _latestBulkUndo.remove(report.batchId);
+        await _finalizeTaskProgressMutation();
+        return true;
+      });
 
   Future<List<PlannerEntity>> archivedEntities() =>
       _localStore.readArchivedEntities(ownerId);
