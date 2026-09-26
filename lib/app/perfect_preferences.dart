@@ -8,6 +8,17 @@ abstract final class PerfectPreferences {
   static const contrastModeKey = 'perfect.contrast_mode';
   static const navigationRailExtendedKey =
       'perfect.windows_navigation_rail_extended';
+  static const tasksActiveViewIdKey = 'perfect.tasks_active_view_id';
+
+  static Future<String?> readTasksActiveViewId() async {
+    final preferences = await SharedPreferences.getInstance();
+    return preferences.getString(tasksActiveViewIdKey);
+  }
+
+  static Future<void> saveTasksActiveViewId(String viewId) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(tasksActiveViewIdKey, viewId);
+  }
 
   static Future<ThemeMode> readThemeMode() async {
     final preferences = await SharedPreferences.getInstance();

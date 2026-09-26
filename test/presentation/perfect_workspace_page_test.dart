@@ -5047,6 +5047,40 @@ void main() {
     );
   });
 
+  testWidgets('tracer 21: active saved view persists across page rebuild', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('No completed tasks yet.'), findsOneWidget);
+
+    // Unmount the workspace. A new page state must load the stored view ID.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await _pump(tester);
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<ChoiceChip>(
+            find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+          )
+          .selected,
+      isTrue,
+    );
+    expect(find.text('Focus Deep Work'), findsNothing);
+  });
+
   testWidgets('tracer 19: GROUP chips render shared group sections', (
     tester,
   ) async {

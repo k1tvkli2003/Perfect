@@ -4406,6 +4406,7 @@ class _TasksPageState extends State<_TasksPage> {
   String _activeViewId = PlannerSavedView.fallbackViewId;
   bool _filtersExpanded = false;
   final _workFocusNode = FocusNode();
+  bool _activeViewLoaded = false;
   PlannerTasksSelectionSurface _selection =
       const PlannerTasksSelectionSurface();
 
@@ -4423,7 +4424,10 @@ class _TasksPageState extends State<_TasksPage> {
   /// carries (view → filter, kind scope, search text, sortMode, groupBy).
   /// The switcher is the source of truth, so applying always wins over live
   /// edits; refining afterwards clears the active view through onChanged.
+  /// Tracer 21: the stable ID is persisted as a device preference (ID only —
+  /// the query definition lives in the saved view, never in the preference).
   void _applySavedView(PlannerSavedView view) {
+    _activeViewLoaded = true;
     setState(() {
       _activeViewId = view.id;
       _filter = _taskFilterFromViewId(view.query.viewId);
@@ -4432,6 +4436,27 @@ class _TasksPageState extends State<_TasksPage> {
       _sortMode = _taskSortModeFromQuery(view.query.sortMode);
       _groupMode = _taskGroupModeFromQuery(view.query.groupBy);
     });
+    unawaited(PerfectPreferences.saveTasksActiveViewId(view.id));
+  }
+
+  /// Tracer 21: restores the stored active-view preference once. The stored
+  /// value is only ever a stable ID; unknown or missing IDs fall back to
+  /// `builtin:open` through [PlannerSavedView.resolveActiveViewId]. A view
+  /// the owner already touched during this frame wins over the pending read.
+  @override
+  void initState() {
+    super.initState();
+    _restoreActiveViewPreference();
+  }
+
+  Future<void> _restoreActiveViewPreference() async {
+    final storedId = await PerfectPreferences.readTasksActiveViewId();
+    if (!mounted || _activeViewLoaded) return;
+    final resolvedId = PlannerSavedView.resolveActiveViewId(
+      storedId: storedId,
+      availableIds: <String>{for (final view in _savedViews) view.id},
+    );
+    _applySavedView(_savedViews.firstWhere((view) => view.id == resolvedId));
   }
 
   /// Stage 36 bulk sheet: opens the frozen preview, confirms through the
@@ -4637,12 +4662,18 @@ class _TasksPageState extends State<_TasksPage> {
               onSearchChanged: () => setState(() {
                 _activeViewId = '';
               }),
-              onFilterChanged: (value) => setState(() {
-                _filter = value;
-                _activeViewId =
+              onFilterChanged: (value) {
+                final activeViewId =
                     PlannerSavedView.builtInNamespacePrefix +
                     _taskFilterViewId(value);
-              }),
+                setState(() {
+                  _filter = value;
+                  _activeViewId = activeViewId;
+                });
+                unawaited(
+                  PerfectPreferences.saveTasksActiveViewId(activeViewId),
+                );
+              },
               onKindChanged: (value) => setState(() {
                 _kindFilter = value;
                 _activeViewId = '';
