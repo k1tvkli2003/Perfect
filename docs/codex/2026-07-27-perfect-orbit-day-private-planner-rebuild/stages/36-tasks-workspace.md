@@ -567,6 +567,19 @@ Do not remove the retained pre-rebuild stash.
   view) + domain test `tracer 20b` (narrowed vs restored query cover all six
   fields); page file 100 GREEN, saved-view file 8/8 GREEN, full
   suite 593/593 GREEN; analyze clean.
+- Typed-query tracer 21 (active-view preference persistence, 2026-09-27,
+  real runs): `PerfectPreferences.tasksActiveViewIdKey` stores the stable
+  view ID only — never the query definition, which lives in the saved view.
+  `_applySavedView` and lifecycle Refine edits persist the matched built-in
+  ID (`unawaited`, non-blocking); a fresh page state restores it once in
+  `initState` through `PlannerSavedView.resolveActiveViewId` (unknown or
+  missing IDs fall back to `builtin:open`, never inventing an ID), with an
+  `_activeViewLoaded` guard so a pending read cannot overwrite a view the
+  owner already touched in the same frame. Proof: two new preference tests
+  (ID round-trip + unknown-ID fallback) and a new page test (select
+  Completed, unmount the workspace, rebuild — Completed is still active);
+  preferences + page files 106/106 GREEN, full suite 596/596 GREEN, analyze
+  clean.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
@@ -574,6 +587,6 @@ Do not remove the retained pre-rebuild stash.
   design authority only — explicitly not runtime fidelity proof. Runtime/query/
   view implementation remains blocked on (a) Copy fidelity (exact runtime vs
   preview comparison per `04-copy-manifests/copy.json`), (b) saved views
-  (built-in switcher is DONE via tracer 20; custom named views, active-view
-  preference persistence, and sync convergence remain), and
-  (c) full verification evidence.
+  (built-in switcher is DONE via tracer 20; active-view preference
+  persistence is DONE via tracer 21; custom named views and sync convergence
+  remain), and (c) full verification evidence.
