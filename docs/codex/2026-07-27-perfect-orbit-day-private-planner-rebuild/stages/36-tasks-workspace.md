@@ -580,6 +580,18 @@ Do not remove the retained pre-rebuild stash.
   Completed, unmount the workspace, rebuild — Completed is still active);
   preferences + page files 106/106 GREEN, full suite 596/596 GREEN, analyze
   clean.
+- Typed-query tracer 22 (collapsible group sections, 2026-09-27, real runs):
+  `_TaskGroupHeader` is a 48dp+ semantic button with expanded/collapsed state,
+  keyboard/screen-reader label, and deterministic section key; tapping it hides
+  only that group's rows and tapping again restores them. Collapse state is
+  per-page-state only (`_collapsedTaskGroupKeys`), so saved-view switches and
+  remounts never inherit stale collapse state. Query membership, sort, filter,
+  and view contracts stay on the same `PlannerTaskQuery` projection — collapse
+  only affects rendering. Proof: new page test
+  (`group header collapses and restores its section` — row removed on collapse,
+  semantic expanded=false announced, row restored on expand); focused page file
+  102/102 GREEN, `dart analyze` clean, `git diff --check` clean, full suite
+  597/597 GREEN.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
