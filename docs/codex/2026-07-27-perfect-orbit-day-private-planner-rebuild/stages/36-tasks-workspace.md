@@ -507,9 +507,8 @@ Do not remove the retained pre-rebuild stash.
   split, one UUID-v5 key per eligible, gone rows stay skipped) plus a new
   page test `Tasks selection shows bulk bar and applies previewed complete`
   (bar appear/clear → preview sheet → confirm receipt → counts announced →
-  bar dismissed; verified GREEN once via `-d windows`, then global-host
-  `flutter test` started timing out on this machine — rerun listed below as
-  required proof). Note: `_openTasksBulkSheet` comment says "No Undo for
+  bar dismissed; verified GREEN via `-d windows` (2026-09-26) and via global
+  host (2026-09-26: page file 98/98 GREEN, full suite 587/587 GREEN). Note: `_openTasksBulkSheet` comment says "No Undo for
   bulk" while the domain receipts carry `undoEligible` — an Undo surface at
   the page level remains explicitly open work, as does pixel Copy comparison.
  - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
