@@ -524,11 +524,23 @@ Do not remove the retained pre-rebuild stash.
   restores pending, then a newer single-row tap expires the next Undo) +
   extended page test (result Undo → `Bulk change undone. Prior outcomes
   restored.`); full suite 588/588 GREEN; analyze clean.
+- Typed-query tracer 18 (sort control, 2026-09-26, real runs):
+  `PlannerTaskSortMode` (scheduled/title/recent) on the SAME shared
+  projection: `withSortMode` reorders resolved rows, membership untouched —
+  never a second hidden predicate. `toJson`/`fromJson` round-trip `sort_mode`
+  (unknown → scheduled default); summary emits `Sorted by Title/Recent`
+  token only for non-default. The Refine deck gained a SORT group wired to
+  the page query (default label `Due date`, not `Scheduled`, so the STATUS
+  and SORT chips never collide). Tests: query test (same members, scheduled
+  first + title A–Z) + copy asserts updated (`Open · All · Due date`); caught
+  one real collision (STATUS `Scheduled` chip vs SORT `Scheduled` chip broke
+  a right-click test finder) and fixed at the root by renaming the sort
+  label; full suite 589/589 GREEN; analyze clean.
  - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
   record `Accepted under owner-delegated autonomous design authority: yes` as
   design authority only — explicitly not runtime fidelity proof. Runtime/query/
   view implementation remains blocked on (a) Copy fidelity (exact runtime vs
-  preview comparison per `04-copy-manifests/copy.json`), (b) sort/group/saved
-  views, and (c) full verification evidence.
+  preview comparison per `04-copy-manifests/copy.json`), (b) group/saved
+  views (sort is DONE via tracer 18), and (c) full verification evidence.
