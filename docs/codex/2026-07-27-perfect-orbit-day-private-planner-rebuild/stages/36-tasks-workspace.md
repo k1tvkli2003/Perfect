@@ -536,11 +536,26 @@ Do not remove the retained pre-rebuild stash.
   one real collision (STATUS `Scheduled` chip vs SORT `Scheduled` chip broke
   a right-click test finder) and fixed at the root by renaming the sort
   label; full suite 589/589 GREEN; analyze clean.
- - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
+ - Typed-query tracer 19 (group-by control, 2026-09-26, real runs):
+  `_TaskGroupMode` (none/schedule/project/category/priority/status) wired to
+  the SAME shared query (`groupBy` on `PlannerTaskQuery`): the page resolves
+  ONE projection via `queryTasks`, maps IDs through a local `byId` snapshot
+  (no second hidden predicate), and renders `result.groups` as
+  `_TaskGroupHeader` sections (title + count, header semantics) with the same
+  `_AgendaRow` rows underneath. The Refine deck gained a GROUP group; the
+  collapsed summary appends `· Schedule/Project/...` only when grouped
+  (ungrouped copy stays `Open · All · Due date`). Proof: new widget test
+  (`GROUP chips render shared group sections` — expand deck, `ensureVisible`
+  the Schedule chip before tapping since it sits below the fold, assert
+  selected chip + grouped summary + row still visible); full suite 590/590
+  GREEN; analyze clean.
+- This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
   record `Accepted under owner-delegated autonomous design authority: yes` as
   design authority only — explicitly not runtime fidelity proof. Runtime/query/
   view implementation remains blocked on (a) Copy fidelity (exact runtime vs
-  preview comparison per `04-copy-manifests/copy.json`), (b) group/saved
-  views (sort is DONE via tracer 18), and (c) full verification evidence.
+  preview comparison per `04-copy-manifests/copy.json`), (b) saved views
+  (group-by is DONE via tracer 19: schedule/project/category/priority/status
+  sections render from the shared query; saved-view wiring remains), and
+  (c) full verification evidence.
