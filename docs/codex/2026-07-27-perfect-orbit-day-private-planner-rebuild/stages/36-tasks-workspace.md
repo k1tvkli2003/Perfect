@@ -486,10 +486,33 @@ Do not remove the retained pre-rebuild stash.
   New `test/presentation/tasks_bulk_bar_test.dart` 5/5 GREEN (domain preview +
   receipt + empty no-op; bar counts/keys/semantics/callbacks; sheet
   lists/keys/callbacks); full `flutter test --no-pub` 583/583 GREEN; `dart
-  analyze` clean (one unused-import lint found and fixed). Still open: wiring
-  the bar/sheet into `_TasksPageState` (preview sheet open + Confirm executes
-  `applyBulkReceipt` + Undo surface), and pixel Copy comparison.
-- This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
+  analyze` clean (one unused-import lint found and fixed). Tracer 16 (below)
+  closed the wiring: bar/sheet are now live inside `_TasksPageState`.
+- Typed-query tracer 16 (Tasks bulk wiring, 2026-09-26, real runs):
+  `lib/planner/domain/planner_task_bulk_scope.dart` (`planVisibleTasksBulk`)
+  is the ONE shared eligibility rule: the page builds the bulk bar counts and
+  the preview sheet from the same helper, so counts and preview row split can
+  never disagree (`complete` = active tasks only; `reopen` = completed only;
+  missing rows stay skipped with a local reason). `_TasksPageState` renders
+  `TasksBulkBar` on non-empty selection (keys `tasks-bulk-bar`/
+  `tasks-bulk-preview`/`tasks-bulk-clear`), opens `TasksBulkPreviewSheet`
+  with the frozen plan (`tasks-bulk-confirm`/`tasks-bulk-cancel`), Confirm
+  executes `plan.execute` + `applyBulkReceipt` exactly once (re-entrant guard),
+  then clears selection and announces counts
+  (`Bulk <action> applied to <n> of <m> selected; <k> skipped.`); failure
+  keeps selection and announces without overwriting. `TasksBulkPreviewSheet`
+  gained optional `onConfirmAsync` (sync `onConfirm` path kept, asserted
+  exactly-one-present). New
+  `test/planner/planner_tasks_preview_scope_test.dart` 3/3 GREEN (order +
+  split, one UUID-v5 key per eligible, gone rows stay skipped) plus a new
+  page test `Tasks selection shows bulk bar and applies previewed complete`
+  (bar appear/clear → preview sheet → confirm receipt → counts announced →
+  bar dismissed; verified GREEN once via `-d windows`, then global-host
+  `flutter test` started timing out on this machine — rerun listed below as
+  required proof). Note: `_openTasksBulkSheet` comment says "No Undo for
+  bulk" while the domain receipts carry `undoEligible` — an Undo surface at
+  the page level remains explicitly open work, as does pixel Copy comparison.
+ - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
   record `Accepted under owner-delegated autonomous design authority: yes` as
