@@ -342,4 +342,50 @@ void main() {
       ]);
     },
   );
+
+  // RED tracer 18: sort mode must reorder the SAME shared projection
+  // (scheduled, title, recent) without changing membership — no second
+  // hidden predicate, no dropped rows.
+  test('tracer 18: sort mode reorders without changing membership', () {
+    PlannerEntity task(String id, String title, {String? scheduledAt}) {
+      final extra = <String, dynamic>{};
+      final scheduledValue = scheduledAt;
+      if (scheduledValue != null) {
+        extra[PlannerPayloadKeys.timing] = <String, dynamic>{
+          'scheduled_at': scheduledValue,
+        };
+      }
+      return PlannerEntity(
+        id: id,
+        ownerId: 'owner-a',
+        kind: PlannerEntityKind.oneOffTask,
+        payload: <String, dynamic>{
+          ...defaultPlannerPayload(title: title),
+          ...extra,
+        },
+        createdAt: DateTime.utc(2026, 7, 27, 8),
+        updatedAt: DateTime.utc(2026, 7, 27, 8),
+      );
+    }
+
+    final entities = <PlannerEntity>[
+      task('b-task', 'bravo'),
+      task('a-task', 'alpha', scheduledAt: '2026-09-30T09:00:00.000Z'),
+      task('c-task', 'charlie'),
+    ];
+    final base = const PlannerTaskQuery(viewId: 'open');
+    final baseIds = base.applyTo(entities).entityIds;
+    final scheduledOrder = base
+        .withSortMode(PlannerTaskSortMode.scheduled)
+        .applyTo(entities)
+        .entityIds;
+    final titleOrder = base
+        .withSortMode(PlannerTaskSortMode.title)
+        .applyTo(entities)
+        .entityIds;
+    expect(scheduledOrder.toSet(), baseIds.toSet());
+    expect(titleOrder.toSet(), baseIds.toSet());
+    expect(scheduledOrder.first, 'a-task');
+    expect(titleOrder, ['a-task', 'b-task', 'c-task']);
+  });
 }

@@ -4305,10 +4305,13 @@ enum _TaskFilter { inbox, active, scheduled, completed }
 
 enum _TaskKindFilter { all, oneOff, recurring }
 
+enum _TaskSortMode { scheduled, title, recent }
+
 class _TasksPageState extends State<_TasksPage> {
   final _search = TextEditingController();
   _TaskFilter _filter = _TaskFilter.active;
   _TaskKindFilter _kindFilter = _TaskKindFilter.all;
+  _TaskSortMode _sortMode = _TaskSortMode.scheduled;
   bool _filtersExpanded = false;
   final _workFocusNode = FocusNode();
   PlannerTasksSelectionSurface _selection =
@@ -4483,6 +4486,11 @@ class _TasksPageState extends State<_TasksPage> {
         _TaskKindFilter.oneOff => const {PlannerEntityKind.oneOffTask},
         _TaskKindFilter.recurring => const {PlannerEntityKind.recurringTask},
       },
+      sortMode: switch (_sortMode) {
+        _TaskSortMode.scheduled => PlannerTaskSortMode.scheduled,
+        _TaskSortMode.title => PlannerTaskSortMode.title,
+        _TaskSortMode.recent => PlannerTaskSortMode.recent,
+      },
     );
     // ONE shared projection: the controller resolves the query over its
     // cached snapshot; the widget maps stable IDs back to entities and never
@@ -4515,11 +4523,13 @@ class _TasksPageState extends State<_TasksPage> {
               search: _search,
               filter: _filter,
               kindFilter: _kindFilter,
+              sortMode: _sortMode,
               resultCount: tasks.length,
               expanded: _filtersExpanded,
               onSearchChanged: () => setState(() {}),
               onFilterChanged: (value) => setState(() => _filter = value),
               onKindChanged: (value) => setState(() => _kindFilter = value),
+              onSortChanged: (value) => setState(() => _sortMode = value),
               onToggleExpanded: () =>
                   setState(() => _filtersExpanded = !_filtersExpanded),
             ),
@@ -4647,22 +4657,26 @@ class _TaskFilterDeck extends StatelessWidget {
     required this.search,
     required this.filter,
     required this.kindFilter,
+    required this.sortMode,
     required this.resultCount,
     required this.expanded,
     required this.onSearchChanged,
     required this.onFilterChanged,
     required this.onKindChanged,
+    required this.onSortChanged,
     required this.onToggleExpanded,
   });
 
   final TextEditingController search;
   final _TaskFilter filter;
   final _TaskKindFilter kindFilter;
+  final _TaskSortMode sortMode;
   final int resultCount;
   final bool expanded;
   final VoidCallback onSearchChanged;
   final ValueChanged<_TaskFilter> onFilterChanged;
   final ValueChanged<_TaskKindFilter> onKindChanged;
+  final ValueChanged<_TaskSortMode> onSortChanged;
   final VoidCallback onToggleExpanded;
 
   @override
@@ -4724,13 +4738,23 @@ class _TaskFilterDeck extends StatelessWidget {
                   labelFor: _taskFilterLabel,
                   onChanged: onFilterChanged,
                 ),
+                const SizedBox(height: PerfectSpace.sm),
+                _FilterGroup<_TaskSortMode>(
+                  label: 'SORT',
+                  values: _TaskSortMode.values,
+                  selected: sortMode,
+                  labelFor: _taskSortModeLabel,
+                  iconFor: _taskSortModeIcon,
+                  onChanged: onSortChanged,
+                ),
               ],
             );
             final resultCopy =
                 '$resultCount ${resultCount == 1 ? 'result' : 'results'}';
             final filterSummary =
                 '${_taskFilterLabel(filter)} · '
-                '${_taskKindFilterLabel(kindFilter)}';
+                '${_taskKindFilterLabel(kindFilter)} · '
+                '${_taskSortModeLabel(sortMode)}';
             final highTextScale =
                 MediaQuery.textScalerOf(context).scale(14) / 14 >= 1.6;
             final compactToggle = Semantics(
@@ -5002,6 +5026,18 @@ IconData _taskKindFilterIcon(_TaskKindFilter filter) => switch (filter) {
   _TaskKindFilter.all => Icons.view_agenda_outlined,
   _TaskKindFilter.oneOff => Icons.filter_1_rounded,
   _TaskKindFilter.recurring => Icons.repeat_rounded,
+};
+
+String _taskSortModeLabel(_TaskSortMode mode) => switch (mode) {
+  _TaskSortMode.scheduled => 'Due date',
+  _TaskSortMode.title => 'Title',
+  _TaskSortMode.recent => 'Recent',
+};
+
+IconData _taskSortModeIcon(_TaskSortMode mode) => switch (mode) {
+  _TaskSortMode.scheduled => Icons.event_rounded,
+  _TaskSortMode.title => Icons.sort_by_alpha_rounded,
+  _TaskSortMode.recent => Icons.history_rounded,
 };
 
 class _PlanPage extends StatefulWidget {

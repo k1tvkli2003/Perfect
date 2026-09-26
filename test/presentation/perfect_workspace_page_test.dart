@@ -1257,7 +1257,7 @@ void main() {
         find.text('Search, filter and act without losing the working context.'),
         findsOneWidget,
       );
-      expect(find.text('Open · All'), findsOneWidget);
+      expect(find.text('Open · All · Due date'), findsOneWidget);
       expect(find.textContaining('result'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
@@ -3249,7 +3249,7 @@ void main() {
 
       expect(find.text('TYPE'), findsOneWidget);
       expect(find.text('STATUS'), findsOneWidget);
-      expect(find.textContaining('Open · All'), findsOneWidget);
+      expect(find.textContaining('Open · All · Due date'), findsOneWidget);
       final search = find.byWidgetPredicate(
         (widget) =>
             widget is TextField &&
@@ -3261,12 +3261,12 @@ void main() {
       await tester.pump();
       expect(find.text('Read cardiology notes'), findsOneWidget);
       expect(find.text('Focus Deep Work'), findsNothing);
-      expect(find.text('1 result · Open · All'), findsOneWidget);
+      expect(find.text('1 result · Open · All · Due date'), findsOneWidget);
 
       await tester.binding.setSurfaceSize(const Size(390, 844));
       await tester.pumpAndSettle();
       expect(find.text('Read cardiology notes'), findsOneWidget);
-      expect(find.text('Open · All'), findsOneWidget);
+      expect(find.text('Open · All · Due date'), findsOneWidget);
       expect(find.text('TYPE'), findsNothing);
       expect(find.text('STATUS'), findsNothing);
 
@@ -3309,7 +3309,7 @@ void main() {
 
       expect(find.text('Focus Deep Work'), findsOneWidget);
       expect(find.text('No open tasks.'), findsNothing);
-      expect(find.text('Open · All'), findsOneWidget);
+      expect(find.text('Open · All · Due date'), findsOneWidget);
       expect(find.text('TYPE'), findsNothing);
       expect(find.text('STATUS'), findsNothing);
 

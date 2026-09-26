@@ -33,6 +33,28 @@ enum PlannerTaskGroup {
       );
 }
 
+/// Sort mode for the Tasks work field: which deterministic ordering the
+/// shared projection applies. Membership is untouched — the mode only
+/// reorders the SAME resolved rows, so sort can never act as a second
+/// hidden predicate.
+enum PlannerTaskSortMode {
+  scheduled('scheduled'),
+  title('title'),
+  recent('recent');
+
+  const PlannerTaskSortMode(this.wireValue);
+
+  final String wireValue;
+
+  /// Unknown wire values fall back to [scheduled] (the long-standing
+  /// default): sort must never throw on a newer client's value.
+  static PlannerTaskSortMode fromWire(Object? value) =>
+      PlannerTaskSortMode.values.firstWhere(
+        (mode) => mode.wireValue == value,
+        orElse: () => PlannerTaskSortMode.scheduled,
+      );
+}
+
 /// A typed Tasks workspace query: one shared projection contract.
 ///
 /// The widget-local `_TaskFilter` path filters an in-memory controller list
@@ -51,6 +73,7 @@ class PlannerTaskQuery {
     this.text = '',
     this.kinds = const <PlannerEntityKind>{},
     this.groupBy = PlannerTaskGroup.none,
+    this.sortMode = PlannerTaskSortMode.scheduled,
     this.unknownFields = const <String, dynamic>{},
   });
 
@@ -81,6 +104,10 @@ class PlannerTaskQuery {
   /// ordered ID list; any other value also emits [PlannerTaskQueryResult]
   /// group descriptors in display order (empty groups omitted).
   final PlannerTaskGroup groupBy;
+
+  /// Which deterministic ordering the shared projection applies. Reorders
+  /// the SAME resolved rows; membership is untouched.
+  final PlannerTaskSortMode sortMode;
 
   /// Forward-compatible fields a newer client may have written; preserved
   /// verbatim through [toJson] so older clients never drop newer data.
@@ -119,7 +146,7 @@ class PlannerTaskQuery {
       if (!_matchesView(entity)) continue;
       matched.add(entity);
     }
-    matched.sort(_compareDeterministic);
+    matched.sort(_compareDeterministic(sortMode));
     final ids = <String>[for (final entity in matched) entity.id];
     final groups = _groupMatched(matched);
     return PlannerTaskQueryResult(
@@ -237,10 +264,27 @@ class PlannerTaskQuery {
     }
   }
 
-  /// Deterministic ordering: scheduled rows first (earliest `scheduled_at`),
-  /// then case-insensitive title, then stable ID. Unscheduled rows sort after
-  /// every scheduled row regardless of title.
-  static int _compareDeterministic(PlannerEntity a, PlannerEntity b) {
+  /// Deterministic ordering per [mode]: `scheduled` keeps the long-standing
+  /// default (scheduled rows first, earliest `scheduled_at`, then
+  /// case-insensitive title, then stable ID; unscheduled sort after every
+  /// scheduled row regardless of title). `title` ignores schedule and orders
+  /// by normalized title then ID. `recent` orders by `updatedAt` newest
+  /// first, then ID. Members keep the chosen ordering in groups as well.
+  static int Function(PlannerEntity, PlannerEntity) _compareDeterministic(
+    PlannerTaskSortMode mode,
+  ) => (a, b) {
+    if (mode == PlannerTaskSortMode.title) {
+      final title = _normalizeSearch(
+        a.title,
+      ).compareTo(_normalizeSearch(b.title));
+      if (title != 0) return title;
+      return a.id.compareTo(b.id);
+    }
+    if (mode == PlannerTaskSortMode.recent) {
+      final recent = b.updatedAt.compareTo(a.updatedAt);
+      if (recent != 0) return recent;
+      return a.id.compareTo(b.id);
+    }
     final aScheduled = a.scheduledAt;
     final bScheduled = b.scheduledAt;
     if (aScheduled != null || bScheduled != null) {
@@ -254,7 +298,7 @@ class PlannerTaskQuery {
     ).compareTo(_normalizeSearch(b.title));
     if (title != 0) return title;
     return a.id.compareTo(b.id);
-  }
+  };
 
   bool _matchesView(PlannerEntity entity) => _matchesViewId(viewId, entity);
 
@@ -286,11 +330,23 @@ class PlannerTaskQuery {
   /// script untouched, so both scripts match without a second code path.
   static String _normalizeSearch(String value) => value.trim().toLowerCase();
 
+  /// Copies this query with an overridden sort mode. Membership is untouched
+  /// by definition: the mode only reorders the SAME shared projection.
+  PlannerTaskQuery withSortMode(PlannerTaskSortMode mode) => PlannerTaskQuery(
+    viewId: viewId,
+    text: text,
+    kinds: kinds,
+    groupBy: groupBy,
+    sortMode: mode,
+    unknownFields: unknownFields,
+  );
+
   /// Human-readable summary for the lens/Refine surface.
   ///
   /// Derived from this SAME typed query: one token per non-default
-  /// constraint (kind scope, search text, grouping). The default Open query
-  /// yields no tokens. Persian search text is preserved verbatim.
+  /// constraint (kind scope, search text, grouping, non-default sort).
+  /// The default Open query yields no tokens. Persian search text is
+  /// preserved verbatim.
   PlannerTaskQuerySummary summary() {
     final viewLabel = switch (viewId) {
       inboxViewId => 'Inbox',
@@ -321,6 +377,14 @@ class PlannerTaskQuery {
       };
       tokens.add('Grouped by $groupLabel');
     }
+    if (sortMode != PlannerTaskSortMode.scheduled) {
+      final sortLabel = switch (sortMode) {
+        PlannerTaskSortMode.title => 'Title',
+        PlannerTaskSortMode.recent => 'Recent',
+        PlannerTaskSortMode.scheduled => '',
+      };
+      if (sortLabel.isNotEmpty) tokens.add('Sorted by $sortLabel');
+    }
     return PlannerTaskQuerySummary(viewLabel: viewLabel, tokens: tokens);
   }
 
@@ -329,6 +393,7 @@ class PlannerTaskQuery {
     'text': text,
     'kinds': <String>[for (final kind in kinds) kind.wireValue],
     'group_by': groupBy.wireValue,
+    'sort_mode': sortMode.wireValue,
     ...unknownFields,
   };
 
@@ -343,7 +408,13 @@ class PlannerTaskQuery {
         if (match.isNotEmpty) kinds.add(match.first);
       }
     }
-    const knownKeys = <String>{'view_id', 'text', 'kinds', 'group_by'};
+    const knownKeys = <String>{
+      'view_id',
+      'text',
+      'kinds',
+      'group_by',
+      'sort_mode',
+    };
     final unknown = <String, dynamic>{};
     for (final entry in json.entries) {
       final key = entry.key.toString();
@@ -359,6 +430,7 @@ class PlannerTaskQuery {
       text: rawText is String ? rawText : '',
       kinds: kinds,
       groupBy: PlannerTaskGroup.fromWire(json['group_by']),
+      sortMode: PlannerTaskSortMode.fromWire(json['sort_mode']),
       unknownFields: unknown,
     );
   }
