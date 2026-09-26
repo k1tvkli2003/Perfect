@@ -4407,6 +4407,7 @@ class _TasksPageState extends State<_TasksPage> {
   bool _filtersExpanded = false;
   final _workFocusNode = FocusNode();
   bool _activeViewLoaded = false;
+  final Set<String> _collapsedTaskGroupKeys = <String>{};
   PlannerTasksSelectionSurface _selection =
       const PlannerTasksSelectionSurface();
 
@@ -4738,19 +4739,30 @@ class _TasksPageState extends State<_TasksPage> {
                 )
             else
               for (final group in result.groups) ...[
-                _TaskGroupHeader(title: group.title, count: group.count),
-                for (final id in group.entityIds)
-                  if (byId[id] case final PlannerEntity entity)
-                    _TaskSelectionRow(
-                      selected: _selection.isSelected(entity.id),
-                      onToggle: () => _toggleTaskSelection(entity.id),
-                      child: _AgendaRow(
-                        entity: entity,
-                        controller: widget.controller,
-                        onInspect: widget.onInspect,
-                        showKind: true,
+                _TaskGroupHeader(
+                  key: const ValueKey<String>('task-group-header'),
+                  title: group.title,
+                  count: group.count,
+                  expanded: !_collapsedTaskGroupKeys.contains(group.groupId),
+                  onToggle: () => setState(() {
+                    if (!_collapsedTaskGroupKeys.add(group.groupId)) {
+                      _collapsedTaskGroupKeys.remove(group.groupId);
+                    }
+                  }),
+                ),
+                if (!_collapsedTaskGroupKeys.contains(group.groupId))
+                  for (final id in group.entityIds)
+                    if (byId[id] case final PlannerEntity entity)
+                      _TaskSelectionRow(
+                        selected: _selection.isSelected(entity.id),
+                        onToggle: () => _toggleTaskSelection(entity.id),
+                        child: _AgendaRow(
+                          entity: entity,
+                          controller: widget.controller,
+                          onInspect: widget.onInspect,
+                          showKind: true,
+                        ),
                       ),
-                    ),
               ],
           ],
         ),
@@ -4760,39 +4772,61 @@ class _TasksPageState extends State<_TasksPage> {
 }
 
 class _TaskGroupHeader extends StatelessWidget {
-  const _TaskGroupHeader({required this.title, required this.count});
+  const _TaskGroupHeader({
+    super.key,
+    required this.title,
+    required this.count,
+    required this.expanded,
+    required this.onToggle,
+  });
 
   final String title;
   final int count;
+  final bool expanded;
+  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Semantics(
       header: true,
+      button: true,
+      expanded: expanded,
       label: '$title, $count ${count == 1 ? 'task' : 'tasks'}',
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
+      child: InkWell(
+        onTap: onToggle,
+        borderRadius: BorderRadius.circular(8),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
+            child: Row(
+              children: [
+                Icon(
+                  expanded ? Icons.expand_more : Icons.chevron_right,
+                  size: 20,
                 ),
-              ),
+                const SizedBox(width: PerfectSpace.xs),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: PerfectSpace.sm),
+                Text(
+                  '$count',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: PerfectSpace.sm),
-            Text(
-              '$count',
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -5117,6 +5117,43 @@ void main() {
     expect(find.text('Open · All · Due date · Schedule'), findsOneWidget);
     expect(find.text('Focus Deep Work'), findsOneWidget);
   });
+
+  testWidgets('tracer 22: group header collapses and restores its section', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+
+    // Group by Schedule through the deck (chip sits below the fold).
+    await tester.tap(find.text('Open · All · Due date'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Schedule'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Schedule'));
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+
+    // The group header is a button: collapsing hides its rows, the header
+    // stays and announces the collapsed state; expanding brings rows back.
+    final header = find.byKey(const ValueKey<String>('task-group-header'));
+    expect(header, findsWidgets);
+    await tester.tap(header.first);
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsNothing);
+    // Semantics announce collapse so screen-reader users get the state.
+    final headerSemantics = tester.getSemantics(header.first);
+    expect(headerSemantics.flagsCollection.isExpanded.toBoolOrNull(), isFalse);
+
+    await tester.tap(header.first);
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+    final expandedSemantics = tester.getSemantics(header.first);
+    expect(expandedSemantics.flagsCollection.isExpanded.toBoolOrNull(), isTrue);
+  });
 }
 
 Future<void> _pump(
