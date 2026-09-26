@@ -51,6 +51,55 @@ class PlannerSavedView {
 
   bool get isDeleted => deletedAt != null;
 
+  /// The four built-in lifecycle views (Stage 36 contract, tracer 20).
+  ///
+  /// Stable `builtin:` IDs mirroring the four built-in query views; the page
+  /// renders these as the saved-view switcher entries and resolves the active
+  /// entry to its query — one shared projection, no second predicate.
+  static List<PlannerSavedView> builtInViews({required String ownerId}) {
+    PlannerSavedView view({
+      required String id,
+      required String title,
+      required String iconKey,
+      required PlannerTaskQuery query,
+    }) => PlannerSavedView(
+      id: '$builtInNamespacePrefix$id',
+      ownerId: ownerId,
+      schemaVersion: currentSchemaVersion,
+      title: title,
+      iconKey: iconKey,
+      query: query,
+      createdAt: DateTime.utc(2026, 7, 27),
+      updatedAt: DateTime.utc(2026, 7, 27),
+    );
+    return <PlannerSavedView>[
+      view(
+        id: PlannerTaskQuery.inboxViewId,
+        title: 'Inbox',
+        iconKey: 'inbox',
+        query: PlannerTaskQuery.builtIn(PlannerTaskQuery.inboxViewId),
+      ),
+      view(
+        id: PlannerTaskQuery.openViewId,
+        title: 'Open',
+        iconKey: 'list',
+        query: PlannerTaskQuery.builtIn(PlannerTaskQuery.openViewId),
+      ),
+      view(
+        id: PlannerTaskQuery.scheduledViewId,
+        title: 'Scheduled',
+        iconKey: 'event',
+        query: PlannerTaskQuery.builtIn(PlannerTaskQuery.scheduledViewId),
+      ),
+      view(
+        id: PlannerTaskQuery.completedViewId,
+        title: 'Completed',
+        iconKey: 'check',
+        query: PlannerTaskQuery.builtIn(PlannerTaskQuery.completedViewId),
+      ),
+    ];
+  }
+
   /// Built-in definitions are local-only: a remote write for a built-in ID
   /// is rejected so one device can never disrupt another's built-in views.
   /// Custom views accept both local and remote writes.

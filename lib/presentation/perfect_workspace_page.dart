@@ -11,6 +11,7 @@ import 'package:perfect/app/perfect_preferences.dart';
 import 'package:perfect/feedback/ready_feedback_capture.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_formula.dart';
+import 'package:perfect/planner/domain/planner_saved_view.dart';
 import 'package:perfect/planner/domain/planner_task_query.dart';
 import 'package:perfect/planner/domain/planner_task_keyboard.dart';
 import 'package:perfect/planner/domain/planner_task_selection.dart';
@@ -4309,12 +4310,100 @@ enum _TaskSortMode { scheduled, title, recent }
 
 enum _TaskGroupMode { none, schedule, project, category, priority, status }
 
+/// Tracer 20: single shared mapping between deck state and the saved-view
+/// contract. [_taskQueryFromDeck] builds the page's ONE query from deck
+/// fields; the `_taskFilterFromViewId`/`_taskSortModeFromQuery`/
+/// `_taskGroupModeFromQuery` trio restores deck fields from a saved view's
+/// query. One mapping each direction, no second predicate.
+PlannerTaskQuery _taskQueryFromDeck({
+  required _TaskFilter filter,
+  required _TaskKindFilter kindFilter,
+  required _TaskSortMode sortMode,
+  required _TaskGroupMode groupMode,
+  required String searchText,
+}) => PlannerTaskQuery(
+  viewId: _taskFilterViewId(filter),
+  text: searchText,
+  kinds: _taskKindFilterKinds(kindFilter),
+  sortMode: _taskSortQueryMode(sortMode),
+  groupBy: _taskGroupQueryMode(groupMode),
+);
+
+String _taskFilterViewId(_TaskFilter filter) => switch (filter) {
+  _TaskFilter.inbox => PlannerTaskQuery.inboxViewId,
+  _TaskFilter.active => PlannerTaskQuery.openViewId,
+  _TaskFilter.scheduled => PlannerTaskQuery.scheduledViewId,
+  _TaskFilter.completed => PlannerTaskQuery.completedViewId,
+};
+
+Set<PlannerEntityKind> _taskKindFilterKinds(_TaskKindFilter kindFilter) =>
+    switch (kindFilter) {
+      _TaskKindFilter.all => const {
+        PlannerEntityKind.oneOffTask,
+        PlannerEntityKind.recurringTask,
+      },
+      _TaskKindFilter.oneOff => const {PlannerEntityKind.oneOffTask},
+      _TaskKindFilter.recurring => const {PlannerEntityKind.recurringTask},
+    };
+
+_TaskKindFilter _taskKindFilterFromQuery(Set<PlannerEntityKind> kinds) {
+  if (kinds.length == 1 && kinds.contains(PlannerEntityKind.oneOffTask)) {
+    return _TaskKindFilter.oneOff;
+  }
+  if (kinds.length == 1 && kinds.contains(PlannerEntityKind.recurringTask)) {
+    return _TaskKindFilter.recurring;
+  }
+  return _TaskKindFilter.all;
+}
+
+PlannerTaskSortMode _taskSortQueryMode(_TaskSortMode sortMode) =>
+    switch (sortMode) {
+      _TaskSortMode.scheduled => PlannerTaskSortMode.scheduled,
+      _TaskSortMode.title => PlannerTaskSortMode.title,
+      _TaskSortMode.recent => PlannerTaskSortMode.recent,
+    };
+
+PlannerTaskGroup _taskGroupQueryMode(_TaskGroupMode groupMode) =>
+    switch (groupMode) {
+      _TaskGroupMode.none => PlannerTaskGroup.none,
+      _TaskGroupMode.schedule => PlannerTaskGroup.schedule,
+      _TaskGroupMode.project => PlannerTaskGroup.project,
+      _TaskGroupMode.category => PlannerTaskGroup.category,
+      _TaskGroupMode.priority => PlannerTaskGroup.priority,
+      _TaskGroupMode.status => PlannerTaskGroup.status,
+    };
+
+_TaskFilter _taskFilterFromViewId(String viewId) => switch (viewId) {
+  PlannerTaskQuery.inboxViewId => _TaskFilter.inbox,
+  PlannerTaskQuery.scheduledViewId => _TaskFilter.scheduled,
+  PlannerTaskQuery.completedViewId => _TaskFilter.completed,
+  _ => _TaskFilter.active,
+};
+
+_TaskSortMode _taskSortModeFromQuery(PlannerTaskSortMode mode) =>
+    switch (mode) {
+      PlannerTaskSortMode.title => _TaskSortMode.title,
+      PlannerTaskSortMode.recent => _TaskSortMode.recent,
+      _ => _TaskSortMode.scheduled,
+    };
+
+_TaskGroupMode _taskGroupModeFromQuery(PlannerTaskGroup group) =>
+    switch (group) {
+      PlannerTaskGroup.schedule => _TaskGroupMode.schedule,
+      PlannerTaskGroup.project => _TaskGroupMode.project,
+      PlannerTaskGroup.category => _TaskGroupMode.category,
+      PlannerTaskGroup.priority => _TaskGroupMode.priority,
+      PlannerTaskGroup.status => _TaskGroupMode.status,
+      _ => _TaskGroupMode.none,
+    };
+
 class _TasksPageState extends State<_TasksPage> {
   final _search = TextEditingController();
   _TaskFilter _filter = _TaskFilter.active;
   _TaskKindFilter _kindFilter = _TaskKindFilter.all;
   _TaskSortMode _sortMode = _TaskSortMode.scheduled;
   _TaskGroupMode _groupMode = _TaskGroupMode.none;
+  String _activeViewId = PlannerSavedView.fallbackViewId;
   bool _filtersExpanded = false;
   final _workFocusNode = FocusNode();
   PlannerTasksSelectionSurface _selection =
@@ -4322,6 +4411,27 @@ class _TasksPageState extends State<_TasksPage> {
 
   void _toggleTaskSelection(String id) {
     setState(() => _selection = _selection.toggle(id));
+  }
+
+  /// Tracer 20: the four built-in saved views are the switcher source of
+  /// truth (owner-scoped). Custom views arrive in a later tracer; the
+  /// switcher + apply path already speaks stable view IDs.
+  List<PlannerSavedView> get _savedViews =>
+      PlannerSavedView.builtInViews(ownerId: widget.controller.ownerId);
+
+  /// Tracer 20: applies a saved view by restoring the deck fields its query
+  /// carries (view → filter, kind scope, search text, sortMode, groupBy).
+  /// The switcher is the source of truth, so applying always wins over live
+  /// edits; refining afterwards clears the active view through onChanged.
+  void _applySavedView(PlannerSavedView view) {
+    setState(() {
+      _activeViewId = view.id;
+      _filter = _taskFilterFromViewId(view.query.viewId);
+      _kindFilter = _taskKindFilterFromQuery(view.query.kinds);
+      _search.text = view.query.text;
+      _sortMode = _taskSortModeFromQuery(view.query.sortMode);
+      _groupMode = _taskGroupModeFromQuery(view.query.groupBy);
+    });
   }
 
   /// Stage 36 bulk sheet: opens the frozen preview, confirms through the
@@ -4473,35 +4583,12 @@ class _TasksPageState extends State<_TasksPage> {
 
   @override
   Widget build(BuildContext context) {
-    final query = PlannerTaskQuery(
-      viewId: switch (_filter) {
-        _TaskFilter.inbox => PlannerTaskQuery.inboxViewId,
-        _TaskFilter.active => PlannerTaskQuery.openViewId,
-        _TaskFilter.scheduled => PlannerTaskQuery.scheduledViewId,
-        _TaskFilter.completed => PlannerTaskQuery.completedViewId,
-      },
-      text: _search.text,
-      kinds: switch (_kindFilter) {
-        _TaskKindFilter.all => const {
-          PlannerEntityKind.oneOffTask,
-          PlannerEntityKind.recurringTask,
-        },
-        _TaskKindFilter.oneOff => const {PlannerEntityKind.oneOffTask},
-        _TaskKindFilter.recurring => const {PlannerEntityKind.recurringTask},
-      },
-      sortMode: switch (_sortMode) {
-        _TaskSortMode.scheduled => PlannerTaskSortMode.scheduled,
-        _TaskSortMode.title => PlannerTaskSortMode.title,
-        _TaskSortMode.recent => PlannerTaskSortMode.recent,
-      },
-      groupBy: switch (_groupMode) {
-        _TaskGroupMode.none => PlannerTaskGroup.none,
-        _TaskGroupMode.schedule => PlannerTaskGroup.schedule,
-        _TaskGroupMode.project => PlannerTaskGroup.project,
-        _TaskGroupMode.category => PlannerTaskGroup.category,
-        _TaskGroupMode.priority => PlannerTaskGroup.priority,
-        _TaskGroupMode.status => PlannerTaskGroup.status,
-      },
+    final query = _taskQueryFromDeck(
+      filter: _filter,
+      kindFilter: _kindFilter,
+      sortMode: _sortMode,
+      groupMode: _groupMode,
+      searchText: _search.text,
     );
     // ONE shared projection: the controller resolves the query over its
     // cached snapshot; the widget maps stable IDs back to entities and never
@@ -4532,7 +4619,13 @@ class _TasksPageState extends State<_TasksPage> {
               subtitle: PlannerTasksCopy.defaultSubtitle,
               onAdd: widget.onAdd,
             ),
-            const SizedBox(height: PerfectSpace.md),
+            const SizedBox(height: PerfectSpace.xs),
+            _SavedViewSwitcher(
+              views: _savedViews,
+              activeViewId: _activeViewId,
+              onSelect: _applySavedView,
+            ),
+            const SizedBox(height: PerfectSpace.xs),
             _TaskFilterDeck(
               search: _search,
               filter: _filter,
@@ -4541,11 +4634,27 @@ class _TasksPageState extends State<_TasksPage> {
               groupMode: _groupMode,
               resultCount: tasks.length,
               expanded: _filtersExpanded,
-              onSearchChanged: () => setState(() {}),
-              onFilterChanged: (value) => setState(() => _filter = value),
-              onKindChanged: (value) => setState(() => _kindFilter = value),
-              onSortChanged: (value) => setState(() => _sortMode = value),
-              onGroupChanged: (value) => setState(() => _groupMode = value),
+              onSearchChanged: () => setState(() {
+                _activeViewId = '';
+              }),
+              onFilterChanged: (value) => setState(() {
+                _filter = value;
+                _activeViewId =
+                    PlannerSavedView.builtInNamespacePrefix +
+                    _taskFilterViewId(value);
+              }),
+              onKindChanged: (value) => setState(() {
+                _kindFilter = value;
+                _activeViewId = '';
+              }),
+              onSortChanged: (value) => setState(() {
+                _sortMode = value;
+                _activeViewId = '';
+              }),
+              onGroupChanged: (value) => setState(() {
+                _groupMode = value;
+                _activeViewId = '';
+              }),
               onToggleExpanded: () =>
                   setState(() => _filtersExpanded = !_filtersExpanded),
             ),
@@ -4598,10 +4707,7 @@ class _TasksPageState extends State<_TasksPage> {
                 )
             else
               for (final group in result.groups) ...[
-                _TaskGroupHeader(
-                  title: group.title,
-                  count: group.count,
-                ),
+                _TaskGroupHeader(title: group.title, count: group.count),
                 for (final id in group.entityIds)
                   if (byId[id] case final PlannerEntity entity)
                     _TaskSelectionRow(
@@ -4721,6 +4827,46 @@ class _TaskSelectionRow extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SavedViewSwitcher extends StatelessWidget {
+  const _SavedViewSwitcher({
+    required this.views,
+    required this.activeViewId,
+    required this.onSelect,
+  });
+
+  final List<PlannerSavedView> views;
+  final String activeViewId;
+  final ValueChanged<PlannerSavedView> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      label: 'Saved tasks views',
+      child: SizedBox(
+        height: 48,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: views.length,
+          separatorBuilder: (_, _) => const SizedBox(width: PerfectSpace.xs),
+          itemBuilder: (context, index) {
+            final view = views[index];
+            final selected = view.id == activeViewId;
+            return ChoiceChip(
+              key: ValueKey<String>('saved-view-${view.id}'),
+              label: Text(view.title),
+              selected: selected,
+              showCheckmark: false,
+              selectedColor: scheme.primaryContainer,
+              onSelected: (_) => onSelect(view),
+            );
+          },
         ),
       ),
     );
@@ -5065,6 +5211,13 @@ class _FilterGroup<T> extends StatelessWidget {
         children: values
             .map(
               (value) => ChoiceChip(
+                key: ValueKey<String>(
+                  // Tracer 20: stable finder across the four labels that
+                  // duplicate the saved-view switcher labels (Inbox, Open,
+                  // Scheduled, Completed); tests pin these instead of bare
+                  // text finders, which would match two chips at once.
+                  'refine-${label.toLowerCase()}-${labelFor(value)}',
+                ),
                 avatar: iconFor == null
                     ? null
                     : Icon(iconFor!(value), size: 17),

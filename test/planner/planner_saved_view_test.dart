@@ -136,4 +136,55 @@ void main() {
     expect(renamed.title, 'Utility bills');
     expect(renamed.query.viewId, PlannerTaskQuery.completedViewId);
   });
+
+  test('tracer 20: built-in views cover the four lifecycle queries', () {
+    final views = PlannerSavedView.builtInViews(ownerId: 'owner-a');
+
+    expect(views.map((view) => view.id), <String>[
+      'builtin:inbox',
+      'builtin:open',
+      'builtin:scheduled',
+      'builtin:completed',
+    ]);
+    expect(views.map((view) => view.query.viewId), <String>[
+      PlannerTaskQuery.inboxViewId,
+      PlannerTaskQuery.openViewId,
+      PlannerTaskQuery.scheduledViewId,
+      PlannerTaskQuery.completedViewId,
+    ]);
+    expect(views.every((view) => view.isBuiltIn), isTrue);
+    expect(views.every((view) => view.canApplyRemote(isRemote: true)), isFalse);
+    expect(
+      PlannerSavedView.resolveActiveViewId(
+        storedId: 'builtin:scheduled',
+        availableIds: {for (final view in views) view.id},
+      ),
+      'builtin:scheduled',
+    );
+  });
+
+  test('tracer 20b: saved-view apply restores the full query definition', () {
+    final open = PlannerSavedView.builtInViews(
+      ownerId: 'owner-a',
+    ).singleWhere((view) => view.id == 'builtin:open');
+    final narrowed = PlannerTaskQuery(
+      viewId: PlannerTaskQuery.inboxViewId,
+      text: 'does-not-match',
+    );
+    final restored = PlannerTaskQuery(
+      viewId: open.query.viewId,
+      text: open.query.text,
+      kinds: open.query.kinds,
+      sortMode: open.query.sortMode,
+      groupBy: open.query.groupBy,
+    );
+
+    expect(narrowed.viewId, isNot(open.query.viewId));
+    expect(narrowed.text, isNotEmpty);
+    expect(restored.viewId, open.query.viewId);
+    expect(restored.text, isEmpty);
+    expect(restored.kinds, isEmpty);
+    expect(restored.groupBy, PlannerTaskGroup.none);
+    expect(restored.sortMode, PlannerTaskSortMode.scheduled);
+  });
 }

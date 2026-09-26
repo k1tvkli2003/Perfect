@@ -3331,12 +3331,14 @@ void main() {
       expect(find.text('TYPE'), findsOneWidget);
       expect(find.text('STATUS'), findsOneWidget);
       final openChip = tester.widget<ChoiceChip>(
-        find.widgetWithText(ChoiceChip, 'Open'),
+        find.byKey(const ValueKey<String>('refine-status-Open')),
       );
       expect(openChip.selected, isTrue);
       expect(openChip.showCheckmark, isFalse);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Inbox'));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('refine-status-Inbox')),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Focus Deep Work'), findsNothing);
       expect(find.text('Your inbox is clear.'), findsOneWidget);
@@ -4928,7 +4930,9 @@ void main() {
       await _pump(tester);
       await _sendControlShortcut(tester, LogicalKeyboardKey.digit2);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Scheduled'));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('refine-status-Scheduled')),
+      );
       await tester.pumpAndSettle();
       final recurring = _controller.tasks.singleWhere(
         (item) => item.title == 'Weekly progress review',
@@ -4963,6 +4967,86 @@ void main() {
     },
   );
 
+  testWidgets('tracer 20: saved-view switcher applies built-in views', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    // Default active view is Open: its chip is selected, Focus Deep Work
+    // (an active scheduled task) is visible.
+    final openChip = tester.widget<ChoiceChip>(
+      find.byKey(const ValueKey<String>('saved-view-builtin:open')),
+    );
+    expect(openChip.selected, isTrue);
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+
+    // Switch to Completed: the shared projection must resolve the completed
+    // view — Focus Deep Work disappears and the empty state appears.
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+    );
+    await tester.pumpAndSettle();
+    final completedChip = tester.widget<ChoiceChip>(
+      find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+    );
+    expect(completedChip.selected, isTrue);
+    expect(find.text('Focus Deep Work'), findsNothing);
+    expect(find.text('No completed tasks yet.'), findsOneWidget);
+
+    // Switch back to Open through the same switcher: the deck restores.
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('saved-view-builtin:open')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('saved-view-builtin:open')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+
+    // A saved view is a complete query definition, not just a lifecycle tab.
+    // Narrow the live query, then select Open again; search/kind scope must
+    // reset to the saved definition and restore the task row.
+    final search = find.byWidgetPredicate(
+      (widget) =>
+          widget is TextField &&
+          widget.decoration?.hintText == 'Find a task, note, or category…',
+    );
+    await tester.enterText(search, 'does-not-match');
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsNothing);
+    await tester.tap(
+      find.byKey(const ValueKey<String>('saved-view-builtin:open')),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(search).controller!.text, isEmpty);
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+
+    // Refine lifecycle changes must move the selected built-in view as well.
+    await tester.tap(find.byKey(const ValueKey<String>('task-filter-toggle')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('refine-status-Inbox')),
+    );
+    await tester.tap(find.byKey(const ValueKey<String>('refine-status-Inbox')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<ChoiceChip>(
+            find.byKey(const ValueKey<String>('saved-view-builtin:inbox')),
+          )
+          .selected,
+      isTrue,
+    );
+  });
+
   testWidgets('tracer 19: GROUP chips render shared group sections', (
     tester,
   ) async {
@@ -4996,10 +5080,7 @@ void main() {
     // shared query projection, not a second predicate. Focus Deep Work is
     // scheduled at the frozen preview time, so the selected Schedule chip
     // and the shared group section must both appear.
-    expect(
-      find.text('Open · All · Due date · Schedule'),
-      findsOneWidget,
-    );
+    expect(find.text('Open · All · Due date · Schedule'), findsOneWidget);
     expect(find.text('Focus Deep Work'), findsOneWidget);
   });
 }
