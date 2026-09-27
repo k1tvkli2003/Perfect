@@ -4302,7 +4302,7 @@ class _TasksPage extends StatefulWidget {
   State<_TasksPage> createState() => _TasksPageState();
 }
 
-enum _TaskFilter { inbox, active, scheduled, completed }
+enum _TaskFilter { inbox, active, scheduled, recurring, completed }
 
 enum _TaskKindFilter { all, oneOff, recurring }
 
@@ -4333,6 +4333,7 @@ String _taskFilterViewId(_TaskFilter filter) => switch (filter) {
   _TaskFilter.inbox => PlannerTaskQuery.inboxViewId,
   _TaskFilter.active => PlannerTaskQuery.openViewId,
   _TaskFilter.scheduled => PlannerTaskQuery.scheduledViewId,
+  _TaskFilter.recurring => PlannerTaskQuery.recurringViewId,
   _TaskFilter.completed => PlannerTaskQuery.completedViewId,
 };
 
@@ -4376,6 +4377,7 @@ PlannerTaskGroup _taskGroupQueryMode(_TaskGroupMode groupMode) =>
 _TaskFilter _taskFilterFromViewId(String viewId) => switch (viewId) {
   PlannerTaskQuery.inboxViewId => _TaskFilter.inbox,
   PlannerTaskQuery.scheduledViewId => _TaskFilter.scheduled,
+  PlannerTaskQuery.recurringViewId => _TaskFilter.recurring,
   PlannerTaskQuery.completedViewId => _TaskFilter.completed,
   _ => _TaskFilter.active,
 };
@@ -4917,6 +4919,7 @@ class _SavedViewSwitcher extends StatelessWidget {
       child: SizedBox(
         height: 48,
         child: ListView.separated(
+          key: const ValueKey<String>('saved-view-switcher'),
           scrollDirection: Axis.horizontal,
           itemCount: views.length,
           separatorBuilder: (_, _) => const SizedBox(width: PerfectSpace.xs),
@@ -5302,6 +5305,7 @@ String _taskFilterLabel(_TaskFilter filter) => switch (filter) {
   _TaskFilter.inbox => 'Inbox',
   _TaskFilter.active => 'Open',
   _TaskFilter.scheduled => 'Scheduled',
+  _TaskFilter.recurring => 'Recurring',
   _TaskFilter.completed => 'Completed',
 };
 
@@ -5309,6 +5313,7 @@ String _taskEmptyTitle(_TaskFilter filter) => switch (filter) {
   _TaskFilter.inbox => 'Your inbox is clear.',
   _TaskFilter.active => 'No open tasks.',
   _TaskFilter.scheduled => 'Nothing scheduled.',
+  _TaskFilter.recurring => 'No recurring tasks yet.',
   _TaskFilter.completed => 'No completed tasks yet.',
 };
 
@@ -5318,6 +5323,8 @@ String _taskEmptyBody(_TaskFilter filter) => switch (filter) {
   _TaskFilter.active =>
     'Create the next task, or switch to Completed to review finished work.',
   _TaskFilter.scheduled => 'Plan a task when it needs a date or time.',
+  _TaskFilter.recurring =>
+    'Make a task repeat when it returns on a schedule. One-offs stay out of this view.',
   _TaskFilter.completed =>
     'Finished work will collect here without leaving your active list.',
 };

@@ -80,12 +80,14 @@ class PlannerTaskQuery {
   static const String inboxViewId = 'inbox';
   static const String openViewId = 'open';
   static const String scheduledViewId = 'scheduled';
+  static const String recurringViewId = 'recurring';
   static const String completedViewId = 'completed';
 
   static const Set<String> builtInViewIds = <String>{
     inboxViewId,
     openViewId,
     scheduledViewId,
+    recurringViewId,
     completedViewId,
   };
 
@@ -311,6 +313,9 @@ class PlannerTaskQuery {
     openViewId => entity.status == PlannerEntityStatus.active,
     scheduledViewId =>
       entity.status == PlannerEntityStatus.active && entity.scheduledAt != null,
+    recurringViewId =>
+      entity.status == PlannerEntityStatus.active &&
+          entity.kind == PlannerEntityKind.recurringTask,
     completedViewId => entity.status == PlannerEntityStatus.completed,
     _ => throw StateError('unknown built-in view: $viewId'),
   };
@@ -351,6 +356,7 @@ class PlannerTaskQuery {
     final viewLabel = switch (viewId) {
       inboxViewId => 'Inbox',
       scheduledViewId => 'Scheduled',
+      recurringViewId => 'Recurring',
       completedViewId => 'Completed',
       _ => 'Open',
     };

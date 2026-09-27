@@ -228,6 +228,7 @@ void main() {
         PlannerTaskQuery.inboxViewId: 1,
         PlannerTaskQuery.openViewId: 2,
         PlannerTaskQuery.scheduledViewId: 1,
+        PlannerTaskQuery.recurringViewId: 0,
         PlannerTaskQuery.completedViewId: 1,
       });
 
@@ -240,10 +241,31 @@ void main() {
         PlannerTaskQuery.inboxViewId: 1,
         PlannerTaskQuery.openViewId: 1,
         PlannerTaskQuery.scheduledViewId: 0,
+        PlannerTaskQuery.recurringViewId: 0,
         PlannerTaskQuery.completedViewId: 0,
       });
     },
   );
+
+  test('recurring view projects only active recurring tasks', () async {
+    await seedTasks();
+    final entities = await store.readActiveEntities('owner-a');
+    final recurring = PlannerEntity(
+      id: 'task-recurring',
+      ownerId: 'owner-a',
+      kind: PlannerEntityKind.recurringTask,
+      payload: <String, dynamic>{
+        ...defaultPlannerPayload(title: 'Weekly review'),
+      },
+      createdAt: DateTime.utc(2026, 7, 27, 11),
+      updatedAt: DateTime.utc(2026, 7, 27, 11),
+    );
+    final result = PlannerTaskQuery.builtIn(
+      PlannerTaskQuery.recurringViewId,
+    ).applyTo(<PlannerEntity>[...entities, recurring]);
+    expect(result.entityIds, <String>['task-recurring']);
+    expect(result.facetCounts[PlannerTaskQuery.recurringViewId], 1);
+  });
 
   test(
     'grouping emits stable descriptors, omits empties, Unassigned last',

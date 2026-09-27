@@ -3216,12 +3216,24 @@ void main() {
         find.byKey(const ValueKey<String>('task-filter-toggle')),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Recurring'));
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('refine-type-Recurring')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('refine-type-Recurring')),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Weekly review'), findsOneWidget);
       expect(find.text('Focus Deep Work'), findsNothing);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Single'));
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('refine-type-Single')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('refine-type-Single')),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Focus Deep Work'), findsOneWidget);
       expect(find.text('Weekly review'), findsNothing);
@@ -4967,6 +4979,35 @@ void main() {
     },
   );
 
+  testWidgets('tracer 23: recurring view keeps one-offs out', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+    expect(find.text('Water plants'), findsNothing);
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('saved-view-builtin:recurring')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('saved-view-builtin:recurring')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsNothing);
+    expect(find.text('No recurring tasks yet.'), findsOneWidget);
+    expect(
+      tester
+          .widget<ChoiceChip>(
+            find.byKey(const ValueKey<String>('saved-view-builtin:recurring')),
+          )
+          .selected,
+      isTrue,
+    );
+  });
+
   testWidgets('tracer 20: saved-view switcher applies built-in views', (
     tester,
   ) async {
@@ -4983,11 +5024,22 @@ void main() {
     expect(openChip.selected, isTrue);
     expect(find.text('Focus Deep Work'), findsOneWidget);
 
-    // Switch to Completed: the shared projection must resolve the completed
-    // view — Focus Deep Work disappears and the empty state appears.
-    await tester.ensureVisible(
-      find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+    // Switch to Completed through the horizontal saved-view strip. Drive the
+    // strip's own ScrollableState with jumpTo — instant, no hit-test, no
+    // fake timers — then tap the chip. Same pattern below.
+    final switcherScroll = find.descendant(
+      of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+      matching: find.byType(Scrollable),
     );
+    tester
+        .state<ScrollableState>(switcherScroll)
+        .position
+        .jumpTo(
+          tester
+              .state<ScrollableState>(switcherScroll)
+              .position
+              .maxScrollExtent,
+        );
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
@@ -5001,9 +5053,7 @@ void main() {
     expect(find.text('No completed tasks yet.'), findsOneWidget);
 
     // Switch back to Open through the same switcher: the deck restores.
-    await tester.ensureVisible(
-      find.byKey(const ValueKey<String>('saved-view-builtin:open')),
-    );
+    tester.state<ScrollableState>(switcherScroll).position.jumpTo(0);
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey<String>('saved-view-builtin:open')),
@@ -5037,6 +5087,8 @@ void main() {
     );
     await tester.tap(find.byKey(const ValueKey<String>('refine-status-Inbox')));
     await tester.pumpAndSettle();
+    tester.state<ScrollableState>(switcherScroll).position.jumpTo(0);
+    await tester.pumpAndSettle();
     expect(
       tester
           .widget<ChoiceChip>(
@@ -5055,9 +5107,14 @@ void main() {
 
     await tester.tap(_footerDestination('tasks'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(
-      find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+    final switcherScroll21 = find.descendant(
+      of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+      matching: find.byType(Scrollable),
     );
+    final completedPosition21 = tester
+        .state<ScrollableState>(switcherScroll21)
+        .position;
+    completedPosition21.jumpTo(completedPosition21.maxScrollExtent);
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
@@ -5069,6 +5126,15 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await _pump(tester);
     await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    final rebuiltSwitcherScroll = find.descendant(
+      of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+      matching: find.byType(Scrollable),
+    );
+    final rebuiltPosition = tester
+        .state<ScrollableState>(rebuiltSwitcherScroll)
+        .position;
+    rebuiltPosition.jumpTo(rebuiltPosition.maxScrollExtent);
     await tester.pumpAndSettle();
     expect(
       tester

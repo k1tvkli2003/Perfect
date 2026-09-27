@@ -25,6 +25,22 @@ void main() {
     updatedAt: DateTime.utc(2026, 9, 2, 9),
   );
 
+  test(
+    'Recurring built-in view uses stable ID and an active recurring query',
+    () {
+      final views = PlannerSavedView.builtInViews(ownerId: 'owner-a');
+      final recurring = views.singleWhere(
+        (view) => view.id == 'builtin:recurring',
+      );
+      expect(recurring.title, 'Recurring');
+      expect(recurring.ownerId, 'owner-a');
+      expect(recurring.query.viewId, PlannerTaskQuery.recurringViewId);
+      expect(recurring.isBuiltIn, isTrue);
+      final decoded = PlannerSavedView.fromJson(recurring.toJson());
+      expect(decoded.query.viewId, PlannerTaskQuery.recurringViewId);
+    },
+  );
+
   test('encode/decode round trip preserves every field', () {
     final view = customView();
 
@@ -137,19 +153,21 @@ void main() {
     expect(renamed.query.viewId, PlannerTaskQuery.completedViewId);
   });
 
-  test('tracer 20: built-in views cover the four lifecycle queries', () {
+  test('tracer 20: built-in views cover the five lifecycle queries', () {
     final views = PlannerSavedView.builtInViews(ownerId: 'owner-a');
 
     expect(views.map((view) => view.id), <String>[
       'builtin:inbox',
       'builtin:open',
       'builtin:scheduled',
+      'builtin:recurring',
       'builtin:completed',
     ]);
     expect(views.map((view) => view.query.viewId), <String>[
       PlannerTaskQuery.inboxViewId,
       PlannerTaskQuery.openViewId,
       PlannerTaskQuery.scheduledViewId,
+      PlannerTaskQuery.recurringViewId,
       PlannerTaskQuery.completedViewId,
     ]);
     expect(views.every((view) => view.isBuiltIn), isTrue);

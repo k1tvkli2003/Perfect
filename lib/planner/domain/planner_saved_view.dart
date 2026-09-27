@@ -92,6 +92,12 @@ class PlannerSavedView {
         query: PlannerTaskQuery.builtIn(PlannerTaskQuery.scheduledViewId),
       ),
       view(
+        id: PlannerTaskQuery.recurringViewId,
+        title: 'Recurring',
+        iconKey: 'repeat',
+        query: PlannerTaskQuery.builtIn(PlannerTaskQuery.recurringViewId),
+      ),
+      view(
         id: PlannerTaskQuery.completedViewId,
         title: 'Completed',
         iconKey: 'check',
