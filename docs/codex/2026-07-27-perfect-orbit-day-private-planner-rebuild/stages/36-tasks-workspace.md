@@ -592,6 +592,21 @@ Do not remove the retained pre-rebuild stash.
   semantic expanded=false announced, row restored on expand); focused page file
   102/102 GREEN, `dart analyze` clean, `git diff --check` clean, full suite
   597/597 GREEN.
+- Typed-query tracer 23 (recurring built-in view, 2026-09-27, real runs):
+  the fifth stable built-in ID `builtin:recurring` maps to the shared
+  `PlannerTaskQuery.recurringViewId`, matching only active
+  `PlannerEntityKind.recurringTask` entities, never one-offs. Facet counts and
+  query labels use the same projection; the Tasks status deck and saved-view
+  switcher expose Recurring with a distinct empty state. A 390×844 page test
+  proves the one-off row disappears and the empty recurring view is selected;
+  domain tests cover stable-ID JSON round trip and membership. Adding the
+  fifth chip exposed off-screen switcher tests: their horizontal `Scrollable`
+  is now found under the keyed `ListView` and advanced with `jumpTo` (not an
+  unpumped `animateTo` or a vertical drag). Existing tracer 20/21 page tests
+  2/2 GREEN; recurring page test 1/1 GREEN; two domain files 17/17 GREEN;
+  full suite 600/600 GREEN; `dart analyze lib/ test/` and `git diff --check`
+  clean. This does not claim custom named-view persistence/sync or native
+  visual acceptance.
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
