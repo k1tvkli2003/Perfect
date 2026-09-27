@@ -5,6 +5,7 @@ import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_task_bulk.dart';
 import 'package:perfect/planner/domain/planner_task_query.dart';
+import 'package:perfect/planner/domain/planner_saved_view.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_operation.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
@@ -168,6 +169,28 @@ class PlannerWorkspaceController extends ChangeNotifier {
     if (_disposed || _shutdownRequested) return;
     await refreshTodayProjection();
   }
+
+  Future<List<PlannerSavedView>> readPersonalSavedViews() =>
+      _localStore.readSavedViews(ownerId);
+
+  Future<PlannerSavedView> savePersonalSavedView(PlannerSavedView view) async {
+    if (view.ownerId != ownerId) {
+      throw StateError('Only a view in this workspace can be saved.');
+    }
+    final now = _now().toUtc();
+    final stored = view.copyWith(updatedAt: now);
+    await _localStore.upsertSavedView(stored);
+    return stored;
+  }
+
+  Future<void> softDeletePersonalSavedView(String viewId) =>
+      _localStore.softDeleteSavedView(
+        ownerId: ownerId,
+        viewId: viewId,
+        deletedAt: _now().toUtc(),
+      );
+
+  String newPersonalSavedViewId() => 'view-${_uuid.v4()}';
 
   Future<PlannerMutationReceipt> quickCapture(String title) async {
     final receipt = await _localStore.createQuickTask(

@@ -632,6 +632,376 @@ class PlannerEntitiesCompanion extends UpdateCompanion<PlannerEntityRow> {
   }
 }
 
+class $PlannerSavedViewsTable extends PlannerSavedViews
+    with TableInfo<$PlannerSavedViewsTable, PlannerSavedViewRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlannerSavedViewsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _definitionJsonMeta = const VerificationMeta(
+    'definitionJson',
+  );
+  @override
+  late final GeneratedColumn<String> definitionJson = GeneratedColumn<String>(
+    'definition_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    ownerId,
+    definitionJson,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'planner_saved_views';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlannerSavedViewRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
+    if (data.containsKey('definition_json')) {
+      context.handle(
+        _definitionJsonMeta,
+        definitionJson.isAcceptableOrUnknown(
+          data['definition_json']!,
+          _definitionJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_definitionJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {ownerId, id};
+  @override
+  PlannerSavedViewRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlannerSavedViewRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      definitionJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}definition_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $PlannerSavedViewsTable createAlias(String alias) {
+    return $PlannerSavedViewsTable(attachedDatabase, alias);
+  }
+}
+
+class PlannerSavedViewRow extends DataClass
+    implements Insertable<PlannerSavedViewRow> {
+  final String id;
+  final String ownerId;
+  final String definitionJson;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const PlannerSavedViewRow({
+    required this.id,
+    required this.ownerId,
+    required this.definitionJson,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['definition_json'] = Variable<String>(definitionJson);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  PlannerSavedViewsCompanion toCompanion(bool nullToAbsent) {
+    return PlannerSavedViewsCompanion(
+      id: Value(id),
+      ownerId: Value(ownerId),
+      definitionJson: Value(definitionJson),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory PlannerSavedViewRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlannerSavedViewRow(
+      id: serializer.fromJson<String>(json['id']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      definitionJson: serializer.fromJson<String>(json['definitionJson']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'definitionJson': serializer.toJson<String>(definitionJson),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  PlannerSavedViewRow copyWith({
+    String? id,
+    String? ownerId,
+    String? definitionJson,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => PlannerSavedViewRow(
+    id: id ?? this.id,
+    ownerId: ownerId ?? this.ownerId,
+    definitionJson: definitionJson ?? this.definitionJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  PlannerSavedViewRow copyWithCompanion(PlannerSavedViewsCompanion data) {
+    return PlannerSavedViewRow(
+      id: data.id.present ? data.id.value : this.id,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      definitionJson: data.definitionJson.present
+          ? data.definitionJson.value
+          : this.definitionJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlannerSavedViewRow(')
+          ..write('id: $id, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('definitionJson: $definitionJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, ownerId, definitionJson, updatedAt, deletedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlannerSavedViewRow &&
+          other.id == this.id &&
+          other.ownerId == this.ownerId &&
+          other.definitionJson == this.definitionJson &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class PlannerSavedViewsCompanion extends UpdateCompanion<PlannerSavedViewRow> {
+  final Value<String> id;
+  final Value<String> ownerId;
+  final Value<String> definitionJson;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const PlannerSavedViewsCompanion({
+    this.id = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.definitionJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PlannerSavedViewsCompanion.insert({
+    required String id,
+    required String ownerId,
+    required String definitionJson,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       ownerId = Value(ownerId),
+       definitionJson = Value(definitionJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<PlannerSavedViewRow> custom({
+    Expression<String>? id,
+    Expression<String>? ownerId,
+    Expression<String>? definitionJson,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (definitionJson != null) 'definition_json': definitionJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PlannerSavedViewsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? ownerId,
+    Value<String>? definitionJson,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return PlannerSavedViewsCompanion(
+      id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
+      definitionJson: definitionJson ?? this.definitionJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (definitionJson.present) {
+      map['definition_json'] = Variable<String>(definitionJson.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlannerSavedViewsCompanion(')
+          ..write('id: $id, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('definitionJson: $definitionJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PlannerOccurrencesTable extends PlannerOccurrences
     with TableInfo<$PlannerOccurrencesTable, PlannerOccurrenceRow> {
   @override
@@ -5218,6 +5588,8 @@ abstract class _$PlannerDatabase extends GeneratedDatabase {
   late final $PlannerEntitiesTable plannerEntities = $PlannerEntitiesTable(
     this,
   );
+  late final $PlannerSavedViewsTable plannerSavedViews =
+      $PlannerSavedViewsTable(this);
   late final $PlannerOccurrencesTable plannerOccurrences =
       $PlannerOccurrencesTable(this);
   late final $PlannerFocusSessionsTable plannerFocusSessions =
@@ -5239,6 +5611,7 @@ abstract class _$PlannerDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     plannerEntities,
+    plannerSavedViews,
     plannerOccurrences,
     plannerFocusSessions,
     plannerOutboxOperations,
@@ -5558,6 +5931,221 @@ typedef $$PlannerEntitiesTableProcessedTableManager =
         >,
       ),
       PlannerEntityRow,
+      PrefetchHooks Function()
+    >;
+typedef $$PlannerSavedViewsTableCreateCompanionBuilder =
+    PlannerSavedViewsCompanion Function({
+      required String id,
+      required String ownerId,
+      required String definitionJson,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$PlannerSavedViewsTableUpdateCompanionBuilder =
+    PlannerSavedViewsCompanion Function({
+      Value<String> id,
+      Value<String> ownerId,
+      Value<String> definitionJson,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+class $$PlannerSavedViewsTableFilterComposer
+    extends Composer<_$PlannerDatabase, $PlannerSavedViewsTable> {
+  $$PlannerSavedViewsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get definitionJson => $composableBuilder(
+    column: $table.definitionJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PlannerSavedViewsTableOrderingComposer
+    extends Composer<_$PlannerDatabase, $PlannerSavedViewsTable> {
+  $$PlannerSavedViewsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get definitionJson => $composableBuilder(
+    column: $table.definitionJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PlannerSavedViewsTableAnnotationComposer
+    extends Composer<_$PlannerDatabase, $PlannerSavedViewsTable> {
+  $$PlannerSavedViewsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<String> get definitionJson => $composableBuilder(
+    column: $table.definitionJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$PlannerSavedViewsTableTableManager
+    extends
+        RootTableManager<
+          _$PlannerDatabase,
+          $PlannerSavedViewsTable,
+          PlannerSavedViewRow,
+          $$PlannerSavedViewsTableFilterComposer,
+          $$PlannerSavedViewsTableOrderingComposer,
+          $$PlannerSavedViewsTableAnnotationComposer,
+          $$PlannerSavedViewsTableCreateCompanionBuilder,
+          $$PlannerSavedViewsTableUpdateCompanionBuilder,
+          (
+            PlannerSavedViewRow,
+            BaseReferences<
+              _$PlannerDatabase,
+              $PlannerSavedViewsTable,
+              PlannerSavedViewRow
+            >,
+          ),
+          PlannerSavedViewRow,
+          PrefetchHooks Function()
+        > {
+  $$PlannerSavedViewsTableTableManager(
+    _$PlannerDatabase db,
+    $PlannerSavedViewsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlannerSavedViewsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PlannerSavedViewsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PlannerSavedViewsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> ownerId = const Value.absent(),
+                Value<String> definitionJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlannerSavedViewsCompanion(
+                id: id,
+                ownerId: ownerId,
+                definitionJson: definitionJson,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String ownerId,
+                required String definitionJson,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlannerSavedViewsCompanion.insert(
+                id: id,
+                ownerId: ownerId,
+                definitionJson: definitionJson,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PlannerSavedViewsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PlannerDatabase,
+      $PlannerSavedViewsTable,
+      PlannerSavedViewRow,
+      $$PlannerSavedViewsTableFilterComposer,
+      $$PlannerSavedViewsTableOrderingComposer,
+      $$PlannerSavedViewsTableAnnotationComposer,
+      $$PlannerSavedViewsTableCreateCompanionBuilder,
+      $$PlannerSavedViewsTableUpdateCompanionBuilder,
+      (
+        PlannerSavedViewRow,
+        BaseReferences<
+          _$PlannerDatabase,
+          $PlannerSavedViewsTable,
+          PlannerSavedViewRow
+        >,
+      ),
+      PlannerSavedViewRow,
       PrefetchHooks Function()
     >;
 typedef $$PlannerOccurrencesTableCreateCompanionBuilder =
@@ -7853,6 +8441,8 @@ class $PlannerDatabaseManager {
   $PlannerDatabaseManager(this._db);
   $$PlannerEntitiesTableTableManager get plannerEntities =>
       $$PlannerEntitiesTableTableManager(_db, _db.plannerEntities);
+  $$PlannerSavedViewsTableTableManager get plannerSavedViews =>
+      $$PlannerSavedViewsTableTableManager(_db, _db.plannerSavedViews);
   $$PlannerOccurrencesTableTableManager get plannerOccurrences =>
       $$PlannerOccurrencesTableTableManager(_db, _db.plannerOccurrences);
   $$PlannerFocusSessionsTableTableManager get plannerFocusSessions =>

@@ -4417,11 +4417,15 @@ class _TasksPageState extends State<_TasksPage> {
     setState(() => _selection = _selection.toggle(id));
   }
 
-  /// Tracer 20: the four built-in saved views are the switcher source of
-  /// truth (owner-scoped). Custom views arrive in a later tracer; the
-  /// switcher + apply path already speaks stable view IDs.
-  List<PlannerSavedView> get _savedViews =>
-      PlannerSavedView.builtInViews(ownerId: widget.controller.ownerId);
+  List<PlannerSavedView> _savedViews = const <PlannerSavedView>[];
+
+  /// Tracer 24: the switcher source of truth is built-in definitions plus the
+  /// owner's stored personal views. Personal rows are owner-scoped; a failed
+  /// read keeps the built-ins rather than hiding the switcher.
+  List<PlannerSavedView> get _effectiveSavedViews => <PlannerSavedView>[
+    ...PlannerSavedView.builtInViews(ownerId: widget.controller.ownerId),
+    ..._savedViews,
+  ];
 
   /// Tracer 20: applies a saved view by restoring the deck fields its query
   /// carries (view → filter, kind scope, search text, sortMode, groupBy).
@@ -4449,17 +4453,165 @@ class _TasksPageState extends State<_TasksPage> {
   @override
   void initState() {
     super.initState();
-    _restoreActiveViewPreference();
+    unawaited(_restoreSavedViews());
   }
 
-  Future<void> _restoreActiveViewPreference() async {
+  /// Tracer 21/24: one deterministic restore — stored ID first, then the
+  /// owner's personal rows, and only then is a view applied. Resolution runs
+  /// against built-ins plus stored views, so a stored personal ID is never
+  /// wrongly downgraded to `builtin:open` just because its row was still
+  /// loading. Unknown or missing IDs fall back to Open through
+  /// [PlannerSavedView.resolveActiveViewId].
+  Future<void> _restoreSavedViews() async {
     final storedId = await PerfectPreferences.readTasksActiveViewId();
+    List<PlannerSavedView> personal;
+    try {
+      personal = await widget.controller.readPersonalSavedViews();
+    } on Object {
+      personal = const <PlannerSavedView>[];
+    }
     if (!mounted || _activeViewLoaded) return;
+    setState(() => _savedViews = personal);
+    final available = _effectiveSavedViews;
     final resolvedId = PlannerSavedView.resolveActiveViewId(
       storedId: storedId,
-      availableIds: <String>{for (final view in _savedViews) view.id},
+      availableIds: <String>{for (final view in available) view.id},
     );
-    _applySavedView(_savedViews.firstWhere((view) => view.id == resolvedId));
+    _applySavedView(available.firstWhere((view) => view.id == resolvedId));
+  }
+
+  Future<void> _reloadPersonalSavedViews() async {
+    try {
+      final views = await widget.controller.readPersonalSavedViews();
+      if (!mounted) return;
+      setState(() => _savedViews = views);
+    } on Object {
+      return;
+    }
+  }
+
+  PlannerSavedView? _personalViewById(String viewId) {
+    for (final view in _savedViews) {
+      if (view.id == viewId) return view;
+    }
+    return null;
+  }
+
+  Future<void> _saveCurrentView() async {
+    final current = _personalViewById(_activeViewId);
+    var draftTitle = current?.title ?? '';
+    final title = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(current == null ? 'Save view' : 'Rename view'),
+        content: TextFormField(
+          key: const ValueKey<String>('saved-view-title'),
+          autofocus: true,
+          initialValue: draftTitle,
+          decoration: const InputDecoration(labelText: 'View name'),
+          textInputAction: TextInputAction.done,
+          onChanged: (value) => draftTitle = value,
+          onFieldSubmitted: (_) => Navigator.of(dialogContext).pop(draftTitle),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            key: const ValueKey<String>('saved-view-title-save'),
+            onPressed: () => Navigator.of(dialogContext).pop(draftTitle),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    final trimmed = title?.trim() ?? '';
+    if (!mounted || trimmed.isEmpty) return;
+    final now = DateTime.now().toUtc();
+    final saved = current == null
+        ? PlannerSavedView(
+            id: widget.controller.newPersonalSavedViewId(),
+            ownerId: widget.controller.ownerId,
+            schemaVersion: PlannerSavedView.currentSchemaVersion,
+            title: trimmed,
+            iconKey: 'bookmark',
+            query: _taskQueryFromDeck(
+              filter: _filter,
+              kindFilter: _kindFilter,
+              sortMode: _sortMode,
+              searchText: _search.text,
+              groupMode: _groupMode,
+            ),
+            createdAt: now,
+            updatedAt: now,
+          )
+        : current.copyWith(
+            title: trimmed,
+            query: _taskQueryFromDeck(
+              filter: _filter,
+              kindFilter: _kindFilter,
+              sortMode: _sortMode,
+              searchText: _search.text,
+              groupMode: _groupMode,
+            ),
+          );
+    final stored = await widget.controller.savePersonalSavedView(saved);
+    if (!mounted) return;
+    await _reloadPersonalSavedViews();
+    if (!mounted) return;
+    _applySavedView(stored);
+  }
+
+  Future<void> _openSavedViewManager() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final views = _savedViews;
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              const ListTile(title: Text('Saved views')),
+              if (views.isEmpty)
+                const ListTile(title: Text('No personal views yet.')),
+              for (final view in views)
+                ListTile(
+                  key: ValueKey<String>('saved-view-manage-${view.id}'),
+                  title: Text(view.title),
+                  trailing: IconButton(
+                    key: ValueKey<String>('saved-view-delete-${view.id}'),
+                    tooltip: 'Delete saved view',
+                    onPressed: () async {
+                      await widget.controller.softDeletePersonalSavedView(
+                        view.id,
+                      );
+                      if (!mounted) return;
+                      if (view.id == _activeViewId) {
+                        final open =
+                            PlannerSavedView.builtInViews(
+                              ownerId: widget.controller.ownerId,
+                            ).firstWhere(
+                              (builtIn) =>
+                                  builtIn.id == PlannerSavedView.fallbackViewId,
+                            );
+                        _applySavedView(open);
+                      }
+                      await _reloadPersonalSavedViews();
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                    },
+                    icon: const Icon(Icons.delete_outline),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   /// Stage 36 bulk sheet: opens the frozen preview, confirms through the
@@ -4649,9 +4801,11 @@ class _TasksPageState extends State<_TasksPage> {
             ),
             const SizedBox(height: PerfectSpace.xs),
             _SavedViewSwitcher(
-              views: _savedViews,
+              views: _effectiveSavedViews,
               activeViewId: _activeViewId,
               onSelect: _applySavedView,
+              onSaveCurrent: _saveCurrentView,
+              onManage: _openSavedViewManager,
             ),
             const SizedBox(height: PerfectSpace.xs),
             _TaskFilterDeck(
@@ -4905,11 +5059,15 @@ class _SavedViewSwitcher extends StatelessWidget {
     required this.views,
     required this.activeViewId,
     required this.onSelect,
+    required this.onSaveCurrent,
+    required this.onManage,
   });
 
   final List<PlannerSavedView> views;
   final String activeViewId;
   final ValueChanged<PlannerSavedView> onSelect;
+  final VoidCallback onSaveCurrent;
+  final VoidCallback onManage;
 
   @override
   Widget build(BuildContext context) {
@@ -4918,23 +5076,44 @@ class _SavedViewSwitcher extends StatelessWidget {
       label: 'Saved tasks views',
       child: SizedBox(
         height: 48,
-        child: ListView.separated(
-          key: const ValueKey<String>('saved-view-switcher'),
-          scrollDirection: Axis.horizontal,
-          itemCount: views.length,
-          separatorBuilder: (_, _) => const SizedBox(width: PerfectSpace.xs),
-          itemBuilder: (context, index) {
-            final view = views[index];
-            final selected = view.id == activeViewId;
-            return ChoiceChip(
-              key: ValueKey<String>('saved-view-${view.id}'),
-              label: Text(view.title),
-              selected: selected,
-              showCheckmark: false,
-              selectedColor: scheme.primaryContainer,
-              onSelected: (_) => onSelect(view),
-            );
-          },
+        child: Row(
+          children: [
+            Expanded(
+              child: ListView.separated(
+                key: const ValueKey<String>('saved-view-switcher'),
+                scrollDirection: Axis.horizontal,
+                itemCount: views.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(width: PerfectSpace.xs),
+                itemBuilder: (context, index) {
+                  final view = views[index];
+                  final selected = view.id == activeViewId;
+                  return ChoiceChip(
+                    key: ValueKey<String>('saved-view-${view.id}'),
+                    label: Text(view.title),
+                    selected: selected,
+                    showCheckmark: false,
+                    selectedColor: scheme.primaryContainer,
+                    onSelected: (_) => onSelect(view),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: PerfectSpace.xs),
+            OutlinedButton.icon(
+              key: const ValueKey<String>('saved-view-save-current'),
+              onPressed: onSaveCurrent,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Save'),
+            ),
+            const SizedBox(width: PerfectSpace.xs),
+            IconButton(
+              key: const ValueKey<String>('saved-view-manage'),
+              tooltip: 'Manage saved views',
+              onPressed: onManage,
+              icon: const Icon(Icons.tune),
+            ),
+          ],
         ),
       ),
     );

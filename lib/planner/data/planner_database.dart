@@ -29,6 +29,23 @@ class PlannerEntities extends Table {
   ];
 }
 
+/// Private, owner-scoped named task queries. Built-in definitions remain
+/// compiled into the client and never occupy this table.
+@DataClassName('PlannerSavedViewRow')
+class PlannerSavedViews extends Table {
+  @override
+  String get tableName => 'planner_saved_views';
+
+  TextColumn get id => text()();
+  TextColumn get ownerId => text()();
+  TextColumn get definitionJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => <Column>{ownerId, id};
+}
+
 @DataClassName('PlannerOccurrenceRow')
 class PlannerOccurrences extends Table {
   @override
@@ -207,6 +224,7 @@ class PlannerWidgetActionSequences extends Table {
 @DriftDatabase(
   tables: <Type>[
     PlannerEntities,
+    PlannerSavedViews,
     PlannerOccurrences,
     PlannerFocusSessions,
     PlannerOutboxOperations,
@@ -221,7 +239,7 @@ class PlannerDatabase extends _$PlannerDatabase {
     : super(executor ?? driftDatabase(name: 'perfect_planner'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -243,10 +261,21 @@ class PlannerDatabase extends _$PlannerDatabase {
         'CREATE INDEX planner_conflicts_owner_status_idx '
         'ON planner_conflicts(owner_id, status, created_at DESC)',
       );
+      await customStatement(
+        'CREATE INDEX planner_saved_views_owner_active_idx '
+        'ON planner_saved_views(owner_id, deleted_at, updated_at DESC)',
+      );
     },
     onUpgrade: (Migrator migrator, int from, int to) async {
       if (from < 2) {
         await migrator.createTable(plannerWidgetActionSequences);
+      }
+      if (from < 3) {
+        await migrator.createTable(plannerSavedViews);
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS planner_saved_views_owner_active_idx '
+          'ON planner_saved_views(owner_id, deleted_at, updated_at DESC)',
+        );
       }
     },
     beforeOpen: (OpeningDetails details) async {

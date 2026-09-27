@@ -4988,9 +4988,19 @@ void main() {
     expect(find.text('Focus Deep Work'), findsOneWidget);
     expect(find.text('Water plants'), findsNothing);
 
-    await tester.ensureVisible(
-      find.byKey(const ValueKey<String>('saved-view-builtin:recurring')),
+    final switcherScroll = find.descendant(
+      of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+      matching: find.byType(Scrollable),
     );
+    tester
+        .state<ScrollableState>(switcherScroll)
+        .position
+        .jumpTo(
+          tester
+              .state<ScrollableState>(switcherScroll)
+              .position
+              .maxScrollExtent,
+        );
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey<String>('saved-view-builtin:recurring')),
@@ -5220,6 +5230,108 @@ void main() {
     final expandedSemantics = tester.getSemantics(header.first);
     expect(expandedSemantics.flagsCollection.isExpanded.toBoolOrNull(), isTrue);
   });
+
+  testWidgets(
+    'tracer 24: personal saved view persists query and survives deletion',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      await _pump(tester);
+
+      await tester.tap(_footerDestination('tasks'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('task-filter-toggle')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, 'Deep');
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('saved-view-save-current')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('saved-view-title')),
+        'Deep work',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('saved-view-title-save')),
+      );
+      await tester.pumpAndSettle();
+      final personal = (await _controller.readPersonalSavedViews()).single;
+      expect(personal.title, 'Deep work');
+      expect(personal.query.text, 'Deep');
+      expect(personal.ownerId, 'preview-owner');
+      final switcherScrollForSelection = find.descendant(
+        of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+        matching: find.byType(Scrollable),
+      );
+      tester
+          .state<ScrollableState>(switcherScrollForSelection)
+          .position
+          .jumpTo(
+            tester
+                .state<ScrollableState>(switcherScrollForSelection)
+                .position
+                .maxScrollExtent,
+          );
+      await tester.pumpAndSettle();
+      final personalFinder = find.byKey(
+        ValueKey<String>('saved-view-${personal.id}'),
+      );
+      expect(personalFinder, findsOneWidget);
+      expect(find.text('Focus Deep Work'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _pump(tester);
+      await tester.tap(_footerDestination('tasks'));
+      await tester.pumpAndSettle();
+      final switcherScroll = find.descendant(
+        of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+        matching: find.byType(Scrollable),
+      );
+      tester
+          .state<ScrollableState>(switcherScroll)
+          .position
+          .jumpTo(
+            tester
+                .state<ScrollableState>(switcherScroll)
+                .position
+                .maxScrollExtent,
+          );
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<ChoiceChip>(
+              find.byKey(ValueKey<String>('saved-view-${personal.id}')),
+            )
+            .selected,
+        isTrue,
+      );
+
+      await tester.tap(find.byKey(const ValueKey<String>('saved-view-manage')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(ValueKey<String>('saved-view-delete-${personal.id}')),
+      );
+      await tester.pumpAndSettle();
+      expect(await _controller.readPersonalSavedViews(), isEmpty);
+      expect(
+        find.byKey(ValueKey<String>('saved-view-${personal.id}')),
+        findsNothing,
+      );
+      tester.state<ScrollableState>(switcherScroll).position.jumpTo(0);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<ChoiceChip>(
+              find.byKey(const ValueKey<String>('saved-view-builtin:open')),
+            )
+            .selected,
+        isTrue,
+      );
+    },
+  );
 }
 
 Future<void> _pump(

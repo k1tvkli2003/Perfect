@@ -8,6 +8,7 @@ import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_operation.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
+import 'package:perfect/planner/domain/planner_saved_view.dart';
 import 'package:uuid/uuid.dart';
 
 /// The only local source of truth for planner state.
@@ -322,6 +323,77 @@ class PlannerLocalStore {
     }
     final rows = await query.get();
     return rows.map(_focusSessionFromRow).toList(growable: false);
+  }
+
+  Future<List<PlannerSavedView>> readSavedViews(
+    String ownerId, {
+    bool includeDeleted = false,
+  }) async {
+    _requireOwnerId(ownerId);
+    final query = _database.select(_database.plannerSavedViews)
+      ..where((row) => row.ownerId.equals(ownerId))
+      ..orderBy(<OrderingTerm Function(PlannerSavedViews)>[
+        (row) =>
+            OrderingTerm(expression: row.updatedAt, mode: OrderingMode.desc),
+        (row) => OrderingTerm(expression: row.id),
+      ]);
+    if (!includeDeleted) {
+      query.where((row) => row.deletedAt.isNull());
+    }
+    final rows = await query.get();
+    return rows.map(_savedViewFromRow).toList(growable: false);
+  }
+
+  Future<void> upsertSavedView(PlannerSavedView view) async {
+    _requireOwnerId(view.ownerId);
+    if (view.isBuiltIn) {
+      throw ArgumentError.value(
+        view.id,
+        'view.id',
+        'built-in views are immutable',
+      );
+    }
+    final updatedAt = view.updatedAt.toUtc();
+    await _database
+        .into(_database.plannerSavedViews)
+        .insertOnConflictUpdate(
+          PlannerSavedViewsCompanion.insert(
+            id: view.id,
+            ownerId: view.ownerId,
+            definitionJson: jsonEncode(view.toJson()),
+            updatedAt: updatedAt,
+            deletedAt: Value(view.deletedAt?.toUtc()),
+          ),
+        );
+  }
+
+  Future<void> softDeleteSavedView({
+    required String ownerId,
+    required String viewId,
+    required DateTime deletedAt,
+  }) async {
+    _requireOwnerId(ownerId);
+    if (viewId.startsWith(PlannerSavedView.builtInNamespacePrefix)) {
+      throw ArgumentError.value(
+        viewId,
+        'viewId',
+        'built-in views are immutable',
+      );
+    }
+    final existing =
+        await (_database.select(_database.plannerSavedViews)..where(
+              (row) => row.ownerId.equals(ownerId) & row.id.equals(viewId),
+            ))
+            .getSingleOrNull();
+    if (existing == null) return;
+    await (_database.update(_database.plannerSavedViews)
+          ..where((row) => row.ownerId.equals(ownerId) & row.id.equals(viewId)))
+        .write(
+          PlannerSavedViewsCompanion(
+            updatedAt: Value(deletedAt.toUtc()),
+            deletedAt: Value(deletedAt.toUtc()),
+          ),
+        );
   }
 
   Future<PlannerEntity?> readEntity({
@@ -1732,6 +1804,20 @@ RETURNING action_id
         : _utc(row.serverUpdatedAt!),
     deletedAt: row.deletedAt == null ? null : _utc(row.deletedAt!),
   );
+
+  PlannerSavedView _savedViewFromRow(PlannerSavedViewRow row) {
+    final view = PlannerSavedView.fromJson(safeJsonMap(row.definitionJson));
+    if (view.id != row.id || view.ownerId != row.ownerId) {
+      throw const FormatException(
+        'Saved view identity does not match owner-scoped row.',
+      );
+    }
+    return view.copyWith(
+      updatedAt: row.updatedAt.toUtc(),
+      deletedAt: row.deletedAt?.toUtc(),
+      clearDeletedAt: row.deletedAt == null,
+    );
+  }
 
   PlannerOccurrence _occurrenceFromRow(PlannerOccurrenceRow row) =>
       PlannerOccurrence(
