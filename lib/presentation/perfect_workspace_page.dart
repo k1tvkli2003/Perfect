@@ -4500,7 +4500,7 @@ class _TasksPageState extends State<_TasksPage> {
   Future<void> _saveCurrentView() async {
     final current = _personalViewById(_activeViewId);
     var draftTitle = current?.title ?? '';
-    final title = await showDialog<String>(
+    final title = await showPerfectDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(current == null ? 'Save view' : 'Rename view'),
@@ -4568,6 +4568,7 @@ class _TasksPageState extends State<_TasksPage> {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
+      sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
       builder: (sheetContext) {
         final views = _savedViews;
         return SafeArea(
