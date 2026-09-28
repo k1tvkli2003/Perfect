@@ -607,25 +607,28 @@ Do not remove the retained pre-rebuild stash.
   full suite 600/600 GREEN; `dart analyze lib/ test/` and `git diff --check`
   clean. This does not claim custom named-view persistence/sync or native
   visual acceptance.
-- Typed-query tracer 24 (personal saved views, 2026-09-27, real runs):
-  personal named views now live in the same owner-scoped Drift database
-  (`planner_saved_views`, schema v3, owner_id + id unique, revision
-  ordering, soft-delete tombstones, unknown-field-tolerant JSON). The same
-  table opens with `CREATE TABLE IF NOT EXISTS` from v1/v2, and a v2 fixture
-  with one live task upgrades to v3 with the task intact. Namespaced
-  `builtin:` IDs are rejected at the store edge; the switcher renders
-  built-ins first, then personal rows in updatedAt order, and honors an
-  active personal selection in the Tasks page summary. Saving from the Tasks
-  switcher captures the live filtered query; rename preserves id/ownerId and
-  bumps revision; delete tombstones the row, reverts to `builtin:open`, and
-  clears a stored active-view preference pointing at the deleted view.
-  Controller IDs are `view-<uuid>`; a cross-owner save is refused with
-  `ArgumentError` before any write, and deletion of a non-personal view is
-  refused. Proof: new store file 4/4 GREEN (round trip, multi-view owner
-  scoping, built-in guard, v2 upgrade) + new page test (save → select →
-  rebuild → restore query → delete → builtin:open); `dart analyze` clean.
-  Sync convergence for personal views is still open — this tracer is local
-  persistence plus Tasks wiring only.
+- Typed-query tracer 25 (personal saved-view sync, 2026-09-28, real runs):
+  owner-scoped saved-view definitions now converge through a dedicated
+  additive journal instead of borrowing the task outbox/RPC: schema v4 adds
+  `planner_saved_views.revision` plus a separate `saved_view_cursor` in
+  `planner_sync_metadata`; Supabase gains `planner_saved_views`,
+  `planner_saved_view_operations`, `apply_saved_view_mutation` and
+  `pull_planner_saved_view_changes`; task RPCs and UUID receipts stay
+  untouched, while personal identity stays text `view-<uuid>` and built-ins
+  stay local-only (rejected at store/sync edges, never written or synced).
+  Every saved write emits one immutable whole-definition outbox snapshot
+  (`/` path), so two queued renames push `['Bills','Utilities']` rather than
+  resending the newest row twice; stale bases return a true conflict while
+  the local definition survives, and recovery stores the server snapshot on
+  the original ID plus a new `Recovered copy` ID. Task and saved-view pulls
+  keep independent durable cursors, so advancing one journal never resets or
+  overwrites the other; legacy/offline gateways without the saved-view
+  journal keep their task-only contract. Proof: new sync file 6/6 GREEN
+  (envelope, cursor, queued snapshots, unknown-field convergence,
+  Recovered-copy handoff, built-in guard) + store 4/4 + repo 13/13 GREEN;
+  Supabase contract validator plus PGlite migration/proof PASS
+  (upsert/idempotent/stale-conflict/pull); full suite 611/611 GREEN;
+  `dart analyze` and `git diff --check` clean (commit `7c6c7af`).
 - This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
   exact paths): all five tasks composition pages
   (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
