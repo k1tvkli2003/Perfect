@@ -311,6 +311,9 @@ void main() {
         await originalDatabase.customStatement(
           'DROP TABLE planner_widget_action_sequences',
         );
+        await originalDatabase.customStatement(
+          'ALTER TABLE planner_sync_metadata DROP COLUMN saved_view_cursor',
+        );
         await originalDatabase.customStatement('PRAGMA user_version = 1');
         await originalStore.close();
         originalClosed = true;

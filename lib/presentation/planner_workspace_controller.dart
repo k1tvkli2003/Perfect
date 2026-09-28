@@ -180,17 +180,30 @@ class PlannerWorkspaceController extends ChangeNotifier {
     final now = _now().toUtc();
     final stored = view.copyWith(updatedAt: now);
     await _localStore.upsertSavedView(stored);
-    return stored;
+    unawaited(_syncRepository.syncNow());
+    return (await _localStore.readSavedView(
+      ownerId: ownerId,
+      viewId: stored.id,
+    ))!;
   }
 
-  Future<void> softDeletePersonalSavedView(String viewId) =>
-      _localStore.softDeleteSavedView(
-        ownerId: ownerId,
-        viewId: viewId,
-        deletedAt: _now().toUtc(),
-      );
+  Future<void> softDeletePersonalSavedView(String viewId) async {
+    await _localStore.softDeleteSavedView(
+      ownerId: ownerId,
+      viewId: viewId,
+      deletedAt: _now().toUtc(),
+    );
+    unawaited(_syncRepository.syncNow());
+  }
 
   String newPersonalSavedViewId() => 'view-${_uuid.v4()}';
+
+  String _recoveredCopyTitle() => 'Recovered copy';
+
+  Map<String, dynamic> _localViewUnknowns(
+    Map<String, dynamic> localDefinition,
+    PlannerSavedView recovered,
+  ) => recovered.unknownFields;
 
   Future<PlannerMutationReceipt> quickCapture(String title) async {
     final receipt = await _localStore.createQuickTask(
@@ -1322,6 +1335,70 @@ class PlannerWorkspaceController extends ChangeNotifier {
       );
 
   Future<void> keepLocalConflict(PlannerSyncConflict conflict) async {
+    if (conflict.targetType == PlannerOperationTarget.savedView) {
+      final conflicting = await _localStore.readSavedViews(
+        ownerId,
+        includeDeleted: true,
+      );
+      final current = conflicting.firstWhere(
+        (view) => view.id == conflict.targetId,
+        orElse: () => throw StateError(
+          'The conflicting saved view is no longer available locally.',
+        ),
+      );
+      final localDefinition = safeJsonMap(
+        safeJsonMap(conflict.localValue)['payload'],
+      );
+      final recoveredId = newPersonalSavedViewId();
+      final now = _now().toUtc();
+      final recovered = PlannerSavedView.fromJson(localDefinition).copyWith(
+        updatedAt: now,
+      );
+      final renamed = PlannerSavedView(
+        id: recoveredId,
+        ownerId: ownerId,
+        schemaVersion: PlannerSavedView.currentSchemaVersion,
+        title: _recoveredCopyTitle(),
+        iconKey: recovered.iconKey,
+        query: recovered.query,
+        createdAt: now,
+        updatedAt: now,
+        unknownFields: _localViewUnknowns(localDefinition, recovered),
+      );
+      final resolvedOriginal = await _localStore.readSavedView(
+        ownerId: ownerId,
+        viewId: current.id,
+        includeDeleted: true,
+      );
+      if (resolvedOriginal == null) {
+        throw StateError(
+          'The conflicting saved view is no longer available locally.',
+        );
+      }
+      if (resolvedOriginal.revision != current.revision) {
+        throw StateError(
+          'The conflicting saved view changed during recovery.',
+        );
+      }
+      final applied = await _localStore.applyRemoteSavedView(
+        resolvedOriginal.copyWith(
+          updatedAt: now,
+        ),
+        preservePendingLocal: false,
+      );
+      if (!applied) {
+        throw StateError('The conflicting saved view changed during recovery.');
+      }
+      await _localStore.upsertSavedView(renamed);
+      await _localStore.resolveConflict(
+        ownerId: ownerId,
+        conflictId: conflict.id,
+        resolution: 'kept_server',
+        now: now,
+      );
+      unawaited(_syncRepository.syncNow());
+      return;
+    }
     if (conflict.targetType != PlannerOperationTarget.entity) {
       throw UnsupportedError(
         'Occurrence and focus history are immutable once a real conflict exists.',

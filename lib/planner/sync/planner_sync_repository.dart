@@ -6,6 +6,7 @@ import 'package:perfect/app/personal_items_store.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_operation.dart';
+import 'package:perfect/planner/domain/planner_saved_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -95,9 +96,18 @@ abstract interface class PlannerRemoteGateway {
   Future<void> dispose();
 }
 
+/// Optional typed journal for adapters that support synced saved views.
+/// Legacy/offline adapters retain their task-only contract.
+abstract interface class PlannerSavedViewRemoteGateway {
+  Future<PlannerRemoteChangePage> pullSavedViews({
+    required int afterChangeId,
+    required int limit,
+  });
+}
+
 /// The Supabase adapter intentionally accesses v2 writes through RPC only.
 /// `perfect_items` is read solely for one-time legacy projection.
-class SupabasePlannerRemoteGateway implements PlannerRemoteGateway {
+class SupabasePlannerRemoteGateway implements PlannerRemoteGateway, PlannerSavedViewRemoteGateway {
   SupabasePlannerRemoteGateway(this._client, {required this.ownerId});
 
   final SupabaseClient _client;
@@ -108,6 +118,13 @@ class SupabasePlannerRemoteGateway implements PlannerRemoteGateway {
   Future<PlannerRemoteMutationResult> apply(
     PlannerRemoteMutation mutation,
   ) async {
+    if (mutation.entityKind == 'saved_view') {
+      final raw = await _client.rpc(
+        'apply_saved_view_mutation',
+        params: mutation.toSavedViewRpcParameters(),
+      );
+      return PlannerRemoteMutationResult.fromJson(safeJsonMap(raw));
+    }
     final raw = await _client.rpc(
       'apply_planner_mutation',
       params: mutation.toRpcParameters(),
@@ -135,6 +152,24 @@ class SupabasePlannerRemoteGateway implements PlannerRemoteGateway {
               .toList(growable: false)
         : const <PlannerRemoteChange>[];
     return PlannerRemoteChangePage(changes: rows, requestedLimit: limit);
+  }
+
+  @override
+  Future<PlannerRemoteChangePage> pullSavedViews({
+    required int afterChangeId,
+    required int limit,
+  }) async {
+    final raw = await _client.rpc('pull_planner_saved_view_changes', params: {
+      'p_after_change_id': afterChangeId,
+      'p_limit': limit,
+    });
+    if (raw is! Iterable) {
+      throw const FormatException('Saved-view changes response must be a list.');
+    }
+    return PlannerRemoteChangePage(
+      changes: raw.map(safeJsonMap).map(PlannerRemoteChange.fromJson).toList(),
+      requestedLimit: limit,
+    );
   }
 
   @override
@@ -330,13 +365,21 @@ class PlannerSyncRepository {
   }
 
   Future<void> _pullAllChanges() async {
+    await _pullJournal(savedViews: false);
+    if (_remote is PlannerSavedViewRemoteGateway) {
+      await _pullJournal(savedViews: true);
+    }
+  }
+
+  Future<void> _pullJournal({required bool savedViews}) async {
     final metadata = await _localStore.readSyncMetadata(ownerId);
-    var cursor = int.tryParse(metadata?.remoteCursor ?? '') ?? 0;
+    var cursor = int.tryParse((savedViews ? metadata?.savedViewCursor : metadata?.remoteCursor) ?? '') ?? 0;
+    var emitted = false;
     while (true) {
-      final page = await _remote.pull(
-        afterChangeId: cursor,
-        limit: _pullPageSize,
-      );
+      final page = savedViews
+          ? await (_remote as PlannerSavedViewRemoteGateway).pullSavedViews(
+              afterChangeId: cursor, limit: _pullPageSize)
+          : await _remote.pull(afterChangeId: cursor, limit: _pullPageSize);
       for (final change in page.changes) {
         if (change.changeId <= cursor) {
           throw const FormatException(
@@ -350,10 +393,15 @@ class PlannerSyncRepository {
         }
         await _applyRemoteSnapshot(change.snapshot);
         cursor = change.changeId;
+        emitted = true;
       }
       await _localStore.updateRemoteCursor(
         ownerId: ownerId,
-        cursor: cursor == 0 ? null : '$cursor',
+        cursor: savedViews ? null : (emitted || cursor != 0 ? '$cursor' : null),
+        savedViewCursor: savedViews
+            ? (emitted || cursor != 0 ? '$cursor' : null)
+            : null,
+        savedViews: savedViews,
       );
       if (!page.hasMore) return;
     }
@@ -459,6 +507,10 @@ class PlannerSyncRepository {
       projection.entity!,
       preservePendingLocal: preservePendingLocal,
     ),
+    PlannerOperationTarget.savedView => _localStore.applyRemoteSavedView(
+      projection.savedView!,
+      preservePendingLocal: preservePendingLocal,
+    ),
     PlannerOperationTarget.occurrence => _localStore.applyRemoteOccurrence(
       projection.occurrence!,
       preservePendingLocal: preservePendingLocal,
@@ -472,6 +524,24 @@ class PlannerSyncRepository {
   Future<PlannerRemoteMutation> _mutationForOperation(
     PlannerOutboxOperation operation,
   ) async {
+    if (operation.target == PlannerOperationTarget.savedView) {
+      final definition = safeJsonMap(operation.patch.values['/']);
+      if (definition['id'] != operation.targetId ||
+          definition['owner_id'] != ownerId ||
+          operation.targetId.startsWith(PlannerSavedView.builtInNamespacePrefix)) {
+        throw const FormatException('Saved-view outbox identity is invalid.');
+      }
+      return PlannerRemoteMutation(
+        mutationId: operation.mutationId,
+        deviceId: deviceId,
+        entityId: operation.targetId,
+        entityKind: 'saved_view',
+        baseRevision: operation.baseRevision,
+        operationType: _remoteOperationType(operation),
+        fieldPaths: operation.patch.values.keys.toList(growable: false),
+        patch: <String, dynamic>{'payload': definition},
+      );
+    }
     if (operation.target == PlannerOperationTarget.entity) {
       final entity = await _localStore.readEntity(
         ownerId: ownerId,
@@ -620,6 +690,18 @@ class PlannerRemoteMutation {
     'p_field_paths': fieldPaths,
     'p_patch': patch,
   };
+
+  Map<String, dynamic> toSavedViewRpcParameters() => <String, dynamic>{
+    'p_mutation_id': mutationId,
+    'p_device_id': deviceId,
+    'p_view_id': entityId,
+    'p_base_revision': baseRevision,
+    'p_operation_type': operationType == 'soft_delete'
+        ? 'soft_delete'
+        : operationType,
+    'p_field_paths': fieldPaths,
+    'p_definition': patch['payload'],
+  };
 }
 
 class PlannerRemoteMutationResult {
@@ -690,26 +772,40 @@ class PlannerRemoteChangePage {
 class _RemoteProjection {
   const _RemoteProjection.entity(this.entity)
     : target = PlannerOperationTarget.entity,
+      savedView = null,
+      occurrence = null,
+      focusSession = null;
+
+  const _RemoteProjection.savedView(this.savedView)
+    : target = PlannerOperationTarget.savedView,
+      entity = null,
       occurrence = null,
       focusSession = null;
 
   const _RemoteProjection.occurrence(this.occurrence)
     : target = PlannerOperationTarget.occurrence,
       entity = null,
+      savedView = null,
       focusSession = null;
 
   const _RemoteProjection.focusSession(this.focusSession)
     : target = PlannerOperationTarget.focusSession,
       entity = null,
+      savedView = null,
       occurrence = null;
 
   final PlannerOperationTarget target;
   final PlannerEntity? entity;
+  final PlannerSavedView? savedView;
   final PlannerOccurrence? occurrence;
   final PlannerFocusSession? focusSession;
 
   int get revision =>
-      entity?.revision ?? occurrence?.revision ?? focusSession?.revision ?? 0;
+      entity?.revision ??
+      savedView?.revision ??
+      occurrence?.revision ??
+      focusSession?.revision ??
+      0;
 }
 
 _RemoteProjection _projectionFromSnapshot(
@@ -749,6 +845,20 @@ _RemoteProjection _projectionFromSnapshot(
   }
   final deletedAt = safeJsonDateTime(snapshot['deleted_at']);
 
+  if (kind == 'saved_view') {
+    final view = PlannerSavedView.fromJson(payload);
+    if (view.id != id || view.ownerId != ownerId || view.isBuiltIn) {
+      throw const FormatException('Remote saved view identity is invalid.');
+    }
+    return _RemoteProjection.savedView(
+      view.copyWith(
+        revision: revision,
+        updatedAt: updatedAt,
+        deletedAt: deletedAt,
+        clearDeletedAt: deletedAt == null,
+      ),
+    );
+  }
   if (kind == 'occurrence') {
     final entityId = safeNullableJsonString(payload['entity_id']);
     final plannedFor = safeJsonDateTime(payload['planned_for']);
@@ -892,7 +1002,8 @@ Map<String, dynamic> _focusSessionPayload(PlannerFocusSession session) =>
     };
 
 String _remoteOperationType(PlannerOutboxOperation operation) {
-  if (operation.type == PlannerOperationType.softDeleteEntity) {
+  if (operation.type == PlannerOperationType.softDeleteEntity ||
+      operation.type == PlannerOperationType.softDeleteSavedView) {
     return 'soft_delete';
   }
   // Restoring a tombstone must be explicit server-side: an ordinary upsert is

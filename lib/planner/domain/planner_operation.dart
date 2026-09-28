@@ -5,6 +5,8 @@ enum PlannerOperationType {
   upsertEntity('upsert_entity'),
   completeEntity('complete_entity'),
   softDeleteEntity('soft_delete_entity'),
+  upsertSavedView('upsert_saved_view'),
+  softDeleteSavedView('soft_delete_saved_view'),
   appendOccurrence('append_occurrence'),
   completeOccurrence('complete_occurrence'),
   appendFocusSession('append_focus_session');
@@ -38,6 +40,7 @@ enum PlannerOperationState {
 
 enum PlannerOperationTarget {
   entity('entity'),
+  savedView('saved_view'),
   occurrence('occurrence'),
   focusSession('focus_session');
 
