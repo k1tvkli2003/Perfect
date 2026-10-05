@@ -34,7 +34,6 @@ class PerfectAiDock extends StatefulWidget {
 class PerfectAiDockState extends State<PerfectAiDock>
     with WidgetsBindingObserver {
   static const _uuid = Uuid();
-  static const _maxVoiceDuration = Duration(seconds: 45);
 
   final TextEditingController _composer = TextEditingController();
   final ScrollController _historyScroll = ScrollController();
@@ -46,14 +45,11 @@ class PerfectAiDockState extends State<PerfectAiDock>
       widget.voiceRecorder ?? NativePerfectVoiceRecorder();
   PerfectAiCancellation? _cancellation;
   PerfectAiCancellation? _historyCancellation;
-  PerfectVoiceClip? _voiceClip;
   PerfectAiProposal? _proposal;
   PerfectAiException? _error;
   PerfectAiException? _historyError;
   String? _conversationId;
   String? _lastPrompt;
-  Timer? _recordingTimer;
-  Duration _recordingDuration = Duration.zero;
   int _conversationEpoch = 0;
   bool _open = false;
   bool _sending = false;
@@ -61,7 +57,6 @@ class PerfectAiDockState extends State<PerfectAiDock>
   bool _historyLoading = false;
   bool _historyAttempted = false;
   bool _historySuppressed = false;
-  bool _recording = false;
   FocusNode? _returnFocus;
 
   bool get isOpen => _open;
@@ -84,7 +79,7 @@ class PerfectAiDockState extends State<PerfectAiDock>
       _toggleOpen();
       await WidgetsBinding.instance.endOfFrame;
     }
-    if (!mounted || _recording || _voiceClip != null || _sending || _applying) {
+    if (!mounted || _sending || _applying) {
       return;
     }
     await _requestVoiceConsent();
@@ -98,18 +93,10 @@ class PerfectAiDockState extends State<PerfectAiDock>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state != AppLifecycleState.resumed && _recording) {
-      unawaited(_cancelRecording());
-    }
-  }
-
-  @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _cancellation?.cancel();
     _historyCancellation?.cancel();
-    _recordingTimer?.cancel();
     _composer.dispose();
     _historyScroll.dispose();
     _composerFocus.dispose();
@@ -538,8 +525,7 @@ class PerfectAiDockState extends State<PerfectAiDock>
   );
 
   Widget _composerBar(BuildContext context, {required bool dense}) {
-    final hasInput =
-        _composer.text.trim().isNotEmpty || _voiceClip != null || _recording;
+    final hasInput = _composer.text.trim().isNotEmpty;
     final bodySize = Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
     final largeText =
         MediaQuery.textScalerOf(context).scale(bodySize) / bodySize >= 1.5;
@@ -548,53 +534,23 @@ class PerfectAiDockState extends State<PerfectAiDock>
     final isWindows = Theme.of(context).platform == TargetPlatform.windows;
     final voiceControl = IconButton(
       key: const ValueKey<String>('perfect-ai-voice'),
-      tooltip: _recording
-          ? 'Stop voice note'
-          : _voiceClip == null
-          ? 'Record a private voice note'
-          : 'Remove voice note',
-      isSelected: _recording || _voiceClip != null,
+      tooltip: 'Voice notes need local transcription',
       style: IconButton.styleFrom(
         minimumSize: const Size.square(48),
-        backgroundColor: _recording
-            ? scheme.errorContainer
-            : _voiceClip != null
-            ? scheme.secondaryContainer
-            : scheme.surfaceContainerHigh,
-        foregroundColor: _recording
-            ? scheme.onErrorContainer
-            : _voiceClip != null
-            ? scheme.onSecondaryContainer
-            : scheme.onSurfaceVariant,
+        backgroundColor: scheme.surfaceContainerHigh,
+        foregroundColor: scheme.onSurfaceVariant,
       ),
-      onPressed: _sending || _applying
-          ? null
-          : _recording
-          ? _stopRecording
-          : _voiceClip != null
-          ? _removeVoiceClip
-          : _requestVoiceConsent,
+      onPressed: _sending || _applying ? null : _requestVoiceConsent,
       icon: PerfectMotionSwitcher(
         duration: PerfectMotion.quick,
         reverseDuration: PerfectMotion.quick,
-        child: Icon(
-          _recording
-              ? Icons.stop_rounded
-              : _voiceClip != null
-              ? Icons.close_rounded
-              : Icons.mic_none_rounded,
-          key: ValueKey<String>(
-            _recording
-                ? 'recording'
-                : _voiceClip != null
-                ? 'recorded'
-                : 'idle',
-          ),
+        child: const Icon(
+          Icons.mic_none_rounded,
+          key: ValueKey<String>('idle'),
         ),
       ),
     );
     final composerField = Semantics(
-      liveRegion: _recording,
       child: TextField(
         key: const ValueKey<String>('perfect-ai-composer'),
         controller: _composer,
@@ -606,7 +562,7 @@ class PerfectAiDockState extends State<PerfectAiDock>
             ? 3
             : 2,
         maxLength: 4000,
-        enabled: !_sending && !_applying && !_recording,
+        enabled: !_sending && !_applying,
         textInputAction: isWindows
             ? TextInputAction.send
             : TextInputAction.newline,
@@ -620,11 +576,7 @@ class PerfectAiDockState extends State<PerfectAiDock>
               : largeText
               ? 2
               : 1,
-          hintText: _recording
-              ? 'Listening… ${_formatDuration(_recordingDuration)}'
-              : _voiceClip != null
-              ? 'Voice note ready — add context if you want'
-              : largeText
+          hintText: largeText
               ? 'Ask Perfect AI…'
               : 'Ask Perfect AI to plan, explain, or reorganize…',
           fillColor: Colors.transparent,
@@ -661,7 +613,7 @@ class PerfectAiDockState extends State<PerfectAiDock>
               backgroundColor: PerfectSemanticTheme.of(context).primary,
               foregroundColor: PerfectSemanticTheme.of(context).onPrimary,
             ),
-            onPressed: !hasInput || _recording || _applying ? null : _submit,
+            onPressed: !hasInput || _applying ? null : _submit,
             icon: PerfectMotionSwitcher(
               duration: PerfectMotion.quick,
               reverseDuration: PerfectMotion.quick,
@@ -746,7 +698,6 @@ class PerfectAiDockState extends State<PerfectAiDock>
         }
       });
     } else {
-      if (_recording) unawaited(_cancelRecording());
       final returnFocus = _returnFocus;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted ||
@@ -768,10 +719,9 @@ class PerfectAiDockState extends State<PerfectAiDock>
   }
 
   Future<void> _submit() async {
-    if (_sending || _applying || _recording) return;
+    if (_sending || _applying) return;
     final text = _composer.text.trim();
-    final clip = _voiceClip;
-    if (text.isEmpty && clip == null) return;
+    if (text.isEmpty) return;
     _lastPrompt = text;
     final operationId = _uuid.v4();
     final cancellation = PerfectAiCancellation();
@@ -793,7 +743,6 @@ class PerfectAiDockState extends State<PerfectAiDock>
               : List<PerfectAiMessage>.unmodifiable(
                   _messages.sublist(_messages.length - 20),
                 ),
-          audio: clip,
           clientLocalNow: DateTime.now(),
         ),
         cancellation: cancellation,
@@ -826,7 +775,6 @@ class PerfectAiDockState extends State<PerfectAiDock>
           ..add(result.message);
         _proposal = proposal;
         _composer.clear();
-        _voiceClip = null;
       });
       _scrollToLatest();
     } on PerfectAiException catch (error) {
@@ -936,7 +884,6 @@ class PerfectAiDockState extends State<PerfectAiDock>
       _conversationId = null;
       _lastPrompt = null;
       _composer.clear();
-      _voiceClip = null;
       _historyLoading = false;
       _historyAttempted = true;
       _historyError = null;
@@ -1045,117 +992,24 @@ class PerfectAiDockState extends State<PerfectAiDock>
   }
 
   Future<void> _requestVoiceConsent() async {
-    final accepted = await showPerfectDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Start a voice note?'),
-        content: const Text(
-          'Perfect records only after you confirm. The temporary audio is sent through your private signed-in session, then removed from this device.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Not now'),
-          ),
-          FilledButton.icon(
-            key: const ValueKey<String>('perfect-ai-consent-start'),
-            onPressed: () => Navigator.pop(context, true),
-            icon: const Icon(Icons.mic_rounded),
-            label: const Text('Start recording'),
-          ),
-        ],
+    // Local-first: chat runs on the device runtime, but transcription still
+    // needs its own local boundary. Fail visibly instead of recording audio
+    // that the local caller would reject.
+    if (!mounted) return;
+    setState(
+      () => _error = const PerfectAiException(
+        code: PerfectAiErrorCode.invalidInput,
+        message:
+            'Voice notes need the local transcription boundary first. Type your message for now.',
+        retryable: false,
       ),
     );
-    if (accepted == true && mounted) await _startRecording();
+    _scrollToLatest();
   }
 
-  Future<void> _startRecording() async {
-    try {
-      if (!await _recorder.hasPermission()) {
-        throw const PerfectAiException(
-          code: PerfectAiErrorCode.unauthorized,
-          message: 'Microphone permission is needed for voice notes.',
-          retryable: false,
-        );
-      }
-      await _recorder.start();
-      if (!mounted) {
-        await _recorder.cancel();
-        return;
-      }
-      _recordingTimer?.cancel();
-      setState(() {
-        _recording = true;
-        _recordingDuration = Duration.zero;
-        _error = null;
-      });
-      _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (!mounted || !_recording) {
-          timer.cancel();
-          return;
-        }
-        final next = Duration(seconds: timer.tick);
-        if (next >= _maxVoiceDuration) {
-          unawaited(_stopRecording());
-        } else {
-          setState(() => _recordingDuration = next);
-        }
-      });
-    } on PerfectAiException catch (error) {
-      if (mounted) setState(() => _error = error);
-    } on Object {
-      if (mounted) {
-        setState(
-          () => _error = const PerfectAiException(
-            code: PerfectAiErrorCode.unavailable,
-            message: 'The microphone could not start on this device.',
-            retryable: true,
-          ),
-        );
-      }
-    }
-  }
 
-  Future<void> _stopRecording() async {
-    if (!_recording) return;
-    _recordingTimer?.cancel();
-    _recordingTimer = null;
-    setState(() => _recording = false);
-    try {
-      final clip = await _recorder.stop();
-      if (!mounted) return;
-      setState(() {
-        _voiceClip = clip;
-        _recordingDuration = Duration.zero;
-      });
-    } on PerfectAiException catch (error) {
-      if (mounted) setState(() => _error = error);
-    } on Object {
-      if (mounted) {
-        setState(
-          () => _error = const PerfectAiException(
-            code: PerfectAiErrorCode.unavailable,
-            message: 'The voice note could not be prepared.',
-            retryable: true,
-          ),
-        );
-      }
-    }
-  }
 
-  Future<void> _cancelRecording() async {
-    _recordingTimer?.cancel();
-    _recordingTimer = null;
-    if (mounted) {
-      setState(() {
-        _recording = false;
-        _recordingDuration = Duration.zero;
-      });
-    }
-    await _recorder.cancel();
-  }
 
-  void _removeVoiceClip() => setState(() => _voiceClip = null);
 
   void _scrollToLatest() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2366,9 +2220,4 @@ class _ErrorRibbon extends StatelessWidget {
       ),
     );
   }
-}
-
-String _formatDuration(Duration duration) {
-  final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
-  return '${duration.inMinutes}:$seconds';
 }

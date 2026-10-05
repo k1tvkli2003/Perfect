@@ -667,7 +667,7 @@ void main() {
     );
   });
 
-  testWidgets('voice note is consented, stopped, attached and submitted', (
+  testWidgets('voice notes wait for the local transcription boundary', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
@@ -679,25 +679,15 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey<String>('perfect-ai-voice')));
     await tester.pumpAndSettle();
-    expect(find.text('Start a voice note?'), findsOne);
 
-    await tester.tap(
-      find.byKey(const ValueKey<String>('perfect-ai-consent-start')),
+    expect(
+      find.text(
+        'Voice notes need the local transcription boundary first. Type your message for now.',
+      ),
+      findsOne,
     );
-    await tester.pumpAndSettle();
-    expect(recorder.started, isTrue);
-    expect(find.byTooltip('Stop voice note'), findsOne);
-
-    await tester.tap(find.byKey(const ValueKey<String>('perfect-ai-voice')));
-    await tester.pumpAndSettle();
-    expect(find.byTooltip('Remove voice note'), findsOne);
-
-    await tester.tap(find.byKey(const ValueKey<String>('perfect-ai-send')));
-    await tester.pumpAndSettle();
-
-    expect(client.chatRequests.single.audio?.mimeType, 'audio/wav');
-    expect(find.text('Voice transcript'), findsOne);
-    expect(recorder.stopped, isTrue);
+    expect(recorder.started, isFalse);
+    expect(client.chatRequests, isEmpty);
   });
 
   testWidgets('cancel returns control without clearing the draft', (
@@ -875,7 +865,7 @@ void main() {
     },
   );
 
-  testWidgets('voice consent remains readable and actionable at 200 percent', (
+  testWidgets('voice boundary message stays readable at 200 percent', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(320, 700));
@@ -890,12 +880,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey<String>('perfect-ai-voice')));
     await tester.pumpAndSettle();
 
-    final consent = find.byKey(
-      const ValueKey<String>('perfect-ai-consent-start'),
+    final message = find.text(
+      'Voice notes need the local transcription boundary first. Type your message for now.',
+      skipOffstage: false,
     );
-    expect(find.text('Start a voice note?'), findsOne);
-    expect(consent.hitTestable(), findsOne);
-    expect(tester.getRect(consent).bottom, lessThanOrEqualTo(700));
+    expect(message, findsOne);
     expect(tester.takeException(), isNull);
   });
 }
