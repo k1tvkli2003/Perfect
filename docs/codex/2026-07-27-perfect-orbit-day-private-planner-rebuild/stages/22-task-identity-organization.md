@@ -1,6 +1,8 @@
 # Stage 22 — Task identity, category and organization
 
-Status: pending  
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — existing wizard/editor, SVG pictogram, no-raw-emoji,
+planner-row category/color identity suites GREEN; 30+ curated catalog
+contract and round-trip matrix remain open; CI workflows disabled_manually
 Depends on: Stage 21  
 Primary surfaces: Create Task/Recurring Task identity and organization steps
 
@@ -79,3 +81,17 @@ matrix; fast-path tap count benchmark.
 
 Stage 23 receives stable identity/category/project/area values. Commit/push/release
 with catalog/data/UI evidence and clean Git.
+
+### Evidence — 2026-09-25 (real runs, pre-existing identity surface)
+
+- `flutter test --no-pub test/presentation/planner_editor_test.dart`:
+  **EXIT:0, 17 pass** (identity/type routes, selection rendering, draft
+  preservation, create/edit behavior).
+- `flutter test --no-pub
+  test/presentation/no_raw_ui_emoji_contract_test.dart`: **EXIT:0, 3 pass**
+  (no raw keyboard emoji on user-facing Flutter surfaces; pictogram SVGs stay
+  scalable, text-free, and transparent).
+- `flutter test --no-pub test/presentation/perfect_pictogram_test.dart`:
+  **EXIT:0, 3 pass** (project-owned SVG pictogram identity surface).
+- Full curated 30+ catalog, consumer round-trip matrix, and visual matrix remain
+  open.

@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
+import 'package:perfect/planner/domain/planner_task_bulk.dart';
+import 'package:perfect/planner/domain/planner_task_query.dart';
+import 'package:perfect/planner/domain/planner_saved_view.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_operation.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
@@ -49,6 +52,9 @@ class PlannerWorkspaceController extends ChangeNotifier {
   bool _shutdownRequested = false;
   int _todayProjectionRevision = 0;
   Future<void> _taskProgressSerial = Future<void>.value();
+  final Map<String, String> _latestTaskProgressMutation = <String, String>{};
+  final Map<String, Map<String, PlannerTaskProgress>> _latestBulkUndo =
+      <String, Map<String, PlannerTaskProgress>>{};
   Future<void> _habitLogSerial = Future<void>.value();
   Future<void> _focusSerial = Future<void>.value();
   PerfectTodayWidgetSettings _todayWidgetSettings =
@@ -96,6 +102,22 @@ class PlannerWorkspaceController extends ChangeNotifier {
   List<PlannerEntity> get areas => _entities
       .where((entity) => entity.kind == PlannerEntityKind.area)
       .toList(growable: false);
+
+  /// Stable lookup for query-resolved IDs; null when the ID is not cached.
+  PlannerEntity? entityById(String id) {
+    for (final entity in _entities) {
+      if (entity.id == id) return entity;
+    }
+    return null;
+  }
+
+  /// Stage 36 query contract: the ONE shared Tasks workspace read.
+  ///
+  /// Resolves [query] over the cached task-kind snapshot, so every Tasks
+  /// consumer shares one typed projection and no caller adds a second hidden
+  /// predicate after the result.
+  PlannerTaskQueryResult queryTasks(PlannerTaskQuery query) =>
+      query.applyTo(tasks);
 
   Future<void> start() async {
     if (_disposed || _shutdownRequested || _isReady) return;
@@ -148,9 +170,48 @@ class PlannerWorkspaceController extends ChangeNotifier {
     await refreshTodayProjection();
   }
 
-  Future<void> quickCapture(String title) async {
-    await _localStore.createQuickTask(ownerId: ownerId, title: title);
+  Future<List<PlannerSavedView>> readPersonalSavedViews() =>
+      _localStore.readSavedViews(ownerId);
+
+  Future<PlannerSavedView> savePersonalSavedView(PlannerSavedView view) async {
+    if (view.ownerId != ownerId) {
+      throw StateError('Only a view in this workspace can be saved.');
+    }
+    final now = _now().toUtc();
+    final stored = view.copyWith(updatedAt: now);
+    await _localStore.upsertSavedView(stored);
     unawaited(_syncRepository.syncNow());
+    return (await _localStore.readSavedView(
+      ownerId: ownerId,
+      viewId: stored.id,
+    ))!;
+  }
+
+  Future<void> softDeletePersonalSavedView(String viewId) async {
+    await _localStore.softDeleteSavedView(
+      ownerId: ownerId,
+      viewId: viewId,
+      deletedAt: _now().toUtc(),
+    );
+    unawaited(_syncRepository.syncNow());
+  }
+
+  String newPersonalSavedViewId() => 'view-${_uuid.v4()}';
+
+  String _recoveredCopyTitle() => 'Recovered copy';
+
+  Map<String, dynamic> _localViewUnknowns(
+    Map<String, dynamic> localDefinition,
+    PlannerSavedView recovered,
+  ) => recovered.unknownFields;
+
+  Future<PlannerMutationReceipt> quickCapture(String title) async {
+    final receipt = await _localStore.createQuickTask(
+      ownerId: ownerId,
+      title: title,
+    );
+    unawaited(_syncRepository.syncNow());
+    return receipt;
   }
 
   Future<void> saveEntity({
@@ -249,11 +310,64 @@ class PlannerWorkspaceController extends ChangeNotifier {
   /// The task check control is intentionally richer than a boolean checkbox:
   /// empty → done → not done → partial → empty. Calls are serialized so rapid
   /// taps cannot read the same stale state and collapse part of the cycle.
-  Future<PlannerTaskProgress> cycleTaskProgress(PlannerEntity entity) =>
+  /// Each mutation returns the prior/current outcome so the host can undo one
+  /// exact step without guessing which tap finished last.
+  Future<PlannerTaskProgress> cycleTaskProgress(PlannerEntity entity) async =>
+      (await cycleTaskProgressWithReceipt(entity)).current;
+
+  Future<PlannerTaskProgressChange> cycleTaskProgressWithReceipt(
+    PlannerEntity entity,
+  ) => _serializeTaskProgress(() async {
+    final mutationId = _uuid.v4();
+    final localDay = _dateOnly(_now().toLocal());
+    final previous = await _taskProgressService.readEntityProgress(
+      entityId: entity.id,
+      localDay: localDay,
+    );
+    if (previous == null) {
+      throw StateError('Task is no longer available locally.');
+    }
+    final current = await _taskProgressService.cycle(
+      entity,
+      mutationId: mutationId,
+      localDay: localDay,
+      source: 'app',
+    );
+    await _finalizeTaskProgressMutation();
+    _latestTaskProgressMutation[entity.id] = mutationId;
+    return PlannerTaskProgressChange(
+      entityId: entity.id,
+      mutationId: mutationId,
+      previous: previous,
+      current: current,
+      localDay: localDay,
+    );
+  });
+
+  /// Restores the exact prior outcome only when [change] is still the latest
+  /// local state. A stale receipt is rejected so an Undo can never overwrite a
+  /// newer tap, widget action, or remote convergence.
+  Future<bool> undoTaskProgress(PlannerTaskProgressChange change) =>
       _serializeTaskProgress(() async {
-        final result = await _taskProgressService.cycle(entity);
+        final current = await _taskProgressService.readEntityProgress(
+          entityId: change.entityId,
+          localDay: change.localDay,
+        );
+        if (current == null || current != change.current) return false;
+        if (_latestTaskProgressMutation[change.entityId] != change.mutationId) {
+          return false;
+        }
+        final undoMutationId = _uuid.v4();
+        await _taskProgressService.setProgressById(
+          entityId: change.entityId,
+          progress: change.previous,
+          mutationId: undoMutationId,
+          localDay: change.localDay,
+          source: 'task_undo',
+        );
+        _latestTaskProgressMutation[change.entityId] = undoMutationId;
         await _finalizeTaskProgressMutation();
-        return result;
+        return true;
       });
 
   Future<PlannerTaskProgress> setTaskProgress(
@@ -263,13 +377,15 @@ class PlannerWorkspaceController extends ChangeNotifier {
     DateTime? localDay,
     String source = 'app',
   }) => _serializeTaskProgress(() async {
+    final resolvedMutationId = mutationId ?? _uuid.v4();
     final result = await _taskProgressService.setProgress(
       entity,
       progress: progress,
-      mutationId: mutationId,
+      mutationId: resolvedMutationId,
       localDay: localDay,
       source: source,
     );
+    _latestTaskProgressMutation[entity.id] = resolvedMutationId;
     await _finalizeTaskProgressMutation();
     return result;
   });
@@ -277,7 +393,12 @@ class PlannerWorkspaceController extends ChangeNotifier {
   Future<PlannerTaskProgress> taskProgressForDay(
     PlannerEntity entity, {
     DateTime? localDay,
-  }) => _taskProgressService.readProgress(entity, localDay: localDay);
+  }) async =>
+      await _taskProgressService.readEntityProgress(
+        entityId: entity.id,
+        localDay: localDay,
+      ) ??
+      (throw StateError('Task is no longer available locally.'));
 
   Future<PlannerTodayEligibility> todayEligibilityForDay(
     PlannerEntity entity, {
@@ -396,8 +517,11 @@ class PlannerWorkspaceController extends ChangeNotifier {
     _notify();
   }
 
-  Future<void> deleteEntity(PlannerEntity entity) async {
-    await _localStore.softDeleteEntity(ownerId: ownerId, entityId: entity.id);
+  Future<void> deleteEntity(PlannerEntity entity) =>
+      deleteEntityById(entity.id);
+
+  Future<void> deleteEntityById(String entityId) async {
+    await _localStore.softDeleteEntity(ownerId: ownerId, entityId: entityId);
     unawaited(_syncRepository.syncNow());
     unawaited(_refreshReminders());
   }
@@ -406,11 +530,148 @@ class PlannerWorkspaceController extends ChangeNotifier {
   /// reversible local tombstone, not a destructive delete.
   Future<void> archiveEntity(PlannerEntity entity) => deleteEntity(entity);
 
+  /// Stage 36 bulk execution: applies a frozen [PlannerTasksBulkReceipt] to
+  /// exactly its previewed eligible IDs through the existing local-first
+  /// mutation paths, then re-projects. Gone rows stay skipped with their
+  /// reason on the report; the outbox replay path is unchanged.
+  Future<PlannerTasksBulkReport> applyBulkReceipt(
+    PlannerTasksBulkReceipt receipt,
+  ) => _serializeTaskProgress(() async {
+    final appliedIds = <String>[];
+    final skippedIds = <String>[...receipt.skippedIds];
+    final skippedReasons = <String, String>{...receipt.skippedReasons};
+    final priorProgress = <String, PlannerTaskProgress>{};
+    for (final id in receipt.appliedIds) {
+      final key = receipt.perEntityKeys[id];
+      if (key == null) {
+        skippedIds.add(id);
+        skippedReasons[id] = 'Missing idempotency key for this row.';
+        continue;
+      }
+      final entity = await _localStore.readEntity(
+        ownerId: ownerId,
+        entityId: id,
+      );
+      if (entity == null) {
+        skippedIds.add(id);
+        skippedReasons[id] = 'Task is no longer available locally.';
+        continue;
+      }
+      switch (receipt.action) {
+        case PlannerTasksBulkAction.complete:
+          priorProgress[id] = PlannerTaskProgress.fromEntity(entity);
+          await _taskProgressService.setProgressById(
+            entityId: id,
+            progress: const PlannerTaskProgress(
+              state: PlannerTaskProgressState.completed,
+              percent: 100,
+            ),
+            mutationId: key,
+            source: 'bulk:${receipt.batchId}',
+          );
+        case PlannerTasksBulkAction.reopen:
+          priorProgress[id] = PlannerTaskProgress.fromEntity(entity);
+          await _taskProgressService.setProgressById(
+            entityId: id,
+            progress: const PlannerTaskProgress.pending(),
+            mutationId: key,
+            source: 'bulk:${receipt.batchId}',
+          );
+        case PlannerTasksBulkAction.archive:
+        case PlannerTasksBulkAction.delete:
+          await _localStore.softDeleteEntity(
+            ownerId: ownerId,
+            entityId: id,
+            mutationId: key,
+          );
+        case PlannerTasksBulkAction.restore:
+          await _localStore.restoreEntity(
+            ownerId: ownerId,
+            entityId: id,
+            mutationId: key,
+          );
+        case PlannerTasksBulkAction.schedule:
+        case PlannerTasksBulkAction.move:
+          skippedIds.add(id);
+          skippedReasons[id] =
+              'Scheduled and move targets need the Refine surface first.';
+          continue;
+      }
+      appliedIds.add(id);
+    }
+    if (appliedIds.isNotEmpty) {
+      await _finalizeTaskProgressMutation();
+      for (final id in appliedIds) {
+        _latestTaskProgressMutation[id] = receipt.perEntityKeys[id]!;
+      }
+      if (priorProgress.length == appliedIds.length &&
+          (receipt.action == PlannerTasksBulkAction.complete ||
+              receipt.action == PlannerTasksBulkAction.reopen)) {
+        _latestBulkUndo[receipt.batchId] = Map.unmodifiable(priorProgress);
+      }
+    }
+    return PlannerTasksBulkReport(
+      batchId: receipt.batchId,
+      action: receipt.action,
+      appliedIds: List.unmodifiable(appliedIds),
+      perEntityKeys: Map.unmodifiable(receipt.perEntityKeys),
+      skippedIds: List.unmodifiable(skippedIds),
+      skippedReasons: Map.unmodifiable(skippedReasons),
+    );
+  });
+
   Future<void> restoreEntity(PlannerEntity entity) async {
     await _localStore.restoreEntity(ownerId: ownerId, entityId: entity.id);
     unawaited(_syncRepository.syncNow());
     unawaited(_refreshReminders());
   }
+
+  /// Stage 36 bulk Undo: restores the exact per-row outcome captured before
+  /// [report]'s batch ran. The batch must still be authoritative on every
+  /// applied row: the bulk key must be the latest mutation and the stored
+  /// outcome must still equal the bulk-applied outcome. One moved row (newer
+  /// tap, widget action, remote convergence) expires the whole Undo instead
+  /// of partially restoring. Single-use: a successful Undo consumes the
+  /// snapshot. Non-progress actions (archive/delete/restore/schedule/move)
+  /// always return false.
+  Future<bool> undoBulkReceipt(PlannerTasksBulkReport report) =>
+      _serializeTaskProgress(() async {
+        final prior = _latestBulkUndo[report.batchId];
+        if (prior == null || prior.isEmpty) return false;
+        if (report.action != PlannerTasksBulkAction.complete &&
+            report.action != PlannerTasksBulkAction.reopen) {
+          return false;
+        }
+        if (prior.length != report.appliedIds.length) return false;
+        final expectedCurrent = report.action == PlannerTasksBulkAction.complete
+            ? const PlannerTaskProgress(
+                state: PlannerTaskProgressState.completed,
+                percent: 100,
+              )
+            : const PlannerTaskProgress.pending();
+        for (final id in report.appliedIds) {
+          final snapshot = prior[id];
+          if (snapshot == null) return false;
+          final bulkKey = report.perEntityKeys[id];
+          if (_latestTaskProgressMutation[id] != bulkKey) return false;
+          final current = await _taskProgressService.readEntityProgress(
+            entityId: id,
+          );
+          if (current == null || current != expectedCurrent) return false;
+        }
+        for (final id in report.appliedIds) {
+          await _taskProgressService.setProgressById(
+            entityId: id,
+            progress: prior[id]!,
+            mutationId: _uuid.v4(),
+            source: 'bulk:${report.batchId}:undo',
+          );
+          _latestTaskProgressMutation[id] = 'bulk:${report.batchId}:undo';
+        }
+        _latestBulkUndo.remove(report.batchId);
+        await _finalizeTaskProgressMutation();
+        return true;
+      });
 
   Future<List<PlannerEntity>> archivedEntities() =>
       _localStore.readArchivedEntities(ownerId);
@@ -469,7 +730,10 @@ class PlannerWorkspaceController extends ChangeNotifier {
       final summary = await habitDaySummary(entity);
       await logHabit(
         entity,
-        value: summary.method == 'count' || summary.method == 'duration'
+        value:
+            (summary.method == 'count' ||
+                summary.method == 'numeric' ||
+                summary.method == 'duration')
             ? summary.amount
             : null,
         note: summary.note,
@@ -523,7 +787,185 @@ class PlannerWorkspaceController extends ChangeNotifier {
     String? outcome,
     Set<String>? checkedItemIds,
     DateTime? localDay,
+  }) => _serializeHabitLog(
+    () => _writeHabitLog(
+      habit,
+      value: value,
+      note: note,
+      outcome: outcome,
+      checkedItemIds: checkedItemIds,
+      localDay: localDay,
+    ),
+  );
+
+  /// Primary count tap. Adds one onto today's stored total, as Stage 14
+  /// requires for a `count` habit. `numeric` alone follows its configured
+  /// step; duration has its own explicit tap below.
+  Future<PlannerHabitDaySummary> incrementHabit(
+    PlannerEntity habit, {
+    DateTime? localDay,
   }) => _serializeHabitLog(() async {
+    if (habit.kind != PlannerEntityKind.habit || habit.ownerId != ownerId) {
+      throw StateError('Only a habit owned by this workspace can be logged.');
+    }
+    final method = safeJsonString(habit.tracking['method'], fallback: 'check');
+    if (method != 'count' && method != 'numeric') {
+      throw UnsupportedError('Only a count habit accepts a +1 tap.');
+    }
+    final day = _requireLoggableHabitDay(localDay);
+    final current = await habitDaySummary(habit, localDay: day);
+    if (method == 'count') {
+      return _writeHabitLog(habit, value: current.amount + 1, localDay: day);
+    }
+    final rawStep = habit.tracking['step'];
+    final parsedStep = rawStep is num && rawStep.isFinite
+        ? rawStep.toDouble()
+        : double.tryParse('$rawStep') ?? 1;
+    final step = parsedStep > 0 ? parsedStep : 1;
+    return _writeHabitLog(habit, value: current.amount + step, localDay: day);
+  });
+
+  /// Primary checklist tap. Completes the first open item in declared order.
+  /// When today is already complete, this is a confirmed no-op.
+  Future<PlannerHabitDaySummary> completeNextChecklistItem(
+    PlannerEntity habit, {
+    DateTime? localDay,
+  }) => _serializeHabitLog(() async {
+    if (habit.kind != PlannerEntityKind.habit || habit.ownerId != ownerId) {
+      throw StateError('Only a habit owned by this workspace can be logged.');
+    }
+    final method = safeJsonString(habit.tracking['method'], fallback: 'check');
+    if (method != 'checklist') {
+      throw UnsupportedError('Only a checklist habit has a next open item.');
+    }
+    final day = _requireLoggableHabitDay(localDay);
+    final current = await habitDaySummary(habit, localDay: day);
+    final items = _orderedChecklistItemIds(habit);
+    final outstanding = items
+        .where((id) => !current.checkedItemIds.contains(id))
+        .toList(growable: false);
+    if (outstanding.isEmpty) return current;
+    // Concurrent callers share the same serialized queue, but `_writeHabitLog`
+    // may mutate before its summary completes. Reserve the earliest stable
+    // outstanding slot for this call before writing.
+    final reserved = {...current.checkedItemIds};
+    for (final id in outstanding) {
+      reserved.add(id);
+      break;
+    }
+    return _writeHabitLog(
+      habit,
+      outcome: current.outcome ?? 'checked',
+      note: current.note,
+      checkedItemIds: reserved,
+      localDay: day,
+    );
+  });
+
+  List<String> _orderedChecklistItemIds(PlannerEntity habit) {
+    final rawItems =
+        habit.tracking[PlannerHabitTrackingKeys.checklist] ??
+        habit.payload[PlannerHabitTrackingKeys.checklist];
+    final ids = <String>[];
+    if (rawItems is Iterable) {
+      var index = 0;
+      for (final raw in rawItems) {
+        index++;
+        final item = safeJsonMap(raw);
+        if (item.isEmpty) continue;
+        final id = safeJsonString(
+          item[PlannerHabitTrackingKeys.itemId],
+          fallback: 'item-$index',
+        );
+        if (!ids.contains(id)) ids.add(id);
+      }
+    }
+    return ids;
+  }
+
+  Future<PlannerHabitDaySummary> decrementHabit(
+    PlannerEntity habit, {
+    DateTime? localDay,
+  }) => adjustMeasuredHabit(habit, localDay: localDay, direction: -1);
+
+  Future<PlannerHabitDaySummary> incrementDurationHabit(
+    PlannerEntity habit, {
+    DateTime? localDay,
+  }) => adjustMeasuredHabit(habit, localDay: localDay, direction: 1);
+
+  Future<PlannerHabitDaySummary> adjustMeasuredHabit(
+    PlannerEntity habit, {
+    DateTime? localDay,
+    int direction = 1,
+  }) => _serializeHabitLog(() async {
+    if (habit.kind != PlannerEntityKind.habit || habit.ownerId != ownerId) {
+      throw StateError('Only a habit owned by this workspace can be logged.');
+    }
+    final method = safeJsonString(habit.tracking['method'], fallback: 'check');
+    if (method != 'count' && method != 'numeric' && method != 'duration') {
+      throw UnsupportedError(
+        'Only a measured habit accepts a step correction.',
+      );
+    }
+    if (direction != 1 && direction != -1) {
+      throw ArgumentError.value(direction, 'direction', 'Use +1 or −1.');
+    }
+    final day = _requireLoggableHabitDay(localDay);
+    final current = await habitDaySummary(habit, localDay: day);
+    final rawStep = habit.tracking['step'];
+    final parsedStep = rawStep is num && rawStep.isFinite
+        ? rawStep.toDouble()
+        : double.tryParse('$rawStep') ?? (method == 'duration' ? 5 : 1);
+    final step = method == 'count'
+        ? 1.0
+        : parsedStep > 0
+        ? parsedStep
+        : (method == 'duration' ? 5.0 : 1.0);
+    final corrected = (current.amount + direction * step).clamp(
+      0,
+      double.infinity,
+    );
+    return _writeHabitLog(
+      habit,
+      value: corrected,
+      note: current.note,
+      outcome: current.outcome ?? 'checked',
+      checkedItemIds: current.checkedItemIds,
+      localDay: day,
+    );
+  });
+
+  Future<PlannerHabitDaySummary> toggleHabit(
+    PlannerEntity habit, {
+    DateTime? localDay,
+  }) => _serializeHabitLog(() async {
+    if (habit.kind != PlannerEntityKind.habit || habit.ownerId != ownerId) {
+      throw StateError('Only a habit owned by this workspace can be logged.');
+    }
+    final method = safeJsonString(habit.tracking['method'], fallback: 'check');
+    if (method != 'check' && method != 'avoid') {
+      throw UnsupportedError('Only a boolean habit can be toggled.');
+    }
+    final day = _requireLoggableHabitDay(localDay);
+    final current = await habitDaySummary(habit, localDay: day);
+    if (current.isSuccessful) {
+      return _writeHabitLog(habit, outcome: 'pending', localDay: day);
+    }
+    return _writeHabitLog(
+      habit,
+      outcome: method == 'avoid' ? 'avoided' : 'checked',
+      localDay: day,
+    );
+  });
+
+  Future<PlannerHabitDaySummary> _writeHabitLog(
+    PlannerEntity habit, {
+    num? value,
+    String? note,
+    String? outcome,
+    Set<String>? checkedItemIds,
+    DateTime? localDay,
+  }) async {
     if (habit.kind != PlannerEntityKind.habit || habit.ownerId != ownerId) {
       throw StateError('Only a habit owned by this workspace can be logged.');
     }
@@ -535,7 +977,8 @@ class PlannerWorkspaceController extends ChangeNotifier {
       occurrenceId: occurrenceId,
     );
     final method = safeJsonString(habit.tracking['method'], fallback: 'check');
-    if ((method == 'count' || method == 'duration') && value == null) {
+    if ((method == 'count' || method == 'numeric' || method == 'duration') &&
+        value == null) {
       throw ArgumentError.value(
         value,
         'value',
@@ -562,8 +1005,10 @@ class PlannerWorkspaceController extends ChangeNotifier {
         : _dateOnly(day).isBefore(today)
         ? 'manual_backfill'
         : 'manual';
+    final mutationId = _uuid.v4();
     final occurrenceValue = <String, dynamic>{
       'record_type': 'daily_summary',
+      'tap_mutation_id': mutationId,
       'source': source,
       'outcome': normalizedOutcome,
       ...?value == null ? null : <String, dynamic>{'amount': value},
@@ -577,6 +1022,8 @@ class PlannerWorkspaceController extends ChangeNotifier {
       plannedFor: _plannedTimeForDay(habit, day),
       status: normalizedOutcome == 'missed' || normalizedOutcome == 'slipped'
           ? 'missed'
+          : normalizedOutcome == 'pending'
+          ? 'pending'
           : method == 'check' || method == 'avoid'
           ? 'completed'
           : 'pending',
@@ -602,11 +1049,11 @@ class PlannerWorkspaceController extends ChangeNotifier {
       // The occurrence ID is stable for a day; its mutations must not be.
       // checked → missed → checked and same-outcome note edits are distinct
       // semantic writes and therefore receive fresh idempotency identities.
-      mutationId: _uuid.v4(),
+      mutationId: mutationId,
     );
     await _finalizeHabitMutation();
     return habitDaySummary(habit, localDay: day);
-  });
+  }
 
   Future<PlannerHabitDaySummary> habitDaySummary(
     PlannerEntity habit, {
@@ -632,14 +1079,37 @@ class PlannerWorkspaceController extends ChangeNotifier {
     );
   }
 
-  Future<PlannerHabitDaySummary> undoHabitDay(
-    PlannerEntity habit, {
+  /// An old Snackbar cannot erase a newer tap, including an A→B→A cycle.
+  Future<bool> undoHabitIfCurrent(
+    PlannerEntity habit,
+    PlannerHabitDaySummary change, {
     DateTime? localDay,
   }) => _serializeHabitLog(() async {
     if (habit.kind != PlannerEntityKind.habit || habit.ownerId != ownerId) {
       throw StateError('Only a habit owned by this workspace can be undone.');
     }
     final day = _requireLoggableHabitDay(localDay);
+    final expected = change.latestOccurrence;
+    final mutationId = expected?.value['tap_mutation_id'];
+    if (expected == null || mutationId is! String || mutationId.isEmpty) {
+      return false;
+    }
+    final stored = await _localStore.readOccurrence(
+      ownerId: ownerId,
+      occurrenceId: _habitOccurrenceId(habit, day),
+    );
+    if (stored == null ||
+        stored.id != expected.id ||
+        stored.entityId != habit.id ||
+        stored.value['tap_mutation_id'] != mutationId ||
+        _dateOnly(stored.plannedFor.toLocal()) != day) {
+      return false;
+    }
+    await _appendHabitUndo(habit, day);
+    return true;
+  });
+
+  Future<void> _appendHabitUndo(PlannerEntity habit, DateTime day) async {
     final today = _dateOnly(_now().toLocal());
     await _localStore.appendOccurrence(
       ownerId: ownerId,
@@ -656,6 +1126,17 @@ class PlannerWorkspaceController extends ChangeNotifier {
       mutationId: _uuid.v4(),
     );
     await _finalizeHabitMutation();
+  }
+
+  Future<PlannerHabitDaySummary> undoHabitDay(
+    PlannerEntity habit, {
+    DateTime? localDay,
+  }) => _serializeHabitLog(() async {
+    if (habit.kind != PlannerEntityKind.habit || habit.ownerId != ownerId) {
+      throw StateError('Only a habit owned by this workspace can be undone.');
+    }
+    final day = _requireLoggableHabitDay(localDay);
+    await _appendHabitUndo(habit, day);
     return habitDaySummary(habit, localDay: day);
   });
 
@@ -854,6 +1335,70 @@ class PlannerWorkspaceController extends ChangeNotifier {
       );
 
   Future<void> keepLocalConflict(PlannerSyncConflict conflict) async {
+    if (conflict.targetType == PlannerOperationTarget.savedView) {
+      final conflicting = await _localStore.readSavedViews(
+        ownerId,
+        includeDeleted: true,
+      );
+      final current = conflicting.firstWhere(
+        (view) => view.id == conflict.targetId,
+        orElse: () => throw StateError(
+          'The conflicting saved view is no longer available locally.',
+        ),
+      );
+      final localDefinition = safeJsonMap(
+        safeJsonMap(conflict.localValue)['payload'],
+      );
+      final recoveredId = newPersonalSavedViewId();
+      final now = _now().toUtc();
+      final recovered = PlannerSavedView.fromJson(localDefinition).copyWith(
+        updatedAt: now,
+      );
+      final renamed = PlannerSavedView(
+        id: recoveredId,
+        ownerId: ownerId,
+        schemaVersion: PlannerSavedView.currentSchemaVersion,
+        title: _recoveredCopyTitle(),
+        iconKey: recovered.iconKey,
+        query: recovered.query,
+        createdAt: now,
+        updatedAt: now,
+        unknownFields: _localViewUnknowns(localDefinition, recovered),
+      );
+      final resolvedOriginal = await _localStore.readSavedView(
+        ownerId: ownerId,
+        viewId: current.id,
+        includeDeleted: true,
+      );
+      if (resolvedOriginal == null) {
+        throw StateError(
+          'The conflicting saved view is no longer available locally.',
+        );
+      }
+      if (resolvedOriginal.revision != current.revision) {
+        throw StateError(
+          'The conflicting saved view changed during recovery.',
+        );
+      }
+      final applied = await _localStore.applyRemoteSavedView(
+        resolvedOriginal.copyWith(
+          updatedAt: now,
+        ),
+        preservePendingLocal: false,
+      );
+      if (!applied) {
+        throw StateError('The conflicting saved view changed during recovery.');
+      }
+      await _localStore.upsertSavedView(renamed);
+      await _localStore.resolveConflict(
+        ownerId: ownerId,
+        conflictId: conflict.id,
+        resolution: 'kept_server',
+        now: now,
+      );
+      unawaited(_syncRepository.syncNow());
+      return;
+    }
     if (conflict.targetType != PlannerOperationTarget.entity) {
       throw UnsupportedError(
         'Occurrence and focus history are immutable once a real conflict exists.',
@@ -970,6 +1515,8 @@ class PlannerWorkspaceController extends ChangeNotifier {
       DateTime(value.year, value.month, value.day);
 
   Future<void> _finalizeHabitMutation() async {
+    // The occurrence write is already durable. Repaint it before any plugin or
+    // remote I/O; the publisher uses the same owner-scoped entity projection.
     _notify();
     unawaited(_syncRepository.syncNow());
     unawaited(_refreshReminders());

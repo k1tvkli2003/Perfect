@@ -8,6 +8,7 @@ import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_operation.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
+import 'package:perfect/planner/domain/planner_saved_view.dart';
 import 'package:uuid/uuid.dart';
 
 /// The only local source of truth for planner state.
@@ -322,6 +323,126 @@ class PlannerLocalStore {
     }
     final rows = await query.get();
     return rows.map(_focusSessionFromRow).toList(growable: false);
+  }
+
+  Future<PlannerSavedView?> readSavedView({
+    required String ownerId,
+    required String viewId,
+    bool includeDeleted = false,
+  }) async {
+    _requireOwnerId(ownerId);
+    final row = await _findSavedViewRow(ownerId, viewId);
+    if (row == null || (!includeDeleted && row.deletedAt != null)) return null;
+    return _savedViewFromRow(row);
+  }
+
+  Future<List<PlannerSavedView>> readSavedViews(
+    String ownerId, {
+    bool includeDeleted = false,
+  }) async {
+    _requireOwnerId(ownerId);
+    final query = _database.select(_database.plannerSavedViews)
+      ..where((row) => row.ownerId.equals(ownerId))
+      ..orderBy(<OrderingTerm Function(PlannerSavedViews)>[
+        (row) =>
+            OrderingTerm(expression: row.updatedAt, mode: OrderingMode.desc),
+        (row) => OrderingTerm(expression: row.id),
+      ]);
+    if (!includeDeleted) {
+      query.where((row) => row.deletedAt.isNull());
+    }
+    final rows = await query.get();
+    return rows.map(_savedViewFromRow).toList(growable: false);
+  }
+
+  Future<void> upsertSavedView(PlannerSavedView view) async {
+    _requireOwnerId(view.ownerId);
+    if (view.isBuiltIn) {
+      throw ArgumentError.value(
+        view.id,
+        'view.id',
+        'built-in views are immutable',
+      );
+    }
+    final updatedAt = view.updatedAt.toUtc();
+    final stableMutationId = _uuid.v4();
+    await _database.transaction(() async {
+      final current = await _findSavedViewRow(view.ownerId, view.id);
+      final revision = math.max(view.revision, current?.revision ?? 0) + 1;
+      final stored = view.copyWith(revision: revision, updatedAt: updatedAt);
+      await _database
+          .into(_database.plannerSavedViews)
+          .insertOnConflictUpdate(
+            PlannerSavedViewsCompanion.insert(
+              id: stored.id,
+              ownerId: stored.ownerId,
+              definitionJson: jsonEncode(stored.toJson()),
+              revision: Value(revision),
+              updatedAt: updatedAt,
+              deletedAt: Value(stored.deletedAt?.toUtc()),
+            ),
+          );
+      await _insertOutboxOperation(
+        mutationId: stableMutationId,
+        ownerId: stored.ownerId,
+        target: PlannerOperationTarget.savedView,
+        targetId: stored.id,
+        entityId: null,
+        entityKind: null,
+        type: PlannerOperationType.upsertSavedView,
+        patch: PlannerFieldPatch.replacePayload(stored.toJson()),
+        baseRevision: revision - 1,
+        createdAt: updatedAt,
+      );
+    });
+  }
+
+  Future<void> softDeleteSavedView({
+    required String ownerId,
+    required String viewId,
+    required DateTime deletedAt,
+  }) async {
+    _requireOwnerId(ownerId);
+    if (viewId.startsWith(PlannerSavedView.builtInNamespacePrefix)) {
+      throw ArgumentError.value(
+        viewId,
+        'viewId',
+        'built-in views are immutable',
+      );
+    }
+    await _database.transaction(() async {
+      final existing = await _findSavedViewRow(ownerId, viewId);
+      if (existing == null || existing.deletedAt != null) return;
+      final deletedAtUtc = deletedAt.toUtc();
+      final view = _savedViewFromRow(existing).copyWith(
+        revision: existing.revision + 1,
+        updatedAt: deletedAtUtc,
+        deletedAt: deletedAtUtc,
+      );
+      await (_database.update(_database.plannerSavedViews)..where(
+            (row) => row.ownerId.equals(ownerId) & row.id.equals(viewId),
+          ))
+          .write(
+            PlannerSavedViewsCompanion(
+              definitionJson: Value(jsonEncode(view.toJson())),
+              revision: Value(view.revision),
+              updatedAt: Value(deletedAtUtc),
+              deletedAt: Value(deletedAtUtc),
+            ),
+          );
+      await _insertOutboxOperation(
+        mutationId: _uuid.v4(),
+        ownerId: ownerId,
+        target: PlannerOperationTarget.savedView,
+        targetId: view.id,
+        entityId: null,
+        entityKind: null,
+        type: PlannerOperationType.softDeleteSavedView,
+        patch: PlannerFieldPatch.replacePayload(view.toJson()),
+        baseRevision: view.revision - 1,
+        createdAt: deletedAtUtc,
+      );
+    });
   }
 
   Future<PlannerEntity?> readEntity({
@@ -964,16 +1085,25 @@ class PlannerLocalStore {
 
   Future<PlannerSyncMetadataValue> updateRemoteCursor({
     required String ownerId,
-    required String? cursor,
+    String? cursor,
+    String? savedViewCursor,
+    bool savedViews = false,
     DateTime? now,
   }) async {
     _requireOwnerId(ownerId);
     final syncedAt = _utc(now);
     final existing = await readSyncMetadata(ownerId);
+    // Keep both journals independent: task pull must not reset the
+    // saved-view cursor and vice versa.
+    final taskCursor = savedViews ? existing?.remoteCursor : cursor;
+    final viewCursor = savedViews ? savedViewCursor ?? cursor : existing?.savedViewCursor;
     final metadata = PlannerSyncMetadataCompanion(
       ownerId: Value(ownerId),
       remoteCursor: Value(
-        cursor?.trim().isEmpty ?? true ? null : cursor!.trim(),
+        taskCursor?.trim().isEmpty ?? true ? null : taskCursor!.trim(),
+      ),
+      savedViewCursor: Value(
+        viewCursor?.trim().isEmpty ?? true ? null : viewCursor!.trim(),
       ),
       lastSyncAt: Value(syncedAt),
       lastSuccessfulSyncAt: Value(existing?.lastSuccessfulSyncAt),
@@ -1001,6 +1131,7 @@ class PlannerLocalStore {
           PlannerSyncMetadataCompanion(
             ownerId: Value(ownerId),
             remoteCursor: Value(existing?.remoteCursor),
+            savedViewCursor: Value(existing?.savedViewCursor),
             lastSyncAt: Value(syncedAt),
             lastSuccessfulSyncAt: Value(syncedAt),
             lastError: const Value(null),
@@ -1088,6 +1219,41 @@ class PlannerLocalStore {
   /// Projects an authoritative v2 entity snapshot locally. Remote changes
   /// never overwrite an entity that still has a local outbox mutation; that
   /// mutation is deliberately sent through the revision-aware RPC instead.
+  Future<bool> applyRemoteSavedView(
+    PlannerSavedView view, {
+    bool preservePendingLocal = true,
+  }) async {
+    _requireOwnerId(view.ownerId);
+    if (view.isBuiltIn || view.revision < 1) {
+      throw const FormatException('Remote saved view is invalid.');
+    }
+    return _database.transaction(() async {
+      if (preservePendingLocal &&
+          await _hasPendingTarget(
+            ownerId: view.ownerId,
+            target: PlannerOperationTarget.savedView,
+            targetId: view.id,
+          )) {
+        return false;
+      }
+      final local = await _findSavedViewRow(view.ownerId, view.id);
+      if (local != null && local.revision > view.revision) return false;
+      await _database
+          .into(_database.plannerSavedViews)
+          .insertOnConflictUpdate(
+            PlannerSavedViewsCompanion.insert(
+              id: view.id,
+              ownerId: view.ownerId,
+              definitionJson: jsonEncode(view.toJson()),
+              revision: Value(view.revision),
+              updatedAt: view.updatedAt.toUtc(),
+              deletedAt: Value(view.deletedAt?.toUtc()),
+            ),
+          );
+      return true;
+    });
+  }
+
   Future<bool> applyRemoteEntity(
     PlannerEntity entity, {
     bool preservePendingLocal = true,
@@ -1571,6 +1737,15 @@ RETURNING action_id
     return _occurrenceFromRow(row);
   }
 
+  Future<PlannerSavedViewRow?> _findSavedViewRow(
+    String ownerId,
+    String viewId,
+  ) =>
+      (_database.select(_database.plannerSavedViews)..where(
+            (row) => row.ownerId.equals(ownerId) & row.id.equals(viewId),
+          ))
+          .getSingleOrNull();
+
   Future<PlannerEntityRow?> _findEntityRow(String ownerId, String entityId) =>
       (_database.select(_database.plannerEntities)..where(
             (row) => row.ownerId.equals(ownerId) & row.id.equals(entityId),
@@ -1733,6 +1908,20 @@ RETURNING action_id
     deletedAt: row.deletedAt == null ? null : _utc(row.deletedAt!),
   );
 
+  PlannerSavedView _savedViewFromRow(PlannerSavedViewRow row) {
+    final view = PlannerSavedView.fromJson(safeJsonMap(row.definitionJson));
+    if (view.id != row.id || view.ownerId != row.ownerId) {
+      throw const FormatException(
+        'Saved view identity does not match owner-scoped row.',
+      );
+    }
+    return view.copyWith(
+      updatedAt: row.updatedAt.toUtc(),
+      deletedAt: row.deletedAt?.toUtc(),
+      clearDeletedAt: row.deletedAt == null,
+    );
+  }
+
   PlannerOccurrence _occurrenceFromRow(PlannerOccurrenceRow row) =>
       PlannerOccurrence(
         id: row.id,
@@ -1805,6 +1994,7 @@ RETURNING action_id
       PlannerSyncMetadataValue(
         ownerId: row.ownerId,
         remoteCursor: row.remoteCursor,
+        savedViewCursor: row.savedViewCursor,
         lastSyncAt: row.lastSyncAt,
         lastSuccessfulSyncAt: row.lastSuccessfulSyncAt,
         lastError: row.lastError,
@@ -1846,6 +2036,7 @@ class PlannerSyncMetadataValue {
   const PlannerSyncMetadataValue({
     required this.ownerId,
     required this.remoteCursor,
+    required this.savedViewCursor,
     required this.lastSyncAt,
     required this.lastSuccessfulSyncAt,
     required this.lastError,
@@ -1853,6 +2044,7 @@ class PlannerSyncMetadataValue {
 
   final String ownerId;
   final String? remoteCursor;
+  final String? savedViewCursor;
   final DateTime? lastSyncAt;
   final DateTime? lastSuccessfulSyncAt;
   final String? lastError;

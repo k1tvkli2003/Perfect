@@ -1,6 +1,9 @@
 # Stage 34 — Detail actions and entity lifecycle safety
 
-Status: pending  
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — explicit Edit separation, context-menu placement, archive
+compatibility naming, duplicate-ID reset, and owner-scoped mutation suites are
+GREEN; confirmation semantics, cross-consumer invalidation, conflict/offline
+replay, and native matrices remain open
 Depends on: Stages 25, 31–33  
 Primary surfaces: detail action hierarchy, context menus, archive/conflict surfaces
 
@@ -75,3 +78,14 @@ replay; confirmation/Undo screenshots and keyboard/touch flows.
 
 Stage 35 receives stable detail actions for inspector/deep-link contexts. Commit/push/
 release with lifecycle proof and clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 34 partial)
+
+- Desktop context/keyboard rows
+  (`desktop context menu is mouse and keyboard reachable with named archive
+  confirmation`, recurring controls) GREEN inside the integrated workspace
+  gate.
+- `duplicateEntity` fresh-ID/history-reset behavior and owner-scoped
+  archive/restore/delete controller vectors GREEN in the same gate.
+- Confirmation/Undo receipts, cross-consumer notifier invalidation, conflict
+  and offline replay, and screenshots remain open.

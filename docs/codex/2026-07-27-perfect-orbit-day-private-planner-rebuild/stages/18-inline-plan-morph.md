@@ -1,6 +1,8 @@
 # Stage 18 — Inline Plan mode morph
 
-Status: pending; prototype kind row not yet accepted  
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — inline mode morph, draft preservation, exact wizard kind
+routing, and whole-label options GREEN in widget suites (2026-09-25); animatic/device
+recording, focus-order/no-hidden-hit, and native screenshot proof remain open; CI workflows disabled_manually
 Depends on: Stages 17 and 21 route contract characterization  
 Primary surfaces: Plan mode inside the same composer
 
@@ -61,6 +63,21 @@ breakpoint change mid-morph, 320dp/200% text, RTL and reduced motion.
 One-surface widget-tree assertion; draft preservation; type routing tests; focus order;
 no overlap/whole-label geometry; recorded morph on Android/Windows; memory/frame
 evidence and cancel/return behavior.
+
+### Evidence — 2026-09-25 (real runs, Stage 18 partial)
+
+- `flutter test --no-pub
+  test/presentation/perfect_workspace_page_test.dart
+  --plain-name "Plan mode preserves task draft and routes exact habit kind"`:
+  **EXIT:0, 1 pass**. Task draft survives Task→Plan→Task, Plan mode stays on the
+  same composer surface, and Habit routes to the exact wizard kind.
+- Integrated controller/Pulse/workspace command:
+  `flutter test --no-pub
+  test/presentation/planner_workspace_controller_test.dart
+  test/presentation/today_pulse_test.dart
+  test/presentation/perfect_workspace_page_test.dart`:
+  **EXIT:0, 133 pass**.
+- `flutter analyze --no-pub`: `No issues found!`; `git diff --check`: clean.
 
 ## Reject if
 

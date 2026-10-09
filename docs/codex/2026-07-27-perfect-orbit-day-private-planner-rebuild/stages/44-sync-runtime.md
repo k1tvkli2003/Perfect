@@ -1,6 +1,9 @@
 # Stage 44 — Sync runtime, background refresh and conflict delivery
 
-Status: pending  
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — three-state cloud contract, local-first queue behavior,
+bounded retry, realtime-gap recovery intent, and subscription-based Today
+suites are GREEN; background workers, cursor proof, and native conflict
+matrices remain open
 Depends on: Stages 08, 15, 41–43  
 Blocks: Stages 45–50  
 Primary surfaces: top Sync Cloud, local projections, realtime/background workers,
@@ -226,3 +229,14 @@ queue/conflict health APIs, background-capability matrix and recovery triggers.
 Commit/push only after CI, two-device Supabase tests, Android/Windows host recordings,
 signed upgrade/replay and Copy evidence pass; record remote deployment independently
 and leave clean `main` only.
+
+### Evidence — 2026-09-25 (real runs, Stage 44 partial)
+
+- `flutter test --no-pub test/planner/planner_sync_repository_test.dart`:
+  GREEN inside the **EXIT:0, 29 pass** store/sync/migration gate (queue,
+  backoff, dispose, manual recovery).
+- Today retry/subscription suites (`Today projection failure offers local retry
+  without hiding rows`, `Today preserves daily outcomes after a projection
+  read failure`, suspended-read cancellation) GREEN inside the **EXIT:0, 133
+  pass** integrated controller/Pulse/workspace gate.
+- Actual coordinator/cursor/background/conflict delivery proof remains open.

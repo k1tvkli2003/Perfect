@@ -1,6 +1,9 @@
 # Stage 26 — HabitNow-inspired Habit creation flow
 
-Status: pending  
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — six-step order, measurement choices, checklist
+definition round-trip, frequency/plan/review, and edit-return suites GREEN;
+template library, method-migration matrix, engine-summary equality proof, and
+native screenshot comparison remain open; CI workflows disabled_manually
 Depends on: Stages 21–25  
 Primary surfaces: Create/Edit Habit wizard and review summary
 
@@ -82,3 +85,15 @@ summary==domain behavior; no default records for clean owner.
 
 Stage 27 receives the selected measurement method and preview contract. Commit/push/
 release with reference mapping and flow evidence; clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 26 partial)
+
+`flutter test --no-pub test/presentation/planner_editor_test.dart`:
+**EXIT:0, 17 pass**. The decisive slice is
+`habit flow follows category evaluation definition frequency plan review`,
+which walks all six Stage 26 steps (category → evaluation → definition →
+frequency → plan → review), selects the checklist method, defines a checklist
+title/item, returns through the method switch without losing the draft, then
+saves a local-first `tracking.method == 'checklist'` entity with one checklist
+item and a daily rule. Template library, per-method migration, engine-summary
+equality, and screenshot comparison remain open.

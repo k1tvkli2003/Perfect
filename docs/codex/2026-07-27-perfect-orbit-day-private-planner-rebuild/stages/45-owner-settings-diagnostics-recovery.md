@@ -1,6 +1,9 @@
 # Stage 45 — Owner settings, diagnostics, backup and recovery
 
-Status: pending  
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — sync indicator/error semantics, self-connect, secret-key
+guard, and reminder/feedback surface suites are GREEN; backup/export/import,
+archive/trash, encrypted containers, recovery ladder, and clean-account proof
+remain open
 Depends on: Stages 01, 05–10, 15, 34 and 41–44  
 Blocks: Stages 46–50  
 Primary surfaces: More/Settings, keyvan profile, archive/trash, feedback capture,
@@ -384,3 +387,13 @@ receives backup/upgrade fixtures and release-entrypoint seed scan. Commit/push o
 after CI, security/round-trip/recovery tests, real Android/Windows system surfaces,
 Copy evidence and signed upgrade proof pass; record any remote retention/RPC
 deployment separately and leave clean `main` only.
+
+### Evidence — 2026-09-25 (real runs, Stage 45 partial)
+
+- `flutter test --no-pub test/presentation/perfect_sync_indicator_test.dart
+  test/presentation/configuration_page_test.dart`: **EXIT:0, 7 pass**
+  (indicator semantics, self-connect install, privileged-key stop).
+- `flutter test --no-pub test/preservation/`: **EXIT:0, 6 pass** (private
+  boundary, session preservation, migration rollback).
+- Backup/export/import containers, archive/trash lifecycle, recovery ladder,
+  native matrices, and clean-account proof remain open.

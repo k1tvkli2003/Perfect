@@ -11,6 +11,13 @@ import 'package:perfect/app/perfect_preferences.dart';
 import 'package:perfect/feedback/ready_feedback_capture.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_formula.dart';
+import 'package:perfect/planner/domain/planner_saved_view.dart';
+import 'package:perfect/planner/domain/planner_task_query.dart';
+import 'package:perfect/planner/domain/planner_task_keyboard.dart';
+import 'package:perfect/planner/domain/planner_task_selection.dart';
+import 'package:perfect/planner/domain/planner_task_bulk.dart';
+import 'package:perfect/planner/domain/planner_task_bulk_scope.dart';
+import 'package:perfect/planner/domain/planner_tasks_copy.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
@@ -31,6 +38,7 @@ import 'package:perfect/presentation/planner_habit_log_sheet.dart';
 import 'package:perfect/presentation/planner_insights_sheet.dart';
 import 'package:perfect/presentation/planner_reminder_settings_sheet.dart';
 import 'package:perfect/presentation/planner_workspace_controller.dart';
+import 'package:perfect/presentation/tasks_bulk_bar.dart';
 import 'package:perfect/presentation/today_pulse.dart';
 import 'package:perfect/presentation/task_status_control.dart';
 
@@ -147,6 +155,16 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
   String? _failedTodayProjection;
   PlannerTodayStream? _todayStream;
   double? _inspectorWidthOverride;
+
+  void _retryTodayProjection() {
+    if (!mounted) return;
+    setState(() {
+      // Force a fresh owner/day-scoped read; never trigger remote sync or clear
+      // the last coherent local snapshot merely to retry one failed projection.
+      _requestedTodayProjection = null;
+      _failedTodayProjection = null;
+    });
+  }
 
   @override
   void initState() {
@@ -313,7 +331,13 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
           child: AnimatedBuilder(
             animation: widget.controller,
             builder: (context, _) {
-              if (!widget.controller.isReady) return const _WorkspaceLoading();
+              // A failed local read is recoverable. Keep the user inside the
+              // workspace and show the actionable state instead of spinning
+              // forever on the boot loader.
+              if (!widget.controller.isReady &&
+                  widget.controller.localError == null) {
+                return const _WorkspaceLoading();
+              }
               _schedulePendingNavigationConsumption();
               _ensureTodayProjection();
               return LayoutBuilder(
@@ -559,6 +583,10 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     key: _quickCaptureDockKey,
     controller: widget.controller,
     onOpenEditor: () => _openEditor(),
+    onPlanKind: (kind) {
+      _quickCaptureDockKey.currentState?.collapse();
+      _openEditor(initialKind: kind);
+    },
     captureController: _quickCaptureController,
     focusNode: _quickCaptureFocusNode,
     desktop: desktop,
@@ -656,6 +684,8 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
     required bool shortLandscape,
   }) {
     final now = widget.now().toLocal();
+    final projectionFailed =
+        _failedTodayProjection == _todayProjectionFailureKey(now);
     return switch (tier) {
       _WorkspaceLayoutTier.compact => _TodayPage(
         controller: widget.controller,
@@ -668,6 +698,8 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         taskProgressById: _displayTaskProgress,
         scheduledAtById: _displayTodayScheduledAt,
         projectionResolved: _isTodayProjectionResolved,
+        projectionFailed: projectionFailed,
+        onRetryToday: _retryTodayProjection,
         onInspect: _inspect,
         onAdd: _openEditor,
         onOpenPlan: () => _selectDestination(_PerfectDestination.plan.index),
@@ -683,6 +715,8 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         taskProgressById: _displayTaskProgress,
         scheduledAtById: _displayTodayScheduledAt,
         projectionResolved: _isTodayProjectionResolved,
+        projectionFailed: projectionFailed,
+        onRetryToday: _retryTodayProjection,
         nowProvider: widget.now,
         onInspect: _inspect,
         onAdd: _openEditor,
@@ -699,6 +733,8 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
         taskProgressById: _displayTaskProgress,
         scheduledAtById: _displayTodayScheduledAt,
         projectionResolved: _isTodayProjectionResolved,
+        projectionFailed: projectionFailed,
+        onRetryToday: _retryTodayProjection,
         nowProvider: widget.now,
         inspected: _destination == _PerfectDestination.today
             ? _inspected
@@ -830,12 +866,15 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
 
   bool get _isTodayProjectionResolved {
     final now = widget.now().toLocal();
-    if (_failedTodayProjection == _todayProjectionSignature(now)) {
+    if (_failedTodayProjection == _todayProjectionFailureKey(now)) {
       // A failed read is stale by definition; the Pulse must not certify it.
       return false;
     }
     return _resolvedTodayProjection == _todayProjectionSignature(now);
   }
+
+  String _todayProjectionFailureKey(DateTime now) =>
+      '${identityHashCode(widget.controller)}:${widget.controller.ownerId}:${now.year}-${now.month}-${now.day}';
 
   String _todayProjectionSignature(DateTime now) {
     final day = '${now.year}-${now.month}-${now.day}';
@@ -938,7 +977,14 @@ class _PerfectWorkspacePageState extends State<PerfectWorkspacePage> {
       // Never log raw storage errors, which may contain private planner values.
       debugPrint('TODAY_PROJECTION_READ_FAILED');
       setState(() {
-        _failedTodayProjection = signature;
+        // Keep the last same-day coherent snapshot, but paint the inline
+        // verdict in the same frame. Setting only the verdict leaves the
+        // failed read invisible because no consumer can observe a new flag.
+        // Stable day key: a mutation-only revision bump must not clear the
+        // visible retry verdict, and a new local mutation triggers its own
+        // signature read which clears or replaces this verdict.
+        _failedTodayProjection = _todayProjectionFailureKey(day);
+        _resolvedTodayProjection = null;
       });
     }
   }
@@ -1938,6 +1984,7 @@ class _QuickCaptureDock extends StatefulWidget {
     this.aiAvailable = false,
     this.aiOpen = false,
     this.onToggleAi,
+    this.onPlanKind,
     this.onOpenAiVoice,
   });
 
@@ -1949,6 +1996,7 @@ class _QuickCaptureDock extends StatefulWidget {
   final bool aiAvailable;
   final bool aiOpen;
   final VoidCallback? onToggleAi;
+  final ValueChanged<PlannerEntityKind>? onPlanKind;
   final VoidCallback? onOpenAiVoice;
 
   @override
@@ -1966,6 +2014,7 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
   bool _hovered = false;
   bool _fieldFocused = false;
   bool _expanded = false;
+  bool _planMode = false;
   bool _reduceMotion = false;
   bool _foreground = true;
 
@@ -2084,17 +2133,38 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
     _syncPulseAnimation();
   }
 
+  void _showPlanMode() {
+    setState(() {
+      _expanded = true;
+      _planMode = true;
+    });
+    _syncPulseAnimation();
+  }
+
+  void _hidePlanMode() {
+    if (!_planMode) return;
+    setState(() => _planMode = false);
+  }
+
   void _collapse() {
     widget.focusNode.unfocus();
-    if (_expanded) setState(() => _expanded = false);
+    if (_expanded || _planMode) {
+      setState(() {
+        _expanded = false;
+        _planMode = false;
+      });
+    }
     _syncPulseAnimation();
   }
 
   void collapse() => _collapse();
 
-  void _openFullEditor() {
+  void _openPlanKind(PlannerEntityKind kind) {
+    // The preserved Task draft stays in the shared controller; this only
+    // hides the mode surface before routing to the exact wizard kind.
+    setState(() => _planMode = false);
     _collapse();
-    widget.onOpenEditor();
+    widget.onPlanKind?.call(kind);
   }
 
   @override
@@ -2177,16 +2247,26 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
                       );
                     },
                     child: _expanded
-                        ? _buildExpandedComposer(
-                            context,
-                            key: const ValueKey<String>(
-                              'quick-capture-expanded',
-                            ),
-                            maxWidth: maxDockWidth,
-                            effectiveTextScale: effectiveTextScale,
-                            hintText: hintText,
-                            duration: duration,
-                          )
+                        ? (_planMode
+                              ? _buildPlanMode(
+                                  context,
+                                  key: const ValueKey<String>(
+                                    'quick-capture-plan-mode',
+                                  ),
+                                  maxWidth: maxDockWidth,
+                                  effectiveTextScale: effectiveTextScale,
+                                  duration: duration,
+                                )
+                              : _buildExpandedComposer(
+                                  context,
+                                  key: const ValueKey<String>(
+                                    'quick-capture-expanded',
+                                  ),
+                                  maxWidth: maxDockWidth,
+                                  effectiveTextScale: effectiveTextScale,
+                                  hintText: hintText,
+                                  duration: duration,
+                                ))
                         : _buildCollapsedLauncher(
                             context,
                             key: const ValueKey<String>(
@@ -2323,6 +2403,132 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
     );
   }
 
+  Widget _buildPlanMode(
+    BuildContext context, {
+    required Key key,
+    required double maxWidth,
+    required double effectiveTextScale,
+    required Duration duration,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    final stacked = maxWidth < 620 || effectiveTextScale >= 1.25;
+    const kinds = <_PlanKindOption>[
+      _PlanKindOption(
+        kind: PlannerEntityKind.oneOffTask,
+        label: 'Task',
+        pictogram: 'task',
+        semantics: 'Create a single task',
+        keyName: 'perfect-plan-kind-task',
+      ),
+      _PlanKindOption(
+        kind: PlannerEntityKind.recurringTask,
+        label: 'Recurring task',
+        pictogram: 'calendar',
+        semantics: 'Create a recurring task',
+        keyName: 'perfect-plan-kind-recurring',
+      ),
+      _PlanKindOption(
+        kind: PlannerEntityKind.habit,
+        label: 'Habit',
+        pictogram: 'capture',
+        semantics: 'Create a habit',
+        keyName: 'perfect-plan-kind-habit',
+      ),
+    ];
+    Widget kindButton(_PlanKindOption option) {
+      return _CaptureOptionButton(
+        key: ValueKey<String>(option.keyName),
+        tooltip: option.semantics,
+        label: option.label,
+        tone: _CaptureOptionTone.plan,
+        showLabel: true,
+        vertical: stacked,
+        onPressed: () => _openPlanKind(option.kind),
+        icon: PerfectPictogram(
+          name: option.pictogram,
+          size: 23,
+          semanticLabel: option.semantics,
+        ),
+      );
+    }
+
+    return Semantics(
+      key: key,
+      container: true,
+      explicitChildNodes: true,
+      label: 'Plan mode. Choose what to create.',
+      child: PerfectGlassSurface(
+        surfaceKey: const ValueKey<String>('perfect-plan-mode'),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(PerfectRadius.dock),
+        ),
+        strength: PerfectGlassStrength.soft,
+        enableBlur: false,
+        tint: scheme.surface.withValues(alpha: .94),
+        borderColor: PerfectSemanticTheme.of(context).focus,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    key: const ValueKey<String>('perfect-plan-back'),
+                    tooltip: 'Back to quick capture',
+                    onPressed: _hidePlanMode,
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size.square(48),
+                      shape: const CircleBorder(),
+                      backgroundColor: scheme.surface.withValues(alpha: .62),
+                      foregroundColor: scheme.onSurfaceVariant,
+                      side: BorderSide(
+                        color: scheme.outline.withValues(alpha: .20),
+                      ),
+                    ),
+                    icon: const Icon(Icons.arrow_back_rounded, size: 23),
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Plan',
+                      maxLines: 1,
+                      overflow: TextOverflow.fade,
+                      style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 9),
+              if (stacked)
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var index = 0; index < kinds.length; index++) ...[
+                      if (index > 0) const SizedBox(height: 7),
+                      SizedBox(
+                        width: double.infinity,
+                        child: kindButton(kinds[index]),
+                      ),
+                    ],
+                  ],
+                )
+              else
+                Row(
+                  children: [
+                    for (var index = 0; index < kinds.length; index++) ...[
+                      if (index > 0) const SizedBox(width: 7),
+                      Expanded(child: kindButton(kinds[index])),
+                    ],
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildExpandedComposer(
     BuildContext context, {
     required Key key,
@@ -2358,14 +2564,12 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
     final send = _buildSendAction(context, duration: duration);
     final plan = _CaptureOptionButton(
       key: const ValueKey<String>('perfect-capture-plan'),
-      tooltip: widget.desktop
-          ? 'Plan a task or habit (Ctrl+N)'
-          : 'Plan a task or habit',
+      tooltip: widget.desktop ? 'Open plan mode (Ctrl+N)' : 'Open plan mode',
       label: 'Plan',
       tone: _CaptureOptionTone.plan,
       showLabel: showOptionLabels,
       vertical: stacked,
-      onPressed: _openFullEditor,
+      onPressed: _showPlanMode,
       icon: const PerfectPictogram(
         name: 'calendar',
         size: 23,
@@ -2704,16 +2908,37 @@ class _QuickCaptureDockState extends State<_QuickCaptureDock>
     if (title.isEmpty || _sending) return;
     setState(() => _sending = true);
     try {
-      await widget.controller.quickCapture(title);
+      final receipt = await widget.controller.quickCapture(title);
+      final capturedId = receipt.entity?.id;
       _capture.clear();
       widget.focusNode.unfocus();
       if (mounted) {
         setState(() => _expanded = false);
         _syncPulseAnimation();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Captured locally. Sync will follow.')),
+          SnackBar(
+            content: const Text('Captured locally. Sync will follow.'),
+            action: capturedId == null
+                ? null
+                : SnackBarAction(
+                    label: 'Undo',
+                    onPressed: () {
+                      final captured = capturedId;
+                      unawaited(widget.controller.deleteEntityById(captured));
+                    },
+                  ),
+          ),
         );
       }
+    } on Object {
+      if (!mounted) return;
+      setState(() => _sending = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not save this task locally. Try again.'),
+        ),
+      );
+      return;
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -2749,6 +2974,23 @@ class _MotionAwareAnimatedSize extends StatelessWidget {
 }
 
 enum _CaptureOptionTone { plan, ai, voice }
+
+@immutable
+class _PlanKindOption {
+  const _PlanKindOption({
+    required this.kind,
+    required this.label,
+    required this.pictogram,
+    required this.semantics,
+    required this.keyName,
+  });
+
+  final PlannerEntityKind kind;
+  final String label;
+  final String pictogram;
+  final String semantics;
+  final String keyName;
+}
 
 class _CaptureOptionButton extends StatelessWidget {
   const _CaptureOptionButton({
@@ -2981,6 +3223,8 @@ class _ExpandedTodayDeck extends StatelessWidget {
     required this.taskProgressById,
     required this.scheduledAtById,
     required this.projectionResolved,
+    required this.projectionFailed,
+    required this.onRetryToday,
     required this.nowProvider,
     required this.inspected,
     required this.onInspect,
@@ -2999,6 +3243,8 @@ class _ExpandedTodayDeck extends StatelessWidget {
   final Map<String, PlannerTaskProgress> taskProgressById;
   final Map<String, DateTime?> scheduledAtById;
   final bool projectionResolved;
+  final bool projectionFailed;
+  final VoidCallback onRetryToday;
   final PerfectNow nowProvider;
   final PlannerEntity? inspected;
   final ValueChanged<PlannerEntity> onInspect;
@@ -3085,6 +3331,10 @@ class _ExpandedTodayDeck extends StatelessWidget {
                       onOpenPlan: onOpenPlan,
                     ),
                   ),
+                  if (projectionFailed) ...[
+                    const SizedBox(height: PerfectSpace.sm),
+                    _TodayProjectionRecovery(onRetry: onRetryToday),
+                  ],
                   const SizedBox(height: PerfectSpace.lg),
                   SizedBox(
                     key: const ValueKey<String>('expanded-day-deck-stage'),
@@ -3105,6 +3355,7 @@ class _ExpandedTodayDeck extends StatelessWidget {
                                 habitSummaryById: habitSummaryById,
                                 taskProgressById: taskProgressById,
                                 scheduledAtById: scheduledAtById,
+                                projectionResolved: projectionResolved,
                                 onInspect: onInspect,
                                 onAdd: onAdd,
                                 constrained: true,
@@ -3176,6 +3427,8 @@ class _MediumTodayDeck extends StatelessWidget {
     required this.taskProgressById,
     required this.scheduledAtById,
     required this.projectionResolved,
+    required this.projectionFailed,
+    required this.onRetryToday,
     required this.nowProvider,
     required this.onInspect,
     required this.onAdd,
@@ -3192,6 +3445,8 @@ class _MediumTodayDeck extends StatelessWidget {
   final Map<String, PlannerTaskProgress> taskProgressById;
   final Map<String, DateTime?> scheduledAtById;
   final bool projectionResolved;
+  final bool projectionFailed;
+  final VoidCallback onRetryToday;
   final PerfectNow nowProvider;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
@@ -3258,6 +3513,10 @@ class _MediumTodayDeck extends StatelessWidget {
                         shortLandscape: shortLandscape,
                       ),
                     ),
+                    if (projectionFailed) ...[
+                      const SizedBox(height: PerfectSpace.sm),
+                      _TodayProjectionRecovery(onRetry: onRetryToday),
+                    ],
                     const SizedBox(height: PerfectSpace.lg),
                     SizedBox(
                       key: const ValueKey<String>('medium-day-deck'),
@@ -3270,6 +3529,7 @@ class _MediumTodayDeck extends StatelessWidget {
                         habitSummaryById: habitSummaryById,
                         taskProgressById: taskProgressById,
                         scheduledAtById: scheduledAtById,
+                        projectionResolved: projectionResolved,
                         onInspect: onInspect,
                         onAdd: onAdd,
                         constrained: true,
@@ -3283,6 +3543,48 @@ class _MediumTodayDeck extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _TodayProjectionRecovery extends StatelessWidget {
+  const _TodayProjectionRecovery({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label:
+          'Today could not refresh. Saved local rows are still shown. Retry the local refresh.',
+      child: DecoratedBox(
+        key: const ValueKey<String>('today-projection-recovery'),
+        decoration: BoxDecoration(
+          color: scheme.errorContainer.withValues(alpha: .28),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: scheme.error.withValues(alpha: .55)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.cloud_off_outlined, size: 22, color: scheme.error),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Today could not refresh. Saved local rows are still shown.',
+                  maxLines: 3,
+                ),
+              ),
+              TextButton(onPressed: onRetry, child: const Text('Retry today')),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -3333,6 +3635,7 @@ class _DayStreamPanel extends StatelessWidget {
     required this.habitSummaryById,
     required this.taskProgressById,
     required this.scheduledAtById,
+    required this.projectionResolved,
     required this.onInspect,
     required this.onAdd,
     required this.constrained,
@@ -3346,6 +3649,7 @@ class _DayStreamPanel extends StatelessWidget {
   final Map<String, PlannerHabitDaySummary> habitSummaryById;
   final Map<String, PlannerTaskProgress> taskProgressById;
   final Map<String, DateTime?> scheduledAtById;
+  final bool projectionResolved;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
   final bool constrained;
@@ -3362,7 +3666,7 @@ class _DayStreamPanel extends StatelessWidget {
       ),
       SizedBox(height: dense ? PerfectSpace.xs : PerfectSpace.md),
       if (items.isEmpty)
-        _DayStreamEmpty(onAdd: onAdd)
+        _DayStreamEmpty(onAdd: onAdd, projectionResolved: projectionResolved)
       else
         _DayStreamTimeline(
           controller: controller,
@@ -3640,9 +3944,13 @@ class _DayStreamTimeline extends StatelessWidget {
 }
 
 class _DayStreamEmpty extends StatelessWidget {
-  const _DayStreamEmpty({required this.onAdd});
+  const _DayStreamEmpty({
+    required this.onAdd,
+    required this.projectionResolved,
+  });
 
   final VoidCallback onAdd;
+  final bool projectionResolved;
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
@@ -3661,7 +3969,7 @@ class _DayStreamEmpty extends StatelessWidget {
           ),
           const SizedBox(height: PerfectSpace.xs),
           Text(
-            'Your day has room.',
+            projectionResolved ? 'Your day has room.' : 'Updating today…',
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -3824,6 +4132,8 @@ class _TodayPage extends StatelessWidget {
     required this.taskProgressById,
     required this.scheduledAtById,
     required this.projectionResolved,
+    required this.projectionFailed,
+    required this.onRetryToday,
     required this.onInspect,
     required this.onAdd,
     required this.onOpenPlan,
@@ -3840,6 +4150,8 @@ class _TodayPage extends StatelessWidget {
   final Map<String, PlannerTaskProgress> taskProgressById;
   final Map<String, DateTime?> scheduledAtById;
   final bool projectionResolved;
+  final bool projectionFailed;
+  final VoidCallback onRetryToday;
   final ValueChanged<PlannerEntity> onInspect;
   final VoidCallback onAdd;
   final VoidCallback onOpenPlan;
@@ -3881,6 +4193,10 @@ class _TodayPage extends StatelessWidget {
           shortLandscape: shortLandscape,
         ),
       ),
+      if (projectionFailed) ...[
+        const SizedBox(height: PerfectSpace.sm),
+        _TodayProjectionRecovery(onRetry: onRetryToday),
+      ],
       const SizedBox(height: PerfectSpace.lg),
       PerfectStagedEntrance(
         order: 2,
@@ -3896,7 +4212,7 @@ class _TodayPage extends StatelessWidget {
       ),
       const SizedBox(height: PerfectSpace.xs),
       if (items.isEmpty)
-        _DayStreamEmpty(onAdd: onAdd)
+        _DayStreamEmpty(onAdd: onAdd, projectionResolved: projectionResolved)
       else
         ..._groupTodayRows(
           items: items,
@@ -3986,98 +4302,821 @@ class _TasksPage extends StatefulWidget {
   State<_TasksPage> createState() => _TasksPageState();
 }
 
-enum _TaskFilter { inbox, active, scheduled, completed }
+enum _TaskFilter { inbox, active, scheduled, recurring, completed }
 
 enum _TaskKindFilter { all, oneOff, recurring }
+
+enum _TaskSortMode { scheduled, title, recent }
+
+enum _TaskGroupMode { none, schedule, project, category, priority, status }
+
+/// Tracer 20: single shared mapping between deck state and the saved-view
+/// contract. [_taskQueryFromDeck] builds the page's ONE query from deck
+/// fields; the `_taskFilterFromViewId`/`_taskSortModeFromQuery`/
+/// `_taskGroupModeFromQuery` trio restores deck fields from a saved view's
+/// query. One mapping each direction, no second predicate.
+PlannerTaskQuery _taskQueryFromDeck({
+  required _TaskFilter filter,
+  required _TaskKindFilter kindFilter,
+  required _TaskSortMode sortMode,
+  required _TaskGroupMode groupMode,
+  required String searchText,
+}) => PlannerTaskQuery(
+  viewId: _taskFilterViewId(filter),
+  text: searchText,
+  kinds: _taskKindFilterKinds(kindFilter),
+  sortMode: _taskSortQueryMode(sortMode),
+  groupBy: _taskGroupQueryMode(groupMode),
+);
+
+String _taskFilterViewId(_TaskFilter filter) => switch (filter) {
+  _TaskFilter.inbox => PlannerTaskQuery.inboxViewId,
+  _TaskFilter.active => PlannerTaskQuery.openViewId,
+  _TaskFilter.scheduled => PlannerTaskQuery.scheduledViewId,
+  _TaskFilter.recurring => PlannerTaskQuery.recurringViewId,
+  _TaskFilter.completed => PlannerTaskQuery.completedViewId,
+};
+
+Set<PlannerEntityKind> _taskKindFilterKinds(_TaskKindFilter kindFilter) =>
+    switch (kindFilter) {
+      _TaskKindFilter.all => const {
+        PlannerEntityKind.oneOffTask,
+        PlannerEntityKind.recurringTask,
+      },
+      _TaskKindFilter.oneOff => const {PlannerEntityKind.oneOffTask},
+      _TaskKindFilter.recurring => const {PlannerEntityKind.recurringTask},
+    };
+
+_TaskKindFilter _taskKindFilterFromQuery(Set<PlannerEntityKind> kinds) {
+  if (kinds.length == 1 && kinds.contains(PlannerEntityKind.oneOffTask)) {
+    return _TaskKindFilter.oneOff;
+  }
+  if (kinds.length == 1 && kinds.contains(PlannerEntityKind.recurringTask)) {
+    return _TaskKindFilter.recurring;
+  }
+  return _TaskKindFilter.all;
+}
+
+PlannerTaskSortMode _taskSortQueryMode(_TaskSortMode sortMode) =>
+    switch (sortMode) {
+      _TaskSortMode.scheduled => PlannerTaskSortMode.scheduled,
+      _TaskSortMode.title => PlannerTaskSortMode.title,
+      _TaskSortMode.recent => PlannerTaskSortMode.recent,
+    };
+
+PlannerTaskGroup _taskGroupQueryMode(_TaskGroupMode groupMode) =>
+    switch (groupMode) {
+      _TaskGroupMode.none => PlannerTaskGroup.none,
+      _TaskGroupMode.schedule => PlannerTaskGroup.schedule,
+      _TaskGroupMode.project => PlannerTaskGroup.project,
+      _TaskGroupMode.category => PlannerTaskGroup.category,
+      _TaskGroupMode.priority => PlannerTaskGroup.priority,
+      _TaskGroupMode.status => PlannerTaskGroup.status,
+    };
+
+_TaskFilter _taskFilterFromViewId(String viewId) => switch (viewId) {
+  PlannerTaskQuery.inboxViewId => _TaskFilter.inbox,
+  PlannerTaskQuery.scheduledViewId => _TaskFilter.scheduled,
+  PlannerTaskQuery.recurringViewId => _TaskFilter.recurring,
+  PlannerTaskQuery.completedViewId => _TaskFilter.completed,
+  _ => _TaskFilter.active,
+};
+
+_TaskSortMode _taskSortModeFromQuery(PlannerTaskSortMode mode) =>
+    switch (mode) {
+      PlannerTaskSortMode.title => _TaskSortMode.title,
+      PlannerTaskSortMode.recent => _TaskSortMode.recent,
+      _ => _TaskSortMode.scheduled,
+    };
+
+_TaskGroupMode _taskGroupModeFromQuery(PlannerTaskGroup group) =>
+    switch (group) {
+      PlannerTaskGroup.schedule => _TaskGroupMode.schedule,
+      PlannerTaskGroup.project => _TaskGroupMode.project,
+      PlannerTaskGroup.category => _TaskGroupMode.category,
+      PlannerTaskGroup.priority => _TaskGroupMode.priority,
+      PlannerTaskGroup.status => _TaskGroupMode.status,
+      _ => _TaskGroupMode.none,
+    };
 
 class _TasksPageState extends State<_TasksPage> {
   final _search = TextEditingController();
   _TaskFilter _filter = _TaskFilter.active;
   _TaskKindFilter _kindFilter = _TaskKindFilter.all;
+  _TaskSortMode _sortMode = _TaskSortMode.scheduled;
+  _TaskGroupMode _groupMode = _TaskGroupMode.none;
+  String _activeViewId = PlannerSavedView.fallbackViewId;
   bool _filtersExpanded = false;
+  final _workFocusNode = FocusNode();
+  bool _activeViewLoaded = false;
+  final Set<String> _collapsedTaskGroupKeys = <String>{};
+  PlannerTasksSelectionSurface _selection =
+      const PlannerTasksSelectionSurface();
+
+  void _toggleTaskSelection(String id) {
+    setState(() => _selection = _selection.toggle(id));
+  }
+
+  List<PlannerSavedView> _savedViews = const <PlannerSavedView>[];
+
+  /// Tracer 24: the switcher source of truth is built-in definitions plus the
+  /// owner's stored personal views. Personal rows are owner-scoped; a failed
+  /// read keeps the built-ins rather than hiding the switcher.
+  List<PlannerSavedView> get _effectiveSavedViews => <PlannerSavedView>[
+    ...PlannerSavedView.builtInViews(ownerId: widget.controller.ownerId),
+    ..._savedViews,
+  ];
+
+  /// Tracer 20: applies a saved view by restoring the deck fields its query
+  /// carries (view → filter, kind scope, search text, sortMode, groupBy).
+  /// The switcher is the source of truth, so applying always wins over live
+  /// edits; refining afterwards clears the active view through onChanged.
+  /// Tracer 21: the stable ID is persisted as a device preference (ID only —
+  /// the query definition lives in the saved view, never in the preference).
+  void _applySavedView(PlannerSavedView view) {
+    _activeViewLoaded = true;
+    setState(() {
+      _activeViewId = view.id;
+      _filter = _taskFilterFromViewId(view.query.viewId);
+      _kindFilter = _taskKindFilterFromQuery(view.query.kinds);
+      _search.text = view.query.text;
+      _sortMode = _taskSortModeFromQuery(view.query.sortMode);
+      _groupMode = _taskGroupModeFromQuery(view.query.groupBy);
+    });
+    unawaited(PerfectPreferences.saveTasksActiveViewId(view.id));
+  }
+
+  /// Tracer 21: restores the stored active-view preference once. The stored
+  /// value is only ever a stable ID; unknown or missing IDs fall back to
+  /// `builtin:open` through [PlannerSavedView.resolveActiveViewId]. A view
+  /// the owner already touched during this frame wins over the pending read.
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_restoreSavedViews());
+  }
+
+  /// Tracer 21/24: one deterministic restore — stored ID first, then the
+  /// owner's personal rows, and only then is a view applied. Resolution runs
+  /// against built-ins plus stored views, so a stored personal ID is never
+  /// wrongly downgraded to `builtin:open` just because its row was still
+  /// loading. Unknown or missing IDs fall back to Open through
+  /// [PlannerSavedView.resolveActiveViewId].
+  Future<void> _restoreSavedViews() async {
+    final storedId = await PerfectPreferences.readTasksActiveViewId();
+    List<PlannerSavedView> personal;
+    try {
+      personal = await widget.controller.readPersonalSavedViews();
+    } on Object {
+      personal = const <PlannerSavedView>[];
+    }
+    if (!mounted || _activeViewLoaded) return;
+    setState(() => _savedViews = personal);
+    final available = _effectiveSavedViews;
+    final resolvedId = PlannerSavedView.resolveActiveViewId(
+      storedId: storedId,
+      availableIds: <String>{for (final view in available) view.id},
+    );
+    _applySavedView(available.firstWhere((view) => view.id == resolvedId));
+  }
+
+  Future<void> _reloadPersonalSavedViews() async {
+    try {
+      final views = await widget.controller.readPersonalSavedViews();
+      if (!mounted) return;
+      setState(() => _savedViews = views);
+    } on Object {
+      return;
+    }
+  }
+
+  PlannerSavedView? _personalViewById(String viewId) {
+    for (final view in _savedViews) {
+      if (view.id == viewId) return view;
+    }
+    return null;
+  }
+
+  Future<void> _saveCurrentView() async {
+    final current = _personalViewById(_activeViewId);
+    var draftTitle = current?.title ?? '';
+    final title = await showPerfectDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(current == null ? 'Save view' : 'Rename view'),
+        content: TextFormField(
+          key: const ValueKey<String>('saved-view-title'),
+          autofocus: true,
+          initialValue: draftTitle,
+          decoration: const InputDecoration(labelText: 'View name'),
+          textInputAction: TextInputAction.done,
+          onChanged: (value) => draftTitle = value,
+          onFieldSubmitted: (_) => Navigator.of(dialogContext).pop(draftTitle),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            key: const ValueKey<String>('saved-view-title-save'),
+            onPressed: () => Navigator.of(dialogContext).pop(draftTitle),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    final trimmed = title?.trim() ?? '';
+    if (!mounted || trimmed.isEmpty) return;
+    final now = DateTime.now().toUtc();
+    final saved = current == null
+        ? PlannerSavedView(
+            id: widget.controller.newPersonalSavedViewId(),
+            ownerId: widget.controller.ownerId,
+            schemaVersion: PlannerSavedView.currentSchemaVersion,
+            title: trimmed,
+            iconKey: 'bookmark',
+            query: _taskQueryFromDeck(
+              filter: _filter,
+              kindFilter: _kindFilter,
+              sortMode: _sortMode,
+              searchText: _search.text,
+              groupMode: _groupMode,
+            ),
+            createdAt: now,
+            updatedAt: now,
+          )
+        : current.copyWith(
+            title: trimmed,
+            query: _taskQueryFromDeck(
+              filter: _filter,
+              kindFilter: _kindFilter,
+              sortMode: _sortMode,
+              searchText: _search.text,
+              groupMode: _groupMode,
+            ),
+          );
+    final stored = await widget.controller.savePersonalSavedView(saved);
+    if (!mounted) return;
+    await _reloadPersonalSavedViews();
+    if (!mounted) return;
+    _applySavedView(stored);
+  }
+
+  Future<void> _openSavedViewManager() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
+      builder: (sheetContext) {
+        final views = _savedViews;
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              const ListTile(title: Text('Saved views')),
+              if (views.isEmpty)
+                const ListTile(title: Text('No personal views yet.')),
+              for (final view in views)
+                ListTile(
+                  key: ValueKey<String>('saved-view-manage-${view.id}'),
+                  title: Text(view.title),
+                  trailing: IconButton(
+                    key: ValueKey<String>('saved-view-delete-${view.id}'),
+                    tooltip: 'Delete saved view',
+                    onPressed: () async {
+                      await widget.controller.softDeletePersonalSavedView(
+                        view.id,
+                      );
+                      if (!mounted) return;
+                      if (view.id == _activeViewId) {
+                        final open =
+                            PlannerSavedView.builtInViews(
+                              ownerId: widget.controller.ownerId,
+                            ).firstWhere(
+                              (builtIn) =>
+                                  builtIn.id == PlannerSavedView.fallbackViewId,
+                            );
+                        _applySavedView(open);
+                      }
+                      await _reloadPersonalSavedViews();
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                    },
+                    icon: const Icon(Icons.delete_outline),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Stage 36 bulk sheet: opens the frozen preview, confirms through the
+  /// controller receipt path, then clears selection and announces safely.
+  ///
+  /// Bulk Undo is offered on the result SnackBar only while the batch is
+  /// still authoritative: the controller rejects it (returns false) when a
+  /// newer write moved any applied row, when the batch applied archive/
+  /// delete/restore/schedule/move, or after one successful Undo consumed it.
+  Future<void> _openTasksBulkSheet(
+    List<String> orderedIds,
+    PlannerTasksBulkPlan plan,
+  ) async {
+    final action = PlannerTasksBulkAction.complete;
+    final actionLabel = 'Complete';
+    var applying = false;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      sheetAnimationStyle: PerfectMotion.modalSheetStyle(context),
+      builder: (sheetContext) => TasksBulkPreviewSheet(
+        actionLabel: actionLabel,
+        eligibleIds: plan.eligibleIds,
+        skippedReasons: plan.skippedReasons,
+        onConfirmAsync: () async {
+          if (applying) return;
+          applying = true;
+          try {
+            final receipt = plan.execute(action: action);
+            final report = await widget.controller.applyBulkReceipt(receipt);
+            if (sheetContext.mounted) {
+              Navigator.of(sheetContext).pop();
+            }
+            if (!mounted) return;
+            setState(() => _selection = const PlannerTasksSelectionSurface());
+            final messenger = ScaffoldMessenger.of(context);
+            messenger
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Bulk complete applied to '
+                    '${report.appliedCount} '
+                    'of ${orderedIds.length} selected; '
+                    '${report.skippedCount} skipped.',
+                  ),
+                  action: report.undoEligible
+                      ? SnackBarAction(
+                          label: 'Undo',
+                          onPressed: () => unawaited(
+                            _undoTasksBulkWithFeedback(context, report),
+                          ),
+                        )
+                      : null,
+                ),
+              );
+          } on Object {
+            if (sheetContext.mounted) {
+              ScaffoldMessenger.of(sheetContext).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Bulk complete did not apply. '
+                    'Your selection is unchanged.',
+                  ),
+                ),
+              );
+            }
+            applying = false;
+          }
+        },
+        onCancel: () => Navigator.of(sheetContext).pop(),
+      ),
+    );
+  }
+
+  void _openTasksBulkPreview(List<String> orderedIds) {
+    final plan = planVisibleTasksBulk(
+      orderedIds: orderedIds,
+      selectedIds: _selection.selectedIds,
+      action: PlannerTasksBulkAction.complete,
+      entityById: widget.controller.entityById,
+    );
+    unawaited(_openTasksBulkSheet(orderedIds, plan));
+  }
+
+  /// Stage 36 bulk Undo feedback: restores the exact prior outcome only
+  /// while the batch is still authoritative; a newer write on any applied
+  /// row expires the whole Undo so the owner never gets a partial restore.
+  Future<void> _undoTasksBulkWithFeedback(
+    BuildContext context,
+    PlannerTasksBulkReport report,
+  ) async {
+    try {
+      final restored = await widget.controller.undoBulkReceipt(report);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            restored
+                ? 'Bulk change undone. Prior outcomes restored.'
+                : 'Undo expired. A newer change is already active.',
+          ),
+        ),
+      );
+    } on Object {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not undo the bulk change. The stored values are unchanged.',
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   void dispose() {
     _search.dispose();
+    _workFocusNode.dispose();
     super.dispose();
+  }
+
+  /// Shared keyboard entry for the Tasks surface: the page feeds its live
+  /// search/Refine/selection/focus values into the pure
+  /// [PlannerTaskKeyboardState] machine and applies the returned state. Only
+  /// `consumed: false` defers to the shell.
+  bool handleTasksKey(PlannerTaskKeyEvent event) {
+    final orderedIds = widget.controller.tasks
+        .map((entity) => entity.id)
+        .toList(growable: false);
+    final applied = applyTasksKeyboardEvent(
+      event: event,
+      searchText: _search.text,
+      refineOpen: _filtersExpanded,
+      selectedIds: _selection.selectedIds,
+      orderedIds: orderedIds,
+      workFieldFocused: _workFocusNode.hasFocus,
+    );
+    if (applied.searchText != _search.text) {
+      _search.text = applied.searchText;
+    }
+    if (applied.refineOpen != _filtersExpanded || applied.consumed) {
+      setState(() => _filtersExpanded = applied.refineOpen);
+    }
+    return applied.consumed;
   }
 
   @override
   Widget build(BuildContext context) {
-    final query = _search.text.trim().toLowerCase();
-    final tasks = widget.controller.tasks
-        .where((task) {
-          final matchesKind = switch (_kindFilter) {
-            _TaskKindFilter.all => true,
-            _TaskKindFilter.oneOff => task.kind == PlannerEntityKind.oneOffTask,
-            _TaskKindFilter.recurring =>
-              task.kind == PlannerEntityKind.recurringTask,
-          };
-          if (!matchesKind) return false;
-          final matchesFilter = switch (_filter) {
-            _TaskFilter.inbox =>
-              task.status == PlannerEntityStatus.active &&
-                  task.scheduledAt == null,
-            _TaskFilter.active => task.status == PlannerEntityStatus.active,
-            _TaskFilter.scheduled =>
-              task.status == PlannerEntityStatus.active &&
-                  task.scheduledAt != null,
-            _TaskFilter.completed =>
-              task.status == PlannerEntityStatus.completed,
-          };
-          if (!matchesFilter) return false;
-          if (query.isEmpty) return true;
-          return '${task.title} ${task.note ?? ''} ${task.payload['category'] ?? ''}'
-              .toLowerCase()
-              .contains(query);
-        })
+    final query = _taskQueryFromDeck(
+      filter: _filter,
+      kindFilter: _kindFilter,
+      sortMode: _sortMode,
+      groupMode: _groupMode,
+      searchText: _search.text,
+    );
+    // ONE shared projection: the controller resolves the query over its
+    // cached snapshot; the widget maps stable IDs back to entities and never
+    // applies a second hidden predicate.
+    final result = widget.controller.queryTasks(query);
+    final byId = <String, PlannerEntity>{};
+    for (final entity in widget.controller.tasks) {
+      byId[entity.id] = entity;
+    }
+    final tasks = result.entityIds
+        .map((id) => byId[id])
+        .whereType<PlannerEntity>()
         .toList(growable: false);
-    return _PageScrollFrame(
-      scrollKey: const ValueKey<String>('perfect-tasks-scroll'),
-      children: [
-        _PageTitle(
-          title: 'Tasks',
-          subtitle: 'All open work first. Narrow only when you need to.',
-          onAdd: widget.onAdd,
+    final orderedIds = tasks.map((entity) => entity.id).toList();
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+          if (handleTasksKey(PlannerTaskKeyEvent.escape)) return;
+        },
+      },
+      child: Focus(
+        focusNode: _workFocusNode,
+        child: _PageScrollFrame(
+          scrollKey: const ValueKey<String>('perfect-tasks-scroll'),
+          children: [
+            _PageTitle(
+              title: PlannerTasksCopy.defaultTitle,
+              subtitle: PlannerTasksCopy.defaultSubtitle,
+              onAdd: widget.onAdd,
+            ),
+            const SizedBox(height: PerfectSpace.xs),
+            _SavedViewSwitcher(
+              views: _effectiveSavedViews,
+              activeViewId: _activeViewId,
+              onSelect: _applySavedView,
+              onSaveCurrent: _saveCurrentView,
+              onManage: _openSavedViewManager,
+            ),
+            const SizedBox(height: PerfectSpace.xs),
+            _TaskFilterDeck(
+              search: _search,
+              filter: _filter,
+              kindFilter: _kindFilter,
+              sortMode: _sortMode,
+              groupMode: _groupMode,
+              resultCount: tasks.length,
+              expanded: _filtersExpanded,
+              onSearchChanged: () => setState(() {
+                _activeViewId = '';
+              }),
+              onFilterChanged: (value) {
+                final activeViewId =
+                    PlannerSavedView.builtInNamespacePrefix +
+                    _taskFilterViewId(value);
+                setState(() {
+                  _filter = value;
+                  _activeViewId = activeViewId;
+                });
+                unawaited(
+                  PerfectPreferences.saveTasksActiveViewId(activeViewId),
+                );
+              },
+              onKindChanged: (value) => setState(() {
+                _kindFilter = value;
+                _activeViewId = '';
+              }),
+              onSortChanged: (value) => setState(() {
+                _sortMode = value;
+                _activeViewId = '';
+              }),
+              onGroupChanged: (value) => setState(() {
+                _groupMode = value;
+                _activeViewId = '';
+              }),
+              onToggleExpanded: () =>
+                  setState(() => _filtersExpanded = !_filtersExpanded),
+            ),
+            const SizedBox(height: PerfectSpace.md),
+            if (_selection.selectedIds.isNotEmpty)
+              TasksBulkBar(
+                selectedCount: _selection.selectedIds.length,
+                eligibleCount: planVisibleTasksBulk(
+                  orderedIds: orderedIds,
+                  selectedIds: _selection.selectedIds,
+                  action: PlannerTasksBulkAction.complete,
+                  entityById: widget.controller.entityById,
+                ).eligibleCount,
+                skippedCount: planVisibleTasksBulk(
+                  orderedIds: orderedIds,
+                  selectedIds: _selection.selectedIds,
+                  action: PlannerTasksBulkAction.complete,
+                  entityById: widget.controller.entityById,
+                ).skippedCount,
+                onOpenPreview: () => _openTasksBulkPreview(orderedIds),
+                onClearSelection: () => setState(
+                  () => _selection = const PlannerTasksSelectionSurface(),
+                ),
+              ),
+            if (tasks.isEmpty)
+              _EmptyState(
+                icon: _filter == _TaskFilter.completed
+                    ? Icons.celebration_outlined
+                    : Icons.inbox_outlined,
+                title: _search.text.trim().isEmpty
+                    ? _taskEmptyTitle(_filter)
+                    : 'Nothing matches that search.',
+                body: _search.text.trim().isEmpty
+                    ? _taskEmptyBody(_filter)
+                    : 'Try a title, note, or category you used before.',
+                actionLabel: 'Create task',
+                onAction: widget.onAdd,
+              )
+            else if (_groupMode == _TaskGroupMode.none)
+              for (final entity in tasks)
+                _TaskSelectionRow(
+                  selected: _selection.isSelected(entity.id),
+                  onToggle: () => _toggleTaskSelection(entity.id),
+                  child: _AgendaRow(
+                    entity: entity,
+                    controller: widget.controller,
+                    onInspect: widget.onInspect,
+                    showKind: true,
+                  ),
+                )
+            else
+              for (final group in result.groups) ...[
+                _TaskGroupHeader(
+                  key: const ValueKey<String>('task-group-header'),
+                  title: group.title,
+                  count: group.count,
+                  expanded: !_collapsedTaskGroupKeys.contains(group.groupId),
+                  onToggle: () => setState(() {
+                    if (!_collapsedTaskGroupKeys.add(group.groupId)) {
+                      _collapsedTaskGroupKeys.remove(group.groupId);
+                    }
+                  }),
+                ),
+                if (!_collapsedTaskGroupKeys.contains(group.groupId))
+                  for (final id in group.entityIds)
+                    if (byId[id] case final PlannerEntity entity)
+                      _TaskSelectionRow(
+                        selected: _selection.isSelected(entity.id),
+                        onToggle: () => _toggleTaskSelection(entity.id),
+                        child: _AgendaRow(
+                          entity: entity,
+                          controller: widget.controller,
+                          onInspect: widget.onInspect,
+                          showKind: true,
+                        ),
+                      ),
+              ],
+          ],
         ),
-        const SizedBox(height: PerfectSpace.md),
-        _TaskFilterDeck(
-          search: _search,
-          filter: _filter,
-          kindFilter: _kindFilter,
-          resultCount: tasks.length,
-          expanded: _filtersExpanded,
-          onSearchChanged: () => setState(() {}),
-          onFilterChanged: (value) => setState(() => _filter = value),
-          onKindChanged: (value) => setState(() => _kindFilter = value),
-          onToggleExpanded: () =>
-              setState(() => _filtersExpanded = !_filtersExpanded),
-        ),
-        const SizedBox(height: PerfectSpace.md),
-        if (tasks.isEmpty)
-          _EmptyState(
-            icon: _filter == _TaskFilter.completed
-                ? Icons.celebration_outlined
-                : Icons.inbox_outlined,
-            title: _search.text.trim().isEmpty
-                ? _taskEmptyTitle(_filter)
-                : 'Nothing matches that search.',
-            body: _search.text.trim().isEmpty
-                ? _taskEmptyBody(_filter)
-                : 'Try a title, note, or category you used before.',
-            actionLabel: 'Create task',
-            onAction: widget.onAdd,
-          )
-        else
-          ...tasks.map(
-            (entity) => _AgendaRow(
-              entity: entity,
-              controller: widget.controller,
-              onInspect: widget.onInspect,
-              showKind: true,
+      ),
+    );
+  }
+}
+
+class _TaskGroupHeader extends StatelessWidget {
+  const _TaskGroupHeader({
+    super.key,
+    required this.title,
+    required this.count,
+    required this.expanded,
+    required this.onToggle,
+  });
+
+  final String title;
+  final int count;
+  final bool expanded;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      header: true,
+      button: true,
+      expanded: expanded,
+      label: '$title, $count ${count == 1 ? 'task' : 'tasks'}',
+      child: InkWell(
+        onTap: onToggle,
+        borderRadius: BorderRadius.circular(8),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
+            child: Row(
+              children: [
+                Icon(
+                  expanded ? Icons.expand_more : Icons.chevron_right,
+                  size: 20,
+                ),
+                const SizedBox(width: PerfectSpace.xs),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: PerfectSpace.sm),
+                Text(
+                  '$count',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
-      ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TaskSelectionRow extends StatelessWidget {
+  const _TaskSelectionRow({
+    required this.selected,
+    required this.onToggle,
+    required this.child,
+  });
+
+  final bool selected;
+  final VoidCallback onToggle;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      selected: selected,
+      label: selected
+          ? 'Selected task. Activate to deselect.'
+          : 'Task. Activate to select.',
+      child: GestureDetector(
+        onLongPress: onToggle,
+        child: AnimatedContainer(
+          duration: PerfectMotion.responsive(context, PerfectMotion.quick),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected ? scheme.primary : Colors.transparent,
+              width: selected ? 2 : 0,
+            ),
+          ),
+          child: Stack(
+            children: [
+              child,
+              PositionedDirectional(
+                top: 6,
+                end: 6,
+                child: InkWell(
+                  key: ValueKey<String>(
+                    'task-select-${selected ? 'on' : 'off'}',
+                  ),
+                  onTap: onToggle,
+                  child: Semantics(
+                    button: true,
+                    selected: selected,
+                    label: selected ? 'Deselect task' : 'Select task',
+                    child: Icon(
+                      selected
+                          ? Icons.check_circle_rounded
+                          : Icons.circle_outlined,
+                      size: 24,
+                      color: selected
+                          ? scheme.primary
+                          : scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SavedViewSwitcher extends StatelessWidget {
+  const _SavedViewSwitcher({
+    required this.views,
+    required this.activeViewId,
+    required this.onSelect,
+    required this.onSaveCurrent,
+    required this.onManage,
+  });
+
+  final List<PlannerSavedView> views;
+  final String activeViewId;
+  final ValueChanged<PlannerSavedView> onSelect;
+  final VoidCallback onSaveCurrent;
+  final VoidCallback onManage;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      label: 'Saved tasks views',
+      child: SizedBox(
+        height: 48,
+        child: Row(
+          children: [
+            Expanded(
+              child: ListView.separated(
+                key: const ValueKey<String>('saved-view-switcher'),
+                scrollDirection: Axis.horizontal,
+                itemCount: views.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(width: PerfectSpace.xs),
+                itemBuilder: (context, index) {
+                  final view = views[index];
+                  final selected = view.id == activeViewId;
+                  return ChoiceChip(
+                    key: ValueKey<String>('saved-view-${view.id}'),
+                    label: Text(view.title),
+                    selected: selected,
+                    showCheckmark: false,
+                    selectedColor: scheme.primaryContainer,
+                    onSelected: (_) => onSelect(view),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: PerfectSpace.xs),
+            OutlinedButton.icon(
+              key: const ValueKey<String>('saved-view-save-current'),
+              onPressed: onSaveCurrent,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Save'),
+            ),
+            const SizedBox(width: PerfectSpace.xs),
+            IconButton(
+              key: const ValueKey<String>('saved-view-manage'),
+              tooltip: 'Manage saved views',
+              onPressed: onManage,
+              icon: const Icon(Icons.tune),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -4087,22 +5126,30 @@ class _TaskFilterDeck extends StatelessWidget {
     required this.search,
     required this.filter,
     required this.kindFilter,
+    required this.sortMode,
+    required this.groupMode,
     required this.resultCount,
     required this.expanded,
     required this.onSearchChanged,
     required this.onFilterChanged,
     required this.onKindChanged,
+    required this.onSortChanged,
+    required this.onGroupChanged,
     required this.onToggleExpanded,
   });
 
   final TextEditingController search;
   final _TaskFilter filter;
   final _TaskKindFilter kindFilter;
+  final _TaskSortMode sortMode;
+  final _TaskGroupMode groupMode;
   final int resultCount;
   final bool expanded;
   final VoidCallback onSearchChanged;
   final ValueChanged<_TaskFilter> onFilterChanged;
   final ValueChanged<_TaskKindFilter> onKindChanged;
+  final ValueChanged<_TaskSortMode> onSortChanged;
+  final ValueChanged<_TaskGroupMode> onGroupChanged;
   final VoidCallback onToggleExpanded;
 
   @override
@@ -4164,13 +5211,32 @@ class _TaskFilterDeck extends StatelessWidget {
                   labelFor: _taskFilterLabel,
                   onChanged: onFilterChanged,
                 ),
+                const SizedBox(height: PerfectSpace.sm),
+                _FilterGroup<_TaskSortMode>(
+                  label: 'SORT',
+                  values: _TaskSortMode.values,
+                  selected: sortMode,
+                  labelFor: _taskSortModeLabel,
+                  iconFor: _taskSortModeIcon,
+                  onChanged: onSortChanged,
+                ),
+                const SizedBox(height: PerfectSpace.sm),
+                _FilterGroup<_TaskGroupMode>(
+                  label: 'GROUP',
+                  values: _TaskGroupMode.values,
+                  selected: groupMode,
+                  labelFor: _taskGroupModeLabel,
+                  onChanged: onGroupChanged,
+                ),
               ],
             );
             final resultCopy =
                 '$resultCount ${resultCount == 1 ? 'result' : 'results'}';
             final filterSummary =
                 '${_taskFilterLabel(filter)} · '
-                '${_taskKindFilterLabel(kindFilter)}';
+                '${_taskKindFilterLabel(kindFilter)} · '
+                '${_taskSortModeLabel(sortMode)}'
+                '${groupMode == _TaskGroupMode.none ? '' : ' · ${_taskGroupModeLabel(groupMode)}'}';
             final highTextScale =
                 MediaQuery.textScalerOf(context).scale(14) / 14 >= 1.6;
             final compactToggle = Semantics(
@@ -4393,6 +5459,13 @@ class _FilterGroup<T> extends StatelessWidget {
         children: values
             .map(
               (value) => ChoiceChip(
+                key: ValueKey<String>(
+                  // Tracer 20: stable finder across the four labels that
+                  // duplicate the saved-view switcher labels (Inbox, Open,
+                  // Scheduled, Completed); tests pin these instead of bare
+                  // text finders, which would match two chips at once.
+                  'refine-${label.toLowerCase()}-${labelFor(value)}',
+                ),
                 avatar: iconFor == null
                     ? null
                     : Icon(iconFor!(value), size: 17),
@@ -4412,6 +5485,7 @@ String _taskFilterLabel(_TaskFilter filter) => switch (filter) {
   _TaskFilter.inbox => 'Inbox',
   _TaskFilter.active => 'Open',
   _TaskFilter.scheduled => 'Scheduled',
+  _TaskFilter.recurring => 'Recurring',
   _TaskFilter.completed => 'Completed',
 };
 
@@ -4419,6 +5493,7 @@ String _taskEmptyTitle(_TaskFilter filter) => switch (filter) {
   _TaskFilter.inbox => 'Your inbox is clear.',
   _TaskFilter.active => 'No open tasks.',
   _TaskFilter.scheduled => 'Nothing scheduled.',
+  _TaskFilter.recurring => 'No recurring tasks yet.',
   _TaskFilter.completed => 'No completed tasks yet.',
 };
 
@@ -4428,6 +5503,8 @@ String _taskEmptyBody(_TaskFilter filter) => switch (filter) {
   _TaskFilter.active =>
     'Create the next task, or switch to Completed to review finished work.',
   _TaskFilter.scheduled => 'Plan a task when it needs a date or time.',
+  _TaskFilter.recurring =>
+    'Make a task repeat when it returns on a schedule. One-offs stay out of this view.',
   _TaskFilter.completed =>
     'Finished work will collect here without leaving your active list.',
 };
@@ -4442,6 +5519,27 @@ IconData _taskKindFilterIcon(_TaskKindFilter filter) => switch (filter) {
   _TaskKindFilter.all => Icons.view_agenda_outlined,
   _TaskKindFilter.oneOff => Icons.filter_1_rounded,
   _TaskKindFilter.recurring => Icons.repeat_rounded,
+};
+
+String _taskSortModeLabel(_TaskSortMode mode) => switch (mode) {
+  _TaskSortMode.scheduled => 'Due date',
+  _TaskSortMode.title => 'Title',
+  _TaskSortMode.recent => 'Recent',
+};
+
+IconData _taskSortModeIcon(_TaskSortMode mode) => switch (mode) {
+  _TaskSortMode.scheduled => Icons.event_rounded,
+  _TaskSortMode.title => Icons.sort_by_alpha_rounded,
+  _TaskSortMode.recent => Icons.history_rounded,
+};
+
+String _taskGroupModeLabel(_TaskGroupMode mode) => switch (mode) {
+  _TaskGroupMode.none => 'None',
+  _TaskGroupMode.schedule => 'Schedule',
+  _TaskGroupMode.project => 'Project',
+  _TaskGroupMode.category => 'Category',
+  _TaskGroupMode.priority => 'Priority',
+  _TaskGroupMode.status => 'Status',
 };
 
 class _PlanPage extends StatefulWidget {
@@ -5237,9 +6335,19 @@ class _MorePage extends StatelessWidget {
             ),
             title: const Text('Sync & diagnostics'),
             subtitle: Text(_syncCopy(controller.syncStatus)),
-            trailing: TextButton(
-              onPressed: controller.refresh,
-              child: const Text('Sync now'),
+            trailing: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                if (onOpenFeedback != null)
+                  TextButton(
+                    onPressed: onOpenFeedback,
+                    child: const Text('Report issue'),
+                  ),
+                TextButton(
+                  onPressed: controller.refresh,
+                  child: const Text('Sync now'),
+                ),
+              ],
             ),
           ),
         ),
@@ -6252,6 +7360,10 @@ enum _EntityContextAction {
   edit,
   duplicate,
   logHabit,
+  setHabitExact,
+  resetHabitToday,
+  adjustDuration,
+  adjustCount,
   resolveRecovery,
   percentage,
   miss,
@@ -6338,7 +7450,61 @@ Future<void> _showEntityContextMenu(
           ),
         ),
       if (entity.kind == PlannerEntityKind.recurringTask ||
-          entity.kind == PlannerEntityKind.habit)
+          entity.kind == PlannerEntityKind.habit) ...[
+        if (entity.kind == PlannerEntityKind.habit &&
+            (safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                    'count' ||
+                safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                    'numeric' ||
+                safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                    'duration')) ...[
+          const PopupMenuItem<_EntityContextAction>(
+            value: _EntityContextAction.setHabitExact,
+            child: _ContextMenuLabel(
+              icon: Icons.edit_calendar_outlined,
+              label: 'Set exact',
+            ),
+          ),
+          const PopupMenuItem<_EntityContextAction>(
+            value: _EntityContextAction.resetHabitToday,
+            child: _ContextMenuLabel(
+              icon: Icons.restart_alt_rounded,
+              label: 'Reset today',
+            ),
+          ),
+        ],
+        if (entity.kind == PlannerEntityKind.habit &&
+            safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                'count')
+          const PopupMenuItem<_EntityContextAction>(
+            value: _EntityContextAction.adjustCount,
+            child: _ContextMenuLabel(
+              icon: Icons.remove_circle_outline_rounded,
+              label: 'Subtract one',
+            ),
+          ),
+        if (entity.kind == PlannerEntityKind.habit &&
+            safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                'numeric')
+          PopupMenuItem<_EntityContextAction>(
+            value: _EntityContextAction.adjustCount,
+            child: _ContextMenuLabel(
+              icon: Icons.remove_circle_outline_rounded,
+              label:
+                  'Subtract ${_formatHabitStep(_habitStep(entity, fallback: 1))} ${safeNullableJsonString(entity.tracking['unit']) ?? 'units'}',
+            ),
+          ),
+        if (entity.kind == PlannerEntityKind.habit &&
+            safeJsonString(entity.tracking['method'], fallback: 'check') ==
+                'duration')
+          PopupMenuItem<_EntityContextAction>(
+            value: _EntityContextAction.adjustDuration,
+            child: _ContextMenuLabel(
+              icon: Icons.remove_circle_outline_rounded,
+              label:
+                  'Subtract ${_formatHabitStep(_habitStep(entity, fallback: 5))} minutes',
+            ),
+          ),
         const PopupMenuItem<_EntityContextAction>(
           value: _EntityContextAction.miss,
           child: _ContextMenuLabel(
@@ -6346,6 +7512,7 @@ Future<void> _showEntityContextMenu(
             label: 'Mark miss today',
           ),
         ),
+      ],
       if (_canFocusEntity(entity))
         const PopupMenuItem<_EntityContextAction>(
           value: _EntityContextAction.focus,
@@ -6399,6 +7566,18 @@ Future<void> _showEntityContextMenu(
           controller: controller,
         ),
       );
+      return;
+    case _EntityContextAction.setHabitExact:
+      await _showHabitCorrectionDialog(context, controller, entity);
+      return;
+    case _EntityContextAction.resetHabitToday:
+      await _undoHabitDayWithFeedback(context, controller, entity);
+      return;
+    case _EntityContextAction.adjustDuration:
+      await _adjustDurationHabitWithFeedback(context, controller, entity);
+      return;
+    case _EntityContextAction.adjustCount:
+      await _adjustCountHabitWithFeedback(context, controller, entity);
       return;
     case _EntityContextAction.resolveRecovery:
       if (eligibility != null) {
@@ -6963,15 +8142,64 @@ class _AgendaCompletionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (entity.kind == PlannerEntityKind.habit) {
+      final method = safeJsonString(
+        entity.tracking['method'],
+        fallback: 'check',
+      );
+      final countHabit = method == 'count' || method == 'numeric';
+      final durationHabit = method == 'duration';
+      final booleanHabit = method == 'check' || method == 'avoid';
+      final checklistHabit = method == 'checklist';
+      final completed = habitSummary?.isSuccessful ?? false;
+      final step = _habitStep(entity, fallback: durationHabit ? 5 : 1);
+      final stepLabel = _formatHabitStep(step);
+      final unitLabel =
+          safeNullableJsonString(entity.tracking['unit']) ??
+          (countHabit ? 'units' : 'minutes');
+      final nextChecklistLabel = checklistHabit
+          ? _nextChecklistItemLabel(entity, habitSummary)
+          : null;
       return IconButton(
-        tooltip: habitSummary?.hasLog == true
+        tooltip: method == 'count'
+            ? 'Add one'
+            : countHabit
+            ? (step == 1 ? 'Add one' : 'Add $stepLabel $unitLabel')
+            : durationHabit
+            ? 'Add ${_formatHabitStep(step)} minutes'
+            : booleanHabit
+            ? (completed ? 'Mark habit pending' : 'Mark habit done')
+            : checklistHabit && nextChecklistLabel != null
+            ? 'Complete $nextChecklistLabel'
+            : checklistHabit
+            ? 'Checklist complete'
+            : habitSummary?.hasLog == true
             ? 'Edit today’s habit result'
             : 'Log habit',
-        onPressed: () => PlannerHabitLogSheet.show(
-          context,
-          habit: entity,
-          controller: controller,
-        ),
+        onPressed: countHabit
+            ? () => unawaited(
+                _incrementCountHabitWithFeedback(context, controller, entity),
+              )
+            : durationHabit
+            ? () => unawaited(
+                _incrementDurationTapWithFeedback(context, controller, entity),
+              )
+            : booleanHabit
+            ? () => unawaited(
+                _toggleBooleanHabitWithFeedback(context, controller, entity),
+              )
+            : checklistHabit
+            ? () => unawaited(
+                _completeNextChecklistItemWithFeedback(
+                  context,
+                  controller,
+                  entity,
+                ),
+              )
+            : () => PlannerHabitLogSheet.show(
+                context,
+                habit: entity,
+                controller: controller,
+              ),
         icon: _habitSummaryVisual(
           context,
           habitSummary,
@@ -6991,6 +8219,389 @@ class _AgendaCompletionButton extends StatelessWidget {
   }
 }
 
+String? _nextChecklistItemLabel(
+  PlannerEntity habit,
+  PlannerHabitDaySummary? summary,
+) {
+  final checked = summary?.checkedItemIds ?? const <String>{};
+  final items = _habitChecklistItems(habit);
+  for (var i = 0; i < items.length; i++) {
+    final item = items[i];
+    final id = safeJsonString(
+      item[PlannerHabitTrackingKeys.itemId],
+      fallback: 'item-${i + 1}',
+    );
+    if (!checked.contains(id)) {
+      return safeJsonString(item['label'], fallback: 'item ${i + 1}');
+    }
+  }
+  return null;
+}
+
+Future<void> _completeNextChecklistItemWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.completeNextChecklistItem(habit);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            '${summary.checkedCount} of ${summary.totalChecklistItems} checked',
+          ),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Checklist unchanged. Previous result is safe.'),
+      ),
+    );
+  }
+}
+
+Future<void> _incrementCountHabitWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.incrementHabit(habit);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            '${summary.amount.toStringAsFixed(summary.amount == summary.amount.roundToDouble() ? 0 : 1)} of ${summary.target.toStringAsFixed(summary.target == summary.target.roundToDouble() ? 0 : 1)}',
+          ),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Today’s count did not change. Your previous total is still safe.',
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _adjustCountHabitWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.decrementHabit(habit);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('Today’s count: ${summary.amount.toStringAsFixed(0)}'),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not adjust count. Previous total is safe.'),
+      ),
+    );
+  }
+}
+
+Future<void> _adjustDurationHabitWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.adjustMeasuredHabit(habit, direction: -1);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('Today’s minutes: ${_formatHabitStep(summary.amount)}'),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not adjust minutes. Previous total is safe.'),
+      ),
+    );
+  }
+}
+
+Future<void> _incrementDurationTapWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.incrementDurationHabit(habit);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            '${summary.amount.toStringAsFixed(summary.amount == summary.amount.roundToDouble() ? 0 : 1)} of ${summary.target.toStringAsFixed(summary.target == summary.target.roundToDouble() ? 0 : 1)} minutes',
+          ),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Today’s minutes did not change. Previous total is safe.',
+        ),
+      ),
+    );
+  }
+}
+
+double _habitStep(PlannerEntity habit, {required double fallback}) {
+  final rawStep = habit.tracking['step'];
+  final parsed = rawStep is num && rawStep.isFinite
+      ? rawStep.toDouble()
+      : double.tryParse('$rawStep') ?? fallback;
+  return parsed > 0 ? parsed : fallback;
+}
+
+String _formatHabitStep(double step) =>
+    step.toStringAsFixed(step == step.roundToDouble() ? 0 : 1);
+
+Future<void> _showHabitCorrectionDialog(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  final method = safeJsonString(habit.tracking['method'], fallback: 'check');
+  final summary = await controller.habitDaySummary(habit);
+  if (!context.mounted) return;
+  final entered = await _HabitCorrectionDialog.show(
+    context,
+    habit: habit,
+    method: method,
+    summary: summary,
+  );
+  if (entered == null || !context.mounted) return;
+  try {
+    await controller.logHabit(habit, value: entered);
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Exact total not saved. Previous total is safe.'),
+      ),
+    );
+  }
+}
+
+class _HabitCorrectionDialog extends StatefulWidget {
+  const _HabitCorrectionDialog({
+    required this.habit,
+    required this.method,
+    required this.summary,
+  });
+
+  final PlannerEntity habit;
+  final String method;
+  final PlannerHabitDaySummary summary;
+
+  static Future<double?> show(
+    BuildContext context, {
+    required PlannerEntity habit,
+    required String method,
+    required PlannerHabitDaySummary summary,
+  }) => showPerfectDialog<double>(
+    context: context,
+    builder: (dialogContext) =>
+        _HabitCorrectionDialog(habit: habit, method: method, summary: summary),
+  );
+
+  @override
+  State<_HabitCorrectionDialog> createState() => _HabitCorrectionDialogState();
+}
+
+class _HabitCorrectionDialogState extends State<_HabitCorrectionDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _value = TextEditingController(
+    text: widget.summary.amount == widget.summary.amount.roundToDouble()
+        ? widget.summary.amount.toStringAsFixed(0)
+        : widget.summary.amount.toString(),
+  );
+  var _saving = false;
+
+  @override
+  void dispose() {
+    _value.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final unit =
+        safeNullableJsonString(widget.habit.tracking['unit']) ??
+        (widget.method == 'duration' ? 'minutes' : '');
+    final target = widget.summary.target > 0 ? widget.summary.target : 1;
+    final amount = widget.summary.amount;
+    return AlertDialog(
+      key: const ValueKey<String>('habit-correction-dialog'),
+      title: Text('Today total · ${widget.habit.title}', maxLines: 2),
+      scrollable: true,
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Current ${amount.toStringAsFixed(amount == amount.roundToDouble() ? 0 : 1)} of ${target.toStringAsFixed(target == target.roundToDouble() ? 0 : 1)}${unit.isEmpty ? '' : ' $unit'}.',
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              key: const ValueKey<String>('habit-correction-value'),
+              controller: _value,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Today total${unit.isEmpty ? '' : ' ($unit)'}',
+                helperText: 'Enter a whole or decimal value from 0 upward.',
+              ),
+              validator: (text) {
+                final parsed = double.tryParse((text ?? '').trim());
+                if (parsed == null || !parsed.isFinite || parsed < 0) {
+                  return 'Enter a value from 0 upward.';
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) => _save(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(onPressed: _save, child: const Text('Save exact')),
+      ],
+    );
+  }
+
+  void _save() {
+    if (!(_formKey.currentState?.validate() ?? false) || _saving) return;
+    setState(() => _saving = true);
+    Navigator.of(context).pop(double.parse(_value.text.trim()));
+  }
+}
+
+Future<void> _undoHabitDayWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    await controller.undoHabitDay(habit);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Habit pending')));
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Undo failed. Previous result is safe.')),
+    );
+  }
+}
+
+Future<void> _undoHabitDayIfCurrentWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+  PlannerHabitDaySummary change,
+) async {
+  try {
+    final restored = await controller.undoHabitIfCurrent(habit, change);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          restored
+              ? 'Habit pending'
+              : 'Undo expired. A newer habit result was kept.',
+        ),
+      ),
+    );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Undo failed. Previous result is safe.')),
+    );
+  }
+}
+
+Future<void> _toggleBooleanHabitWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerEntity habit,
+) async {
+  try {
+    final summary = await controller.toggleHabit(habit);
+    if (!context.mounted) return;
+    HapticFeedback.selectionClick().ignore();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(summary.isSuccessful ? 'Habit done' : 'Habit pending'),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () => unawaited(
+              _undoHabitDayIfCurrentWithFeedback(
+                context,
+                controller,
+                habit,
+                summary,
+              ),
+            ),
+          ),
+        ),
+      );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Today’s habit did not change. Your previous result is still safe.',
+        ),
+      ),
+    );
+  }
+}
+
 Future<void> _cycleTaskProgressWithFeedback(
   BuildContext context,
   PlannerWorkspaceController controller,
@@ -6999,14 +8610,28 @@ Future<void> _cycleTaskProgressWithFeedback(
   final view = View.of(context);
   final textDirection = Directionality.of(context);
   try {
-    final progress = await controller.cycleTaskProgress(entity);
+    final change = await controller.cycleTaskProgressWithReceipt(entity);
     if (!context.mounted) return;
     HapticFeedback.selectionClick().ignore();
     SemanticsService.sendAnnouncement(
       view,
-      _taskProgressTooltip(progress),
+      _taskProgressTooltip(change.current),
       textDirection,
     ).ignore();
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(_taskProgressTooltip(change.current)),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () => unawaited(
+              _undoTaskProgressWithFeedback(context, controller, change),
+            ),
+          ),
+        ),
+      );
   } on Object {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -7014,6 +8639,33 @@ Future<void> _cycleTaskProgressWithFeedback(
         content: Text(
           'Today’s status did not change. Your previous value is still safe.',
         ),
+      ),
+    );
+  }
+}
+
+Future<void> _undoTaskProgressWithFeedback(
+  BuildContext context,
+  PlannerWorkspaceController controller,
+  PlannerTaskProgressChange change,
+) async {
+  try {
+    final restored = await controller.undoTaskProgress(change);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          restored
+              ? 'Previous task status restored.'
+              : 'Undo expired. A newer status is already active.',
+        ),
+      ),
+    );
+  } on Object {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not undo status. The stored value is unchanged.'),
       ),
     );
   }
@@ -7334,7 +8986,9 @@ String _habitSummaryDetail(
     PlannerHabitDayState.completed => 'Complete',
     PlannerHabitDayState.missed => 'Not done',
   };
-  if (summary.method == 'count' || summary.method == 'duration') {
+  if (summary.method == 'count' ||
+      summary.method == 'numeric' ||
+      summary.method == 'duration') {
     final unit = safeNullableJsonString(habit.tracking['unit']);
     final suffix = unit == null ? '' : ' $unit';
     return '$state · ${_compactNumber(summary.amount)} of '

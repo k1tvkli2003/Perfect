@@ -29,6 +29,27 @@ class PlannerEntities extends Table {
   ];
 }
 
+/// Private, owner-scoped named task queries. Built-in definitions remain
+/// compiled into the client and never occupy this table.
+@DataClassName('PlannerSavedViewRow')
+class PlannerSavedViews extends Table {
+  @override
+  String get tableName => 'planner_saved_views';
+
+  TextColumn get id => text()();
+  TextColumn get ownerId => text()();
+  TextColumn get definitionJson => text()();
+  IntColumn get revision => integer().withDefault(const Constant(0))();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => <Column>{ownerId, id};
+
+  @override
+  List<String> get customConstraints => <String>['CHECK (revision >= 0)'];
+}
+
 @DataClassName('PlannerOccurrenceRow')
 class PlannerOccurrences extends Table {
   @override
@@ -105,9 +126,9 @@ class PlannerOutboxOperations extends Table {
 
   @override
   List<String> get customConstraints => <String>[
-    "CHECK (target_type IN ('entity', 'occurrence', 'focus_session'))",
+    "CHECK (target_type IN ('entity', 'saved_view', 'occurrence', 'focus_session'))",
     "CHECK (entity_kind IS NULL OR entity_kind IN ('one_off_task', 'recurring_task', 'habit', 'project', 'area'))",
-    "CHECK (operation_type IN ('create_entity', 'upsert_entity', 'complete_entity', 'soft_delete_entity', 'append_occurrence', 'complete_occurrence', 'append_focus_session'))",
+    "CHECK (operation_type IN ('create_entity', 'upsert_entity', 'complete_entity', 'soft_delete_entity', 'upsert_saved_view', 'soft_delete_saved_view', 'append_occurrence', 'complete_occurrence', 'append_focus_session'))",
     "CHECK (state IN ('pending', 'retrying', 'acknowledged'))",
     'CHECK (base_revision >= 0)',
     'CHECK (attempt_count >= 0)',
@@ -121,6 +142,7 @@ class PlannerSyncMetadata extends Table {
 
   TextColumn get ownerId => text()();
   TextColumn get remoteCursor => text().nullable()();
+  TextColumn get savedViewCursor => text().nullable()();
   DateTimeColumn get lastSyncAt => dateTime().nullable()();
   DateTimeColumn get lastSuccessfulSyncAt => dateTime().nullable()();
   TextColumn get lastError => text().nullable()();
@@ -153,7 +175,7 @@ class PlannerConflicts extends Table {
 
   @override
   List<String> get customConstraints => <String>[
-    "CHECK (target_type IN ('entity', 'occurrence', 'focus_session'))",
+    "CHECK (target_type IN ('entity', 'saved_view', 'occurrence', 'focus_session'))",
     'CHECK (base_revision IS NULL OR base_revision >= 0)',
     'CHECK (remote_revision IS NULL OR remote_revision >= 0)',
   ];
@@ -207,6 +229,7 @@ class PlannerWidgetActionSequences extends Table {
 @DriftDatabase(
   tables: <Type>[
     PlannerEntities,
+    PlannerSavedViews,
     PlannerOccurrences,
     PlannerFocusSessions,
     PlannerOutboxOperations,
@@ -221,7 +244,7 @@ class PlannerDatabase extends _$PlannerDatabase {
     : super(executor ?? driftDatabase(name: 'perfect_planner'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -243,10 +266,31 @@ class PlannerDatabase extends _$PlannerDatabase {
         'CREATE INDEX planner_conflicts_owner_status_idx '
         'ON planner_conflicts(owner_id, status, created_at DESC)',
       );
+      await customStatement(
+        'CREATE INDEX planner_saved_views_owner_active_idx '
+        'ON planner_saved_views(owner_id, deleted_at, updated_at DESC)',
+      );
     },
     onUpgrade: (Migrator migrator, int from, int to) async {
       if (from < 2) {
         await migrator.createTable(plannerWidgetActionSequences);
+      }
+      if (from < 3) {
+        await migrator.createTable(plannerSavedViews);
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS planner_saved_views_owner_active_idx '
+          'ON planner_saved_views(owner_id, deleted_at, updated_at DESC)',
+        );
+      }
+      if (from < 4) {
+        await migrator.addColumn(plannerSyncMetadata, plannerSyncMetadata.savedViewCursor);
+        if (from == 3) {
+          await migrator.addColumn(plannerSavedViews, plannerSavedViews.revision);
+        }
+        // Drift's generated table includes the widened checks, but old
+        // SQLite tables retain their old CHECK constraints until rebuilt.
+        await migrator.alterTable(TableMigration(plannerOutboxOperations));
+        await migrator.alterTable(TableMigration(plannerConflicts));
       }
     },
     beforeOpen: (OpeningDetails details) async {

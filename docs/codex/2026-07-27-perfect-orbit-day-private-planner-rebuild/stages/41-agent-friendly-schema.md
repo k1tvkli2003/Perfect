@@ -1,6 +1,8 @@
 # Stage 41 — Agent-friendly canonical schema and migrations
 
-Status: pending  
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — migration rollback/recovery, owner-scoped local store,
+and AI/agent proposal validation domain suites are GREEN; canonical table
+contract, Supabase/RLS, and import/export matrices remain open
 Depends on: Stages 01, 05, 17, 21–29, 31–40  
 Blocks: Stages 42–50  
 Primary surfaces: Drift, repositories/controllers, Supabase/RPC/RLS, import/export,
@@ -225,3 +227,18 @@ compatibility window, immutable-history list and query budgets. Commit only sche
 adapter, tests and documentation for this stage; push `main`, require CI plus signed
 Android/Windows upgrade artifacts when runtime changed, record remote deployment
 separately, and leave the tree clean with only `main`.
+
+### Evidence — 2026-09-25 (real runs, Stage 41 partial)
+
+- `flutter test --no-pub test/planner/planner_local_store_test.dart
+  test/planner/planner_sync_repository_test.dart
+  test/planner/planner_migration_contract_test.dart`: **EXIT:0, 29 pass**
+  (durable local operations, sync backoff/retry/dispose, migration rollback).
+- `flutter test --no-pub test/planner/agent_plan_ingestion_contract_test.dart
+  test/planner/private_ai_sync_migration_contract_test.dart
+  test/ai/perfect_ai_contract_test.dart
+  test/ai/perfect_agent_edge_contract_test.dart`: **EXIT:0, 27 pass**
+  (proposal/category metadata preservation, turn/apply parsing, deterministic
+  replay, final-state persistence, transcription boundary).
+- Canonical table contract, Supabase/RLS, import/export, and upgrade proof
+  remain open.

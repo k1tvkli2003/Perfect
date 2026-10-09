@@ -1,6 +1,9 @@
 # Stage 15 — Today empty, loading, offline, retry and optimistic states
 
-Status: pending  
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — empty owner, projection retry (Today rows preserved),
+and local-source retry (no destructive reset) GREEN in widget suites (2026-09-25);
+offline, optimistic/conflict, fixture isolation, and state/focus
+retention remain open; CI workflows disabled_manually so no fresh remote run
 Depends on: Stages 11–14  
 Primary surfaces: Today and all shared rows/controls
 
@@ -61,6 +64,36 @@ blank screen; network failure never hides local work.
 Release-entrypoint fixture isolation test; clean-account integration test; offline
 mutation/replay; remote notifier update exactly once; no pull-refresh-on-scroll;
 empty/sparse/dense/error screenshots; state/focus/scroll retention tests.
+
+### Evidence — 2026-09-25 (real runs, Stage 15 partial)
+
+- `flutter test --no-pub
+  test/presentation/perfect_workspace_page_test.dart
+  --plain-name "Today local-source retries without destructive reset"
+  --reporter expanded`: **EXIT:0, 1 pass**. The injected local-source read
+  prints `TODAY_PROJECTION_READ_FAILED`, the Today rows stay visible, and
+  the same-screen `Retry today` action recovers without any destructive
+  reset path.
+- `flutter test --no-pub
+  test/presentation/planner_workspace_controller_test.dart
+  test/presentation/today_pulse_test.dart
+  test/presentation/perfect_workspace_page_test.dart
+  test/ai/perfect_ai_dock_test.dart
+  test/presentation/planner_editor_test.dart
+  test/presentation/interaction_route_inventory_contract_test.dart
+  test/presentation/planner_secondary_surfaces_adaptive_test.dart
+  test/presentation/stage11_today_pulse_contract_test.dart
+  test/presentation/task_status_control_test.dart
+  test/presentation/focus_session_sheet_test.dart
+  test/presentation/stage09_global_motion_system_test.dart`:
+  **EXIT:0, 198 pass** (integrated Stage 14 + Stage 15/16/17/18/19/20/21/31/32/34/40 gate, including
+  `collapsed capture is only a 64dp circle above the footer`,
+  `quick capture writes exactly one local task with undo`,
+  `quick capture failure keeps the draft with local recovery`,
+  `Plan mode preserves task draft and routes exact habit kind`,
+  `text answer becomes history and a proposal requires Apply`, and the
+  vocabulary-guarded `habit-correction-dialog`).
+- `flutter analyze --no-pub`: `No issues found!`; `git diff --check`: clean.
 
 ## Reject if
 

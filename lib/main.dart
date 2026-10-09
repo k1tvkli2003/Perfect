@@ -650,7 +650,7 @@ class _PlannerWorkspaceScopeState extends State<_PlannerWorkspaceScope>
           return PerfectWorkspacePage(
             controller: controller,
             feedbackController: _feedbackController,
-            aiClient: SupabasePerfectAiClient(Supabase.instance.client),
+            aiClient: LocalPerfectAiClient(Supabase.instance.client),
             themeMode: widget.themeMode,
             contrastMode: widget.contrastMode,
             onThemeModeChanged: widget.onThemeModeChanged,

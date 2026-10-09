@@ -16,6 +16,7 @@ import 'package:perfect/planner/data/planner_database.dart';
 import 'package:perfect/planner/data/planner_local_store.dart';
 import 'package:perfect/planner/domain/planner_entity.dart';
 import 'package:perfect/planner/domain/planner_habit_day_summary.dart';
+import 'package:perfect/planner/domain/planner_operation.dart';
 import 'package:perfect/planner/domain/planner_recovery_engine.dart';
 import 'package:perfect/planner/domain/planner_task_progress.dart';
 import 'package:perfect/planner/sync/planner_sync_repository.dart';
@@ -793,7 +794,7 @@ void main() {
       await _sendControlShortcut(tester, LogicalKeyboardKey.digit2);
       await tester.pumpAndSettle();
       expect(
-        find.text('All open work first. Narrow only when you need to.'),
+        find.text('Search, filter and act without losing the working context.'),
         findsOneWidget,
       );
 
@@ -829,7 +830,7 @@ void main() {
         1,
       );
       expect(
-        find.text('All open work first. Narrow only when you need to.'),
+        find.text('Search, filter and act without losing the working context.'),
         findsOneWidget,
       );
       expect(tester.takeException(), isNull);
@@ -1253,10 +1254,10 @@ void main() {
         reason: 'Reduced motion swaps pages immediately but retains state.',
       );
       expect(
-        find.text('All open work first. Narrow only when you need to.'),
+        find.text('Search, filter and act without losing the working context.'),
         findsOneWidget,
       );
-      expect(find.text('Open · All'), findsOneWidget);
+      expect(find.text('Open · All · Due date'), findsOneWidget);
       expect(find.textContaining('result'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
@@ -1872,6 +1873,339 @@ void main() {
     );
   });
 
+  testWidgets('Today shows honest capture invitation for a clean owner', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    final original = _controller as _ProjectionFailureController;
+    final replacementDatabase = PlannerDatabase(NativeDatabase.memory());
+    final replacementStore = PlannerLocalStore(replacementDatabase);
+    final replacement = _ProjectionFailureController(
+      replacementStore,
+      PlannerSyncRepository(
+        replacementStore,
+        _PreviewGateway(),
+        ownerId: 'empty-owner',
+        deviceId: '22222222-2222-4222-8222-222222222222',
+      ),
+      ownerId: 'empty-owner',
+      now: () => _previewNow,
+    );
+    addTearDown(() async {
+      await original.disposeAsync();
+      await replacement.disposeAsync();
+    });
+    await tester.runAsync(() async {
+      await replacement.start();
+      await replacement.refresh();
+      await Future<void>.delayed(Duration.zero);
+    });
+    _controller = replacement;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: PerfectTheme.light(),
+        home: PerfectWorkspacePage(
+          controller: replacement,
+          themeMode: ThemeMode.light,
+          onThemeModeChanged: (_) {},
+          onSignOut: () async {},
+          now: () => _previewNow,
+        ),
+      ),
+    );
+    expect(find.text('Focus Deep Work'), findsNothing);
+    expect(find.text('Water plants'), findsNothing);
+    await tester.pumpAndSettle();
+    final settled = tester.widget<TodayPulse>(find.byType(TodayPulse));
+    expect(settled.snapshot.state, TodayPulseState.empty);
+    expect(find.text('Your day has room.'), findsOneWidget);
+    expect(find.text('Add a task'), findsOneWidget);
+    expect(find.text('Focus Deep Work'), findsNothing);
+    expect(find.text('Water plants'), findsNothing);
+    await tester.tap(find.text('Add a task'));
+    await tester.pumpAndSettle();
+    expect(find.text('Make it yours'), findsOneWidget);
+    expect(replacement.entities, isEmpty);
+  });
+
+  testWidgets('collapsed capture is only a 64dp circle above the footer', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+
+    final launcher = find.byKey(
+      const ValueKey<String>('perfect-quick-capture-toggle'),
+    );
+    final surface = find.byKey(
+      const ValueKey<String>('perfect-quick-capture-surface'),
+    );
+    final navigation = find.byType(NavigationBar);
+    expect(launcher, findsOneWidget);
+    expect(surface, findsOneWidget);
+    expect(navigation, findsOneWidget);
+
+    final launcherRect = tester.getRect(launcher);
+    final surfaceRect = tester.getRect(surface);
+    final navigationRect = tester.getRect(navigation);
+    expect(launcherRect.width, closeTo(64, 1));
+    expect(launcherRect.height, closeTo(64, 1));
+    expect(surfaceRect.width, closeTo(64, 1));
+    expect(surfaceRect.height, closeTo(64, 1));
+    expect(surfaceRect.bottom, lessThanOrEqualTo(navigationRect.top));
+    expect(
+      launcherRect.left,
+      greaterThan(navigationRect.left),
+      reason: 'The orb floats clear of the left edge, not full-width.',
+    );
+    expect(
+      launcherRect.right,
+      lessThan(navigationRect.right),
+      reason: 'The orb floats clear of the right edge, not full-width.',
+    );
+  });
+
+  testWidgets('Plan mode preserves task draft and routes exact habit kind', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+    await tester.tap(
+      find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .byKey(const ValueKey<String>('perfect_quick_capture'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    const draft = 'Plan this after lunch';
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('perfect_quick_capture')),
+      draft,
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('perfect-capture-plan')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .byKey(const ValueKey<String>('perfect-plan-mode'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('perfect_quick_capture')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('perfect-plan-kind-task')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('perfect-plan-kind-recurring')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('perfect-plan-kind-habit')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const ValueKey<String>('perfect-plan-back')));
+    await _pumpUntil(
+      tester,
+      () => find
+          .byKey(const ValueKey<String>('perfect_quick_capture'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey<String>('perfect_quick_capture')),
+          )
+          .controller
+          ?.text,
+      draft,
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('perfect-capture-plan')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .byKey(const ValueKey<String>('perfect-plan-mode'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('perfect-plan-kind-habit')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('What are you shaping?'), findsOneWidget);
+    expect(find.byType(PlannerEditor), findsOneWidget);
+  });
+
+  testWidgets('quick capture failure keeps the draft with local recovery', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+    const failingDraft = 'Keep this failing draft';
+    await tester.tap(
+      find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .byKey(const ValueKey<String>('perfect_quick_capture'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('perfect_quick_capture')),
+      failingDraft,
+    );
+    await _pumpUntil(
+      tester,
+      () => find.byTooltip('Save quick capture').evaluate().isNotEmpty,
+    );
+    final before = _controller.tasks.length;
+    (_controller as _ProjectionFailureController).failQuickCapture = true;
+    await tester.tap(find.byTooltip('Save quick capture'));
+    await _pumpUntil(
+      tester,
+      () => find
+          .text('Could not save this task locally. Try again.')
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect(
+      find.text('Could not save this task locally. Try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('Captured locally. Sync will follow.'), findsNothing);
+    expect(_controller.tasks.length, before);
+    expect(
+      tester
+          .widget<TextField>(
+            find.byKey(const ValueKey<String>('perfect_quick_capture')),
+          )
+          .controller
+          ?.text,
+      failingDraft,
+    );
+  });
+
+  testWidgets('quick capture writes exactly one local task with undo', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+    final before = _controller.tasks.length;
+    await tester.tap(
+      find.byKey(const ValueKey<String>('perfect-quick-capture-toggle')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .byKey(const ValueKey<String>('perfect_quick_capture'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('perfect_quick_capture')),
+      'Buy oat milk  ',
+    );
+    await _pumpUntil(
+      tester,
+      () => find.byTooltip('Save quick capture').evaluate().isNotEmpty,
+    );
+    await tester.tap(find.byTooltip('Save quick capture'));
+    await _pumpUntil(
+      tester,
+      () => find
+          .text('Captured locally. Sync will follow.')
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect(find.text('Captured locally. Sync will follow.'), findsOneWidget);
+    final pendingId = _controller.tasks
+        .firstWhere((item) => item.title == 'Buy oat milk')
+        .id;
+    expect(_controller.tasks.length, before + 1);
+    final captured = _controller.tasks.firstWhere(
+      (item) => item.id == pendingId,
+    );
+    expect(captured.title, 'Buy oat milk');
+    expect(
+      _controller.tasks
+          .where((item) => item.title == 'Buy oat milk')
+          .toList(growable: false),
+      hasLength(1),
+      reason: 'One quick save writes exactly one local task.',
+    );
+    expect(find.widgetWithText(SnackBarAction, 'Undo'), findsOneWidget);
+    await tester.tap(find.widgetWithText(SnackBarAction, 'Undo'));
+    await _pumpUntil(
+      tester,
+      () => _controller.tasks
+          .where((item) => item.title == 'Buy oat milk')
+          .isEmpty,
+    );
+    expect(
+      _controller.tasks.where((item) => item.title == 'Buy oat milk'),
+      isEmpty,
+    );
+  });
+
+  testWidgets('Today local-source retries without destructive reset', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+    final original = _controller as _ProjectionFailureController;
+    original.failLocalWatchOnce();
+    original.failTaskReads = false;
+    original.invalidateProjection();
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Today could not refresh'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Retry today'), findsOneWidget);
+    original.allowLocalWatch();
+    await tester.tap(find.widgetWithText(TextButton, 'Retry today'));
+    await tester.pumpAndSettle();
+    expect(find.text('Today could not refresh'), findsNothing);
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+    expect(find.text('Water plants'), findsOneWidget);
+    expect(original.localError, isNull);
+  });
+
+  testWidgets(
+    'Today projection failure offers local retry without hiding rows',
+    (tester) async {
+      await _setTestViewSize(tester, const Size(390, 844));
+      await _pump(tester);
+      final controller = _controller as _ProjectionFailureController;
+      expect(find.text('Focus Deep Work'), findsOneWidget);
+      controller.failTaskReads = true;
+      controller.invalidateProjection();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Focus Deep Work'), findsOneWidget);
+      expect(find.textContaining('Today could not refresh'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Retry today'), findsOneWidget);
+      final failedReads = controller.failedReads;
+      await tester.pump();
+      expect(controller.failedReads, failedReads);
+
+      controller.failTaskReads = false;
+      await tester.tap(find.widgetWithText(TextButton, 'Retry today'));
+      await tester.pumpAndSettle();
+      expect(find.text('Today could not refresh'), findsNothing);
+      expect(find.text('Focus Deep Work'), findsOneWidget);
+    },
+  );
+
   testWidgets(
     'Today preserves daily outcomes after a projection read failure',
     (tester) async {
@@ -2237,6 +2571,37 @@ void main() {
       },
     );
   }
+
+  testWidgets('status tap offers Undo that restores stored task outcome', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+    final taskId = _controller.tasks.single.id;
+    final status = find.byKey(const ValueKey<String>('task-status-hit')).first;
+    await tester.tap(status);
+    await _pumpUntil(
+      tester,
+      () =>
+          _controller.tasks.singleWhere((task) => task.id == taskId).status ==
+          PlannerEntityStatus.completed,
+    );
+    expect(find.text('Undo'), findsOneWidget);
+    await tester.tap(find.text('Undo'));
+    await _pumpUntil(
+      tester,
+      () =>
+          _controller.tasks.singleWhere((task) => task.id == taskId).status ==
+          PlannerEntityStatus.active,
+    );
+    expect(
+      PlannerTaskProgress.fromEntity(
+        _controller.tasks.singleWhere((task) => task.id == taskId),
+      ).state,
+      PlannerTaskProgressState.pending,
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   for (final width in <double>[390, 800, 1366]) {
     testWidgets(
@@ -2851,12 +3216,24 @@ void main() {
         find.byKey(const ValueKey<String>('task-filter-toggle')),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Recurring'));
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('refine-type-Recurring')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('refine-type-Recurring')),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Weekly review'), findsOneWidget);
       expect(find.text('Focus Deep Work'), findsNothing);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Single'));
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('refine-type-Single')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('refine-type-Single')),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Focus Deep Work'), findsOneWidget);
       expect(find.text('Weekly review'), findsNothing);
@@ -2884,7 +3261,7 @@ void main() {
 
       expect(find.text('TYPE'), findsOneWidget);
       expect(find.text('STATUS'), findsOneWidget);
-      expect(find.textContaining('Open · All'), findsOneWidget);
+      expect(find.textContaining('Open · All · Due date'), findsOneWidget);
       final search = find.byWidgetPredicate(
         (widget) =>
             widget is TextField &&
@@ -2896,12 +3273,12 @@ void main() {
       await tester.pump();
       expect(find.text('Read cardiology notes'), findsOneWidget);
       expect(find.text('Focus Deep Work'), findsNothing);
-      expect(find.text('1 result · Open · All'), findsOneWidget);
+      expect(find.text('1 result · Open · All · Due date'), findsOneWidget);
 
       await tester.binding.setSurfaceSize(const Size(390, 844));
       await tester.pumpAndSettle();
       expect(find.text('Read cardiology notes'), findsOneWidget);
-      expect(find.text('Open · All'), findsOneWidget);
+      expect(find.text('Open · All · Due date'), findsOneWidget);
       expect(find.text('TYPE'), findsNothing);
       expect(find.text('STATUS'), findsNothing);
 
@@ -2944,7 +3321,7 @@ void main() {
 
       expect(find.text('Focus Deep Work'), findsOneWidget);
       expect(find.text('No open tasks.'), findsNothing);
-      expect(find.text('Open · All'), findsOneWidget);
+      expect(find.text('Open · All · Due date'), findsOneWidget);
       expect(find.text('TYPE'), findsNothing);
       expect(find.text('STATUS'), findsNothing);
 
@@ -2966,17 +3343,72 @@ void main() {
       expect(find.text('TYPE'), findsOneWidget);
       expect(find.text('STATUS'), findsOneWidget);
       final openChip = tester.widget<ChoiceChip>(
-        find.widgetWithText(ChoiceChip, 'Open'),
+        find.byKey(const ValueKey<String>('refine-status-Open')),
       );
       expect(openChip.selected, isTrue);
       expect(openChip.showCheckmark, isFalse);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Inbox'));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('refine-status-Inbox')),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Focus Deep Work'), findsNothing);
       expect(find.text('Your inbox is clear.'), findsOneWidget);
     },
   );
+
+  testWidgets('Tasks selection shows bulk bar and applies previewed complete', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+    expect(find.byKey(const ValueKey<String>('tasks-bulk-bar')), findsNothing);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('task-select-off')).first,
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('tasks-bulk-bar')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('1 selected'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey<String>('tasks-bulk-preview')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('tasks-bulk-confirm')),
+      findsOneWidget,
+    );
+    expect(find.text('Complete'), findsWidgets);
+
+    await tester.tap(find.byKey(const ValueKey<String>('tasks-bulk-confirm')));
+    await _pumpUntil(
+      tester,
+      () =>
+          find.textContaining('Bulk complete applied to').evaluate().isNotEmpty,
+    );
+    expect(find.textContaining('Bulk complete applied to'), findsOneWidget);
+    expect(find.widgetWithText(SnackBarAction, 'Undo'), findsOneWidget);
+    expect(find.byKey(const ValueKey<String>('tasks-bulk-bar')), findsNothing);
+
+    await tester.tap(find.widgetWithText(SnackBarAction, 'Undo'));
+    await _pumpUntil(
+      tester,
+      () => find
+          .text('Bulk change undone. Prior outcomes restored.')
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect(
+      find.text('Bulk change undone. Prior outcomes restored.'),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('Habits expose an honest seven-day schedule preview', (
     tester,
@@ -3483,6 +3915,85 @@ void main() {
     expect(find.text('63%'), findsOneWidget);
   });
 
+  testWidgets('boolean habit primary tap toggles today without a sheet', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+
+    final habit = _controller.habits.singleWhere(
+      (item) => item.title == 'Water plants',
+    );
+    final row = find.byKey(ValueKey<String>('entity-context-${habit.id}'));
+    await _keepTodayTargetClear(tester, row);
+    await tester.tap(
+      find.descendant(of: row, matching: find.byTooltip('Mark habit done')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: row, matching: find.text('100%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('perfect-habit-log-surface')),
+      findsNothing,
+    );
+    expect((await _controller.habitDaySummary(habit)).isSuccessful, isTrue);
+
+    await tester.tap(
+      find.descendant(of: row, matching: find.byTooltip('Mark habit pending')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: row, matching: find.text('0%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    await tester.pumpAndSettle();
+    expect((await _controller.habitDaySummary(habit)).isPending, isTrue);
+  });
+
+  testWidgets('boolean habit primary tap offers one undo after toggling', (
+    tester,
+  ) async {
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+
+    final habit = _controller.habits.singleWhere(
+      (item) => item.title == 'Water plants',
+    );
+    final row = find.byKey(ValueKey<String>('entity-context-${habit.id}'));
+    await _keepTodayTargetClear(tester, row);
+    await tester.tap(
+      find.descendant(of: row, matching: find.byTooltip('Mark habit done')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: row, matching: find.text('100%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Habit done'), findsOneWidget);
+    expect(find.widgetWithText(SnackBarAction, 'Undo'), findsOneWidget);
+    await tester.tap(find.widgetWithText(SnackBarAction, 'Undo'));
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: row, matching: find.text('0%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect((await _controller.habitDaySummary(habit)).isPending, isTrue);
+    expect(find.descendant(of: row, matching: find.text('0%')), findsOneWidget);
+  });
+
   testWidgets('habit result can be corrected and reset from Today', (
     tester,
   ) async {
@@ -3495,29 +4006,25 @@ void main() {
     final row = find.byKey(ValueKey<String>('entity-context-${habit.id}'));
     await _keepTodayTargetClear(tester, row);
     await tester.tap(
-      find.descendant(of: row, matching: find.byTooltip('Log habit')),
+      find.descendant(of: row, matching: find.byTooltip('Mark habit done')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: row, matching: find.text('100%'))
+          .evaluate()
+          .isNotEmpty,
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Not done'));
-    await tester.tap(find.text('Save today'));
-    await _pumpUntil(tester, () => find.text('MISSED').evaluate().isNotEmpty);
-    await tester.pumpAndSettle();
-    expect(find.text('MISSED'), findsOneWidget);
-    expect(
-      (await _controller.habitDaySummary(habit)).state,
-      PlannerHabitDayState.missed,
-    );
+    expect((await _controller.habitDaySummary(habit)).isSuccessful, isTrue);
 
     final correctedRow = find.byKey(
       ValueKey<String>('entity-context-${habit.id}'),
     );
     await _keepTodayTargetClear(tester, correctedRow);
-    await tester.tap(
-      find.descendant(
-        of: correctedRow,
-        matching: find.byTooltip('Edit today’s habit result'),
-      ),
-    );
+    await tester.longPress(correctedRow);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Log or correct today'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Edit today · Water plants'), findsOneWidget);
     await tester.tap(find.text('Done'));
@@ -3533,16 +4040,13 @@ void main() {
       findsOneWidget,
     );
 
-    await _keepTodayTargetClear(
-      tester,
-      find.byKey(ValueKey<String>('entity-context-${habit.id}')),
+    final editedRow = find.byKey(
+      ValueKey<String>('entity-context-${habit.id}'),
     );
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(ValueKey<String>('entity-context-${habit.id}')),
-        matching: find.byTooltip('Edit today’s habit result'),
-      ),
-    );
+    await _keepTodayTargetClear(tester, editedRow);
+    await tester.longPress(editedRow);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Log or correct today'));
     await tester.pumpAndSettle();
     expect(
       tester
@@ -3571,6 +4075,397 @@ void main() {
       isTrue,
     );
   });
+
+  testWidgets('numeric habit primary tap adds its step without a sheet', (
+    tester,
+  ) async {
+    await _runControllerMutation(
+      tester,
+      () => _controller.saveEntity(
+        kind: PlannerEntityKind.habit,
+        payload: <String, dynamic>{
+          ...defaultPlannerPayload(title: 'Drink measured water'),
+          PlannerPayloadKeys.tracking: const <String, dynamic>{
+            'method': 'numeric',
+            'target': 8,
+            'goal': 'at_least',
+            'step': 2,
+            'unit': 'glasses',
+          },
+        },
+      ),
+    );
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+
+    await _scrollTodayToText(tester, 'Drink measured water');
+    final numericHabit = _controller.habits.singleWhere(
+      (item) => item.title == 'Drink measured water',
+    );
+    final numericRow = find.byKey(
+      ValueKey<String>('entity-context-${numericHabit.id}'),
+    );
+    await _keepTodayTargetClear(tester, numericRow);
+    await tester.tap(
+      find.descendant(
+        of: numericRow,
+        matching: find.byTooltip('Add 2 glasses'),
+      ),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: numericRow, matching: find.text('25%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('perfect-habit-log-surface')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: numericRow, matching: find.text('25%')),
+      findsOneWidget,
+    );
+    expect((await _controller.habitDaySummary(numericHabit)).amount, 2);
+    await _keepTodayTargetClear(tester, numericRow);
+    await tester.longPress(numericRow);
+    await tester.pumpAndSettle();
+    expect(find.text('Subtract 2 glasses'), findsOneWidget);
+    await tester.tap(find.text('Subtract 2 glasses'));
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: numericRow, matching: find.text('0%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect((await _controller.habitDaySummary(numericHabit)).amount, 0);
+  });
+
+  testWidgets('count primary label stays +1 with a custom correction step', (
+    tester,
+  ) async {
+    await _runControllerMutation(
+      tester,
+      () => _controller.saveEntity(
+        kind: PlannerEntityKind.habit,
+        payload: <String, dynamic>{
+          ...defaultPlannerPayload(title: 'Count with correction step'),
+          PlannerPayloadKeys.tracking: const <String, dynamic>{
+            'method': 'count',
+            'target': 8,
+            'step': 3,
+            'unit': 'glasses',
+          },
+        },
+      ),
+    );
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+    await _scrollTodayToText(tester, 'Count with correction step');
+    final habit = _controller.habits.singleWhere(
+      (item) => item.title == 'Count with correction step',
+    );
+    final row = find.byKey(ValueKey<String>('entity-context-${habit.id}'));
+    await _keepTodayTargetClear(tester, row);
+    expect(
+      find.descendant(of: row, matching: find.byTooltip('Add one')),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.descendant(of: row, matching: find.byTooltip('Add one')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: row, matching: find.text('13%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect((await _controller.habitDaySummary(habit)).amount, 1);
+  });
+
+  testWidgets('count habit primary tap adds one unit without a sheet', (
+    tester,
+  ) async {
+    await _runControllerMutation(
+      tester,
+      () => _controller.saveEntity(
+        kind: PlannerEntityKind.habit,
+        payload: <String, dynamic>{
+          ...defaultPlannerPayload(title: 'Read measured pages'),
+          PlannerPayloadKeys.tracking: const <String, dynamic>{
+            'method': 'count',
+            'target': 10,
+            'goal': 'at_least',
+            'unit': 'pages',
+          },
+        },
+      ),
+    );
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+
+    await _scrollTodayToText(tester, 'Read measured pages');
+    final measuredHabit = _controller.habits.singleWhere(
+      (item) => item.title == 'Read measured pages',
+    );
+    final measuredRow = find.byKey(
+      ValueKey<String>('entity-context-${measuredHabit.id}'),
+    );
+    await _keepTodayTargetClear(tester, measuredRow);
+    await tester.tap(
+      find.descendant(of: measuredRow, matching: find.byTooltip('Add one')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: measuredRow, matching: find.text('10%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('perfect-habit-log-surface')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: measuredRow, matching: find.text('10%')),
+      findsOneWidget,
+    );
+    final summary = await _controller.habitDaySummary(measuredHabit);
+    expect(summary.amount, 1);
+    expect(summary.state, PlannerHabitDayState.partial);
+  });
+
+  testWidgets(
+    'checklist habit primary tap completes next item without a sheet',
+    (tester) async {
+      await _runControllerMutation(
+        tester,
+        () => _controller.saveEntity(
+          kind: PlannerEntityKind.habit,
+          payload: <String, dynamic>{
+            ...defaultPlannerPayload(title: 'Morning checklist inline'),
+            PlannerPayloadKeys.tracking: const <String, dynamic>{
+              'method': 'checklist',
+              'checklist': <Map<String, dynamic>>[
+                <String, dynamic>{'id': 'water', 'label': 'Water'},
+                <String, dynamic>{'id': 'stretch', 'label': 'Stretch'},
+              ],
+            },
+          },
+        ),
+      );
+      await _setTestViewSize(tester, const Size(390, 844));
+      await _pump(tester);
+      await _scrollTodayToText(tester, 'Morning checklist inline');
+      final habit = _controller.habits.singleWhere(
+        (item) => item.title == 'Morning checklist inline',
+      );
+      final row = find.byKey(ValueKey<String>('entity-context-${habit.id}'));
+      await _keepTodayTargetClear(tester, row);
+      await tester.tap(
+        find.descendant(of: row, matching: find.byTooltip('Complete Water')),
+      );
+      await _pumpUntil(
+        tester,
+        () => find
+            .descendant(of: row, matching: find.byTooltip('Complete Stretch'))
+            .evaluate()
+            .isNotEmpty,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('perfect-habit-log-surface')),
+        findsNothing,
+      );
+      expect(
+        (await _controller.habitDaySummary(habit)).checkedItemIds,
+        <String>{'water'},
+      );
+    },
+  );
+
+  testWidgets('duration habit primary tap adds one step without a sheet', (
+    tester,
+  ) async {
+    await _runControllerMutation(
+      tester,
+      () => _controller.saveEntity(
+        kind: PlannerEntityKind.habit,
+        payload: <String, dynamic>{
+          ...defaultPlannerPayload(title: 'Meditate minutes'),
+          PlannerPayloadKeys.tracking: const <String, dynamic>{
+            'method': 'duration',
+            'target': 30,
+            'unit': 'minutes',
+            'step': 10,
+          },
+        },
+      ),
+    );
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+    await _scrollTodayToText(tester, 'Meditate minutes');
+    final habit = _controller.habits.singleWhere(
+      (item) => item.title == 'Meditate minutes',
+    );
+    final row = find.byKey(ValueKey<String>('entity-context-${habit.id}'));
+    await _keepTodayTargetClear(tester, row);
+    await tester.tap(
+      find.descendant(of: row, matching: find.byTooltip('Add 10 minutes')),
+    );
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: row, matching: find.text('33%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('perfect-habit-log-surface')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: row, matching: find.text('33%')),
+      findsOneWidget,
+    );
+    expect((await _controller.habitDaySummary(habit)).amount, 10);
+  });
+
+  testWidgets('count habit correction subtracts one from row actions', (
+    tester,
+  ) async {
+    await _runControllerMutation(
+      tester,
+      () => _controller.saveEntity(
+        kind: PlannerEntityKind.habit,
+        payload: <String, dynamic>{
+          ...defaultPlannerPayload(title: 'Count measured steps'),
+          PlannerPayloadKeys.tracking: const <String, dynamic>{
+            'method': 'count',
+            'target': 10,
+            'goal': 'at_least',
+            'unit': 'steps',
+          },
+        },
+      ),
+    );
+    await _setTestViewSize(tester, const Size(390, 844));
+    await _pump(tester);
+    await _scrollTodayToText(tester, 'Count measured steps');
+    final habit = _controller.habits.singleWhere(
+      (item) => item.title == 'Count measured steps',
+    );
+    final row = find.byKey(ValueKey<String>('entity-context-${habit.id}'));
+    await _keepTodayTargetClear(tester, row);
+    final add = find.descendant(of: row, matching: find.byTooltip('Add one'));
+    await tester.tap(add);
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: row, matching: find.text('10%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    await tester.tap(add);
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: row, matching: find.text('20%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    await _keepTodayTargetClear(tester, row);
+    await tester.longPress(row);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Subtract one'));
+    await _pumpUntil(
+      tester,
+      () => find
+          .descendant(of: row, matching: find.text('10%'))
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect((await _controller.habitDaySummary(habit)).amount, 1);
+    expect(
+      find.byKey(const ValueKey<String>('perfect-habit-log-surface')),
+      findsNothing,
+    );
+  });
+
+  testWidgets(
+    'count habit correction can set exact and reset without full log sheet',
+    (tester) async {
+      await _runControllerMutation(
+        tester,
+        () => _controller.saveEntity(
+          kind: PlannerEntityKind.habit,
+          payload: <String, dynamic>{
+            ...defaultPlannerPayload(title: 'Count correction surface'),
+            PlannerPayloadKeys.tracking: const <String, dynamic>{
+              'method': 'count',
+              'target': 10,
+              'goal': 'at_least',
+              'unit': 'steps',
+            },
+          },
+        ),
+      );
+      await _setTestViewSize(tester, const Size(390, 844));
+      await _pump(tester);
+      await _scrollTodayToText(tester, 'Count correction surface');
+      final habit = _controller.habits.singleWhere(
+        (item) => item.title == 'Count correction surface',
+      );
+      final row = find.byKey(ValueKey<String>('entity-context-${habit.id}'));
+      await _keepTodayTargetClear(tester, row);
+      await tester.longPress(row);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Set exact'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('habit-correction-dialog')),
+        findsOneWidget,
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('habit-correction-value')),
+        '7',
+      );
+      await tester.tap(find.text('Save exact'));
+      await _pumpUntil(
+        tester,
+        () => find
+            .descendant(of: row, matching: find.text('70%'))
+            .evaluate()
+            .isNotEmpty,
+      );
+      expect((await _controller.habitDaySummary(habit)).amount, 7);
+      expect(
+        find.byKey(const ValueKey<String>('perfect-habit-log-surface')),
+        findsNothing,
+      );
+
+      await _keepTodayTargetClear(tester, row);
+      await tester.longPress(row);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Reset today'));
+      await _pumpUntil(
+        tester,
+        () => find
+            .descendant(of: row, matching: find.text('0%'))
+            .evaluate()
+            .isNotEmpty,
+      );
+      expect((await _controller.habitDaySummary(habit)).isPending, isTrue);
+    },
+  );
 
   testWidgets('measured habit edits one daily total from partial to complete', (
     tester,
@@ -3601,9 +4496,9 @@ void main() {
       ValueKey<String>('entity-context-${measuredHabit.id}'),
     );
     await _keepTodayTargetClear(tester, measuredRow);
-    await tester.tap(
-      find.descendant(of: measuredRow, matching: find.byTooltip('Log habit')),
-    );
+    await tester.longPress(measuredRow);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Log or correct today'));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Measured total'),
@@ -3626,14 +4521,13 @@ void main() {
       find.descendant(of: measuredRow, matching: find.text('20%')),
       findsOneWidget,
     );
+    await _scrollTodayToText(tester, 'Read measured pages');
+    await tester.pumpAndSettle();
 
     await _keepTodayTargetClear(tester, measuredRow);
-    await tester.tap(
-      find.descendant(
-        of: measuredRow,
-        matching: find.byTooltip('Edit today’s habit result'),
-      ),
-    );
+    await tester.longPress(measuredRow);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Log or correct today'));
     await tester.pumpAndSettle();
     expect(
       tester
@@ -3783,9 +4677,9 @@ void main() {
       ValueKey<String>('entity-context-${habit.id}'),
     );
     await _keepTodayTargetClear(tester, checklistRow);
-    await tester.tap(
-      find.descendant(of: checklistRow, matching: find.byTooltip('Log habit')),
-    );
+    await tester.longPress(checklistRow);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Log or correct today'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(CheckboxListTile, 'Water'));
     await tester.tap(find.text('Save today'));
@@ -3816,9 +4710,9 @@ void main() {
     );
     final habitRow = find.byKey(ValueKey<String>('entity-context-${habit.id}'));
     await _keepTodayTargetClear(tester, habitRow);
-    await tester.tap(
-      find.descendant(of: habitRow, matching: find.byTooltip('Log habit')),
-    );
+    await tester.longPress(habitRow);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Log or correct today'));
     await tester.pumpAndSettle();
     expect(find.byType(Dialog), findsOneWidget);
     expect(find.byType(BottomSheet), findsNothing);
@@ -3828,9 +4722,9 @@ void main() {
     await _setTestViewSize(tester, const Size(390, 844));
     await _pump(tester);
     await _keepTodayTargetClear(tester, habitRow);
-    await tester.tap(
-      find.descendant(of: habitRow, matching: find.byTooltip('Log habit')),
-    );
+    await tester.longPress(habitRow);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Log or correct today'));
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey<String>('perfect-habit-log-surface')),
@@ -4048,7 +4942,9 @@ void main() {
       await _pump(tester);
       await _sendControlShortcut(tester, LogicalKeyboardKey.digit2);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Scheduled'));
+      await tester.tap(
+        find.byKey(const ValueKey<String>('refine-status-Scheduled')),
+      );
       await tester.pumpAndSettle();
       final recurring = _controller.tasks.singleWhere(
         (item) => item.title == 'Weekly progress review',
@@ -4080,6 +4976,360 @@ void main() {
       await tester.tap(find.byTooltip('Close progress editor'));
       await tester.pumpAndSettle();
       expect(find.byType(Dialog), findsNothing);
+    },
+  );
+
+  testWidgets('tracer 23: recurring view keeps one-offs out', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+    expect(find.text('Water plants'), findsNothing);
+
+    final switcherScroll = find.descendant(
+      of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+      matching: find.byType(Scrollable),
+    );
+    tester
+        .state<ScrollableState>(switcherScroll)
+        .position
+        .jumpTo(
+          tester
+              .state<ScrollableState>(switcherScroll)
+              .position
+              .maxScrollExtent,
+        );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('saved-view-builtin:recurring')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsNothing);
+    expect(find.text('No recurring tasks yet.'), findsOneWidget);
+    expect(
+      tester
+          .widget<ChoiceChip>(
+            find.byKey(const ValueKey<String>('saved-view-builtin:recurring')),
+          )
+          .selected,
+      isTrue,
+    );
+  });
+
+  testWidgets('tracer 20: saved-view switcher applies built-in views', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    // Default active view is Open: its chip is selected, Focus Deep Work
+    // (an active scheduled task) is visible.
+    final openChip = tester.widget<ChoiceChip>(
+      find.byKey(const ValueKey<String>('saved-view-builtin:open')),
+    );
+    expect(openChip.selected, isTrue);
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+
+    // Switch to Completed through the horizontal saved-view strip. Drive the
+    // strip's own ScrollableState with jumpTo — instant, no hit-test, no
+    // fake timers — then tap the chip. Same pattern below.
+    final switcherScroll = find.descendant(
+      of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+      matching: find.byType(Scrollable),
+    );
+    tester
+        .state<ScrollableState>(switcherScroll)
+        .position
+        .jumpTo(
+          tester
+              .state<ScrollableState>(switcherScroll)
+              .position
+              .maxScrollExtent,
+        );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+    );
+    await tester.pumpAndSettle();
+    final completedChip = tester.widget<ChoiceChip>(
+      find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+    );
+    expect(completedChip.selected, isTrue);
+    expect(find.text('Focus Deep Work'), findsNothing);
+    expect(find.text('No completed tasks yet.'), findsOneWidget);
+
+    // Switch back to Open through the same switcher: the deck restores.
+    tester.state<ScrollableState>(switcherScroll).position.jumpTo(0);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('saved-view-builtin:open')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+
+    // A saved view is a complete query definition, not just a lifecycle tab.
+    // Narrow the live query, then select Open again; search/kind scope must
+    // reset to the saved definition and restore the task row.
+    final search = find.byWidgetPredicate(
+      (widget) =>
+          widget is TextField &&
+          widget.decoration?.hintText == 'Find a task, note, or category…',
+    );
+    await tester.enterText(search, 'does-not-match');
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsNothing);
+    await tester.tap(
+      find.byKey(const ValueKey<String>('saved-view-builtin:open')),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(search).controller!.text, isEmpty);
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+
+    // Refine lifecycle changes must move the selected built-in view as well.
+    await tester.tap(find.byKey(const ValueKey<String>('task-filter-toggle')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('refine-status-Inbox')),
+    );
+    await tester.tap(find.byKey(const ValueKey<String>('refine-status-Inbox')));
+    await tester.pumpAndSettle();
+    tester.state<ScrollableState>(switcherScroll).position.jumpTo(0);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<ChoiceChip>(
+            find.byKey(const ValueKey<String>('saved-view-builtin:inbox')),
+          )
+          .selected,
+      isTrue,
+    );
+  });
+
+  testWidgets('tracer 21: active saved view persists across page rebuild', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    final switcherScroll21 = find.descendant(
+      of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+      matching: find.byType(Scrollable),
+    );
+    final completedPosition21 = tester
+        .state<ScrollableState>(switcherScroll21)
+        .position;
+    completedPosition21.jumpTo(completedPosition21.maxScrollExtent);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('No completed tasks yet.'), findsOneWidget);
+
+    // Unmount the workspace. A new page state must load the stored view ID.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await _pump(tester);
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    final rebuiltSwitcherScroll = find.descendant(
+      of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+      matching: find.byType(Scrollable),
+    );
+    final rebuiltPosition = tester
+        .state<ScrollableState>(rebuiltSwitcherScroll)
+        .position;
+    rebuiltPosition.jumpTo(rebuiltPosition.maxScrollExtent);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<ChoiceChip>(
+            find.byKey(const ValueKey<String>('saved-view-builtin:completed')),
+          )
+          .selected,
+      isTrue,
+    );
+    expect(find.text('Focus Deep Work'), findsNothing);
+  });
+
+  testWidgets('tracer 19: GROUP chips render shared group sections', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+    expect(find.text('None'), findsNothing);
+
+    await tester.tap(find.text('Open · All · Due date'));
+    await tester.pumpAndSettle();
+    expect(find.text('None'), findsWidgets);
+    expect(find.text('Schedule'), findsWidgets);
+
+    // GROUP chips sit below the fold in the collapsible filter deck: bring
+    // the Schedule chip into view before tapping (same pattern as the
+    // recurring-controls test), otherwise the tap misses off-screen.
+    await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Schedule'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Schedule'));
+    await tester.pumpAndSettle();
+    // Schedule must be the selected GROUP chip after the tap settles.
+    final scheduleChip = tester.widget<ChoiceChip>(
+      find.widgetWithText(ChoiceChip, 'Schedule'),
+    );
+    expect(scheduleChip.selected, isTrue);
+    // Schedule groups by UTC calendar-day key (e.g. 2026-07-27), with
+    // unscheduled rows under `Unassigned` — the header comes from the same
+    // shared query projection, not a second predicate. Focus Deep Work is
+    // scheduled at the frozen preview time, so the selected Schedule chip
+    // and the shared group section must both appear.
+    expect(find.text('Open · All · Due date · Schedule'), findsOneWidget);
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+  });
+
+  testWidgets('tracer 22: group header collapses and restores its section', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    await _pump(tester);
+
+    await tester.tap(_footerDestination('tasks'));
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+
+    // Group by Schedule through the deck (chip sits below the fold).
+    await tester.tap(find.text('Open · All · Due date'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Schedule'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Schedule'));
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+
+    // The group header is a button: collapsing hides its rows, the header
+    // stays and announces the collapsed state; expanding brings rows back.
+    final header = find.byKey(const ValueKey<String>('task-group-header'));
+    expect(header, findsWidgets);
+    await tester.tap(header.first);
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsNothing);
+    // Semantics announce collapse so screen-reader users get the state.
+    final headerSemantics = tester.getSemantics(header.first);
+    expect(headerSemantics.flagsCollection.isExpanded.toBoolOrNull(), isFalse);
+
+    await tester.tap(header.first);
+    await tester.pumpAndSettle();
+    expect(find.text('Focus Deep Work'), findsOneWidget);
+    final expandedSemantics = tester.getSemantics(header.first);
+    expect(expandedSemantics.flagsCollection.isExpanded.toBoolOrNull(), isTrue);
+  });
+
+  testWidgets(
+    'tracer 24: personal saved view persists query and survives deletion',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      await _pump(tester);
+
+      await tester.tap(_footerDestination('tasks'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('task-filter-toggle')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, 'Deep');
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('saved-view-save-current')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('saved-view-title')),
+        'Deep work',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('saved-view-title-save')),
+      );
+      await tester.pumpAndSettle();
+      final personal = (await _controller.readPersonalSavedViews()).single;
+      expect(personal.title, 'Deep work');
+      expect(personal.query.text, 'Deep');
+      expect(personal.ownerId, 'preview-owner');
+      final switcherScrollForSelection = find.descendant(
+        of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+        matching: find.byType(Scrollable),
+      );
+      tester
+          .state<ScrollableState>(switcherScrollForSelection)
+          .position
+          .jumpTo(
+            tester
+                .state<ScrollableState>(switcherScrollForSelection)
+                .position
+                .maxScrollExtent,
+          );
+      await tester.pumpAndSettle();
+      final personalFinder = find.byKey(
+        ValueKey<String>('saved-view-${personal.id}'),
+      );
+      expect(personalFinder, findsOneWidget);
+      expect(find.text('Focus Deep Work'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _pump(tester);
+      await tester.tap(_footerDestination('tasks'));
+      await tester.pumpAndSettle();
+      final switcherScroll = find.descendant(
+        of: find.byKey(const ValueKey<String>('saved-view-switcher')),
+        matching: find.byType(Scrollable),
+      );
+      tester
+          .state<ScrollableState>(switcherScroll)
+          .position
+          .jumpTo(
+            tester
+                .state<ScrollableState>(switcherScroll)
+                .position
+                .maxScrollExtent,
+          );
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<ChoiceChip>(
+              find.byKey(ValueKey<String>('saved-view-${personal.id}')),
+            )
+            .selected,
+        isTrue,
+      );
+
+      await tester.tap(find.byKey(const ValueKey<String>('saved-view-manage')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(ValueKey<String>('saved-view-delete-${personal.id}')),
+      );
+      await tester.pumpAndSettle();
+      expect(await _controller.readPersonalSavedViews(), isEmpty);
+      expect(
+        find.byKey(ValueKey<String>('saved-view-${personal.id}')),
+        findsNothing,
+      );
+      tester.state<ScrollableState>(switcherScroll).position.jumpTo(0);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<ChoiceChip>(
+              find.byKey(const ValueKey<String>('saved-view-builtin:open')),
+            )
+            .selected,
+        isTrue,
+      );
     },
   );
 }
@@ -4529,6 +5779,19 @@ class _ProjectionFailureController extends PlannerWorkspaceController {
   });
 
   bool failTaskReads = false;
+  bool failLocalWatch = false;
+  bool failQuickCapture = false;
+
+  @override
+  Future<PlannerMutationReceipt> quickCapture(String title) {
+    if (failQuickCapture) {
+      return Future<PlannerMutationReceipt>.error(
+        StateError('injected quick-save failure'),
+      );
+    }
+    return super.quickCapture(title);
+  }
+
   Future<void>? eligibilityGate;
   int suspendedEligibilityReads = 0;
   int foreignOutcomeReads = 0;
@@ -4536,20 +5799,19 @@ class _ProjectionFailureController extends PlannerWorkspaceController {
   int failedReads = 0;
   int _invalidations = 0;
 
-  @override
-  int get todayProjectionRevision =>
-      super.todayProjectionRevision + _invalidations;
+  void failLocalWatchOnce() => failLocalWatch = true;
 
-  void invalidateProjection() {
-    _invalidations++;
-    notifyListeners();
-  }
+  void allowLocalWatch() => failLocalWatch = false;
 
   @override
   Future<PlannerTodayEligibility> todayEligibilityForDay(
     PlannerEntity entity, {
     DateTime? localDay,
   }) async {
+    if (failLocalWatch) {
+      failedReads++;
+      throw StateError('injected local read failure');
+    }
     final result = await super.todayEligibilityForDay(
       entity,
       localDay: localDay,
@@ -4560,6 +5822,15 @@ class _ProjectionFailureController extends PlannerWorkspaceController {
       await gate;
     }
     return result;
+  }
+
+  @override
+  int get todayProjectionRevision =>
+      super.todayProjectionRevision + _invalidations;
+
+  void invalidateProjection() {
+    _invalidations++;
+    notifyListeners();
   }
 
   @override

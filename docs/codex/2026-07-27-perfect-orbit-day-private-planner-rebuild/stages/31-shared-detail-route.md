@@ -1,6 +1,9 @@
 # Stage 31 — Shared view-first entity detail route
 
-Status: pending  
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — view-first intent matrix (`IR-001`/`IR-002`,
+`EntityDetailCoordinator`), entry/isolation suites, and secondary-sheet parity
+are GREEN; full detail route/body/inspector implementation and native matrices
+remain open
 Depends on: Stages 02, 07, 12–15, 25, 27–30  
 Primary surfaces: Task/Habit row taps, widget/notification/deep links, desktop detail
 
@@ -88,3 +91,16 @@ semantics and keyboard traversal.
 
 Stages 32–35 receive shared route/body contracts. Commit/push/release with entrypoint
 evidence and clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 31 partial)
+
+- `flutter test --no-pub
+  test/presentation/interaction_route_inventory_contract_test.dart`:
+  **EXIT:0, 7 pass** (view-first hierarchy, typed navigation/return paths,
+  local-first writes, AI confirmation, widget replay, and `IR-002` target
+  characterization).
+- `flutter test --no-pub
+  test/presentation/planner_secondary_surfaces_adaptive_test.dart`:
+  **EXIT:0, 2 pass** (compact sheets vs bounded Windows dialogs, Escape
+  dismissal).
+- Route/body/inspector implementation and native matrices remain open.

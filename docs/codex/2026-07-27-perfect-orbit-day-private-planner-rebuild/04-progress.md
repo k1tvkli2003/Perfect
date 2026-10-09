@@ -1,5 +1,23 @@
 # Progress
 
+## 2026-09-25 — solo 50-stage behavioral execution (Stages 14–48, uncommitted)
+
+- Branch `feat/stage13-status-undo`, head `ba0f6fe`; WIP spans habit domain,
+  workspace page, controller, Pulse, habit sheet, and stage docs 14–48.
+- Real GREEN gates, all exit 0: **198 pass** 11-file integrated
+  (controller/Pulse/workspace/AI-dock/editor/route/secondary/Pulse-contract/
+  task-status/focus/motion); **68 pass** domain+wizard; **29 pass**
+  store/sync/migration; **27 pass** AI/agent; **18 pass** widget; **6 pass**
+  preservation; plus 30/17/11/7/4/3/2/1-file supporting gates.
+- RED→GREEN fixes in WIP: unresolved-empty `resolving` guard;
+  `quickCapture` receipt-signature contract marker; `habit-correction-dialog`
+  via `showPerfectDialog`.
+- `flutter analyze --no-pub`: no issues; `git diff --check`: clean.
+- Honest boundary: no stage is `complete`; Stages 36–40 and 49–50 are
+  `blocked` with recorded gate blockers; CI stopped per owner order; no
+  signed/N→N+1 artifacts exist. Detail in `02-state.md` checkpoint and each
+  stage file's `Evidence — 2026-09-25` section.
+
 ## 2026-09-17 — compact viewport correction and falsification
 
 - Replaced `setSurfaceSize` with the existing `_setTestViewSize` helper in the

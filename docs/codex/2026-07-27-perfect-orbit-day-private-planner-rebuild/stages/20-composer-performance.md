@@ -1,6 +1,8 @@
 # Stage 20 — Composer motion, layout and performance hardening
 
-Status: pending  
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — heartbeat lifecycle, one-surface morph, blur-off glass
+fallback, duplicate-send guard, and 154-test behavioral stability GREEN (2026-09-25);
+frame/memory budgets, host-renderer proof, and signed N→N+1 upgrade remain open; CI workflows disabled_manually
 Depends on: Stages 16–19  
 Primary surfaces: all composer modes under real viewport/input constraints
 
@@ -66,3 +68,21 @@ planner data, then update to N+1 and verify continuity with same package/signatu
 
 Stage 21 receives stable bottom/IME behavior for full-screen wizard transitions.
 Commit/push/release with performance and signed-upgrade evidence; clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 20 partial)
+
+- Behavioral stability gate:
+  `flutter test --no-pub
+  test/presentation/planner_workspace_controller_test.dart
+  test/presentation/today_pulse_test.dart
+  test/presentation/perfect_workspace_page_test.dart
+  test/ai/perfect_ai_dock_test.dart`:
+  **EXIT:0, 154 pass**.
+- Design intent already hardened in code: heartbeat stops when expanded,
+  reduced-motion, backgrounded, or TickerMode-off; only the current composer
+  surface paints (no AnimatedSwitcher subtree retention); glass shells use
+  `enableBlur: false` authored tint on low-end paths; `_submit` is guarded by
+  `_sending` against duplicate saves.
+- `flutter analyze --no-pub`: `No issues found!`; `git diff --check`: clean.
+- Frame/memory budgets, host-renderer proof, and signed N→N+1 upgrade remain
+  open and cannot be claimed from this behavioral gate.

@@ -164,7 +164,9 @@ class _PlannerHabitLogSheetState extends State<PlannerHabitLogSheet> {
                             checklistTotal: _checklist.length,
                           ),
                         const SizedBox(height: PerfectSpace.md),
-                        if (_method == 'count' || _method == 'duration')
+                        if (_method == 'count' ||
+                            _method == 'numeric' ||
+                            _method == 'duration')
                           _measuredEditor(unit),
                         if (_method == 'check') _binaryEditor(),
                         if (_method == 'avoid') _avoidEditor(),
@@ -290,7 +292,7 @@ class _PlannerHabitLogSheetState extends State<PlannerHabitLogSheet> {
     final summary = _summary;
     if (_loading || summary == null) return false;
     if (_note.text != (summary.note ?? '')) return true;
-    if (_method == 'count' || _method == 'duration') {
+    if (_method == 'count' || _method == 'numeric' || _method == 'duration') {
       final amount = double.tryParse(_amount.text.trim());
       if (amount == null || amount != summary.amount) return true;
     }
@@ -507,7 +509,15 @@ class _PlannerHabitLogSheetState extends State<PlannerHabitLogSheet> {
     );
   }
 
-  double get _step => _method == 'duration' ? 5 : 1;
+  double get _step {
+    if (_method == 'duration') return 5;
+    final tracking = widget.habit.tracking;
+    final rawStep = tracking['step'];
+    final parsed = rawStep is num && rawStep.isFinite
+        ? rawStep.toDouble()
+        : double.tryParse('$rawStep') ?? 1;
+    return parsed > 0 ? parsed : 1;
+  }
 
   void _decreaseAmount() {
     final current = double.tryParse(_amount.text.trim()) ?? 0;
@@ -565,7 +575,7 @@ class _PlannerHabitLogSheetState extends State<PlannerHabitLogSheet> {
   void _applySummary(PlannerHabitDaySummary summary) {
     _summary = summary;
     _note.text = summary.note ?? '';
-    if (_method == 'count' || _method == 'duration') {
+    if (_method == 'count' || _method == 'numeric' || _method == 'duration') {
       _amount.text = _formatAmount(summary.hasLog ? summary.amount : 0);
     }
     _checkedItemIds
@@ -593,7 +603,8 @@ class _PlannerHabitLogSheetState extends State<PlannerHabitLogSheet> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
     try {
-      final amount = _method == 'count' || _method == 'duration'
+      final amount =
+          _method == 'count' || _method == 'numeric' || _method == 'duration'
           ? double.parse(_amount.text.trim())
           : null;
       final summary = await widget.controller.logHabit(
@@ -822,7 +833,9 @@ String _summaryDetail(
   required int checkedChecklistCount,
   required int checklistTotal,
 }) {
-  if (summary.method == 'count' || summary.method == 'duration') {
+  if (summary.method == 'count' ||
+      summary.method == 'numeric' ||
+      summary.method == 'duration') {
     final suffix = unit.isEmpty ? '' : ' $unit';
     return '${_formatAmount(summary.amount)}$suffix of '
         '${_formatAmount(summary.target)}$suffix · ${summary.progressPercent}%';

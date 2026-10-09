@@ -1,6 +1,7 @@
 # Stage 50 — Final signed release and N→N+1 upgrade proof
 
-Status: pending  
+Status: blocked — Stage 49 has no accepted frozen candidate; no signed N/N+1
+artifacts, installs, or continuity manifests exist yet
 Depends on: Stage 49 accepted for the exact release candidate SHA  
 Blocks: completion of the 50-stage rebuild  
 Primary surfaces: Android APK, Windows portable ZIP, installable Windows setup,
@@ -287,3 +288,11 @@ coverage ledger and honest known non-blocking limitations. Mark the 50-stage reb
 done only after every required proof is linked and reproducible. Preserve the ongoing
 Critics → repair → re-gate loop for later owner feedback; future builds repeat the
 same monotonic version, stable signing, clean-main and upgrade-continuity contract.
+
+### Evidence — 2026-09-25 (Stage 50 blocked, no release artifacts yet)
+
+- Stage 50 remains **blocked**: Stage 49 has no accepted frozen candidate SHA,
+  so no signed N/N+1 builds, installs, continuity manifests, or release URLs
+  exist.
+- CI is intentionally stopped per the standing owner order until all 50 stages
+  are done; no workflow run may be claimed as Stage 50 proof in this session.

@@ -1,6 +1,8 @@
 # Stage 17 — Task capture mode and resilient quick save
 
-Status: pending; centering prototype not yet accepted  
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — local receipt, duplicate protection, Undo, and failed-save
+ draft retention GREEN in widget/controller suites (2026-09-25, 132-pass gate); exact field geometry,
+IME/device and native screenshot proof remain open; CI workflows disabled_manually so no fresh remote run
 Depends on: Stage 16  
 Primary surfaces: Task mode of the morphing composer
 
@@ -62,6 +64,22 @@ local DB error, offline queue, resize during typing, route switch and Undo after
 Geometry assertion keeps hint/text center within <=1.5dp; focus/IME tests; direction
 tests; exactly-one entity/op tests; failure draft retention; screenshot matrix at
 320/390/Windows and 1x/2x text; real device tap/outside/back behavior.
+
+### Evidence — 2026-09-25 (real runs, Stage 17 partial)
+
+- `flutter test --no-pub
+  test/presentation/perfect_workspace_page_test.dart
+  --plain-name "quick capture failure keeps the draft with local recovery"`:
+  **EXIT:0, 1 pass**. Injected local save failure stays on Task mode, preserves
+  `Keep this failing draft`, shows `Could not save this task locally. Try again.`
+  and writes no new task.
+- Integrated controller/Pulse/workspace command:
+  `flutter test --no-pub
+  test/presentation/planner_workspace_controller_test.dart
+  test/presentation/today_pulse_test.dart
+  test/presentation/perfect_workspace_page_test.dart`:
+  **EXIT:0, 132 pass**.
+- `flutter analyze --no-pub`: `No issues found!`; `git diff --check`: clean.
 
 ## Reject if
 

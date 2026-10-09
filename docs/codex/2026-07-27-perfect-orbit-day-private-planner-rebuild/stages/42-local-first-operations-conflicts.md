@@ -1,6 +1,9 @@
 # Stage 42 — Local-first operations, causality and conflict correctness
 
-Status: pending  
+Status: behavior-complete, committed as HEAD (pushed to feat/stage13-status-undo, PR #4, 2026-09-26) — local-first mutation receipts, unique mutation IDs,
+operation backoff/retry/dispose, Undo receipts, and AI-confirmation contract
+suites are GREEN; merge/conflict-center parity and multi-device convergence
+remain open
 Depends on: Stage 41; Stages 13–14, 24, 28–30, 34 and 40 mutation semantics  
 Blocks: Stages 44–50  
 Primary surfaces: every planner write, durable outbox, undo, conflict center,
@@ -212,3 +215,17 @@ cursor, merge matrix, conflict APIs and compaction watermark. Commit/push the sh
 write-path implementation and evidence, run CI and signed upgrade/replay proof on
 Android and Windows, record remote RPC deployment separately, and leave clean
 `main` only.
+
+### Evidence — 2026-09-25 (real runs, Stage 42 partial)
+
+- `flutter test --no-pub test/planner/planner_local_store_test.dart
+  test/planner/planner_sync_repository_test.dart
+  test/planner/planner_migration_contract_test.dart`: **EXIT:0, 29 pass**
+  (durable operation rows, capped backoff, retry cancellation/dispose, migration
+  rollback).
+- Habit mutation boundary (`count` +1 vs `numeric` step, checklist order,
+  20-operation offline convergence, Undo receipts) inside the **EXIT:0, 133
+  pass** integrated controller/Pulse/workspace gate.
+- AI confirmation before Apply inside the **EXIT:0, 21 pass** AI dock suite.
+- Field-level merge matrix, Conflict Center parity, server-side idempotency,
+  and multi-device convergence remain open.

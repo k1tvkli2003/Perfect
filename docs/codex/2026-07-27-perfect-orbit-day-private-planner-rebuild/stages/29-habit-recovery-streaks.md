@@ -1,6 +1,9 @@
 # Stage 29 — Habit skip, miss, recovery and streak integrity
 
-Status: pending  
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — daily-state outcomes (pending/partial/completed/missed),
+miss-then-next recovery, carry-cap, flexible quota, and editing-old-work
+preservation are GREEN at domain/projection layers; derived streak math,
+freeze/quit semantics, accessibility wording, and calendar parity remain open
 Depends on: Stages 24, 27–28  
 Primary consumers: Today, Habit detail/calendar, insights, gamification and AI
 
@@ -72,3 +75,16 @@ read/write contract and accessible state semantics.
 
 Stage 30 adds feedback/performance on top of proven outcomes. Commit/push/release
 with math/history evidence and clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 29 partial)
+
+- `flutter test --no-pub test/planner/planner_recovery_engine_test.dart` —
+  carry cap asks the owner, overdue miss-then-next honored, quota-stable
+  flexible work, and old completed work not resurrected.
+- `flutter test --no-pub test/planner/planner_habit_day_summary_test.dart` —
+  pending/partial/completed/at-most daily outcomes with legacy observations
+  folded into one aggregate result.
+- Both live inside the **EXIT:0, 68 pass** combined domain+wizard gate.
+- Actual streak derivation (current/longest/flexible/freeze/at-most-close),
+  correction preview/Undo math, detail/calendar parity, gamification
+  idempotency, AI contract, and accessible wording remain unverified.

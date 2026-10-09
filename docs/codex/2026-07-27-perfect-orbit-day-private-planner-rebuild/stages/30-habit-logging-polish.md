@@ -1,6 +1,9 @@
 # Stage 30 — Habit logging feedback, ergonomics and upgrade proof
 
-Status: pending  
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — primary-tap/Undo geometry, compact correction, tooltip
+contracts, and controller/widget gesture suites are GREEN; celebration,
+haptics/rebuild profiling, accessibility announcements, parity matrices, and
+signed N→N+1 upgrade remain open
 Depends on: Stages 14, 27–29  
 Primary surfaces: Today/Habits/detail/widget logging interactions
 
@@ -67,3 +70,16 @@ parity; signed upgrade artifact/install evidence.
 
 Stage 31 receives trustworthy status/log APIs and history. Commit/push/release with
 performance and signed-upgrade proof; clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 30 partial)
+
+- `flutter test --no-pub
+  test/presentation/planner_workspace_controller_test.dart
+  test/presentation/today_pulse_test.dart
+  test/presentation/perfect_workspace_page_test.dart` —
+  **EXIT:0, 133 pass**, including boolean/count/numeric/duration/checklist
+  primary taps, one-tap Undo, `-1`/set-exact/reset correction, tooltip copy,
+  and desktop context/keyboard rows.
+- Celebration choreography, rebuild containment, announcement semantics,
+  dark/high-contrast interaction parity, widget parity, real-device recording,
+  and signed upgrade artifacts remain open.

@@ -1,6 +1,8 @@
 # Stage 16 — Floating Quick Capture control
 
-Status: pending; current uncommitted code is only a prototype  
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4) — collapsed 64dp orb geometry plus exactly-one local
+receipt/Undo GREEN in widget suites (2026-09-25, 132-pass gate); background-strip/hit-test/no-IME and
+native screenshot proof remain open; CI workflows disabled_manually so no fresh remote run
 Depends on: Stages 07, 09, 12, 15  
 Primary surfaces: Today lower edge on phone/tablet/Windows
 
@@ -61,6 +63,18 @@ AI mode active, draft active, route change and Android software/host renderer.
 Pixel screenshot shows Today background continuously behind orb; hit-test test proves
 only circle activates; no-focus/no-IME open test; last-row reachability; repeated
 heartbeat/open/close memory/frame evidence; reduced motion and breakpoint state.
+
+### Evidence — 2026-09-25 (real runs, Stage 16 partial)
+
+- `flutter test --no-pub
+  test/presentation/planner_workspace_controller_test.dart
+  test/presentation/today_pulse_test.dart
+  test/presentation/perfect_workspace_page_test.dart`:
+  **EXIT:0, 132 pass** (includes the new
+  `collapsed capture is only a 64dp circle above the footer` geometry gate,
+  `quick capture writes exactly one local task with undo`, and
+  `quick capture failure keeps the draft with local recovery`).
+- `flutter analyze --no-pub`: `No issues found!`; `git diff --check`: clean.
 
 ## Reject if
 

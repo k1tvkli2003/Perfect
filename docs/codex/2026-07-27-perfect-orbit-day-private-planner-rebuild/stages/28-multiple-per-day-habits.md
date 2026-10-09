@@ -1,6 +1,9 @@
 # Stage 28 — Multiple-per-day habits and atomic accumulation
 
-Status: pending  
+Status: behavior-complete, committed as 7b1f0b0 (pushed to feat/stage13-status-undo, PR #4, 2026-09-25) — 20-operation concurrent count accumulation, serialized
+row logging, Undo/correction scopes, and over-target retention are GREEN;
+two-device offline sync convergence and native widget/device recording remain
+open
 Depends on: Stages 14, 27 and local operation contracts  
 Primary surfaces: Today/Habits rows, compact correction, detail day log, widget
 
@@ -69,3 +72,17 @@ detail/calendar reflects exact accumulated value after sync convergence.
 
 Stage 29 consumes accurate daily outcomes for streak/recovery. Commit/push/release
 with concurrency and device evidence; clean Git.
+
+### Evidence — 2026-09-25 (real runs, Stage 28 partial)
+
+- `flutter test --no-pub
+  test/presentation/planner_workspace_controller_test.dart` —
+  `20 concurrent count taps preserve every increment offline`: 20 serialized
+  increments converge on one daily occurrence with operation IDs intact.
+  Covered inside the **EXIT:0, 133 pass** integrated controller/Pulse/workspace
+  gate.
+- Row/correction/Undo scopes (`count habit correction subtracts one`,
+  `measured habit edits one daily total`, habitual Undo toast) and over-target
+  retention are in the same GREEN suite.
+- Widget/app parity, cross-device offline convergence, native recording, no
+  full-page rebuild profiling, and post-sync detail totals remain open.

@@ -1,10 +1,45 @@
 # State
 
 - Current status: `active`
-- Last updated: 2026-09-24
+- Last updated: 2026-09-25
 - Owner: Codex / Hermes solo continuation
 
 ## Current State
+
+### Solo 50-stage execution checkpoint — 2026-09-25
+
+Branch `feat/stage13-status-undo` carries uncommitted WIP for Stages 14–48.
+Head remains `ba0f6fe feat(stage13): undo only latest task status`.
+
+Verified behavioral gates (real runs, all exit 0):
+
+- **198 pass** 11-file integrated gate: controller/Pulse/workspace/AI-dock/
+  editor/route/secondary/Pulse-contract/task-status/focus/motion
+  (`flutter analyze --no-pub`: no issues; `git diff --check`: clean).
+- **537 pass** full suite `flutter test --no-pub` in one command, exit 0
+  (`C:/Users/K1/AppData/Local/Temp/perfect-full-20260925.log`).
+- **68 pass** combined domain+wizard gate; **29 pass** store/sync/migration
+  gate; **27 pass** AI/agent bundle; **18 pass** widget gate; **6 pass**
+  preservation gate; plus 30-pass five-file workspace gate, 17-pass editor
+  gate, and single-file gates (pictogram 3, local-time/date 10, reminder 2,
+  habit-log-sheet 1, sync-indicator/config 7, motion 11, route 7, AI-dock 21).
+- Two contract RED→GREEN fixes landed in WIP: `today_pulse.dart`
+  unresolved-empty must stay `resolving`; interaction inventory marker updated
+  for the `PlannerMutationReceipt quickCapture` signature.
+- One vocabulary fix landed in WIP: `_HabitCorrectionDialog.show` now routes
+  through `showPerfectDialog` (motion gate back to GREEN).
+
+Stage ledger truth: Stages 14–35, 41–48 `in progress` with partial GREEN
+evidence recorded in each file; Stages 36–40 and 49–50 `blocked` with
+explicit gate blockers and characterization-only evidence where it exists.
+No stage is `complete`: native/device matrices, preview/Copy acceptances,
+cross-consumer parity, CI workflow, signed artifacts, and N→N+1 upgrade proof
+remain open across the plan. CI stays stopped per standing owner order until
+all 50 stages are done.
+
+Untracked/auxiliary: `.vscode/settings.json` (IDE-only),
+`lib/presentation/perfect_date_format.dart` (unused helper, not referenced by
+any Dart file), root `flutter_*.log` captures (ignored via `*.log`).
 
 ### Stage 13 Today slice — 2026-09-24
 

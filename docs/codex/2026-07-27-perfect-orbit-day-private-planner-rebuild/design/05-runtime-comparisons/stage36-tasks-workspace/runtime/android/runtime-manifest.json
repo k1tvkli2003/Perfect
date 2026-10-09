@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "stage": 36,
+  "captured_at": "2026-09-28T03:00:00+03:30",
+  "reference": {
+    "page": "pg-tasks-default",
+    "version": "ps01-pages-1.0.0",
+    "file": "docs/codex/2026-07-27-perfect-orbit-day-private-planner-rebuild/design/03-pages/pg-tasks-default/canonical/phone-compact.png",
+    "viewport": "390x844"
+  },
+  "runtime": {
+    "build_target": "lib/dev/perfect_live_preview.dart",
+    "build_mode": "debug",
+    "package_id": "com.k1tvkli2003.perfect.preview",
+    "component": "com.k1tvkli2003.perfect.preview/com.k1tvkli2003.perfect.MainActivity",
+    "resumed": "com.k1tvkli2003.perfect.preview/com.k1tvkli2003.perfect.MainActivity",
+    "device": {
+      "physical_size": "1080x2400",
+      "physical_density": 420,
+      "fixture": "fx-owner-normal private design entrypoint only"
+    },
+    "source_tree": "feat/stage13-status-undo @ d4e2070 (tracer 24 committed)"
+  },
+  "evidence": [
+    {
+      "scenario": "tasks-default live runtime",
+      "file": "tasks-runtime.png",
+      "bytes": 205812,
+      "sha256": "[SECURITY_DATA]"
+    },
+    {
+      "scenario": "tasks-default runtime semantics",
+      "file": "tasks-runtime.xml",
+      "nodes": 50
+    },
+    {
+      "scenario": "normalized 390x844 comparison",
+      "file": "tasks-runtime-390x844-shrunk.png",
+      "bytes": 102367
+    }
+  ],
+  "comparison": {
+    "method": "copy visual_compare.py --threshold 8, runtime LANCZOS shrunk to 390x844",
+    "size_match": true,
+    "mean_abs_error": 20.087,
+    "rms_error": 48.3508,
+    "max_channel_difference": 255,
+    "changed_pixels_percent": 58.1122,
+    "diff_overlay": "tasks-diff-normalized.png"
+  },
+  "mismatch_ledger": [
+    "Runtime header keeps product shell: Perfect! + Synced cloud + TASK LIST label; reference crown expects WORKSPACE AND HORIZONS + Tasks + Gregorian/Hijri date line.",
+    "Action row differs: runtime uses + New action bottom sheet flow; reference expects left Filters button plus brown + Add task button.",
+    "Search differs: runtime placeholder Find a task, note, or category with Open x All x Due date summary chip; reference expects Search tasks with Ctrl K chip.",
+    "Rows differ canonically: runtime renders 3 live tracker rows with trailing selection control; reference expects 4 fixture rows with times and priority metadata.",
+    "Bottom bar differs: runtime tab Tasks Tab 2 of 5 selected with 5 tabs; reference bottom navigation icon row differs.",
+    "Conclusion: composition verified proven, pixel Copy still REJECTED. Component inventory matched, visuals not equivalent."
+  ],
+  "copy_gate": "REJECTED: mismatch ledger open. Runtime vs preview comparison produced, no false acceptance.",
+  "evidence_boundary": [
+    "Emulator screenshots prove composition and interaction reachability, not physical-device frame pacing.",
+    "Preview fixture only, never production owner data.",
+    "Windows runtime and install-over remain an exact-SHA hosted release gate."
+  ]
+}

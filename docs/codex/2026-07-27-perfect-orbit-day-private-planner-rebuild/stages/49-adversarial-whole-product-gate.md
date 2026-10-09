@@ -1,6 +1,8 @@
 # Stage 49 — Adversarial whole-product quality gate
 
-Status: pending  
+Status: blocked — host/device matrices, side-by-side Copy comparisons,
+motion/system traces, and N→N+1 rehearsal have no recorded acceptance;
+behavioral test suites remain GREEN as partial characterization only
 Depends on: Stages 01–48 accepted with linked evidence  
 Blocks: Stage 50  
 Primary surfaces: every shipped Android/Windows route, state, interaction, asset,
@@ -278,3 +280,18 @@ Commit/push each repair to `main`, require successful CI and re-capture invalida
 evidence. Handoff the exact candidate SHA, artifact-independent verification bundle,
 resolved finding ledger, device matrix and explicit limitations; do not publish the
 final release in this stage or call a locally passing subset release proof.
+
+### Evidence — 2026-09-25 (real runs, Stage 49 characterization only)
+
+- **EXIT:0, 537 pass** full suite `flutter test --no-pub` in one command
+  (`C:/Users/K1/AppData/Local/Temp/perfect-full-20260925.log`).
+- **EXIT:0, 198 pass** 11-file integrated behavioral gate
+  (controller/Pulse/workspace/AI-dock/editor/route/secondary/Pulse-contract/
+  task-status/focus/motion).
+- **EXIT:0, 68 pass** combined domain+wizard gate; **EXIT:0, 29 pass**
+  store/sync/migration gate; **EXIT:0, 27 pass** AI/agent bundle; **EXIT:0, 18
+  pass** widget gate; **EXIT:0, 6 pass** preservation gate.
+- `flutter analyze --no-pub`: `No issues found!`; `git diff --check`: clean.
+- This is characterization only. Frozen-candidate SHA, host/device matrices,
+  Copy side-by-sides, motion/system traces, injection/corpus attacks, and
+  N→N+1 rehearsal remain blocked with no recorded acceptance.

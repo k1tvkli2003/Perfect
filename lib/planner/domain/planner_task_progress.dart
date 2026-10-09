@@ -261,6 +261,24 @@ DateTime? _readLocalDay(Object? value) {
       : DateTime(parsed.year, parsed.month, parsed.day);
 }
 
+/// Receipt for one serialized task-outcome mutation. Hosts can offer Undo
+/// without reversing a newer tap: [current] must still be authoritative.
+class PlannerTaskProgressChange {
+  const PlannerTaskProgressChange({
+    required this.entityId,
+    required this.mutationId,
+    required this.previous,
+    required this.current,
+    this.localDay,
+  });
+
+  final String entityId;
+  final String mutationId;
+  final PlannerTaskProgress previous;
+  final PlannerTaskProgress current;
+  final DateTime? localDay;
+}
+
 /// The sole mutation owner for the four-state task outcome. Both Flutter UI
 /// and the Android widget call this service, so they cannot drift into two
 /// incompatible completion semantics.
@@ -294,6 +312,41 @@ class PlannerTaskProgressService {
         ownerId: ownerId,
         occurrenceId: recurringOccurrenceId(entity, day),
       ),
+    );
+  }
+
+  Future<PlannerTaskProgress?> readEntityProgress({
+    required String entityId,
+    DateTime? localDay,
+  }) async {
+    final entity = await _store.readEntity(
+      ownerId: ownerId,
+      entityId: entityId,
+    );
+    if (entity == null) return null;
+    return readProgress(entity, localDay: localDay);
+  }
+
+  Future<PlannerTaskProgress> setProgressById({
+    required String entityId,
+    required PlannerTaskProgress progress,
+    String? mutationId,
+    DateTime? localDay,
+    String source = 'app',
+  }) async {
+    final entity = await _store.readEntity(
+      ownerId: ownerId,
+      entityId: entityId,
+    );
+    if (entity == null) {
+      throw StateError('Task is no longer available locally.');
+    }
+    return setProgress(
+      entity,
+      progress: progress,
+      mutationId: mutationId,
+      localDay: localDay,
+      source: source,
     );
   }
 

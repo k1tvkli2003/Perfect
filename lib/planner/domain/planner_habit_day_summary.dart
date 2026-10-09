@@ -106,7 +106,7 @@ abstract final class PlannerHabitDayEngine {
       fallback: 'check',
     );
     if (matching.isEmpty) {
-      if (method == 'count' || method == 'duration') {
+      if (method == 'count' || method == 'numeric' || method == 'duration') {
         return PlannerHabitDaySummary.pending(
           method: method,
           target: _positiveNumber(habit.tracking['target'], fallback: 1),
@@ -142,7 +142,7 @@ abstract final class PlannerHabitDayEngine {
         outcome == 'missed' ||
         outcome == 'slipped';
 
-    if (method == 'count' || method == 'duration') {
+    if (method == 'count' || method == 'numeric' || method == 'duration') {
       final amount = effective.fold<double>(
         0,
         (sum, entry) => sum + _number(entry.value['amount']),

@@ -104,7 +104,7 @@ class TodayPulseSnapshot {
     final total = items.length;
     final remaining = math.max(0, total - completed - missed);
     final state = switch ((projectionResolved, total)) {
-      (false, > 0) => TodayPulseState.resolving,
+      (false, _) => TodayPulseState.resolving,
       (_, 0) => TodayPulseState.empty,
       _ when completed == total => TodayPulseState.complete,
       _ when missed == total => TodayPulseState.missedOnly,

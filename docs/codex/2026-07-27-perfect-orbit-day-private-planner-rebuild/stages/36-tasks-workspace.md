@@ -1,6 +1,6 @@
 # Stage 36 — Tasks workspace reconstruction
 
-Status: pending  
+Status: blocked — Stage 03–05 preview/Copy gate plus query/view/sort/group/selection/bulk contracts have no recorded autonomous acceptance; existing row/status, filter-deck, and entry suites remain GREEN as characterization only
 Depends on: accepted Stages 03–05 preview/copy contract; Stages 07, 13, 17,
 22–25, 31–35  
 Primary surfaces: Tasks workspace, task search/filter/sort/grouping, saved views,
@@ -329,3 +329,314 @@ install-ready artifacts required by the project. Record exact commit/artifact ha
 internally accepted preview/decomposition paths, reference/runtime/diff artifacts, runtime evidence
 and known limitations, then return to clean `main`-only branch state.
 Do not remove the retained pre-rebuild stash.
+
+### Evidence — 2026-09-25 (real runs, Stage 36 characterization only)
+
+- Existing row/status/filter/entry behavior is GREEN as characterization:
+  `flutter test --no-pub
+  test/presentation/task_status_control_test.dart
+  test/presentation/planner_secondary_surfaces_adaptive_test.dart
+  test/presentation/planner_editor_test.dart` are all GREEN.
+- Typed-query tracer 1 (behavior only, `lib/planner/domain/planner_task_query.dart`,
+  `test/planner/planner_task_query_test.dart`, 2/2 GREEN): built-in
+  Inbox/Open/Scheduled/Completed views plus Unicode-aware search over the
+  existing store rows. Widget still resolves filters locally; shared query
+  adoption has **not** landed and full suite has **not** re-run after it.
+- Typed-query tracer 2 (adoption, 2026-09-25, real runs):
+  `PlannerTaskQuery.kinds` optional kind scope +
+  `PlannerWorkspaceController.queryTasks`/`entityById` (shared read over the
+  cached task snapshot) + `_TasksPageState.build` resolves through
+  `queryTasks` and maps stable IDs via `entityById` — no second hidden
+  predicate in the widget. Focused
+  `test/planner/planner_task_query_test.dart` +
+  `test/presentation/planner_task_query_adoption_test.dart` 4/4 GREEN;
+  full `flutter test --no-pub` 541/541 GREEN; `dart analyze` clean on all
+  five touched files.
+- Typed-query tracer 3 (deterministic ordering, 2026-09-25, real runs): new
+  RED test `results use deterministic ordering with ID tie-break` (failed
+  before, passed after). `PlannerTaskQuery.applyTo` now sorts matches —
+  scheduled rows first by earliest `scheduled_at`, then case-insensitive
+  title, then stable ID tie-break — independent of input order. Focused
+  query + adoption files 5/5 GREEN; full `flutter test --no-pub` 542/542
+  GREEN; `dart analyze` clean on all five touched files.
+- Typed-query tracer 4 (facet counts, 2026-09-25, real runs): new GREEN
+  test `result carries per-view facet counts under the same kind/text
+  scope`. `PlannerTaskQueryResult.facetCounts` maps every built-in view ID
+  to its matches under the SAME kind/text scope, so the workspace crown
+  reads counts from ONE shared projection instead of re-filtering per tab.
+  Focused query + adoption files 6/6 GREEN; full `flutter test --no-pub`
+  543/543 GREEN; `dart analyze` clean.
+- Typed-query tracer 5 (saved views contract, 2026-09-25, real runs):
+  `lib/planner/domain/planner_saved_view.dart` (owner-scoped
+  `PlannerSavedView`: stable ID identity, `schemaVersion` + migration to
+  `currentSchemaVersion`, forward-compatible unknown-field round trips on
+  both view and query, reserved `builtin:` namespace with remote-overwrite
+  rejection, active-view fallback to `builtin:open`, title-not-identity
+  rename) + `PlannerTaskQuery.toJson/fromJson` codec (unknown view IDs
+  fall back to `open`, unknown kinds ignored). New
+  `test/planner/planner_saved_view_test.dart` 6/6 GREEN; full
+  `flutter test --no-pub` 549/549 GREEN; `dart analyze` clean.
+- Typed-query tracer 6 (stable grouping, 2026-09-25, real runs):
+  `PlannerTaskGroup` enum (`none/schedule/project/area/category/priority/
+  status`, unknown wire falls back to `none`) + `PlannerTaskQuery.groupBy`
+  with `group_by` JSON codec + pure `_groupSlot` projection (schedule by UTC
+  calendar day, project/area by first typed relation, category by legacy
+  payload, priority by legacy payload defaulting `normal`, status by
+  lifecycle) + `PlannerTaskQueryResult.groups` descriptors in display order
+  (empty groups omitted, explicit `Unassigned` last, members keep flat
+  deterministic order). New test `grouping emits stable descriptors, omits
+  empties, Unassigned last` covers flat-empty, category merge (`work`/
+  `Work`), project split, schedule day key. Focused query + saved-view +
+  adoption files 13/13 GREEN; full `flutter test --no-pub` 550/550 GREEN;
+  `dart analyze` clean.
+- Typed-query tracer 7 (stable-ID selection, 2026-09-25, real runs):
+  `lib/planner/domain/planner_task_selection.dart` (`PlannerTaskSelection`:
+  toggle, selectAll/selectVisible scoped by eligibility, index-free
+  `selectRange` walking ordered IDs either direction with unknown anchors
+  returning unchanged, `prune` with removed-IDs + announcement summary,
+  pure `previewBulk` eligible/skipped split) + new
+  `test/planner/planner_task_selection_test.dart` 5/5 GREEN; full
+  `flutter test --no-pub` 555/555 GREEN; `dart analyze` clean.
+- Typed-query tracer 8 (query summary, 2026-09-25, real runs):
+  `PlannerTaskQuery.summary()` → `PlannerTaskQuerySummary` (view label +
+  one token per non-default constraint: kind scope, verbatim search text
+  incl. Persian, grouping; default Open yields zero tokens + `isDefault`).
+  New `test/planner/planner_task_query_summary_test.dart` 3/3 GREEN; full
+  `flutter test --no-pub` 558/558 GREEN; `dart analyze` clean.
+- Typed-query tracer 9 (Copy fidelity receipt, 2026-09-25, real runs):
+  `lib/planner/domain/planner_tasks_copy.dart` (`PlannerTasksCopy`) holds the
+  exact accepted live-copy strings from `04-copy-manifests/copy.json` for the
+  five pg-tasks pages (titles: Tasks / Search tasks / Filtered tasks / Dense
+  task workspace / Bulk task actions; shared subtitle "Search, filter and act
+  without losing the working context."). `_TasksPageState.build` crown now
+  renders `PlannerTasksCopy.defaultTitle`/`defaultSubtitle` verbatim — the
+  old paraphrase "All open work first. Narrow only when you need to." is
+  gone. New `test/planner/planner_tasks_copy_test.dart` 3/3 GREEN; the three
+  widget assertions in `perfect_workspace_page_test.dart` updated to the
+  accepted subtitle; full `flutter test --no-pub` 561/561 GREEN; `dart
+  analyze` clean. Copy fidelity is string-level only: exact runtime vs
+  preview pixel comparison remains open.
+- Typed-query tracer 10 (keyboard/shortcut contract, 2026-09-25, real runs):
+  `lib/planner/domain/planner_task_keyboard.dart` (`PlannerTaskKeyboardState`
+  pure machine). Esc consumes in order: clear search, close Refine, exit
+  selection, then defer to the shell (`consumed: false`). Select-all applies
+  only while the work field has focus. Shift+Arrow extends the stable ID
+  range from the anchor. Space toggles the focused row without moving the
+  anchor. New `test/planner/planner_task_keyboard_test.dart` 6/6 GREEN; full
+  `flutter test --no-pub` 567/567 GREEN; `dart analyze` clean. Wiring into
+ the widget hardware-shortcut path is still open.
+- Typed-query tracer 11 (keyboard wiring adapter, 2026-09-26, real runs):
+  `applyTasksKeyboardEvent` is the only bridge from live Tasks values
+  (search text, Refine disclosure, selection, ordered IDs, work-field focus)
+  into `PlannerTaskKeyboardState`. `_TasksPageState.handleTasksKey` applies
+  the returned search/Refine state and reports `consumed` so the shell only
+  sees Esc when the machine defers. New
+  `test/planner/planner_tasks_keyboard_wiring_test.dart` 3/3 GREEN; focused
+  keyboard + wiring + adoption 10/10 GREEN; full `flutter test --no-pub`
+  570/570 GREEN; `dart analyze` clean. Selection/range/Space still have no
+  visible selection UI; pixel Copy comparison remains open.
+- Typed-query tracer 12 (visible selection surface, 2026-09-26, real runs):
+  `PlannerTasksSelectionSurface` holds exactly one stable-ID set for the
+  Tasks rows: row tap/long-press toggles one ID, `alignTo` keeps it across
+  result reorder and drops IDs that left the set with an announcement.
+  `_TasksPageState` owns one surface, passes live IDs into the keyboard
+  machine, and renders `_TaskSelectionRow` (select toggle + selected ring +
+  selection semantics) around each `_AgendaRow`. New
+  `test/planner/planner_tasks_selection_surface_test.dart` 3/3 GREEN. One
+  motion-vocabulary regression (`Duration(milliseconds: 160)` in the new row)
+  was RED then fixed to `PerfectMotion.responsive(context,
+  PerfectMotion.quick)`; full `flutter test --no-pub` 573/573 GREEN; `dart
+  analyze` clean. Bulk action surface and pixel Copy comparison remain open.
+- Typed-query tracer 13 (bulk preview + receipt, 2026-09-26, real runs):
+  `lib/planner/domain/planner_task_bulk.dart`. `planTasksBulk` is a pure
+  preview: it splits the ordered selection into eligible vs skipped IDs with
+  per-row skip reasons and issues no mutation keys. `execute` freezes that
+  preview into `PlannerTasksBulkReceipt` with one `batchId`, exactly one
+  idempotency key per eligible entity, skipped reasons, and Undo eligibility
+  only when the batch applied something. An empty selection returns a no-op
+  receipt with Undo disabled. New `test/planner/planner_tasks_bulk_test.dart`
+  3/3 GREEN; full `flutter test --no-pub` 576/576 GREEN; `dart analyze`
+  clean. The receipt is domain-only: no bulk action surface in the Tasks UI
+  yet, and pixel Copy comparison remains open.
+- Typed-query tracer 14 (controller bulk execution, 2026-09-26, real runs):
+  `PlannerWorkspaceController.applyBulkReceipt` executes a frozen
+  `PlannerTasksBulkReceipt` against exactly its previewed eligible IDs: rows
+  are re-fetched owner-scoped, `complete`/`reopen` flow through the existing
+  task-progress mutation path, `archive`/`delete` through `softDeleteEntity`,
+  `restore` through `restoreEntity`, `schedule`/`move` stay skipped until the
+  Refine surface exists. Gone rows stay skipped with their reason; keys are
+  UUID v5 (the store rejects any other mutation-ID shape — two RED rounds
+  first proved the text-key and hand-rolled UUID shapes fail). Returns
+  `PlannerTasksBulkReport` with batchId, applied/skipped IDs and reasons.
+  New `test/presentation/planner_tasks_bulk_execution_test.dart` 2/2 GREEN
+  (bulk complete re-projects with progress actually completed; bulk archive
+  tombstones and leaves the active projection); full
+  `flutter test --no-pub` 578/578 GREEN; `dart analyze` clean. No bulk
+  action surface in the Tasks UI yet; pixel Copy comparison remains open.
+- Typed-query tracer 15 (bulk action surface widgets, 2026-09-26, real runs):
+  `lib/presentation/tasks_bulk_bar.dart` (owner `ws-bulk-bar`). `TasksBulkBar`
+  is intent-only: counts (selected/eligible/skipped) plus Preview/Clear intents
+  with keys `tasks-bulk-bar`/`tasks-bulk-preview`/`tasks-bulk-clear`, 48dp
+  targets, one semantic owner (`Bulk task actions. <accepted subtitle>` +
+  counts value). `TasksBulkPreviewSheet` lists eligible IDs plus skipped IDs
+  with reasons, then Confirm/Cancel intents (`tasks-bulk-confirm`/
+  `tasks-bulk-cancel`). No controller/store imports — host executes the frozen
+  receipt after Confirm. Motion only via `PerfectMotion.responsive/quick`;
+  copy via `PlannerTasksCopy` (`pg-tasks-bulk` title + shared subtitle).
+  New `test/presentation/tasks_bulk_bar_test.dart` 5/5 GREEN (domain preview +
+  receipt + empty no-op; bar counts/keys/semantics/callbacks; sheet
+  lists/keys/callbacks); full `flutter test --no-pub` 583/583 GREEN; `dart
+  analyze` clean (one unused-import lint found and fixed). Tracer 16 (below)
+  closed the wiring: bar/sheet are now live inside `_TasksPageState`.
+- Typed-query tracer 16 (Tasks bulk wiring, 2026-09-26, real runs):
+  `lib/planner/domain/planner_task_bulk_scope.dart` (`planVisibleTasksBulk`)
+  is the ONE shared eligibility rule: the page builds the bulk bar counts and
+  the preview sheet from the same helper, so counts and preview row split can
+  never disagree (`complete` = active tasks only; `reopen` = completed only;
+  missing rows stay skipped with a local reason). `_TasksPageState` renders
+  `TasksBulkBar` on non-empty selection (keys `tasks-bulk-bar`/
+  `tasks-bulk-preview`/`tasks-bulk-clear`), opens `TasksBulkPreviewSheet`
+  with the frozen plan (`tasks-bulk-confirm`/`tasks-bulk-cancel`), Confirm
+  executes `plan.execute` + `applyBulkReceipt` exactly once (re-entrant guard),
+  then clears selection and announces counts
+  (`Bulk <action> applied to <n> of <m> selected; <k> skipped.`); failure
+  keeps selection and announces without overwriting. `TasksBulkPreviewSheet`
+  gained optional `onConfirmAsync` (sync `onConfirm` path kept, asserted
+  exactly-one-present). New
+  `test/planner/planner_tasks_preview_scope_test.dart` 3/3 GREEN (order +
+  split, one UUID-v5 key per eligible, gone rows stay skipped) plus a new
+  page test `Tasks selection shows bulk bar and applies previewed complete`
+  (bar appear/clear → preview sheet → confirm receipt → counts announced →
+  bar dismissed; verified GREEN via `-d windows` (2026-09-26) and via global
+  host (2026-09-26: page file 98/98 GREEN, full suite 587/587 GREEN). Note: `_openTasksBulkSheet` comment says "No Undo for
+  bulk" while the domain receipts carry `undoEligible` — closed by tracer 17
+  (below): a page-level Undo surface now exists.
+- Typed-query tracer 17 (bulk Undo, 2026-09-26, real runs): `applyBulkReceipt`
+  captures the exact per-row prior outcome for `complete`/`reopen` rows and
+  the report now carries the applied per-entity idempotency keys;
+  `undoBulkReceipt` restores those priors only while the batch is still
+  authoritative on every applied row (bulk key still latest + stored outcome
+  still equals the bulk-applied outcome). One moved row expires the whole
+  Undo (no partial restore); a successful Undo consumes the snapshot
+  (single-use); archive/delete/restore/schedule/move return false. The Tasks
+  result SnackBar offers Undo only when `report.undoEligible`, with honest
+  restored/expired/failure announcements. Tests: new controller test (Undo
+  restores pending, then a newer single-row tap expires the next Undo) +
+  extended page test (result Undo → `Bulk change undone. Prior outcomes
+  restored.`); full suite 588/588 GREEN; analyze clean.
+- Typed-query tracer 18 (sort control, 2026-09-26, real runs):
+  `PlannerTaskSortMode` (scheduled/title/recent) on the SAME shared
+  projection: `withSortMode` reorders resolved rows, membership untouched —
+  never a second hidden predicate. `toJson`/`fromJson` round-trip `sort_mode`
+  (unknown → scheduled default); summary emits `Sorted by Title/Recent`
+  token only for non-default. The Refine deck gained a SORT group wired to
+  the page query (default label `Due date`, not `Scheduled`, so the STATUS
+  and SORT chips never collide). Tests: query test (same members, scheduled
+  first + title A–Z) + copy asserts updated (`Open · All · Due date`); caught
+  one real collision (STATUS `Scheduled` chip vs SORT `Scheduled` chip broke
+  a right-click test finder) and fixed at the root by renaming the sort
+  label; full suite 589/589 GREEN; analyze clean.
+- Typed-query tracer 19 (group-by control, 2026-09-26, real runs):
+  `_TaskGroupMode` (none/schedule/project/category/priority/status) wired to
+  the SAME shared query (`groupBy` on `PlannerTaskQuery`): the page resolves
+  ONE projection via `queryTasks`, maps IDs through a local `byId` snapshot
+  (no second hidden predicate), and renders `result.groups` as
+  `_TaskGroupHeader` sections (title + count, header semantics) with the same
+  `_AgendaRow` rows underneath. The Refine deck gained a GROUP group; the
+  collapsed summary appends `· Schedule/Project/...` only when grouped
+  (ungrouped copy stays `Open · All · Due date`). Proof: new widget test
+  (`GROUP chips render shared group sections` — expand deck, `ensureVisible`
+  the Schedule chip before tapping since it sits below the fold, assert
+  selected chip + grouped summary + row still visible); full suite 590/590
+  GREEN; analyze clean.
+- Typed-query tracer 20 (saved-view switcher, 2026-09-27, real runs):
+  `PlannerSavedView.builtInViews` (Inbox/Open/Scheduled/Completed, stable
+  `builtin:` IDs mirroring the four built-in query views, owner taken from the
+  live controller — never a placeholder) renders a 48dp
+  `_SavedViewSwitcher` above the collapsed Refine deck. Applying a view is
+  source-of-truth: the deck restores the full saved query (filter, kind
+  scope, search text, sortMode, groupBy) through shared mapping helpers; any
+  refine edit clears the active ID except lifecycle edits, which move it to
+  the matching built-in view. The duplicate-chip collision (switcher and
+  Refine share Inbox/Open/Scheduled/Completed labels) is fixed at the root:
+  Refine chips carry stable `refine-<group>-<label>` keys and all widget
+  tests pin keys instead of bare text. Proof: new page test
+  (`saved-view switcher applies built-in views` — default Open selected,
+  Completed resolves through the shared projection, re-selecting Open resets
+  a live search narrowing and restores rows, Refine Inbox moves the active
+  view) + domain test `tracer 20b` (narrowed vs restored query cover all six
+  fields); page file 100 GREEN, saved-view file 8/8 GREEN, full
+  suite 593/593 GREEN; analyze clean.
+- Typed-query tracer 21 (active-view preference persistence, 2026-09-27,
+  real runs): `PerfectPreferences.tasksActiveViewIdKey` stores the stable
+  view ID only — never the query definition, which lives in the saved view.
+  `_applySavedView` and lifecycle Refine edits persist the matched built-in
+  ID (`unawaited`, non-blocking); a fresh page state restores it once in
+  `initState` through `PlannerSavedView.resolveActiveViewId` (unknown or
+  missing IDs fall back to `builtin:open`, never inventing an ID), with an
+  `_activeViewLoaded` guard so a pending read cannot overwrite a view the
+  owner already touched in the same frame. Proof: two new preference tests
+  (ID round-trip + unknown-ID fallback) and a new page test (select
+  Completed, unmount the workspace, rebuild — Completed is still active);
+  preferences + page files 106/106 GREEN, full suite 596/596 GREEN, analyze
+  clean.
+- Typed-query tracer 22 (collapsible group sections, 2026-09-27, real runs):
+  `_TaskGroupHeader` is a 48dp+ semantic button with expanded/collapsed state,
+  keyboard/screen-reader label, and deterministic section key; tapping it hides
+  only that group's rows and tapping again restores them. Collapse state is
+  per-page-state only (`_collapsedTaskGroupKeys`), so saved-view switches and
+  remounts never inherit stale collapse state. Query membership, sort, filter,
+  and view contracts stay on the same `PlannerTaskQuery` projection — collapse
+  only affects rendering. Proof: new page test
+  (`group header collapses and restores its section` — row removed on collapse,
+  semantic expanded=false announced, row restored on expand); focused page file
+  102/102 GREEN, `dart analyze` clean, `git diff --check` clean, full suite
+  597/597 GREEN.
+- Typed-query tracer 23 (recurring built-in view, 2026-09-27, real runs):
+  the fifth stable built-in ID `builtin:recurring` maps to the shared
+  `PlannerTaskQuery.recurringViewId`, matching only active
+  `PlannerEntityKind.recurringTask` entities, never one-offs. Facet counts and
+  query labels use the same projection; the Tasks status deck and saved-view
+  switcher expose Recurring with a distinct empty state. A 390×844 page test
+  proves the one-off row disappears and the empty recurring view is selected;
+  domain tests cover stable-ID JSON round trip and membership. Adding the
+  fifth chip exposed off-screen switcher tests: their horizontal `Scrollable`
+  is now found under the keyed `ListView` and advanced with `jumpTo` (not an
+  unpumped `animateTo` or a vertical drag). Existing tracer 20/21 page tests
+  2/2 GREEN; recurring page test 1/1 GREEN; two domain files 17/17 GREEN;
+  full suite 600/600 GREEN; `dart analyze lib/ test/` and `git diff --check`
+  clean. This does not claim custom named-view persistence/sync or native
+  visual acceptance.
+- Typed-query tracer 25 (personal saved-view sync, 2026-09-28, real runs):
+  owner-scoped saved-view definitions now converge through a dedicated
+  additive journal instead of borrowing the task outbox/RPC: schema v4 adds
+  `planner_saved_views.revision` plus a separate `saved_view_cursor` in
+  `planner_sync_metadata`; Supabase gains `planner_saved_views`,
+  `planner_saved_view_operations`, `apply_saved_view_mutation` and
+  `pull_planner_saved_view_changes`; task RPCs and UUID receipts stay
+  untouched, while personal identity stays text `view-<uuid>` and built-ins
+  stay local-only (rejected at store/sync edges, never written or synced).
+  Every saved write emits one immutable whole-definition outbox snapshot
+  (`/` path), so two queued renames push `['Bills','Utilities']` rather than
+  resending the newest row twice; stale bases return a true conflict while
+  the local definition survives, and recovery stores the server snapshot on
+  the original ID plus a new `Recovered copy` ID. Task and saved-view pulls
+  keep independent durable cursors, so advancing one journal never resets or
+  overwrites the other; legacy/offline gateways without the saved-view
+  journal keep their task-only contract. Proof: new sync file 6/6 GREEN
+  (envelope, cursor, queued snapshots, unknown-field convergence,
+  Recovered-copy handoff, built-in guard) + store 4/4 + repo 13/13 GREEN;
+  Supabase contract validator plus PGlite migration/proof PASS
+  (upsert/idempotent/stale-conflict/pull); full suite 611/611 GREEN;
+  `dart analyze` and `git diff --check` clean (commit `7c6c7af`).
+- This does **not** close Stage 36. Copy gate verdict (2026-09-25, design-only,
+  exact paths): all five tasks composition pages
+  (`design/03-pages/pg-tasks-{default,dense,filtered,search,bulk}/decision.md`)
+  record `Accepted under owner-delegated autonomous design authority: yes` as
+  design authority only — explicitly not runtime fidelity proof. Runtime/query/
+  view implementation remains blocked on (a) Copy fidelity (exact runtime vs
+  preview comparison per `04-copy-manifests/copy.json`), (b) saved views
+  (built-in switcher is DONE via tracer 20; active-view preference
+  persistence is DONE via tracer 21; custom named-view local persistence +
+  Tasks wiring is DONE via tracer 24; sync convergence remains), and (c)
+  full verification evidence.

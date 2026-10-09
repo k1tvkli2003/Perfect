@@ -632,6 +632,421 @@ class PlannerEntitiesCompanion extends UpdateCompanion<PlannerEntityRow> {
   }
 }
 
+class $PlannerSavedViewsTable extends PlannerSavedViews
+    with TableInfo<$PlannerSavedViewsTable, PlannerSavedViewRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlannerSavedViewsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _definitionJsonMeta = const VerificationMeta(
+    'definitionJson',
+  );
+  @override
+  late final GeneratedColumn<String> definitionJson = GeneratedColumn<String>(
+    'definition_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    ownerId,
+    definitionJson,
+    revision,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'planner_saved_views';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlannerSavedViewRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
+    if (data.containsKey('definition_json')) {
+      context.handle(
+        _definitionJsonMeta,
+        definitionJson.isAcceptableOrUnknown(
+          data['definition_json']!,
+          _definitionJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_definitionJsonMeta);
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {ownerId, id};
+  @override
+  PlannerSavedViewRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlannerSavedViewRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      definitionJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}definition_json'],
+      )!,
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $PlannerSavedViewsTable createAlias(String alias) {
+    return $PlannerSavedViewsTable(attachedDatabase, alias);
+  }
+}
+
+class PlannerSavedViewRow extends DataClass
+    implements Insertable<PlannerSavedViewRow> {
+  final String id;
+  final String ownerId;
+  final String definitionJson;
+  final int revision;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const PlannerSavedViewRow({
+    required this.id,
+    required this.ownerId,
+    required this.definitionJson,
+    required this.revision,
+    required this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['definition_json'] = Variable<String>(definitionJson);
+    map['revision'] = Variable<int>(revision);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  PlannerSavedViewsCompanion toCompanion(bool nullToAbsent) {
+    return PlannerSavedViewsCompanion(
+      id: Value(id),
+      ownerId: Value(ownerId),
+      definitionJson: Value(definitionJson),
+      revision: Value(revision),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory PlannerSavedViewRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlannerSavedViewRow(
+      id: serializer.fromJson<String>(json['id']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      definitionJson: serializer.fromJson<String>(json['definitionJson']),
+      revision: serializer.fromJson<int>(json['revision']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'definitionJson': serializer.toJson<String>(definitionJson),
+      'revision': serializer.toJson<int>(revision),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  PlannerSavedViewRow copyWith({
+    String? id,
+    String? ownerId,
+    String? definitionJson,
+    int? revision,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => PlannerSavedViewRow(
+    id: id ?? this.id,
+    ownerId: ownerId ?? this.ownerId,
+    definitionJson: definitionJson ?? this.definitionJson,
+    revision: revision ?? this.revision,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  PlannerSavedViewRow copyWithCompanion(PlannerSavedViewsCompanion data) {
+    return PlannerSavedViewRow(
+      id: data.id.present ? data.id.value : this.id,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      definitionJson: data.definitionJson.present
+          ? data.definitionJson.value
+          : this.definitionJson,
+      revision: data.revision.present ? data.revision.value : this.revision,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlannerSavedViewRow(')
+          ..write('id: $id, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('definitionJson: $definitionJson, ')
+          ..write('revision: $revision, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, ownerId, definitionJson, revision, updatedAt, deletedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlannerSavedViewRow &&
+          other.id == this.id &&
+          other.ownerId == this.ownerId &&
+          other.definitionJson == this.definitionJson &&
+          other.revision == this.revision &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class PlannerSavedViewsCompanion extends UpdateCompanion<PlannerSavedViewRow> {
+  final Value<String> id;
+  final Value<String> ownerId;
+  final Value<String> definitionJson;
+  final Value<int> revision;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const PlannerSavedViewsCompanion({
+    this.id = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.definitionJson = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PlannerSavedViewsCompanion.insert({
+    required String id,
+    required String ownerId,
+    required String definitionJson,
+    this.revision = const Value.absent(),
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       ownerId = Value(ownerId),
+       definitionJson = Value(definitionJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<PlannerSavedViewRow> custom({
+    Expression<String>? id,
+    Expression<String>? ownerId,
+    Expression<String>? definitionJson,
+    Expression<int>? revision,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (definitionJson != null) 'definition_json': definitionJson,
+      if (revision != null) 'revision': revision,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PlannerSavedViewsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? ownerId,
+    Value<String>? definitionJson,
+    Value<int>? revision,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return PlannerSavedViewsCompanion(
+      id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
+      definitionJson: definitionJson ?? this.definitionJson,
+      revision: revision ?? this.revision,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (definitionJson.present) {
+      map['definition_json'] = Variable<String>(definitionJson.value);
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlannerSavedViewsCompanion(')
+          ..write('id: $id, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('definitionJson: $definitionJson, ')
+          ..write('revision: $revision, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PlannerOccurrencesTable extends PlannerOccurrences
     with TableInfo<$PlannerOccurrencesTable, PlannerOccurrenceRow> {
   @override
@@ -3127,6 +3542,17 @@ class $PlannerSyncMetadataTable extends PlannerSyncMetadata
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _savedViewCursorMeta = const VerificationMeta(
+    'savedViewCursor',
+  );
+  @override
+  late final GeneratedColumn<String> savedViewCursor = GeneratedColumn<String>(
+    'saved_view_cursor',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _lastSyncAtMeta = const VerificationMeta(
     'lastSyncAt',
   );
@@ -3164,6 +3590,7 @@ class $PlannerSyncMetadataTable extends PlannerSyncMetadata
   List<GeneratedColumn> get $columns => [
     ownerId,
     remoteCursor,
+    savedViewCursor,
     lastSyncAt,
     lastSuccessfulSyncAt,
     lastError,
@@ -3194,6 +3621,15 @@ class $PlannerSyncMetadataTable extends PlannerSyncMetadata
         remoteCursor.isAcceptableOrUnknown(
           data['remote_cursor']!,
           _remoteCursorMeta,
+        ),
+      );
+    }
+    if (data.containsKey('saved_view_cursor')) {
+      context.handle(
+        _savedViewCursorMeta,
+        savedViewCursor.isAcceptableOrUnknown(
+          data['saved_view_cursor']!,
+          _savedViewCursorMeta,
         ),
       );
     }
@@ -3238,6 +3674,10 @@ class $PlannerSyncMetadataTable extends PlannerSyncMetadata
         DriftSqlType.string,
         data['${effectivePrefix}remote_cursor'],
       ),
+      savedViewCursor: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}saved_view_cursor'],
+      ),
       lastSyncAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_sync_at'],
@@ -3263,12 +3703,14 @@ class PlannerSyncMetadataRow extends DataClass
     implements Insertable<PlannerSyncMetadataRow> {
   final String ownerId;
   final String? remoteCursor;
+  final String? savedViewCursor;
   final DateTime? lastSyncAt;
   final DateTime? lastSuccessfulSyncAt;
   final String? lastError;
   const PlannerSyncMetadataRow({
     required this.ownerId,
     this.remoteCursor,
+    this.savedViewCursor,
     this.lastSyncAt,
     this.lastSuccessfulSyncAt,
     this.lastError,
@@ -3279,6 +3721,9 @@ class PlannerSyncMetadataRow extends DataClass
     map['owner_id'] = Variable<String>(ownerId);
     if (!nullToAbsent || remoteCursor != null) {
       map['remote_cursor'] = Variable<String>(remoteCursor);
+    }
+    if (!nullToAbsent || savedViewCursor != null) {
+      map['saved_view_cursor'] = Variable<String>(savedViewCursor);
     }
     if (!nullToAbsent || lastSyncAt != null) {
       map['last_sync_at'] = Variable<DateTime>(lastSyncAt);
@@ -3298,6 +3743,9 @@ class PlannerSyncMetadataRow extends DataClass
       remoteCursor: remoteCursor == null && nullToAbsent
           ? const Value.absent()
           : Value(remoteCursor),
+      savedViewCursor: savedViewCursor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(savedViewCursor),
       lastSyncAt: lastSyncAt == null && nullToAbsent
           ? const Value.absent()
           : Value(lastSyncAt),
@@ -3318,6 +3766,7 @@ class PlannerSyncMetadataRow extends DataClass
     return PlannerSyncMetadataRow(
       ownerId: serializer.fromJson<String>(json['ownerId']),
       remoteCursor: serializer.fromJson<String?>(json['remoteCursor']),
+      savedViewCursor: serializer.fromJson<String?>(json['savedViewCursor']),
       lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
       lastSuccessfulSyncAt: serializer.fromJson<DateTime?>(
         json['lastSuccessfulSyncAt'],
@@ -3331,6 +3780,7 @@ class PlannerSyncMetadataRow extends DataClass
     return <String, dynamic>{
       'ownerId': serializer.toJson<String>(ownerId),
       'remoteCursor': serializer.toJson<String?>(remoteCursor),
+      'savedViewCursor': serializer.toJson<String?>(savedViewCursor),
       'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
       'lastSuccessfulSyncAt': serializer.toJson<DateTime?>(
         lastSuccessfulSyncAt,
@@ -3342,12 +3792,16 @@ class PlannerSyncMetadataRow extends DataClass
   PlannerSyncMetadataRow copyWith({
     String? ownerId,
     Value<String?> remoteCursor = const Value.absent(),
+    Value<String?> savedViewCursor = const Value.absent(),
     Value<DateTime?> lastSyncAt = const Value.absent(),
     Value<DateTime?> lastSuccessfulSyncAt = const Value.absent(),
     Value<String?> lastError = const Value.absent(),
   }) => PlannerSyncMetadataRow(
     ownerId: ownerId ?? this.ownerId,
     remoteCursor: remoteCursor.present ? remoteCursor.value : this.remoteCursor,
+    savedViewCursor: savedViewCursor.present
+        ? savedViewCursor.value
+        : this.savedViewCursor,
     lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
     lastSuccessfulSyncAt: lastSuccessfulSyncAt.present
         ? lastSuccessfulSyncAt.value
@@ -3360,6 +3814,9 @@ class PlannerSyncMetadataRow extends DataClass
       remoteCursor: data.remoteCursor.present
           ? data.remoteCursor.value
           : this.remoteCursor,
+      savedViewCursor: data.savedViewCursor.present
+          ? data.savedViewCursor.value
+          : this.savedViewCursor,
       lastSyncAt: data.lastSyncAt.present
           ? data.lastSyncAt.value
           : this.lastSyncAt,
@@ -3375,6 +3832,7 @@ class PlannerSyncMetadataRow extends DataClass
     return (StringBuffer('PlannerSyncMetadataRow(')
           ..write('ownerId: $ownerId, ')
           ..write('remoteCursor: $remoteCursor, ')
+          ..write('savedViewCursor: $savedViewCursor, ')
           ..write('lastSyncAt: $lastSyncAt, ')
           ..write('lastSuccessfulSyncAt: $lastSuccessfulSyncAt, ')
           ..write('lastError: $lastError')
@@ -3386,6 +3844,7 @@ class PlannerSyncMetadataRow extends DataClass
   int get hashCode => Object.hash(
     ownerId,
     remoteCursor,
+    savedViewCursor,
     lastSyncAt,
     lastSuccessfulSyncAt,
     lastError,
@@ -3396,6 +3855,7 @@ class PlannerSyncMetadataRow extends DataClass
       (other is PlannerSyncMetadataRow &&
           other.ownerId == this.ownerId &&
           other.remoteCursor == this.remoteCursor &&
+          other.savedViewCursor == this.savedViewCursor &&
           other.lastSyncAt == this.lastSyncAt &&
           other.lastSuccessfulSyncAt == this.lastSuccessfulSyncAt &&
           other.lastError == this.lastError);
@@ -3405,6 +3865,7 @@ class PlannerSyncMetadataCompanion
     extends UpdateCompanion<PlannerSyncMetadataRow> {
   final Value<String> ownerId;
   final Value<String?> remoteCursor;
+  final Value<String?> savedViewCursor;
   final Value<DateTime?> lastSyncAt;
   final Value<DateTime?> lastSuccessfulSyncAt;
   final Value<String?> lastError;
@@ -3412,6 +3873,7 @@ class PlannerSyncMetadataCompanion
   const PlannerSyncMetadataCompanion({
     this.ownerId = const Value.absent(),
     this.remoteCursor = const Value.absent(),
+    this.savedViewCursor = const Value.absent(),
     this.lastSyncAt = const Value.absent(),
     this.lastSuccessfulSyncAt = const Value.absent(),
     this.lastError = const Value.absent(),
@@ -3420,6 +3882,7 @@ class PlannerSyncMetadataCompanion
   PlannerSyncMetadataCompanion.insert({
     required String ownerId,
     this.remoteCursor = const Value.absent(),
+    this.savedViewCursor = const Value.absent(),
     this.lastSyncAt = const Value.absent(),
     this.lastSuccessfulSyncAt = const Value.absent(),
     this.lastError = const Value.absent(),
@@ -3428,6 +3891,7 @@ class PlannerSyncMetadataCompanion
   static Insertable<PlannerSyncMetadataRow> custom({
     Expression<String>? ownerId,
     Expression<String>? remoteCursor,
+    Expression<String>? savedViewCursor,
     Expression<DateTime>? lastSyncAt,
     Expression<DateTime>? lastSuccessfulSyncAt,
     Expression<String>? lastError,
@@ -3436,6 +3900,7 @@ class PlannerSyncMetadataCompanion
     return RawValuesInsertable({
       if (ownerId != null) 'owner_id': ownerId,
       if (remoteCursor != null) 'remote_cursor': remoteCursor,
+      if (savedViewCursor != null) 'saved_view_cursor': savedViewCursor,
       if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
       if (lastSuccessfulSyncAt != null)
         'last_successful_sync_at': lastSuccessfulSyncAt,
@@ -3447,6 +3912,7 @@ class PlannerSyncMetadataCompanion
   PlannerSyncMetadataCompanion copyWith({
     Value<String>? ownerId,
     Value<String?>? remoteCursor,
+    Value<String?>? savedViewCursor,
     Value<DateTime?>? lastSyncAt,
     Value<DateTime?>? lastSuccessfulSyncAt,
     Value<String?>? lastError,
@@ -3455,6 +3921,7 @@ class PlannerSyncMetadataCompanion
     return PlannerSyncMetadataCompanion(
       ownerId: ownerId ?? this.ownerId,
       remoteCursor: remoteCursor ?? this.remoteCursor,
+      savedViewCursor: savedViewCursor ?? this.savedViewCursor,
       lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       lastSuccessfulSyncAt: lastSuccessfulSyncAt ?? this.lastSuccessfulSyncAt,
       lastError: lastError ?? this.lastError,
@@ -3470,6 +3937,9 @@ class PlannerSyncMetadataCompanion
     }
     if (remoteCursor.present) {
       map['remote_cursor'] = Variable<String>(remoteCursor.value);
+    }
+    if (savedViewCursor.present) {
+      map['saved_view_cursor'] = Variable<String>(savedViewCursor.value);
     }
     if (lastSyncAt.present) {
       map['last_sync_at'] = Variable<DateTime>(lastSyncAt.value);
@@ -3493,6 +3963,7 @@ class PlannerSyncMetadataCompanion
     return (StringBuffer('PlannerSyncMetadataCompanion(')
           ..write('ownerId: $ownerId, ')
           ..write('remoteCursor: $remoteCursor, ')
+          ..write('savedViewCursor: $savedViewCursor, ')
           ..write('lastSyncAt: $lastSyncAt, ')
           ..write('lastSuccessfulSyncAt: $lastSuccessfulSyncAt, ')
           ..write('lastError: $lastError, ')
@@ -5218,6 +5689,8 @@ abstract class _$PlannerDatabase extends GeneratedDatabase {
   late final $PlannerEntitiesTable plannerEntities = $PlannerEntitiesTable(
     this,
   );
+  late final $PlannerSavedViewsTable plannerSavedViews =
+      $PlannerSavedViewsTable(this);
   late final $PlannerOccurrencesTable plannerOccurrences =
       $PlannerOccurrencesTable(this);
   late final $PlannerFocusSessionsTable plannerFocusSessions =
@@ -5239,6 +5712,7 @@ abstract class _$PlannerDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     plannerEntities,
+    plannerSavedViews,
     plannerOccurrences,
     plannerFocusSessions,
     plannerOutboxOperations,
@@ -5558,6 +6032,240 @@ typedef $$PlannerEntitiesTableProcessedTableManager =
         >,
       ),
       PlannerEntityRow,
+      PrefetchHooks Function()
+    >;
+typedef $$PlannerSavedViewsTableCreateCompanionBuilder =
+    PlannerSavedViewsCompanion Function({
+      required String id,
+      required String ownerId,
+      required String definitionJson,
+      Value<int> revision,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$PlannerSavedViewsTableUpdateCompanionBuilder =
+    PlannerSavedViewsCompanion Function({
+      Value<String> id,
+      Value<String> ownerId,
+      Value<String> definitionJson,
+      Value<int> revision,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+class $$PlannerSavedViewsTableFilterComposer
+    extends Composer<_$PlannerDatabase, $PlannerSavedViewsTable> {
+  $$PlannerSavedViewsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get definitionJson => $composableBuilder(
+    column: $table.definitionJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PlannerSavedViewsTableOrderingComposer
+    extends Composer<_$PlannerDatabase, $PlannerSavedViewsTable> {
+  $$PlannerSavedViewsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get definitionJson => $composableBuilder(
+    column: $table.definitionJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PlannerSavedViewsTableAnnotationComposer
+    extends Composer<_$PlannerDatabase, $PlannerSavedViewsTable> {
+  $$PlannerSavedViewsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<String> get definitionJson => $composableBuilder(
+    column: $table.definitionJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$PlannerSavedViewsTableTableManager
+    extends
+        RootTableManager<
+          _$PlannerDatabase,
+          $PlannerSavedViewsTable,
+          PlannerSavedViewRow,
+          $$PlannerSavedViewsTableFilterComposer,
+          $$PlannerSavedViewsTableOrderingComposer,
+          $$PlannerSavedViewsTableAnnotationComposer,
+          $$PlannerSavedViewsTableCreateCompanionBuilder,
+          $$PlannerSavedViewsTableUpdateCompanionBuilder,
+          (
+            PlannerSavedViewRow,
+            BaseReferences<
+              _$PlannerDatabase,
+              $PlannerSavedViewsTable,
+              PlannerSavedViewRow
+            >,
+          ),
+          PlannerSavedViewRow,
+          PrefetchHooks Function()
+        > {
+  $$PlannerSavedViewsTableTableManager(
+    _$PlannerDatabase db,
+    $PlannerSavedViewsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlannerSavedViewsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PlannerSavedViewsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PlannerSavedViewsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> ownerId = const Value.absent(),
+                Value<String> definitionJson = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlannerSavedViewsCompanion(
+                id: id,
+                ownerId: ownerId,
+                definitionJson: definitionJson,
+                revision: revision,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String ownerId,
+                required String definitionJson,
+                Value<int> revision = const Value.absent(),
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlannerSavedViewsCompanion.insert(
+                id: id,
+                ownerId: ownerId,
+                definitionJson: definitionJson,
+                revision: revision,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PlannerSavedViewsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PlannerDatabase,
+      $PlannerSavedViewsTable,
+      PlannerSavedViewRow,
+      $$PlannerSavedViewsTableFilterComposer,
+      $$PlannerSavedViewsTableOrderingComposer,
+      $$PlannerSavedViewsTableAnnotationComposer,
+      $$PlannerSavedViewsTableCreateCompanionBuilder,
+      $$PlannerSavedViewsTableUpdateCompanionBuilder,
+      (
+        PlannerSavedViewRow,
+        BaseReferences<
+          _$PlannerDatabase,
+          $PlannerSavedViewsTable,
+          PlannerSavedViewRow
+        >,
+      ),
+      PlannerSavedViewRow,
       PrefetchHooks Function()
     >;
 typedef $$PlannerOccurrencesTableCreateCompanionBuilder =
@@ -6749,6 +7457,7 @@ typedef $$PlannerSyncMetadataTableCreateCompanionBuilder =
     PlannerSyncMetadataCompanion Function({
       required String ownerId,
       Value<String?> remoteCursor,
+      Value<String?> savedViewCursor,
       Value<DateTime?> lastSyncAt,
       Value<DateTime?> lastSuccessfulSyncAt,
       Value<String?> lastError,
@@ -6758,6 +7467,7 @@ typedef $$PlannerSyncMetadataTableUpdateCompanionBuilder =
     PlannerSyncMetadataCompanion Function({
       Value<String> ownerId,
       Value<String?> remoteCursor,
+      Value<String?> savedViewCursor,
       Value<DateTime?> lastSyncAt,
       Value<DateTime?> lastSuccessfulSyncAt,
       Value<String?> lastError,
@@ -6780,6 +7490,11 @@ class $$PlannerSyncMetadataTableFilterComposer
 
   ColumnFilters<String> get remoteCursor => $composableBuilder(
     column: $table.remoteCursor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get savedViewCursor => $composableBuilder(
+    column: $table.savedViewCursor,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6818,6 +7533,11 @@ class $$PlannerSyncMetadataTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get savedViewCursor => $composableBuilder(
+    column: $table.savedViewCursor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get lastSyncAt => $composableBuilder(
     column: $table.lastSyncAt,
     builder: (column) => ColumnOrderings(column),
@@ -6848,6 +7568,11 @@ class $$PlannerSyncMetadataTableAnnotationComposer
 
   GeneratedColumn<String> get remoteCursor => $composableBuilder(
     column: $table.remoteCursor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get savedViewCursor => $composableBuilder(
+    column: $table.savedViewCursor,
     builder: (column) => column,
   );
 
@@ -6910,6 +7635,7 @@ class $$PlannerSyncMetadataTableTableManager
               ({
                 Value<String> ownerId = const Value.absent(),
                 Value<String?> remoteCursor = const Value.absent(),
+                Value<String?> savedViewCursor = const Value.absent(),
                 Value<DateTime?> lastSyncAt = const Value.absent(),
                 Value<DateTime?> lastSuccessfulSyncAt = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
@@ -6917,6 +7643,7 @@ class $$PlannerSyncMetadataTableTableManager
               }) => PlannerSyncMetadataCompanion(
                 ownerId: ownerId,
                 remoteCursor: remoteCursor,
+                savedViewCursor: savedViewCursor,
                 lastSyncAt: lastSyncAt,
                 lastSuccessfulSyncAt: lastSuccessfulSyncAt,
                 lastError: lastError,
@@ -6926,6 +7653,7 @@ class $$PlannerSyncMetadataTableTableManager
               ({
                 required String ownerId,
                 Value<String?> remoteCursor = const Value.absent(),
+                Value<String?> savedViewCursor = const Value.absent(),
                 Value<DateTime?> lastSyncAt = const Value.absent(),
                 Value<DateTime?> lastSuccessfulSyncAt = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
@@ -6933,6 +7661,7 @@ class $$PlannerSyncMetadataTableTableManager
               }) => PlannerSyncMetadataCompanion.insert(
                 ownerId: ownerId,
                 remoteCursor: remoteCursor,
+                savedViewCursor: savedViewCursor,
                 lastSyncAt: lastSyncAt,
                 lastSuccessfulSyncAt: lastSuccessfulSyncAt,
                 lastError: lastError,
@@ -7853,6 +8582,8 @@ class $PlannerDatabaseManager {
   $PlannerDatabaseManager(this._db);
   $$PlannerEntitiesTableTableManager get plannerEntities =>
       $$PlannerEntitiesTableTableManager(_db, _db.plannerEntities);
+  $$PlannerSavedViewsTableTableManager get plannerSavedViews =>
+      $$PlannerSavedViewsTableTableManager(_db, _db.plannerSavedViews);
   $$PlannerOccurrencesTableTableManager get plannerOccurrences =>
       $$PlannerOccurrencesTableTableManager(_db, _db.plannerOccurrences);
   $$PlannerFocusSessionsTableTableManager get plannerFocusSessions =>

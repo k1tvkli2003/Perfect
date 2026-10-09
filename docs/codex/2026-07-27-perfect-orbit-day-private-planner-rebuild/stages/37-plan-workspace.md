@@ -1,6 +1,6 @@
 # Stage 37 — Plan workspace: day, week and month
 
-Status: pending  
+Status: blocked — Stage 03–05 preview/Copy gate plus temporal projection, drag/resize, unscheduled-tray, and keyboard contracts have no recorded autonomous acceptance; existing projection/edit suites remain GREEN as characterization only
 Depends on: accepted Stages 03–05 preview/copy contract; Stages 08, 12–13,
 17–18, 22–25, 31–36  
 Primary surfaces: Plan day/week/month, unscheduled tray, time blocking,
@@ -334,3 +334,12 @@ install-ready artifacts. Record exact SHA, schema/version change, runtime eviden
 internally accepted preview/decomposition paths, reference/runtime/diff evidence, notification
 caveats and artifact hashes; restore clean `main`-only state while
 preserving the retained pre-rebuild stash.
+
+### Evidence — 2026-09-25 (real runs, Stage 37 characterization only)
+
+- Existing projection/edit timing behavior is GREEN as characterization
+  (`planner_editor_test.dart` **EXIT:0, 17 pass**; Today projection/retry
+  vectors in the integrated **EXIT:0, 198 pass** gate).
+- This does **not** close Stage 37. Temporal projection, day/week/month
+  compositions, tray/drag/resize/keyboard contracts, and preview acceptance
+  remain blocked with no recorded autonomous acceptance.

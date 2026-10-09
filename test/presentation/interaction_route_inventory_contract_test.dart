@@ -137,7 +137,7 @@ void main() {
     test('foreground planner writes commit locally before requesting sync', () {
       final quickCapture = _methodBody(
         controllerSource,
-        'Future<void> quickCapture',
+        'Future<PlannerMutationReceipt> quickCapture',
         'Future<void> saveEntity',
       );
       _expectOrdered(
